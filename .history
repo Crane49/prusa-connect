@@ -1,1 +1,1 @@
-39 1764987629 +0000 Bump golang.org/x/crypto from 0.42.0 to 0.45.0
+40 1765061448 +0100 Upgrade version of Golang due to security CVE reports
