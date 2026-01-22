@@ -1,1 +1,1 @@
-50 1769116878 +0100 chore: bump version to 0.1.0
+51 1769121667 +0100 feat: add build variants (full, standard, minimal) with CI support
