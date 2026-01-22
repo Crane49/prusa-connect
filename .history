@@ -1,1 +1,1 @@
-54 1768942981 +0000 Bump diff from 5.2.0 to 5.2.2 in /frontend
+55 1769125354 +0100 feat: adopt CloudEvents format for SSE events
