@@ -1,1 +1,1 @@
-57 1773879389 +0100 chore: remove unnecessary observability stack from docker-compose
+58 1773929645 +0100 refactor: introduce connector pattern for printer protocol abstraction
