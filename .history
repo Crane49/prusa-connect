@@ -1,1 +1,1 @@
-56 1769125980 +0100 fix: cleanup hanging test server processes after integration tests
+57 1773879389 +0100 chore: remove unnecessary observability stack from docker-compose
