@@ -1,1 +1,1 @@
-58 1773929645 +0100 refactor: introduce connector pattern for printer protocol abstraction
+59 1773952517 +0100 refactor: adopt capability pattern for connector interfaces
