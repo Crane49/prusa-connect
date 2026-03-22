@@ -1,1 +1,1 @@
-59 1773952517 +0100 refactor: adopt capability pattern for connector interfaces
+60 1774223398 +0100 refactor: move commands package into buddy connector, decouple queue from protocol specifics
