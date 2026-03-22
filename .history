@@ -1,1 +1,1 @@
-60 1774223398 +0100 refactor: move commands package into buddy connector, decouple queue from protocol specifics
+61 1774223854 +0100 refactor: decouple state.HandleEvent from protocol.Event via state.PrinterEvent
