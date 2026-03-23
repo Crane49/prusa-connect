@@ -1,1 +1,1 @@
-61 1774223854 +0100 refactor: decouple state.HandleEvent from protocol.Event via state.PrinterEvent
+62 1774224600 +0100 refactor: move Buddy wire encoding out of queue into buddy connector
