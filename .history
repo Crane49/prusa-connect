@@ -1,1 +1,1 @@
-65 1776009661 +0200 chore: add certificate tooling and refresh docs
+66 1776017353 +0200 feat: add automated contract testing pipeline for HTTP API, SSE, and MQTT
