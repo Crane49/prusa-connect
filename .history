@@ -1,1 +1,1 @@
-63 1775994283 +0200 rename: buddy connector -> xbuddy, protocol identifier -> prusa-xbuddy
+64 1776009650 +0200 refactor: split api and xbuddy listeners
