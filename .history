@@ -1,1 +1,1 @@
-66 1776017353 +0200 feat: add automated contract testing pipeline for HTTP API, SSE, and MQTT
+67 1776020065 +0200 chore: update frontend npm dependencies and fix golangci-lint node_modules scanning
