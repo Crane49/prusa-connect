@@ -1,1 +1,1 @@
-69 1776035303 +0200 feat: migrate docs and align event contracts
+70 1776037140 +0200 fix: serve docs root without redirect loop
