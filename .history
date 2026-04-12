@@ -1,1 +1,1 @@
-67 1776020065 +0200 chore: update frontend npm dependencies and fix golangci-lint node_modules scanning
+68 1776020207 +0200 chore: remove unused golangci-lint exclusion rules
