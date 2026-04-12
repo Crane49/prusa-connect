@@ -1,1 +1,1 @@
-62 1774224600 +0100 refactor: move Buddy wire encoding out of queue into buddy connector
+63 1775994283 +0200 rename: buddy connector -> xbuddy, protocol identifier -> prusa-xbuddy
