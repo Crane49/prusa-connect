@@ -1,1 +1,1 @@
-70 1776037140 +0200 fix: serve docs root without redirect loop
+71 1776091618 +0200 docs: rework index page with product intro, network diagram, and deployment variants
