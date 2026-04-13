@@ -1,1 +1,1 @@
-72 1776108807 +0200 test: add end-to-end MQTT integration tests and wire them into pre-commit
+73 1776108907 +0200 feat: add MQTT topic routing (drop, rewrite, allowlist)
