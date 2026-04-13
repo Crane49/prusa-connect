@@ -1,1 +1,1 @@
-71 1776091618 +0200 docs: rework index page with product intro, network diagram, and deployment variants
+72 1776108807 +0200 test: add end-to-end MQTT integration tests and wire them into pre-commit
