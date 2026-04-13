@@ -1,1 +1,1 @@
-73 1776108907 +0200 feat: add MQTT topic routing (drop, rewrite, allowlist)
+74 1776122619 +0200 fix: simplify PKI to flat chain, split plain/TLS configs
