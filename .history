@@ -1,1 +1,1 @@
-74 1776122619 +0200 fix: simplify PKI to flat chain, split plain/TLS configs
+75 1776207737 +0200 refactor: standardize feature build tags (mqtt, sqlite, observability)
