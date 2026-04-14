@@ -1,1 +1,1 @@
-77 1776207872 +0200 feat: add domain model, persistence, repository, and state cache layers
+78 1776207887 +0200 feat: config-driven build system, update wiring, config, docs, and CI
