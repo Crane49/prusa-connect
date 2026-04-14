@@ -1,1 +1,1 @@
-76 1776207860 +0200 refactor: move httpapi, auth, transfer into connector/xbuddy; add api/http and api/graphql packages
+77 1776207872 +0200 feat: add domain model, persistence, repository, and state cache layers
