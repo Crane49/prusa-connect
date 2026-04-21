@@ -1,1 +1,1 @@
-78 1776207887 +0200 feat: config-driven build system, update wiring, config, docs, and CI
+79 1776799131 +0200 feat: printer lifecycle - persistence, add/delete flows, printer.removed SSE
