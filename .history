@@ -1,1 +1,1 @@
-83 1776866863 +0200 fix: use canonical go directive to unblock golangci-lint
+84 1776866968 +0200 fix: log exception on websocket close in mock printer
