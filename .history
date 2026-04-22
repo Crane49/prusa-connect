@@ -1,1 +1,1 @@
-90 1776890100 +0200 feat: reset all printers to OFFLINE on startup and shutdown
+91 1776891354 +0200 feat(frontend): show offline placeholder instead of spinner for offline printers
