@@ -1,1 +1,1 @@
-86 1776871284 +0200 chore(frontend): upgrade to Astro 6 and Tailwind 4
+87 1776883972 +0200 fix: use legacy octal literals so swag parser stops warning
