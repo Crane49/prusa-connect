@@ -1,1 +1,1 @@
-82 1776866169 +0200 Fix: CI dependencies
+83 1776866863 +0200 fix: use canonical go directive to unblock golangci-lint
