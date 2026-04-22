@@ -1,1 +1,1 @@
-79 1776799131 +0200 feat: printer lifecycle - persistence, add/delete flows, printer.removed SSE
+80 1776841519 +0200 fix: dragonfly cache, postgres persistence, graphql docs, integration test
