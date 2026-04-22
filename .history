@@ -1,1 +1,1 @@
-89 1776890078 +0200 docs: slim README and add printer emulator guide
+90 1776890100 +0200 feat: reset all printers to OFFLINE on startup and shutdown
