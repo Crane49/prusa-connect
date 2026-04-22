@@ -1,1 +1,1 @@
-84 1776866968 +0200 fix: log exception on websocket close in mock printer
+85 1776867769 +0200 feat: Upgrade CI to node 24
