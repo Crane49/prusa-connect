@@ -1,1 +1,1 @@
-96 1779400014 +0200 fix(frontend): ignore retained per-job MQTT topics for non-current jobs
+97 1779401077 +0200 feat(frontend): dev setup for running against a remote backend
