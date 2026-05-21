@@ -1,1 +1,1 @@
-95 1779367891 +0200 fix: change Czech labels to English (default)
+96 1779400014 +0200 fix(frontend): ignore retained per-job MQTT topics for non-current jobs
