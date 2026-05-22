@@ -1,1 +1,1 @@
-101 1779446289 +0200 fix(build): bump Dockerfile frontend Node 20 → 24 to match CI
+102 1779446320 +0200 fix(build): include feature tags in Dockerfile Go build
