@@ -1,1 +1,1 @@
-100 1779551240 +0200 refactor: split emulator/ into per-connector subdirs
+101 1779446289 +0200 fix(build): bump Dockerfile frontend Node 20 → 24 to match CI
