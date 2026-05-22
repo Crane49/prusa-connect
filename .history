@@ -1,1 +1,1 @@
-97 1779401077 +0200 feat(frontend): dev setup for running against a remote backend
+98 1779439066 +0200 feat(frontend): sane MQTT defaults for any deployment + Vite /mqtt dev proxy
