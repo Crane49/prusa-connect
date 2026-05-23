@@ -1,1 +1,1 @@
-104 1779446388 +0200 fix(build): switch Go builder from Alpine to Debian for glibc binaries
+105 1779571993 +0200 chore(build): drop stale musl CGO workaround
