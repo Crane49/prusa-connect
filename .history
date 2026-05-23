@@ -1,1 +1,1 @@
-102 1779446320 +0200 fix(build): include feature tags in Dockerfile Go build
+103 1779563397 +0200 ci: parallelize backend job into 6 sibling jobs
