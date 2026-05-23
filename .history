@@ -1,1 +1,1 @@
-98 1779439066 +0200 feat(frontend): sane MQTT defaults for any deployment + Vite /mqtt dev proxy
+99 1779550941 +0200 refactor: lift xBuddy path/event conventions out of shared code
