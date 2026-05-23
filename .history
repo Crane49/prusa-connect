@@ -1,1 +1,1 @@
-99 1779550941 +0200 refactor: lift xBuddy path/event conventions out of shared code
+100 1779551240 +0200 refactor: split emulator/ into per-connector subdirs
