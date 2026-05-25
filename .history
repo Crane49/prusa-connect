@@ -1,1 +1,1 @@
-105 1779571993 +0200 chore(build): drop stale musl CGO workaround
+106 1779739018 +0200 docs(cert): explain Buddy mbedTLS 2.x IP SAN workaround, emit DNS:<ip> automatically
