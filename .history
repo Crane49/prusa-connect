@@ -1,1 +1,1 @@
-106 1779739018 +0200 docs(cert): explain Buddy mbedTLS 2.x IP SAN workaround, emit DNS:<ip> automatically
+107 1779955423 +0200 feat(xbuddy): configurable TLS handshake timeout (default 60s)
