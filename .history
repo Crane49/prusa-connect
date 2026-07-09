@@ -1,1 +1,1 @@
-140 1784292524 +0200 feat(fractal): add internal/fractal wrapper around the SDK
+141 1783615710 +0200 feat(build): detect the fractal build tag from config
