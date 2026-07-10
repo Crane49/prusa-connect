@@ -1,1 +1,1 @@
-144 1783616089 +0200 feat(fractal): wire the first Fractal REP flow end-to-end
+145 1783700260 +0200 feat(fractal): surface shadow sync status (EMPTY/OK/STALE) through the API
