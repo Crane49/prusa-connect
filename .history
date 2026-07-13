@@ -1,1 +1,1 @@
-119 1782162465 +0000 chore(deps): bump astro from 6.3.7 to 6.4.8 in /docs
+120 1783935531 +0200 fix(docker): make docker compose stack build and run with persistent state
