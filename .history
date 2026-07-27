@@ -1,1 +1,1 @@
-145 1783700260 +0200 feat(fractal): surface shadow sync status (EMPTY/OK/STALE) through the API
+146 1785165806 +0200 feat(fractal): propagate a single owned printer's disconnect via REP
