@@ -1,1 +1,1 @@
-148 1784285771 +0200 fix(sse-schema): respect omitempty when generating TS/AsyncAPI schema
+149 1785228079 +0200 ci/build: authenticate the private fractal dependency in every build path
