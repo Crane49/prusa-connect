@@ -1,1 +1,1 @@
-165 1785338218 +0200 feat(fractal): one Fractal leaf node per attached printer
+166 1785338358 +0200 test(fractal): per-printer STALE granularity and lifecycle tests
