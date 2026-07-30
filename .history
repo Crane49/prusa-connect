@@ -1,1 +1,1 @@
-168 1786060615 +0200 feat(fe): show an OK/STALE status pill for locally owned printers
+169 1785422316 +0200 fix(fractal): reject an RPC/DES immediately when the printer has no live connection
