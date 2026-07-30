@@ -1,1 +1,1 @@
-169 1785422316 +0200 fix(fractal): reject an RPC/DES immediately when the printer has no live connection
+170 1785422588 +0200 fix(xbuddy): don't let a superseded connection's cleanup tear down a live one
