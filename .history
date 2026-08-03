@@ -1,1 +1,1 @@
-149 1785228079 +0200 ci/build: authenticate the private fractal dependency in every build path
+150 1785766856 +0200 build: guard the Dockerfile Go toolchain pin against go.mod
