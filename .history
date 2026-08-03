@@ -1,1 +1,1 @@
-150 1785766856 +0200 build: guard the Dockerfile Go toolchain pin against go.mod
+151 1785766856 +0200 ci(release): compile the fractal tag into release binaries
