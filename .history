@@ -1,1 +1,1 @@
-152 1785766856 +0200 test(fractal): run the embedded-NATS node tests outside the short unit job
+153 1785768214 +0200 fix(queue): refuse commands against read-only Fractal shadows
