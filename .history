@@ -1,1 +1,1 @@
-130 1785921205 +0200 Bump Go toolchain and x/ modules to clear govulncheck
+131 1785925590 +0200 chore(deps): move both JS projects to pnpm and pin every version
