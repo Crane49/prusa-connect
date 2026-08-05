@@ -1,1 +1,1 @@
-131 1785925590 +0200 chore(deps): move both JS projects to pnpm and pin every version
+132 1785926873 +0200 chore(deps): stop the pinning eroding, unify Node, verify main after merge
