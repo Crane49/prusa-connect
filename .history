@@ -1,1 +1,1 @@
-134 1785931469 +0200 chore(deps): upgrade to Astro 7 in both projects
+135 1785999410 +0200 feat(frontend): embed both frontend variants in the binary
