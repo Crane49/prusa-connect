@@ -1,1 +1,1 @@
-154 1786041064 +0200 fix(blocking): don't evaluate blocking reasons for a Fractal shadow
+155 1786051748 +0200 feat(frontend): carry Fractal shadow fields through both schema layers
