@@ -1,1 +1,1 @@
-153 1785768214 +0200 fix(queue): refuse commands against read-only Fractal shadows
+154 1786041064 +0200 fix(blocking): don't evaluate blocking reasons for a Fractal shadow
