@@ -1,1 +1,1 @@
-170 1785422588 +0200 fix(xbuddy): don't let a superseded connection's cleanup tear down a live one
+171 1786061367 +0200 feat(api): tell REST callers a shadow command went out over Fractal
