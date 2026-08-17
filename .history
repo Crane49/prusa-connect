@@ -1,1 +1,1 @@
-174 1786966602 +0200 Rename the frontend's design tokens onto shadcn's canonical contract and migrate Button onto a vendored shadcn component.
+175 1786970427 +0200 chore(deps): bump this week's frontend and docs JS dependencies
