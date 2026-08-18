@@ -1,1 +1,1 @@
-177 1787056657 +0200 feat(tools): model tool material as nested MPI structure
+178 1787056658 +0200 feat(api): expose tool material on public REST /api/printers
