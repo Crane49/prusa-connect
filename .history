@@ -1,1 +1,1 @@
-183 1787239957 +0200 fix(emulator): close the log handle and document the ignored OSErrors
+184 1787238434 +0200 fix(emulator): keep started printers alive after the manager exits
