@@ -1,1 +1,1 @@
-181 1787238369 +0200 fix(api): report finished jobs at 100%
+182 1787222361 +0200 fix(emulator): make the emulator start on Linux, macOS and Windows
