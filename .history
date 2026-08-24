@@ -1,1 +1,1 @@
-194 1787567067 +0200 docs: rewrite the ADRs as rules
+195 1787567654 +0200 fix: make the lint target fail when the application module fails
