@@ -1,1 +1,1 @@
-266 1787608818 +0200 infra: lint behind the database tags and pin the cgo decision to the graph
+267 1787608856 +0200 docs: correct 18 against the built schema and record what it left open
