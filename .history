@@ -1,1 +1,1 @@
-188 1787565302 +0200 chore: remove the licence duplicate committed as ./main
+189 1787565661 +0200 refactor: move the public contracts into a separate sdk module
