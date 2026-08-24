@@ -1,1 +1,1 @@
-186 1787564938 +0200 infra: run the container as an unprivileged user with a read-only root filesystem
+187 1787565242 +0200 docs: record the architecture decisions the restructure implements
