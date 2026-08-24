@@ -1,1 +1,1 @@
-197 1787578947 +0200 docs: add the research index and the requirements the architecture must meet
+198 1787579120 +0200 fix(ci): commit the compose service files and resolve the sdk module before go mod download
