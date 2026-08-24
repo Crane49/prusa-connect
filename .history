@@ -1,1 +1,1 @@
-190 1787565840 +0200 refactor: make cmd hold commands and move the composition root to internal/app
+191 1787566205 +0200 refactor: group internal packages by role
