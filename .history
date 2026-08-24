@@ -1,1 +1,1 @@
-196 1787573022 +0200 fix(docker): embed the built frontend so the runtime image serves the ui
+197 1787578947 +0200 docs: add the research index and the requirements the architecture must meet
