@@ -1,1 +1,1 @@
-193 1787566565 +0200 refactor: move the emulator to tools and the runnable demo to examples
+194 1787567067 +0200 docs: rewrite the ADRs as rules
