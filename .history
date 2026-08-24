@@ -1,1 +1,1 @@
-191 1787566205 +0200 refactor: group internal packages by role
+192 1787566434 +0200 infra: split docker into per-service files under docker/
