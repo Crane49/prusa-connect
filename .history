@@ -1,1 +1,1 @@
-261 1787607381 +0200 fix(errors): fail the build when a registering package is not documented
+262 1787607446 +0200 docs: correct the coalescing arithmetic against the built hub
