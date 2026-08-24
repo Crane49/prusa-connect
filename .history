@@ -1,1 +1,1 @@
-226 1787591998 +0200 docs: name headings for lookup, and require api completeness and a separable ui
+227 1787592205 +0200 docs: give the ui its own serving package and a render budget
