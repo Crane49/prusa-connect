@@ -1,1 +1,1 @@
-232 1787595165 +0200 fix(storage): keep the existing file when an upload fails partway
+233 1787596288 +0200 docs: resource lifecycle and supervision plane
