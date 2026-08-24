@@ -1,1 +1,1 @@
-259 1787607329 +0200 feat(stream): fan out events on a per-printer cursor
+260 1787607360 +0200 fix(sdk): decode fault payloads back into the published types
