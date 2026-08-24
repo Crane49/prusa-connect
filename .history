@@ -1,1 +1,1 @@
-195 1787567654 +0200 fix: make the lint target fail when the application module fails
+196 1787573022 +0200 fix(docker): embed the built frontend so the runtime image serves the ui
