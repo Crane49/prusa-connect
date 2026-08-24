@@ -1,1 +1,1 @@
-237 1787597039 +0200 docs: require every error code to be documented at registration and gated in CI
+238 1787599085 +0200 feat(kernel): instance identity, conditions and derived state
