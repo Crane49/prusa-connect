@@ -1,1 +1,1 @@
-265 1787608806 +0200 schema(authz): hold the relation vocabulary in tables, not a CHECK
+266 1787608818 +0200 infra: lint behind the database tags and pin the cgo decision to the graph
