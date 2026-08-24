@@ -1,1 +1,1 @@
-185 1787234842 +0200 fix(build): reinstall pnpm deps when modules.yaml is missing
+186 1787564938 +0200 infra: run the container as an unprivileged user with a read-only root filesystem
