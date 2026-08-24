@@ -1,1 +1,1 @@
-260 1787607360 +0200 fix(sdk): decode fault payloads back into the published types
+261 1787607381 +0200 fix(errors): fail the build when a registering package is not documented
