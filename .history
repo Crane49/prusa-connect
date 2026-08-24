@@ -1,1 +1,1 @@
-189 1787565661 +0200 refactor: move the public contracts into a separate sdk module
+190 1787565840 +0200 refactor: make cmd hold commands and move the composition root to internal/app
