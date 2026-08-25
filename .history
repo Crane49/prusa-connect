@@ -1,1 +1,1 @@
-293 1787649419 +0200 fix(capability): close three paths that added a capability, which C1 forbids
+294 1787649440 +0200 docs: tick the capability and storage fixes, record what they left
