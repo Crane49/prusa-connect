@@ -1,1 +1,1 @@
-319 1787663827 +0200 docs: narrow X2 to connectors and permit an out-of-process storage provider
+320 1787666000 +0200 feat(connector): port xBuddy to the new contract, proved against the simulator
