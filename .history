@@ -1,1 +1,1 @@
-353 1787693667 +0200 feat(adapters): gate every change against the printer matrix
+354 1787694251 +0200 infra(docker): the test brokers belong in the compose stack
