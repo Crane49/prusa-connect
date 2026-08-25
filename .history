@@ -1,1 +1,1 @@
-348 1787689441 +0200 docs: correct the plan against the tree, and publish the extension architecture once
+349 1787689571 +0200 fix(authz): a mutation may not strip a principal who outranks the caller
