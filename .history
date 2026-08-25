@@ -1,1 +1,1 @@
-303 1787652457 +0200 feat(stream): address an event by resource, not by printer
+304 1787652489 +0200 infra(ci): cross-compile every shipping target on every run
