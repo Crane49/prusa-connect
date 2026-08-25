@@ -1,1 +1,1 @@
-345 1787688625 +0200 fix(connector): notice a printer that stops answering, and stop failing open on an unknown one
+346 1787688710 +0200 feat(config): derive build tags from declared resources, through an airlock
