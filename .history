@@ -1,1 +1,1 @@
-327 1787669139 +0200 fix(connector): refuse a path that climbs out of a printer storage
+328 1787669163 +0200 docs: record the traversal fix and the unbuilt storage confinement
