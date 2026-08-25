@@ -1,1 +1,1 @@
-336 1787674203 +0200 fix(storage): unlink a staged file through its directory, and publish the escape suite
+337 1787674931 +0200 fix(capability): order firmware the way semver does, and stop reading version text
