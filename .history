@@ -1,1 +1,1 @@
-276 1787638632 +0200 docs: tick the capability work and record what it uncovered
+277 1787638842 +0200 feat(http): serve the API from a router that cannot hide a handler
