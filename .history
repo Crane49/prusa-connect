@@ -1,1 +1,1 @@
-331 1787670363 +0200 feat(sdk): one registration rule, an unforgeable namespace, and a descriptor
+332 1787670419 +0200 feat(app): enforce the graph on every surface, and let something outside read the hub
