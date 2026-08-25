@@ -1,1 +1,1 @@
-283 1787641031 +0200 fix(authz): make the parity gate read something, and close two bypasses
+284 1787641057 +0200 docs: tick the review fixes and write down what the gate still cannot see
