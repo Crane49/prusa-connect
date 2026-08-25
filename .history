@@ -1,1 +1,1 @@
-355 1787695723 +0200 feat(printer): read a printer's files, and send it raw gcode under its own permission
+356 1787696226 +0200 feat(vocabulary): publish every closed set, generated and gated
