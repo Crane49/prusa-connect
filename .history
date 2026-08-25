@@ -1,1 +1,1 @@
-338 1787686493 +0200 fix(sdk): derive the namespace from the stack, and refuse text that forges a page
+339 1787686509 +0200 feat(authz): grants can be written over the API
