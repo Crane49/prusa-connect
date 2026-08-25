@@ -1,1 +1,1 @@
-290 1787648246 +0200 docs: correct requirement 51, which named a camera that does not exist
+291 1787648920 +0200 fix(storage): hand out an open handle instead of a path to race
