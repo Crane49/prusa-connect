@@ -1,1 +1,1 @@
-326 1787668929 +0200 docs: one visual page for the plugin architecture
+327 1787669139 +0200 fix(connector): refuse a path that climbs out of a printer storage
