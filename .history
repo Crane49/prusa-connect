@@ -1,1 +1,1 @@
-281 1787640606 +0200 infra: run the dual-engine suite against a real Postgres, by rule
+282 1787640818 +0200 fix(storage): pin the root's identity, and require the suite to prove it
