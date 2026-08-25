@@ -1,1 +1,1 @@
-332 1787670419 +0200 feat(app): enforce the graph on every surface, and let something outside read the hub
+333 1787672719 +0200 fix(sdk): close the plugin hijack that survived in the lookup, and stop readiness naming everything
