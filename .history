@@ -1,1 +1,1 @@
-344 1787688097 +0200 docs: replace the review label with a review log
+345 1787688625 +0200 fix(connector): notice a printer that stops answering, and stop failing open on an unknown one
