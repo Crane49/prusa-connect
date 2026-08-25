@@ -1,1 +1,1 @@
-280 1787639232 +0200 docs: record what the adversarial reviews found
+281 1787640606 +0200 infra: run the dual-engine suite against a real Postgres, by rule
