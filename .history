@@ -1,1 +1,1 @@
-302 1787652245 +0200 feat(app): store resource configuration in an overlay, not the operator's file
+303 1787652457 +0200 feat(stream): address an event by resource, not by printer
