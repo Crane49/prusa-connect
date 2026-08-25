@@ -1,1 +1,1 @@
-349 1787689571 +0200 fix(authz): a mutation may not strip a principal who outranks the caller
+350 1787690389 +0200 feat(app): a printer dials in, and a command sent through the API reaches it
