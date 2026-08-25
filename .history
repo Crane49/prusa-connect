@@ -1,1 +1,1 @@
-282 1787640818 +0200 fix(storage): pin the root's identity, and require the suite to prove it
+283 1787641031 +0200 fix(authz): make the parity gate read something, and close two bypasses
