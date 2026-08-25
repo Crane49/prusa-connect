@@ -1,1 +1,1 @@
-311 1787656148 +0200 feat(authz): grant a resource by kind, because create defeats an instance boundary
+312 1787656429 +0200 feat(app): wire the core, so it runs for the first time
