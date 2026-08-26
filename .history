@@ -1,1 +1,1 @@
-361 1787723436 +0200 feat(gcode): save a gcode sequence and run it on a printer
+362 1787723726 +0200 fix(events): make the reconnect exact, and stop two config keys being dead
