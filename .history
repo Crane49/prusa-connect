@@ -1,1 +1,1 @@
-692 1787754802 +0200 fix(simulator): reset on a transfer chunk this printer did not ask for
+693 1787755045 +0200 fix(xbuddy): keep the transfer starts out of the published baseline
