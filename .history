@@ -1,1 +1,1 @@
-677 1787749766 +0200 feat(api): browse, upload, download and manage the server's own storage
+678 1787752598 +0200 test(fleet): the round trip sends commands, not every argument-free key
