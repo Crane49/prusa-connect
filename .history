@@ -1,1 +1,1 @@
-542 1787785502 +0200 docs: compare commit bodies against golang/go and three more
+543 1787785533 +0200 infra(git): gate the commit message, which nothing has ever read
