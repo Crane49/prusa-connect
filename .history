@@ -1,1 +1,1 @@
-689 1787753455 +0200 fix(xbuddy): settle a transfer only on an event that names it
+690 1787753753 +0200 fix(xbuddy): return from Send when the caller gives up
