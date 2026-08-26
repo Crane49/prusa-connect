@@ -1,1 +1,1 @@
-368 1787730300 +0200 infra(docker): a test fixture does not come back on its own
+369 1787731134 +0200 feat(app): a declared sink reads the event bus and publishes what it is granted
