@@ -1,1 +1,1 @@
-363 1787724716 +0200 fix(sdk): put an unforgeable boundary in the namespace, and refuse a module no host can register
+364 1787726137 +0200 feat(app): link the adapters, so a configured sink is a running sink
