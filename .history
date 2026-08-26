@@ -1,1 +1,1 @@
-517 1787782874 +0200 docs(internals): the printer surface cites the lines it names
+518 1787782913 +0200 fix(ci): read the Changelog trailer the way git reads it
