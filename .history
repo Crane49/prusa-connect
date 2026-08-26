@@ -1,1 +1,1 @@
-401 1787740034 +0200 fix(api): huma took ownership of an error table the package still held
+402 1787740082 +0200 fix(printer): say which handshake failed, and pin the ceiling the docs claimed
