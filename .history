@@ -1,1 +1,1 @@
-503 1787782041 +0200 feat(sinks): a sink can be an expression, so a transform needs no build
+504 1787782145 +0200 test(arch): a published action with no reachable path fails the build
