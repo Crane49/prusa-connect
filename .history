@@ -1,1 +1,1 @@
-687 1787754549 +0200 test(app): point the config fixtures at a directory of the test's own
+688 1787753341 +0200 fix(xbuddy): cancel a transfer's content reads when it settles
