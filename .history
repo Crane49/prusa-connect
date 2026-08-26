@@ -1,1 +1,1 @@
-533 1787784666 +0200 fix(authz): serialise concurrent migrations, and set WAL once
+534 1787784732 +0200 feat(api): the reference shows what to send and what comes back
