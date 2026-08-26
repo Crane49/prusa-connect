@@ -1,1 +1,1 @@
-501 1787781794 +0200 infra(docker): probe the container's answers in make docker-check
+502 1787781925 +0200 feat(cameras): a camera is a resource, and its frames reach a browser
