@@ -1,1 +1,1 @@
-511 1787782630 +0200 fix(tools): the event-type generator can add the type it is run to add
+512 1787782633 +0200 fix(ci): the lint job reports eight deprecations legacy cannot act on
