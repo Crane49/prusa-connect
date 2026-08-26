@@ -1,1 +1,1 @@
-695 1787755486 +0200 fix(xbuddy): count a block request whose range this dialect cannot read
+696 1787755560 +0200 fix(xbuddy): bound how long one frame may take to leave
