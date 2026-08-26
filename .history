@@ -1,1 +1,1 @@
-380 1787734335 +0200 feat(printer): serve the printer endpoints over the TLS the firmware accepts
+381 1787734345 +0200 docs(prusa): say what the command page is instead of editorialising about it
