@@ -1,1 +1,1 @@
-400 1787739846 +0200 docs: note what makes writing read as uniform
+401 1787740034 +0200 fix(api): huma took ownership of an error table the package still held
