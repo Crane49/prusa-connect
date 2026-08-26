@@ -1,1 +1,1 @@
-409 1787742642 +0200 docs(style): nine rules for writing that reads as written, each with a gate
+410 1787743105 +0200 fix(events): a resume cursor no longer reaches behind the caller's grant
