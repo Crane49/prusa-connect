@@ -1,1 +1,1 @@
-521 1787783094 +0200 docs: the CI causes were read off a run, not reported
+522 1787783415 +0200 fix(printers): a departed printer tells a stranger nothing about itself
