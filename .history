@@ -1,1 +1,1 @@
-688 1787753341 +0200 fix(xbuddy): cancel a transfer's content reads when it settles
+689 1787753455 +0200 fix(xbuddy): settle a transfer only on an event that names it
