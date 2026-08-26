@@ -1,1 +1,1 @@
-468 1787775816 +0200 feat(printers): a refused verb names the verbs the printer accepts
+469 1787775831 +0200 feat(printers): a refused gcode line says why in the printer's own words
