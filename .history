@@ -1,1 +1,1 @@
-365 1787726408 +0200 feat(events): a printer becoming unreachable reaches a reader who is watching
+366 1787727723 +0200 test(fleet): regenerate the capability goldens for the raw gcode verbs
