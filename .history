@@ -1,1 +1,1 @@
-469 1787775831 +0200 feat(printers): a refused gcode line says why in the printer's own words
+470 1787775845 +0200 test: three rules the refusal and dialog gates were not watching
