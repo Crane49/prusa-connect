@@ -1,1 +1,1 @@
-543 1787785533 +0200 infra(git): gate the commit message, which nothing has ever read
+544 1787785782 +0200 infra: refuse a foreign issuer, and move the mock one off port 8092
