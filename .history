@@ -1,1 +1,1 @@
-367 1787729155 +0200 fix(connector): a blackholed link takes 56 seconds to notice, and the timings are now settable
+368 1787730300 +0200 infra(docker): a test fixture does not come back on its own
