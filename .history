@@ -1,1 +1,1 @@
-555 1787787269 +0200 schema(authz): a compat floor, so an older binary refuses a newer graph
+556 1787787327 +0200 docs: the push is blocked on three unparseable trailers
