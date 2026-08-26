@@ -1,1 +1,1 @@
-485 1787780007 +0200 fix(ci): the unit job dies in two tests that compile the tree, not in a deadlock
+486 1787780066 +0200 docs: list the open questions, two sentences each
