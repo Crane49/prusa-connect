@@ -1,1 +1,1 @@
-369 1787731134 +0200 feat(app): a declared sink reads the event bus and publishes what it is granted
+370 1787731335 +0200 fix(events): bound a replay by the grant, not by the subscription's age
