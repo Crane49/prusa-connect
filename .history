@@ -1,1 +1,1 @@
-362 1787723726 +0200 fix(events): make the reconnect exact, and stop two config keys being dead
+363 1787724716 +0200 fix(sdk): put an unforgeable boundary in the namespace, and refuse a module no host can register
