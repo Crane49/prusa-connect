@@ -1,1 +1,1 @@
-452 1787762765 +0200 test(printers): the refusal reason is gated where it is filled in, not only where it is drawn
+453 1787763348 +0200 feat(xbuddy): a dialog carries what it says, not only the id that names it
