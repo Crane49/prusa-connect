@@ -1,1 +1,1 @@
-691 1787754792 +0200 fix(xbuddy): answer a block request only on the connection it arrived on
+692 1787754802 +0200 fix(simulator): reset on a transfer chunk this printer did not ask for
