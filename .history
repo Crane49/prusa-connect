@@ -1,1 +1,1 @@
-419 1787746629 +0200 docs(research): Fractal cannot leave one machine at the pinned revision
+420 1787747561 +0200 fix(sdk): drop testify, and compile the sdk the way an author would
