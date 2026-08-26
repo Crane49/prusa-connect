@@ -1,1 +1,1 @@
-532 1787784611 +0200 docs: the plan reads 656 open, and federation reads 44
+533 1787784666 +0200 fix(authz): serialise concurrent migrations, and set WAL once
