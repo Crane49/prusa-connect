@@ -1,1 +1,1 @@
-497 1787781098 +0200 feat(core): give the core a health check the container can run
+498 1787781267 +0200 feat(api): an operator can restart a supervised resource instance
