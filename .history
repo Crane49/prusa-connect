@@ -1,1 +1,1 @@
-496 1787780911 +0200 feat(api): classify a base URL rather than refusing it as unknown
+497 1787781098 +0200 feat(core): give the core a health check the container can run
