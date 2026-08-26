@@ -1,1 +1,1 @@
-445 1787758891 +0200 feat(xbuddy): carry the refusal reason and the dialog the machine raised
+446 1787758911 +0200 fix(events): re-check the credential behind a stream that is already open
