@@ -1,1 +1,1 @@
-683 1787753484 +0200 fix(app): map an oversized body and a full storage onto their own codes
+684 1787753778 +0200 fix(app): require read_storage on the source of a printer send
