@@ -1,1 +1,1 @@
-680 1787752680 +0200 fix(authz): keep the retirement ratchet on the generator's write path
+681 1787753011 +0200 fix(api): lift the write deadline on the upload and printer-send routes
