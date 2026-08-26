@@ -1,1 +1,1 @@
-685 1787754050 +0200 fix(app): close the three gaps in the climbing-path refusal
+686 1787754299 +0200 fix(fault): give DELETE_INCOMPLETE the params its producer can supply
