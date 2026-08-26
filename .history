@@ -1,1 +1,1 @@
-375 1787733199 +0200 docs(reference): a generated page is read by a person, not queried by a machine
+376 1787733310 +0200 fix(authz): a grant change may not lock the caller out of the object
