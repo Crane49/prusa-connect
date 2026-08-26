@@ -1,1 +1,1 @@
-529 1787784454 +0200 docs: nothing checks that a settled decision becomes an epic
+530 1787784548 +0200 fix(build): pin the toolchain at 1.26.7 and take the sdk off gin 1.9.1
