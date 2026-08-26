@@ -1,1 +1,1 @@
-475 1787777302 +0200 docs: settle what a comment may say about time, and gate it
+476 1787777577 +0200 fix(ci): the changelog gate judged 260 commits on every push
