@@ -1,1 +1,1 @@
-366 1787727723 +0200 test(fleet): regenerate the capability goldens for the raw gcode verbs
+367 1787729155 +0200 fix(connector): a blackholed link takes 56 seconds to notice, and the timings are now settable
