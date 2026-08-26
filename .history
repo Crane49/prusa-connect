@@ -1,1 +1,1 @@
-377 1787733383 +0200 docs(gates): record that a tag-gated suite skips and still prints ok
+378 1787733481 +0200 fix(fleet): one firmware ordering, and a malformed frame costs the frame
