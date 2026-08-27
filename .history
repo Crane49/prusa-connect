@@ -1,1 +1,1 @@
-718 1787862488 +0200 feat(install): required is refused on a type the core did not write
+719 1787862506 +0200 feat(core): stop serving the frontend at the origin root
