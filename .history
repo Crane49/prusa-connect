@@ -1,1 +1,1 @@
-632 1787806924 +0200 fix(commits): refuse the Co-Authored-By line that costs the trailer
+633 1787807464 +0200 fix(events): a resumed reader is not handed the event its cursor names
