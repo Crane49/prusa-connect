@@ -1,1 +1,1 @@
-643 1787809043 +0200 test: measure the two timing gates instead of assuming a quiet machine
+644 1787809242 +0200 test(arch): the arming check has one name, and eleven mutations
