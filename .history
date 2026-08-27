@@ -1,1 +1,1 @@
-629 1787803843 +0200 fix(sse): the document names the event that ends a stream
+630 1787804012 +0200 docs: say why the graph file mode row was passed over
