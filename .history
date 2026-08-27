@@ -1,1 +1,1 @@
-751 1787871101 +0200 fix(authz): split what a parent confers by where the parent got it
+752 1787872243 +0200 fix(auth): a correct password is admitted whatever the record holds
