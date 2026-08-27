@@ -1,1 +1,1 @@
-737 1787838406 +0200 feat(core): open the database engine the configuration names
+738 1787838492 +0200 fix(xbuddy): a dialog closes on an explicit signal, never on an absent id
