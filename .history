@@ -1,1 +1,1 @@
-631 1787804366 +0200 fix(xbuddy): bound the registration table and report what it drops
+632 1787806924 +0200 fix(commits): refuse the Co-Authored-By line that costs the trailer
