@@ -1,1 +1,1 @@
-656 1787814070 +0200 fix(printers): answer a guessed verb with the verb this API names
+657 1787814841 +0200 fix(presets): send no version token to a caller who may read no preset
