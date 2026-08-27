@@ -1,1 +1,1 @@
-667 1787821602 +0200 fix(wirehost): one long line no longer silences a child's log for good
+668 1787821676 +0200 fix(docs): restore the service runtime section a9cf972f dropped
