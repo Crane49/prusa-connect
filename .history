@@ -1,1 +1,1 @@
-587 1787795293 +0200 fix(api): seven operations name the status they fail with
+588 1787795345 +0200 test(arch): gate that every storage provider meets the contract suite
