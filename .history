@@ -1,1 +1,1 @@
-570 1787791707 +0200 feat(sdk): publish the plugin wire as a specification, not a Go library
+571 1787791935 +0200 refactor(sdk): put the wire vectors where the other suites live
