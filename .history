@@ -1,1 +1,1 @@
-581 1787794303 +0200 refactor(api): put Can on GrantStore and drop the gcode assertion
+582 1787794417 +0200 test(e2e): the four bench steps run in order against the shipped binary
