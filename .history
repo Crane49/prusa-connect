@@ -1,1 +1,1 @@
-565 1787789668 +0200 feat(authz): read what a caller may do on one object
+566 1787790798 +0200 infra: delete LOG_LEVEL and gate the container environment keys
