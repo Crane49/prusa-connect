@@ -1,1 +1,1 @@
-719 1787862506 +0200 feat(core): stop serving the frontend at the origin root
+720 1787862519 +0200 feat(api): the HTTP surface names devices, and publishes account routes
