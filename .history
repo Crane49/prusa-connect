@@ -1,1 +1,1 @@
-748 1787868297 +0200 fix(cameras): a device cannot spend the host's memory on one picture
+749 1787868350 +0200 docs: ask which way a camera bound to an absent printer should fail
