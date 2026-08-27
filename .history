@@ -1,1 +1,1 @@
-623 1787801816 +0200 fix(api): an empty resource listing carries no version token
+624 1787802338 +0200 feat(config): name every block this build does not read
