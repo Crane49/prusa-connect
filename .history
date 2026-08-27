@@ -1,1 +1,1 @@
-624 1787802338 +0200 feat(config): name every block this build does not read
+625 1787802403 +0200 fix(app): refuse a path no route claims instead of serving the frontend
