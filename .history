@@ -1,1 +1,1 @@
-657 1787814841 +0200 fix(presets): send no version token to a caller who may read no preset
+658 1787815031 +0200 docs(core): move the preset citations onto the lines they name
