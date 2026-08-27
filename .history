@@ -1,1 +1,1 @@
-637 1787808238 +0200 feat(sdk): add the session an extension speaks above the plugin frame
+638 1787808251 +0200 feat(extensions): launch a child process and speak the wire to it
