@@ -1,1 +1,1 @@
-662 1787821090 +0200 fix(hooks): a frontend install no longer switches off the commit gates
+663 1787821160 +0200 refactor(printers): renumber the issues record and read the link once
