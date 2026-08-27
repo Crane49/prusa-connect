@@ -1,1 +1,1 @@
-633 1787807464 +0200 fix(events): a resumed reader is not handed the event its cursor names
+634 1787807474 +0200 test(xbuddy): wait for the drop the dialog case is armed by
