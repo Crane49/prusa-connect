@@ -1,1 +1,1 @@
-614 1787799087 +0200 docs(adr): move the decision record's arguments out of its two tables
+615 1787799388 +0200 test(authz): the parity gate reads triggers, views and every CHECK
