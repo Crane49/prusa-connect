@@ -1,1 +1,1 @@
-606 1787797712 +0200 docs(internals): move the six resolver citations that drifted
+607 1787797740 +0200 fix(app): warn about a lost principal, not about an empty directory
