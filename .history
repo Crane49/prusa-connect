@@ -1,1 +1,1 @@
-726 1787824774 +0200 test: anchor the blackhole detection floors on an observed pong
+727 1787826927 +0200 test(simulator): reset the connection after accepting a transfer, as the machine does
