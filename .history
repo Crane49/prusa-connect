@@ -1,1 +1,1 @@
-628 1787803649 +0200 docs: what the three fixes do on the running binary
+629 1787803843 +0200 fix(sse): the document names the event that ends a stream
