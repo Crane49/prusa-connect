@@ -1,1 +1,1 @@
-568 1787791434 +0200 test(events): read a broker's own identity before trusting the fixture
+569 1787791452 +0200 feat(deploy): publish a Kubernetes manifest set for one tenant instance
