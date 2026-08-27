@@ -1,1 +1,1 @@
-567 1787791283 +0200 feat(api): a client can ask what it may do instead of trying
+568 1787791434 +0200 test(events): read a broker's own identity before trusting the fixture
