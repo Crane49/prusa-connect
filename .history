@@ -1,1 +1,1 @@
-738 1787838492 +0200 fix(xbuddy): a dialog closes on an explicit signal, never on an absent id
+739 1787838576 +0200 infra: point the frontend ignore rules at where the frontend went
