@@ -1,1 +1,1 @@
-740 1787863083 +0200 chore: take the persistence and simulator work beside the device rename
+741 1787863186 +0200 fix(gates): drop the sqlite tag the engine no longer requires
