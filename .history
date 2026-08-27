@@ -1,1 +1,1 @@
-727 1787826927 +0200 test(simulator): reset the connection after accepting a transfer, as the machine does
+728 1787829115 +0200 test(fleet): send a file to every model and firmware cell
