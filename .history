@@ -1,1 +1,1 @@
-585 1787795146 +0200 test(connector): gate what tells two SET_VALUE setters apart
+586 1787795281 +0200 docs(bench): the four requests that read, list, print and cancel
