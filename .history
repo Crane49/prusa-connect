@@ -1,1 +1,1 @@
-736 1787837213 +0200 refactor(config): fold the store selectors into one engine key
+737 1787838406 +0200 feat(core): open the database engine the configuration names
