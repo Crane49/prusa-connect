@@ -1,1 +1,1 @@
-625 1787802403 +0200 fix(app): refuse a path no route claims instead of serving the frontend
+626 1787802868 +0200 perf(authz): reconcile the resource directory in one transaction
