@@ -1,1 +1,1 @@
-613 1787798432 +0200 docs(authz): a permission review reads, it does not enforce
+614 1787799087 +0200 docs(adr): move the decision record's arguments out of its two tables
