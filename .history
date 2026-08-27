@@ -1,1 +1,1 @@
-635 1787807994 +0200 fix(simulator): refuse the six verbs a printer's state does not allow
+636 1787808011 +0200 refactor(app): split the device plane's meter and projection out
