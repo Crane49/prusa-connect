@@ -1,1 +1,1 @@
-566 1787790798 +0200 infra: delete LOG_LEVEL and gate the container environment keys
+567 1787791283 +0200 feat(api): a client can ask what it may do instead of trying
