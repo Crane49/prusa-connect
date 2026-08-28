@@ -1,1 +1,1 @@
-808 1787916159 +0200 fix(config): the shipped grant example feeds a sink
+809 1787916380 +0200 feat(build): make ci-local runs what CI runs and names what it skipped
