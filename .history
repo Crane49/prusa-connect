@@ -1,1 +1,1 @@
-818 1787927707 +0200 schema(authz): the device record holds no reachability column
+819 1787927723 +0200 schema(extension): pin module state keys to byte order on both engines
