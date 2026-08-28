@@ -1,1 +1,1 @@
-774 1787890521 +0200 fix(printers): a command dropped by a reconnect says so, and says why
+775 1787890593 +0200 docs: give the reconnect refusal its changelog entry
