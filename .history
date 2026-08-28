@@ -1,1 +1,1 @@
-856 1787952271 +0200 fix(scripts): point the printer USB config at the port the server binds
+857 1787952275 +0200 fix(config): name persistence as a block this build reads
