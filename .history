@@ -1,1 +1,1 @@
-773 1787888829 +0200 fix(gates): measure the binary without a built site in the embed
+774 1787890521 +0200 fix(printers): a command dropped by a reconnect says so, and says why
