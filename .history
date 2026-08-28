@@ -1,1 +1,1 @@
-865 1787955659 +0200 fix(stream): size the telemetry bound against the frame the server sends
+866 1787958317 +0200 docs: follow the lines the telemetry work moved
