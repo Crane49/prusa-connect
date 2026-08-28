@@ -1,1 +1,1 @@
-864 1787955638 +0200 feat(stream): report a reader losing telemetry
+865 1787955659 +0200 fix(stream): size the telemetry bound against the frame the server sends
