@@ -1,1 +1,1 @@
-780 1787891679 +0200 feat(sdk): publish the records door a module keeps its data behind
+781 1787891713 +0200 fix(app): wire the record restore and the module store into the start
