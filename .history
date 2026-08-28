@@ -1,1 +1,1 @@
-806 1787915235 +0200 docs(modules): show a module emitting, in the example and the guide
+807 1787915594 +0200 feat(resource): carry a module's declared event table through the plane
