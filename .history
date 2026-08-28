@@ -1,1 +1,1 @@
-805 1787914789 +0200 refactor(app): the emitter moved out of the script package
+806 1787915235 +0200 docs(modules): show a module emitting, in the example and the guide
