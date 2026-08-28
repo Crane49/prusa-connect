@@ -1,1 +1,1 @@
-803 1787914683 +0200 feat(history): keep the samples and facts a fleet accumulates
+804 1787914734 +0200 refactor(kernel): give the two stores one place for the shared SQL half
