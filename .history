@@ -1,1 +1,1 @@
-848 1787949039 +0200 feat(api): add, list and remove a dialled address over HTTP
+849 1787949304 +0200 feat(cmd): run the core when no subcommand is given
