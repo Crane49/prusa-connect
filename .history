@@ -1,1 +1,1 @@
-862 1787954018 +0200 checkpoint: before resizing the telemetry bound
+863 1787955065 +0200 perf(capability): read the listing without copying every descriptor
