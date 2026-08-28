@@ -1,1 +1,1 @@
-764 1787885521 +0200 docs: give the module mount its entry, and record a load-dependent flake
+765 1787885638 +0200 feat(authz): an operator can write the grant that feeds a whole fleet
