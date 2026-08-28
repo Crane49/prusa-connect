@@ -1,1 +1,1 @@
-790 1787896201 +0200 feat(records): publish a frame when a device record actually changes
+791 1787896271 +0200 docs: give the record event its changelog entry
