@@ -1,1 +1,1 @@
-827 1787934371 +0200 docs: name the ADR file that exists
+828 1787935054 +0200 perf(sdk): validate an event type without allocating
