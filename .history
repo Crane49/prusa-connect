@@ -1,1 +1,1 @@
-792 1787896515 +0200 fix(app): publish by device id, which is what the record frame needs
+793 1787896602 +0200 feat(modules): a state call takes the bulkhead and a ready module
