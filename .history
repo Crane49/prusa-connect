@@ -1,1 +1,1 @@
-863 1787955065 +0200 perf(capability): read the listing without copying every descriptor
+864 1787955638 +0200 feat(stream): report a reader losing telemetry
