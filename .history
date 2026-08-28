@@ -1,1 +1,1 @@
-851 1787950652 +0200 infra: make every launcher say which server it starts
+852 1787950906 +0200 refactor(api): name the two command operations after the device
