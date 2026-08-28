@@ -1,1 +1,1 @@
-855 1787951668 +0200 docs: say which server the binary runs, and drop the promised frontend
+856 1787952271 +0200 fix(scripts): point the printer USB config at the port the server binds
