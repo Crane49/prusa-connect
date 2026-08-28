@@ -1,1 +1,1 @@
-791 1787896271 +0200 docs: give the record event its changelog entry
+792 1787896515 +0200 fix(app): publish by device id, which is what the record frame needs
