@@ -1,1 +1,1 @@
-771 1787886432 +0200 fix(gates): read the phony declaration rather than one spelling of it
+772 1787886558 +0200 test(modules): drive a module route through the composition root
