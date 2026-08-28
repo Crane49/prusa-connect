@@ -1,1 +1,1 @@
-766 1787885695 +0200 fix(gates): read the static claim off the binaries that were built
+767 1787885841 +0200 feat(build): one command starts the core, from a clean clone
