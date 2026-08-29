@@ -1,1 +1,1 @@
-992 1788014811 +0200 fix(xbuddy): refuse a command whose caller has already given up
+993 1788015339 +0200 feat(gates): refuse a function under internal that nothing reaches
