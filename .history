@@ -1,1 +1,1 @@
-883 1787970471 +0200 feat(connector): add the moonraker dialect and a fake Klipper host
+884 1787970486 +0200 feat(app): carry the moonraker dialect in the shipping binary
