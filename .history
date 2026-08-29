@@ -1,1 +1,1 @@
-889 1787972312 +0200 fix(gates): ask the container for ownership, not only for a write
+890 1787972985 +0200 feat(gates): hold the release changelog and scan both modules
