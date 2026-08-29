@@ -1,1 +1,1 @@
-916 1787985425 +0200 feat(sdk): forward the bytes that arrived, not a re-encoded envelope
+917 1787985533 +0200 docs(federation): decide federation's shape in the decision record
