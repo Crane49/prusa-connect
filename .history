@@ -1,1 +1,1 @@
-947 1787989949 +0200 checkpoint: before the history read surface
+948 1787990073 +0200 fix(xbuddy): refuse a traversal on every command that names a path
