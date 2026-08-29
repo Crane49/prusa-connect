@@ -1,1 +1,1 @@
-953 1787991792 +0200 fix(resources): refuse a declared kind nothing reads back
+954 1787995022 +0200 test(simulator): observe the two writers behind one writeMu
