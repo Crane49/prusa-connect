@@ -1,1 +1,1 @@
-963 1787996300 +0200 chore: regenerate the counts for the transfer refusal row
+964 1787996588 +0200 fix(history): report an absent capability as absent, not a bad request
