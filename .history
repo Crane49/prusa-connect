@@ -1,1 +1,1 @@
-977 1788002675 +0200 feat(admission): serve the operator's half of device admission
+978 1788003017 +0200 fix(make): refuse a failed install and name a missing lsof
