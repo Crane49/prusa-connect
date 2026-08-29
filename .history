@@ -1,1 +1,1 @@
-891 1787973544 +0200 test(arch): refuse an ignore rule pointed at a path that moved
+892 1787974477 +0200 test(api): exempt the fake Moonraker host from the sealed mux rule
