@@ -1,1 +1,1 @@
-903 1787982164 +0200 feat(frontend): serve the core at / and put a login in front of it
+904 1787982459 +0200 test(legacy): capture the queue sweep and the listener topology
