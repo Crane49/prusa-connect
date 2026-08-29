@@ -1,1 +1,1 @@
-884 1787970486 +0200 feat(app): carry the moonraker dialect in the shipping binary
+885 1787970830 +0200 fix(connector): never send a moonraker call the caller has given up on
