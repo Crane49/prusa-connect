@@ -1,1 +1,1 @@
-958 1787995852 +0200 feat(history): serve the stored past over HTTP
+959 1787995940 +0200 fix: the index counts the epics as they are committed
