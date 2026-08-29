@@ -1,1 +1,1 @@
-879 1787968060 +0200 fix(gates): give the changelog gate the repository root it reads against
+880 1787968436 +0200 style: clear two style check hits from the build tooling rows
