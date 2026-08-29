@@ -1,1 +1,1 @@
-976 1788002504 +0200 fix(authz): a fleet arriving at once loses every arrival but the last
+977 1788002675 +0200 feat(admission): serve the operator's half of device admission
