@@ -1,1 +1,1 @@
-924 1787986881 +0200 docs: correct the rows the sdk rewrite left behind
+925 1787986933 +0200 fix(devtools): keep cursor stamps out of the event store
