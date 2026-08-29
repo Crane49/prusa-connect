@@ -1,1 +1,1 @@
-877 1787967231 +0200 test(arch): read every gate CI must run, not every gate script
+878 1787967599 +0200 fix(gates): hold the Go pin against the two pages a stranger reads
