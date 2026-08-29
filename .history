@@ -1,1 +1,1 @@
-948 1787990073 +0200 fix(xbuddy): refuse a traversal on every command that names a path
+949 1787990209 +0200 checkpoint: before refusing a resource kind nothing reads back
