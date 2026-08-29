@@ -1,1 +1,1 @@
-980 1788003172 +0200 fix(mqtt): name the default_action value the sink accepts
+981 1788003421 +0200 docs: cite the line the committed compat.go holds
