@@ -1,1 +1,1 @@
-897 1787977248 +0200 docs(frontend): verify a visual change against the dev server
+898 1787979204 +0200 perf(authz): recompile what a write moved, not the whole graph
