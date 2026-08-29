@@ -1,1 +1,1 @@
-902 1787982056 +0200 feat(frontend): call the core login ceremony from a typed client
+903 1787982164 +0200 feat(frontend): serve the core at / and put a login in front of it
