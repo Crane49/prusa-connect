@@ -1,1 +1,1 @@
-964 1787996588 +0200 fix(history): report an absent capability as absent, not a bad request
+965 1787996814 +0200 docs(site): correct storage and auth against the shipped contracts
