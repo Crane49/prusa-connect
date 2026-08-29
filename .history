@@ -1,1 +1,1 @@
-878 1787967599 +0200 fix(gates): hold the Go pin against the two pages a stranger reads
+879 1787968060 +0200 fix(gates): give the changelog gate the repository root it reads against
