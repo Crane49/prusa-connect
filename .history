@@ -1,1 +1,1 @@
-1032 1788106638 +0200 fix(hooks): pre-push runs the linter
+1033 1788107618 +0200 docs: the linter runs on the first push, and a path was wrong
