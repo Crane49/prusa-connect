@@ -1,1 +1,1 @@
-1003 1788075428 +0200 docs: tick the three phase 1 rows
+1004 1788075477 +0200 fix(legacy): delete four command tests that never ran and cannot pass
