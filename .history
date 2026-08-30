@@ -1,1 +1,1 @@
-1004 1788075477 +0200 fix(legacy): delete four command tests that never ran and cannot pass
+1005 1788075617 +0200 docs: read the container, the env example, the migrations and the python
