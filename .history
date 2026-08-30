@@ -1,1 +1,1 @@
-1031 1788106352 +0200 fix(lint): four issues against the last two commits
+1032 1788106638 +0200 fix(hooks): pre-push runs the linter
