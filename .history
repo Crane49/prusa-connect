@@ -1,1 +1,1 @@
-1015 1788081755 +0200 test(arch): refuse a gate target that runs in no CI job
+1016 1788082951 +0200 fix(text): cut a bounded value on a character and not on a byte
