@@ -1,1 +1,1 @@
-1077 1788172443 +0200 fix(authz): keep the cached graph generation from moving backwards
+1078 1788172555 +0200 feat(gates): a floor under the diagram rule the decision record cannot gate
