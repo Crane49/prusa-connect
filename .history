@@ -1,1 +1,1 @@
-1084 1788173172 +0200 fix(legacy): keep the front door redirect inside a proxy prefix
+1085 1788173243 +0200 test(app): wait for the dialog issue, not for any issue
