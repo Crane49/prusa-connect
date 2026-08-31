@@ -1,1 +1,1 @@
-1045 1788169145 +0200 docs(adr): the makefile numbers are taken on linux too
+1046 1788169199 +0200 feat(gates): refuse a document that names a make target nothing declares
