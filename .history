@@ -1,1 +1,1 @@
-1083 1788172973 +0200 docs(decisions): a finding has one of four homes, as the decision record
+1084 1788173172 +0200 fix(legacy): keep the front door redirect inside a proxy prefix
