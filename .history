@@ -1,1 +1,1 @@
-1056 1788169601 +0200 fix(docs): the asyncapi generator drops the audience it must declare
+1057 1788169751 +0200 refactor(make): three recipes that became programs move to scripts
