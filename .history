@@ -1,1 +1,1 @@
-1088 1788173510 +0200 feat(frontend): read the whole fleet, not the first page
+1089 1788173528 +0200 infra(ci): add a nightly that repeats the suites at two cores
