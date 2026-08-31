@@ -1,1 +1,1 @@
-1072 1788172143 +0200 fix(authz): serialise a mutation before its containment rule decides
+1073 1788172195 +0200 docs(decisions): configurableKinds moved out of the authz store
