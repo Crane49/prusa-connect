@@ -1,1 +1,1 @@
-1066 1788170238 +0200 feat(gates): read every published page for citations, not fifteen
+1067 1788170316 +0200 fix(arch): two lint issues in the tier and make-command gates
