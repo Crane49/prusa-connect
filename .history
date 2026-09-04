@@ -1,1 +1,1 @@
-1121 1788528350 +0200 feat(sdk): a module subscribes to the event stream
+1122 1788528350 +0200 fix(sdk): the subscribing call outlives the reader
