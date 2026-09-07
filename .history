@@ -1,1 +1,1 @@
-1122 1788528350 +0200 fix(sdk): the subscribing call outlives the reader
+1123 1788760860 +0200 feat(sdk): a module admits a device onto this server
