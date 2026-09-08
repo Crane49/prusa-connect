@@ -1,1 +1,1 @@
-1112 1788867410 +0200 fix(tests): the withdrawal test stops exhausting PostgreSQL connections
+1113 1788867417 +0200 fix(tests): internal/app fits a two-core runner's ten minutes again
