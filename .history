@@ -1,1 +1,1 @@
-1111 1788867401 +0200 fix(tests): the full fleet fits the driver's registration table
+1112 1788867410 +0200 fix(tests): the withdrawal test stops exhausting PostgreSQL connections
