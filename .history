@@ -1,1 +1,1 @@
-1132 1788901490 +0200 fix(extensions): a failed launch stops its watcher; the handshake ends
+1133 1788901494 +0200 test(wirehost): the backpressure child is a Go program
