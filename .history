@@ -1,1 +1,1 @@
-1131 1788901421 +0200 fix(sdk): the stream read keeps the wakeup a frame sends mid-wait
+1132 1788901490 +0200 fix(extensions): a failed launch stops its watcher; the handshake ends
