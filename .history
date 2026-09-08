@@ -1,1 +1,1 @@
-1113 1788867417 +0200 fix(tests): internal/app fits a two-core runner's ten minutes again
+1114 1788867424 +0200 refactor: delete unreachable functions and read build pages alike
