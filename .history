@@ -1,1 +1,1 @@
-1136 1788959163 +0200 fix(app): the fleet doors are bound before the first module starts
+1137 1788969555 +0200 feat(api): a person mints a bearer token; a listed origin may call in
