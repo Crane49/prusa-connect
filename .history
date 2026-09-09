@@ -1,1 +1,1 @@
-1142 1788983028 +0200 fix(tests): one fake fleet per parallel subtest on the wire
+1143 1788985559 +0200 feat(sdk): the client reads the event stream over fetch with a token
