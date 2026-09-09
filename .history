@@ -1,1 +1,1 @@
-1144 1788992470 +0200 feat(extensions): a module declares an OpenAPI document for its routes
+1145 1788992471 +0200 feat(sdk): the package installs from a local registry before a release
