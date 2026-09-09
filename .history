@@ -1,1 +1,1 @@
-1143 1788985559 +0200 feat(sdk): the client reads the event stream over fetch with a token
+1144 1788992470 +0200 feat(extensions): a module declares an OpenAPI document for its routes
