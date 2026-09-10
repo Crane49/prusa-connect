@@ -1,1 +1,1 @@
-1151 1789029025 +0200 docs(decisions): a module declares what it depends on
+1152 1789029152 +0200 feat(demo): the demo reads the configuration and serves a login
