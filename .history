@@ -1,1 +1,1 @@
-1158 1789031612 +0200 feat(link): the link kind and the core/fractal builtin behind its tag
+1159 1789031612 +0200 fix(app): a history provider does not store its own ready transition
