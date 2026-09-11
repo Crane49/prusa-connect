@@ -1,1 +1,1 @@
-1239 1789136285 +0200 fix(frontend): the app stops rebuilding the library in its scripts
+1240 1789137015 +0200 docs(decisions): accept version ranges for modules and close two rows
