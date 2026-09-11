@@ -1,1 +1,1 @@
-1204 1789110876 +0200 feat(extensions): a module's ui block, read from its manifest and listed
+1205 1789111073 +0200 refactor: the npm packages move from clients/ to packages/
