@@ -1,1 +1,1 @@
-1224 1789119682 +0200 feat(build): a local npm registry from compose, no npm publish yet
+1225 1789119768 +0200 docs(decisions): old folders go once they are safe to remove
