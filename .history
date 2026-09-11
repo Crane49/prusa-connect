@@ -1,1 +1,1 @@
-1210 1789113013 +0200 docs(changelog): two entries split under the sentence gate
+1211 1789114505 +0200 feat(ui): one runtime for the app and every module, via an import map
