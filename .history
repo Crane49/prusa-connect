@@ -1,1 +1,1 @@
-1201 1789108840 +0200 docs(decisions): the npm packages move under packages/, the Go SDK stays
+1202 1789109152 +0200 feat(sdk): the install lane publishes both packages and a page renders
