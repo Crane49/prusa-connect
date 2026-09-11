@@ -1,1 +1,1 @@
-1212 1789115125 +0200 fix(ci): a test race on the error model, two dead symbols, stale types
+1213 1789115333 +0200 feat(frontend): the full build serves the Svelte app at the root
