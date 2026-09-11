@@ -1,1 +1,1 @@
-1192 1789087454 +0200 feat(sdk): a page the core serves signs in with the session cookie
+1193 1789087658 +0200 fix(sdk): the example module client matches its fragment again
