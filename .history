@@ -1,1 +1,1 @@
-1243 1789139989 +0200 feat(modules): module add installs a module with both halves as one line
+1244 1789141339 +0200 feat(ui): the browser reads version ranges the way the core does
