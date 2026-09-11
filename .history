@@ -1,1 +1,1 @@
-1211 1789114505 +0200 feat(ui): one runtime for the app and every module, via an import map
+1212 1789115125 +0200 fix(ci): a test race on the error model, two dead symbols, stale types
