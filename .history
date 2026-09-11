@@ -1,1 +1,1 @@
-1238 1789134054 +0200 refactor(legacy): the server that came before this one is deleted
+1239 1789136285 +0200 fix(frontend): the app stops rebuilding the library in its scripts
