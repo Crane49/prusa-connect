@@ -1,1 +1,1 @@
-1266 1789215693 +0200 feat(api): the developer view takes its own verb, a camera pushes frames
+1267 1789215696 +0200 feat(sdk): the Fractal protocol is a standalone package, sdk/fractal
