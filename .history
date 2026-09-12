@@ -1,1 +1,1 @@
-1256 1789200136 +0200 feat(demo): every simulated printer has a camera, and G-code answers
+1257 1789200138 +0200 feat(api): print a file in one call, install a module over HTTP, roles
