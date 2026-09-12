@@ -1,1 +1,1 @@
-1269 1789217029 +0200 fix(tests): the composed-binary gates settle the first run first
+1270 1789217252 +0200 test(firmware): the lane records the login mode before it starts
