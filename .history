@@ -1,1 +1,1 @@
-1330 1789387390 +0200 fix(build): build the client SDK before the Svelte application
+1331 1789387686 +0200 fix(build): name esbuild in the library's allowBuilds
