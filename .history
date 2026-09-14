@@ -1,1 +1,1 @@
-1345 1789394273 +0200 fix(resources): an installed module's row switches through the API
+1346 1789394278 +0200 feat(compat): a GraphQL layer at /graphql, as a module the demo packs
