@@ -1,1 +1,1 @@
-1351 1789397146 +0200 fix(ci): the palette test clears its storage, and one code is allowed
+1352 1789399865 +0200 fix(tests): the compose gate joins the probe to the shipped sink block
