@@ -1,1 +1,1 @@
-1333 1789388032 +0200 feat(modules): installing or removing a module takes effect at once
+1334 1789388036 +0200 fix(core): every request has a deadline, and a stale answer is dropped
