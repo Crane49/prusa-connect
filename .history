@@ -1,1 +1,1 @@
-1329 1789386864 +0200 fix(ci): pnpm is told esbuild's build script is ignored on purpose
+1330 1789387390 +0200 fix(build): build the client SDK before the Svelte application
