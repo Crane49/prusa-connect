@@ -1,1 +1,1 @@
-1327 1789386520 +0200 fix(ui): an open server lands on the fleet after its first run
+1328 1789386657 +0200 docs(decisions): no login on an open server; the UI lives in the yaml
