@@ -1,1 +1,1 @@
-1337 1789389702 +0200 docs(decisions): the UI and the GraphQL layer start together by default
+1338 1789390445 +0200 feat(ui): the sidebar has groups, a search, and Ctrl+K opens a palette
