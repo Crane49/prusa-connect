@@ -1,1 +1,1 @@
-1328 1789386657 +0200 docs(decisions): no login on an open server; the UI lives in the yaml
+1329 1789386864 +0200 fix(ci): pnpm is told esbuild's build script is ignored on purpose
