@@ -1,1 +1,1 @@
-1352 1789399865 +0200 fix(tests): the compose gate joins the probe to the shipped sink block
+1353 1789399869 +0200 fix(tests): the demo camera wait gets twice the settle budget
