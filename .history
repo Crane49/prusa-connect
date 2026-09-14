@@ -1,1 +1,1 @@
-1350 1789396288 +0200 fix(ui): every printer card draws the same rows at the same heights
+1351 1789397146 +0200 fix(ci): the palette test clears its storage, and one code is allowed
