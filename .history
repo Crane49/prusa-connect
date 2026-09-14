@@ -1,1 +1,1 @@
-1332 1789387694 +0200 fix(build): clean every JavaScript project in the tree
+1333 1789388032 +0200 feat(modules): installing or removing a module takes effect at once
