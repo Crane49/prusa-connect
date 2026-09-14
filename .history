@@ -1,1 +1,1 @@
-1331 1789387686 +0200 fix(build): name esbuild in the library's allowBuilds
+1332 1789387694 +0200 fix(build): clean every JavaScript project in the tree
