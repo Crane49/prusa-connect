@@ -1,1 +1,1 @@
-1380 1789489103 +0200 infra(ci): seven unit shards on every push, the race detector nightly
+1381 1789490395 +0200 test(authz): an installed verb table is held for the whole test
