@@ -1,1 +1,1 @@
-1379 1789487986 +0200 test(ui): the palette reads are polled and retried waits are longer
+1380 1789489103 +0200 infra(ci): seven unit shards on every push, the race detector nightly
