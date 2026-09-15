@@ -1,1 +1,1 @@
-1367 1789466217 +0200 feat(ui): the page reads title, theme, language and skin from the yaml
+1368 1789466718 +0200 fix(build): a fresh clone packs its modules with the Makefile alone
