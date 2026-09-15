@@ -1,1 +1,1 @@
-1364 1789465692 +0200 fix(cameras): a camera that does not answer is a 502, not a 500
+1365 1789465698 +0200 fix(ui): the page no longer preloads its font file
