@@ -1,1 +1,1 @@
-1378 1789485945 +0200 fix(demo): the cameras are declared side by side, before the print
+1379 1789487986 +0200 test(ui): the palette reads are polled and retried waits are longer
