@@ -1,1 +1,1 @@
-1368 1789466718 +0200 fix(build): a fresh clone packs its modules with the Makefile alone
+1369 1789466723 +0200 fix(ci): the install check finds the library by a catalogue key
