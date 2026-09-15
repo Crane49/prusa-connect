@@ -1,1 +1,1 @@
-1372 1789469152 +0200 docs(decisions): the printer listener belongs to its connector
+1373 1789471395 +0200 fix(tests): the Postgres driver probe closes the pool it opens
