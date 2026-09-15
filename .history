@@ -1,1 +1,1 @@
-1366 1789466162 +0200 docs(decisions): make the restructured tree the main line
+1367 1789466217 +0200 feat(ui): the page reads title, theme, language and skin from the yaml
