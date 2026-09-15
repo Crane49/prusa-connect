@@ -1,1 +1,1 @@
-1363 1789465682 +0200 fix(auth): a wrong password answers its own code, and the page says so
+1364 1789465692 +0200 fix(cameras): a camera that does not answer is a 502, not a 500
