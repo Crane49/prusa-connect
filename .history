@@ -1,1 +1,1 @@
-1385 1789537627 +0200 feat(build): every module beside the core builds in its own folder
+1386 1789537643 +0200 refactor(tools): the MINI404 launcher lives beside the other simulators
