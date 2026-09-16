@@ -1,1 +1,1 @@
-1393 1789560464 +0200 docs(decisions): instances announce themselves
+1394 1789557501 +0200 feat(config): one key per optional part, read by the build and the run
