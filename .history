@@ -1,1 +1,1 @@
-1394 1789557501 +0200 feat(config): one key per optional part, read by the build and the run
+1395 1789561239 +0200 test(app): the module fleet test binds both doors before it reloads
