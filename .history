@@ -1,1 +1,1 @@
-1384 1789549849 +0200 feat(config): the listener is the connector's, and one switch per layer
+1385 1789537627 +0200 feat(build): every module beside the core builds in its own folder
