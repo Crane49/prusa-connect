@@ -1,1 +1,1 @@
-1389 1789554419 +0200 fix(resources): a write the caller gave up on still starts its instance
+1390 1789554885 +0200 fix(demo): a camera overwrite reads the version again after a neighbour
