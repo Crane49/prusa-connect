@@ -1,1 +1,1 @@
-1403 1789630866 +0200 fix(build): golangci-lint reads Go 1.27, and gosec is answered
+1404 1789631260 +0200 docs: add the slicer announcement with two drawings
