@@ -1,1 +1,1 @@
-1399 1789571851 +0200 fix(ci): the checks that open the app measure the page it draws
+1400 1789628868 +0200 fix(ci): every commit on an integration branch keeps its own run
