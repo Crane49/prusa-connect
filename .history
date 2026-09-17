@@ -1,1 +1,1 @@
-1401 1789630466 +0200 feat(ui): the application frame, published as ./shell
+1402 1789630749 +0200 Reinstall stale node_modules instead of skipping the install
