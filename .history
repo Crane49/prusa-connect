@@ -1,1 +1,1 @@
-1402 1789630749 +0200 Reinstall stale node_modules instead of skipping the install
+1403 1789630866 +0200 fix(build): golangci-lint reads Go 1.27, and gosec is answered
