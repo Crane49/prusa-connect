@@ -1,1 +1,1 @@
-1644 1790016808 +0200 refactor(app): build the extensions list once for the whole screen
+1645 1790016963 +0200 feat(events): publish a frame when a print starts and when it ends
