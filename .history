@@ -1,1 +1,1 @@
-1536 1790004890 +0200 refactor(fractal): give the conformance tables one set of checks
+1537 1790005120 +0200 fix(compat): name revoke-link-node in the GraphQL module's tables
