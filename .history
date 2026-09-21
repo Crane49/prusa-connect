@@ -1,1 +1,1 @@
-1533 1790004345 +0200 infra(gates): lint, test and race the modules under packages/
+1534 1790004425 +0200 infra(git): keep the example module client at LF line endings
