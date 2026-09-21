@@ -1,1 +1,1 @@
-1604 1790012120 +0200 fix(authz): hold one instance name across the kinds that read the graph
+1605 1790012392 +0200 feat(connectorapi): let a driver say what its machine really has
