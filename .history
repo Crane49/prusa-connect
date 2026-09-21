@@ -1,1 +1,1 @@
-1601 1790011631 +0200 refactor(app): move the shipped dialect names to the composition root
+1602 1790012011 +0200 fix(app): bound a telemetry value before it is published
