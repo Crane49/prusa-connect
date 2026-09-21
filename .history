@@ -1,1 +1,1 @@
-1531 1790003864 +0200 fix(gates): drive the wire-protocol conformance run with node
+1532 1790003945 +0200 infra(gates): run the device-model vocabulary gates from make and CI
