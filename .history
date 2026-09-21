@@ -1,1 +1,1 @@
-1627 1790015628 +0200 docs(authz): say what a link's own reading can and cannot bound
+1628 1790015689 +0200 fix(api): hide a resource type's declared credentials from every read
