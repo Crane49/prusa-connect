@@ -1,1 +1,1 @@
-1675 1790021040 +0200 fix(fractal): take one lock from the read to the write of a join record
+1676 1790021128 +0200 feat(modules): let a module read a page of the prints that have ended
