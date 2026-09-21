@@ -1,1 +1,1 @@
-1544 1790006121 +0200 feat(fractal): show this server's printers to a Fractal network
+1545 1790006540 +0200 refactor(authz): drop the declaration constructor nothing calls
