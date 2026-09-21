@@ -1,1 +1,1 @@
-1530 1790003704 +0200 infra(gates): give the configuration reference a make target
+1531 1790003864 +0200 fix(gates): drive the wire-protocol conformance run with node
