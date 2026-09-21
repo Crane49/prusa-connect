@@ -1,1 +1,1 @@
-1622 1790014701 +0200 refactor(connectorapi): say in plain words what a probe reports
+1623 1790015039 +0200 fix(stream): hand a newly attached reader the machine's last readings
