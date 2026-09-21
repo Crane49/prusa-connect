@@ -1,1 +1,1 @@
-1597 1790011297 +0200 refactor(config): say the server starts on a required instance
+1598 1790011413 +0200 feat(sdk): give a module its settings on a call of its own
