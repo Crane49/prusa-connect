@@ -1,1 +1,1 @@
-1506 1789998564 +0200 feat(fractal): add the NATS transport binding
+1507 1789998765 +0200 refactor(examples): rewrite the wire-protocol example in javascript
