@@ -1,1 +1,1 @@
-1526 1789999957 +0200 fix(svelte): hold the published subpaths by name, not only the map
+1527 1790000030 +0200 refactor(api): split the set comparison out of the vocabulary gate
