@@ -1,1 +1,1 @@
-1671 1790020297 +0200 fix(fractal): report a node that stopped sending heartbeats lost once
+1672 1790020308 +0200 docs(decisions): log recent decisions
