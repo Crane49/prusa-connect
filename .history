@@ -1,1 +1,1 @@
-1590 1790010575 +0200 fix(app): mark a command the machine never answered as unknown
+1591 1790010878 +0200 fix(demo-shelf): refuse a connection by naming the missing client
