@@ -1,1 +1,1 @@
-1641 1790016569 +0200 refactor(fractaltest): say what each suite case sends and expects
+1642 1790016666 +0200 test(app): join the condition messages instead of concatenating them
