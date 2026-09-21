@@ -1,1 +1,1 @@
-1587 1790009800 +0200 docs(changelog): say what the fractal join and node packages now do
+1588 1790010292 +0200 fix(fractal): publish telemetry under the device event type
