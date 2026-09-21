@@ -1,1 +1,1 @@
-1702 1790022432 +0200 infra(filament): drive the module end to end in one make target
+1703 1790022436 +0200 fix(fractal): refuse a definition file that ends in garbage
