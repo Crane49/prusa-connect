@@ -1,1 +1,1 @@
-1667 1790019744 +0200 test(arch): count the diagram in the filament notes
+1668 1790019815 +0200 fix(fractal): give each way a command fails its own error number
