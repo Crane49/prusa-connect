@@ -1,1 +1,1 @@
-1608 1790012719 +0200 refactor(modules): record a module's settings in the install shape
+1609 1790012733 +0200 refactor(config): document the module.options key
