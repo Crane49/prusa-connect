@@ -1,1 +1,1 @@
-1507 1789998765 +0200 refactor(examples): rewrite the wire-protocol example in javascript
+1508 1789998776 +0200 fix(app): give every goroutine a shutdown waits for an end
