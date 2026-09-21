@@ -1,1 +1,1 @@
-1603 1790012111 +0200 fix(authz): count a module's node subscriptions against the module
+1604 1790012120 +0200 fix(authz): hold one instance name across the kinds that read the graph
