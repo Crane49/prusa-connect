@@ -1,1 +1,1 @@
-1525 1789999954 +0200 test(arch): hold the build and gates page to its new shape
+1526 1789999957 +0200 fix(svelte): hold the published subpaths by name, not only the map
