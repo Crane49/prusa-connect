@@ -1,1 +1,1 @@
-1585 1790009312 +0200 fix(fractal): keep the time of a state report from going backwards
+1586 1790009609 +0200 test(fractal): wait for the link to come back after a renewal
