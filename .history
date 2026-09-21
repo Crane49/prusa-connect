@@ -1,1 +1,1 @@
-1649 1790017603 +0200 fix(resources): keep the host's own camera keys legal in a camera block
+1650 1790017707 +0200 test(resourcehost): give the counted type its own descriptor
