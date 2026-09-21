@@ -1,1 +1,1 @@
-1668 1790019815 +0200 fix(fractal): give each way a command fails its own error number
+1669 1790019879 +0200 fix(fractal): acknowledge a call only after its answer went out
