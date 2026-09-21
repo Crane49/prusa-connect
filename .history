@@ -1,1 +1,1 @@
-1634 1790015966 +0200 refactor(config): say in plain words what each configuration key does
+1635 1790016136 +0200 refactor(app): say who calls what in the comments of the links store
