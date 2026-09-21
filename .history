@@ -1,1 +1,1 @@
-1659 1790018828 +0200 refactor(natsbind): explain the NATS words and name who connects
+1660 1790018964 +0200 fix(api): say what the marker is when a write sends one for nothing
