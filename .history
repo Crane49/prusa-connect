@@ -1,1 +1,1 @@
-1637 1790016265 +0200 refactor(linkapi): name the caller and the Status in every doc comment
+1638 1790016400 +0200 refactor(resourcehost): name the servers, the status and the checks
