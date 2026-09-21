@@ -1,1 +1,1 @@
-1555 1790007763 +0200 feat(modules): publish what a module requires on the resources API
+1556 1790007789 +0200 refactor(fractal): let an authorizer name the code its denial carries
