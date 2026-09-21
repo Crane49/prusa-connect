@@ -1,1 +1,1 @@
-1679 1790021251 +0200 fix(moonraker): report a print's other paths only when it has an id
+1680 1790021289 +0200 fix(fractal): let a server check a join token against the keys it names
