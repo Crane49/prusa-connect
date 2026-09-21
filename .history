@@ -1,1 +1,1 @@
-1623 1790015039 +0200 fix(stream): hand a newly attached reader the machine's last readings
+1624 1790015282 +0200 docs(changelog): name who does what in the entries of this branch
