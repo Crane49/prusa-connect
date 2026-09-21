@@ -1,1 +1,1 @@
-1538 1790005166 +0200 infra(git): keep the GraphQL module's schema at LF line endings
+1539 1790005280 +0200 style(ci): drop the dated wording from the packages test step
