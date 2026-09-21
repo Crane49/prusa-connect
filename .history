@@ -1,1 +1,1 @@
-1648 1790017422 +0200 feat(api): show a print frame in the event stream example and the client
+1649 1790017603 +0200 fix(resources): keep the host's own camera keys legal in a camera block
