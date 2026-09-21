@@ -1,1 +1,1 @@
-1519 1789999780 +0200 feat(api): publish a deprecation marker on every vocabulary entry
+1520 1789999798 +0200 feat(api): let a deprecated vocabulary entry retire, and no other
