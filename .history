@@ -1,1 +1,1 @@
-1642 1790016666 +0200 test(app): join the condition messages instead of concatenating them
+1643 1790016738 +0200 refactor(fractal): say what a node forwards, answers and drops
