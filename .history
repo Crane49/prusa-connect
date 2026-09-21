@@ -1,1 +1,1 @@
-1566 1790008213 +0200 fix(scripts): give the release commit a subject the hook accepts
+1567 1790008259 +0200 feat(metrics): name the per-machine label device_id
