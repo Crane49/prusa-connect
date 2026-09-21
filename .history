@@ -1,1 +1,1 @@
-1558 1790007852 +0200 feat(scripts): name the script variable device_id
+1559 1790007914 +0200 fix(scripts): read the printer port from the config without Python
