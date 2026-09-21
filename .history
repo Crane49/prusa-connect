@@ -1,1 +1,1 @@
-1602 1790012011 +0200 fix(app): bound a telemetry value before it is published
+1603 1790012111 +0200 fix(authz): count a module's node subscriptions against the module
