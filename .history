@@ -1,1 +1,1 @@
-1582 1790008905 +0200 fix(authz): hold a link to its ceiling when it acts as a node
+1583 1790008969 +0200 docs(changelog): say the ceiling bounds what a link relays
