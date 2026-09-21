@@ -1,1 +1,1 @@
-1452 1789994916 +0200 feat(config): generate the key tables from the config structs
+1453 1789994925 +0200 test(config): read every configuration file in the tree
