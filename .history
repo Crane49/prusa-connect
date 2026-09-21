@@ -1,1 +1,1 @@
-1709 1790022847 +0200 refactor(filament): name the spool limit max_spools, not shelf_size
+1710 1790022857 +0200 docs: rename the spool limit in the filament notes
