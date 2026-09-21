@@ -1,1 +1,1 @@
-1678 1790021173 +0200 feat(events): publish who approved which server and when
+1679 1790021251 +0200 fix(moonraker): report a print's other paths only when it has an id
