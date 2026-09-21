@@ -1,1 +1,1 @@
-1564 1790008195 +0200 feat(modules): give module.requires a row in the configuration reference
+1565 1790008196 +0200 docs(modules): say what a module's requires list now does
