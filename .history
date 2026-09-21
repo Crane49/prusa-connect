@@ -1,1 +1,1 @@
-1639 1790016489 +0200 fix(resources): hold a builtin's config block to what its type declares
+1640 1790016533 +0200 docs(examples): say which node sends what in the two protocol examples
