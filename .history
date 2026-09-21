@@ -1,1 +1,1 @@
-1638 1790016400 +0200 refactor(resourcehost): name the servers, the status and the checks
+1639 1790016489 +0200 fix(resources): hold a builtin's config block to what its type declares
