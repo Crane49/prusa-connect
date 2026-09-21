@@ -1,1 +1,1 @@
-1615 1790012897 +0200 refactor(resourcehost): read the running set before the node records
+1616 1790012905 +0200 feat(config): declare the Fractal module in the shipped configuration
