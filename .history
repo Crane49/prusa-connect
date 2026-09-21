@@ -1,1 +1,1 @@
-1529 1790003517 +0200 chore(make): name a missing shell or a missing Go before a target runs
+1530 1790003704 +0200 infra(gates): give the configuration reference a make target
