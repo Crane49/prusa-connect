@@ -1,1 +1,1 @@
-1543 1790006013 +0200 feat(sdk): hold the Prusa interface files in a package of their own
+1544 1790006121 +0200 feat(fractal): show this server's printers to a Fractal network
