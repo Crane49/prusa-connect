@@ -1,1 +1,1 @@
-1652 1790017891 +0200 test(resource): compare the redacted blocks as JSON
+1653 1790018126 +0200 fix(webhook): declare the header block of a webhook sink a credential
