@@ -1,1 +1,1 @@
-1559 1790007914 +0200 fix(scripts): read the printer port from the config without Python
+1560 1790007927 +0200 infra(gates): give ci-local a lane for every CI step and pass RANGE on
