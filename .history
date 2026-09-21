@@ -1,1 +1,1 @@
-1515 1789999295 +0200 test(fractal): the binding passes the conformance suite over nats
+1516 1789999351 +0200 fix(wirehost): take a start's budget from the caller, not a constant
