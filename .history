@@ -1,1 +1,1 @@
-1685 1790021634 +0200 fix(fractal): accept only node and self as the command principal
+1686 1790021650 +0200 fix(fractal): drop the third command principal from principalOf
