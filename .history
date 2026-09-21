@@ -1,1 +1,1 @@
-1537 1790005120 +0200 fix(compat): name revoke-link-node in the GraphQL module's tables
+1538 1790005166 +0200 infra(git): keep the GraphQL module's schema at LF line endings
