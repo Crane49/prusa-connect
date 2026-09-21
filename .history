@@ -1,1 +1,1 @@
-1722 1790031924 +0200 feat(fractal): let a waiting join request lapse and be rejected
+1723 1790032176 +0200 feat(api): read the thumbnail and settings a slicer wrote in a file
