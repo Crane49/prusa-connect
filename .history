@@ -1,1 +1,1 @@
-1547 1790006859 +0200 feat(events): name every device origin device and not printer
+1548 1790007022 +0200 refactor(authz): drop the grant condition and the operator marker
