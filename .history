@@ -1,1 +1,1 @@
-1674 1790020879 +0200 feat(scaffold-module): a new module starts at the module standard
+1675 1790021040 +0200 fix(fractal): take one lock from the read to the write of a join record
