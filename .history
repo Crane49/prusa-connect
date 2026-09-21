@@ -1,1 +1,1 @@
-1513 1789999108 +0200 docs: remove the integration test page for the retired server
+1514 1789999175 +0200 fix(resourcehost): hold a module child to the module installed
