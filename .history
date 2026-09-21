@@ -1,1 +1,1 @@
-1716 1790023558 +0200 feat(app): open the printers page at the root
+1717 1790023644 +0200 fix(filament): give the typed client the spool id its routes need
