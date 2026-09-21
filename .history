@@ -1,1 +1,1 @@
-1560 1790007927 +0200 infra(gates): give ci-local a lane for every CI step and pass RANGE on
+1561 1790008015 +0200 refactor(scripts): read the emulator pin file without Python or jq
