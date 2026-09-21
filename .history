@@ -1,1 +1,1 @@
-1527 1790000030 +0200 refactor(api): split the set comparison out of the vocabulary gate
+1528 1790001128 +0200 test(fractal): drive the binding against the whole specification
