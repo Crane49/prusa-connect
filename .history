@@ -1,1 +1,1 @@
-1573 1790008433 +0200 fix(httpapi): name the gcode refusal object device and not printer
+1574 1790008460 +0200 docs(scripts): state each Makefile check without its record number
