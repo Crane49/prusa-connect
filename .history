@@ -1,1 +1,1 @@
-1581 1790008898 +0200 fix(fractal): tell a caller when a link toward it does not exist
+1582 1790008905 +0200 fix(authz): hold a link to its ceiling when it acts as a node
