@@ -1,1 +1,1 @@
-1508 1789998776 +0200 fix(app): give every goroutine a shutdown waits for an end
+1509 1789998781 +0200 refactor(tools): replace the eeprom fixture generator with a recipe
