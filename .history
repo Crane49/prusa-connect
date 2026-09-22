@@ -1,1 +1,1 @@
-1793 1790065019 +0200 refactor(api): name a link type an operator can really declare
+1794 1790065034 +0200 docs(internals): describe the link kind and the module that serves it
