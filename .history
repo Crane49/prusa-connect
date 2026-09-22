@@ -1,1 +1,1 @@
-1818 1790071567 +0200 fix(modules): refuse an approved install the graph would refuse
+1819 1790074077 +0200 fix(modules): print the grants that landed when a later one fails
