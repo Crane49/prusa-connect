@@ -1,1 +1,1 @@
-1806 1790064765 +0200 fix(logging): write the stack beside a recovered panic
+1807 1790064857 +0200 fix(modules): tell a module a directory is not a file it can read
