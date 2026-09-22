@@ -1,1 +1,1 @@
-1791 1790064677 +0200 refactor(app): remove the link compiled into the server
+1792 1790064685 +0200 refactor(link): delete the fractal link and its handshake
