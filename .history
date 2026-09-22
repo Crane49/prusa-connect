@@ -1,1 +1,1 @@
-1759 1790037785 +0200 fix(shell): read the rail section label from the catalogue
+1760 1790037831 +0200 refactor(cli): move the module uninstall into a file of its own
