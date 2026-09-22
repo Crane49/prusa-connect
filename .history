@@ -1,1 +1,1 @@
-1743 1790035064 +0200 docs(changelog): shorten the second sentence of two security entries
+1744 1790035243 +0200 test(app): open every navigation entry and fail on a blank page
