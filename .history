@@ -1,1 +1,1 @@
-1753 1790036527 +0200 fix(devices): free the printer when its driver stops mid transfer
+1754 1790036536 +0200 fix(devices): refuse a job history cursor from an older build
