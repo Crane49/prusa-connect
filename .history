@@ -1,1 +1,1 @@
-2143 1790770036 +0200 chore(build): raise the arm64 minimal binary size budget
+2144 1790069545 +0200 feat(xbuddy): re-read the printer certificate when the file changes
