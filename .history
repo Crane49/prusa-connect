@@ -1,1 +1,1 @@
-1749 1790036126 +0200 fix(api): bound what one print file may cost, and decode its picture
+1750 1790036356 +0200 refactor(api): start the waiting readers with the group's own Go
