@@ -1,1 +1,1 @@
-1760 1790037831 +0200 refactor(cli): move the module uninstall into a file of its own
+1761 1790037889 +0200 perf(modules): read a file length without parsing the print file
