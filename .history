@@ -1,1 +1,1 @@
-1766 1790054142 +0200 fix(fractal): keep the module's routes inside the host's own bounds
+1767 1790054173 +0200 fix(devices): end a print history page rather than mint a dead cursor
