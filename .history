@@ -1,1 +1,1 @@
-1772 1790055478 +0200 fix(compat-graphql): name the two routes this module does not serve
+1773 1790055581 +0200 fix(storage): answer 404 for a file a storage does not hold
