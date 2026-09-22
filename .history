@@ -1,1 +1,1 @@
-1784 1790059369 +0200 fix(journey): build the two packages on every run
+1785 1790059596 +0200 fix(app): ask the server about each file once
