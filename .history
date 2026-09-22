@@ -1,1 +1,1 @@
-1777 1790057109 +0200 fix(app): bound the file reads and name where a print lands
+1778 1790057138 +0200 fix(app): tell a print not reached from one that does not exist
