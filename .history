@@ -1,1 +1,1 @@
-1767 1790054173 +0200 fix(devices): end a print history page rather than mint a dead cursor
+1768 1790054611 +0200 test(journey): prove the upload, print and track journey in a browser
