@@ -1,1 +1,1 @@
-1752 1790036515 +0200 test(modules): pin the refusal log to one line a module each minute
+1753 1790036527 +0200 fix(devices): free the printer when its driver stops mid transfer
