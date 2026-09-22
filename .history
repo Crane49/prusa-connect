@@ -1,1 +1,1 @@
-1808 1790065011 +0200 fix(storage): answer a write under an escaping path as a bad name
+1809 1790065252 +0200 refactor(ui): narrow the print failure code to the two it can carry
