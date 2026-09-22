@@ -1,1 +1,1 @@
-1817 1790067181 +0200 fix(modules): module add -approve writes the grants it promised
+1818 1790071567 +0200 fix(modules): refuse an approved install the graph would refuse
