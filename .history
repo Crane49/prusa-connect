@@ -1,1 +1,1 @@
-1774 1790055648 +0200 refactor(resourcehost): drop six fault accessors nothing reads
+1775 1790055674 +0200 chore(make): delete unused targets and rewrite the help text
