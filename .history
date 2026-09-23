@@ -1,1 +1,1 @@
-1832 1790145176 +0200 fix(ci): skip the prepare hook in the server image too
+1833 1790161278 +0200 feat(docker): let a build name its config file and its extra tags
