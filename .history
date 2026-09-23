@@ -1,1 +1,1 @@
-1831 1790144693 +0200 fix(ci): install the library in the image without its prepare hook
+1832 1790145176 +0200 fix(ci): skip the prepare hook in the server image too
