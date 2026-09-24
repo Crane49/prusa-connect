@@ -1,1 +1,1 @@
-1875 1790254885 +0200 feat(graphql): serve device tags and the tag filter
+1876 1790257815 +0200 fix(devices): refuse a labels filter term that no label can spell
