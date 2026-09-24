@@ -1,1 +1,1 @@
-1901 1790264573 +0200 style(devices): name the two flags in the region flag test
+1902 1790265580 +0200 perf(server): make the dummy hash cheap and render the API doc on use
