@@ -1,1 +1,1 @@
-1856 1790256655 +0200 fix(ui): give the file page its own read of the file
+1857 1790256709 +0200 fix(frontend): open the printers list when the fleet cannot be read
