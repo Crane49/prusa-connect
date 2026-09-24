@@ -1,1 +1,1 @@
-1857 1790256709 +0200 fix(frontend): open the printers list when the fleet cannot be read
+1858 1790256774 +0200 fix(frontend): keep the jobs of the read the page asked for last
