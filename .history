@@ -1,1 +1,1 @@
-1929 1790264714 +0200 fix(printer-detail): send each delete to the printer it was confirmed on
+1930 1790265035 +0200 fix(transfers): take only this printer's transfers, and gaps too
