@@ -1,1 +1,1 @@
-2005 1790267176 +0200 schema(auth): renumber the credential migrations to 0021 and 0022
+2006 1790268297 +0200 fix(ui): reopen the fleet stream once after a password change
