@@ -1,1 +1,1 @@
-1990 1790255557 +0200 fix(auth): end pairings and minted tokens on a password change
+1991 1790256008 +0200 fix(auth): take a session to administer accounts and pairings
