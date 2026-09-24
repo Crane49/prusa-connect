@@ -1,1 +1,1 @@
-1954 1790264489 +0200 test(stream): keep the lowest of five allocation counts
+1955 1790264687 +0200 fix(ci): let CI OK fail on a job that skipped without reason
