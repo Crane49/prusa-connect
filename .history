@@ -1,1 +1,1 @@
-1998 1790262889 +0200 fix(auth): refuse a pairing saved by a session a change ended
+1999 1790263400 +0200 fix(accounts): let only one of two racing password changes land
