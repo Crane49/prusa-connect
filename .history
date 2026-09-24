@@ -1,1 +1,1 @@
-1992 1790256202 +0200 fix(auth): refuse a credential older than its kind may live
+1993 1790256324 +0200 fix(demo): end the old credentials when the demo password changes
