@@ -1,1 +1,1 @@
-1912 1790253494 +0200 fix(printer-detail): wait for the answer to a rename, label or removal
+1913 1790254268 +0200 style(printer-detail): format three files the way Prettier writes them
