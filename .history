@@ -1,1 +1,1 @@
-1942 1790328200 +0200 feat(modules): add make new-module and a hot-reload dev loop for modules
+1943 1790267937 +0200 fix(frontend): read the printers when a module page opens
