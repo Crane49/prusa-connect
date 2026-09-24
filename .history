@@ -1,1 +1,1 @@
-1855 1790256589 +0200 fix(ui): link a print to the last file sent before it started
+1856 1790256655 +0200 fix(ui): give the file page its own read of the file
