@@ -1,1 +1,1 @@
-1933 1790265784 +0200 test(printer-detail): make the step and label queue tests catch breaks
+1934 1790266214 +0200 refactor(printer-detail): use the shared transfers and storage stores
