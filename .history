@@ -1,1 +1,1 @@
-1914 1790254387 +0200 fix(printer-detail): read History when its tab opens, each half alone
+1915 1790254697 +0200 fix(printer-detail): split the Now tab on the theme's container step
