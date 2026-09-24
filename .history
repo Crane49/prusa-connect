@@ -1,1 +1,1 @@
-1869 1790261300 +0200 fix(ui): read a file again when the read it joined was stopped
+1870 1790263445 +0200 docs(arch): say why line endings are still folded now git stores LF
