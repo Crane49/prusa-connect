@@ -1,1 +1,1 @@
-1905 1790251727 +0200 fix(printer-detail): toast only for transfers that end on an open page
+1906 1790251796 +0200 fix(transfers): take a file's picture from its newest finished transfer
