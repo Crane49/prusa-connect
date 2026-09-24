@@ -1,1 +1,1 @@
-1840 1790230582 +0200 infra(ci): split the web job into lanes and add a CI OK result
+1841 1790232718 +0200 fix(frontend): make the Printers page follow the home page setting
