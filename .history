@@ -1,1 +1,1 @@
-1957 1790264889 +0200 fix(ci): run sdk and packages under the race detector again
+1958 1790264970 +0200 fix(build): pin the node image of the release build by digest
