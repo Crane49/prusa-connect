@@ -1,1 +1,1 @@
-1930 1790265035 +0200 fix(transfers): take only this printer's transfers, and gaps too
+1931 1790265652 +0200 fix(printer-detail): sort, order and prune the expanded folders
