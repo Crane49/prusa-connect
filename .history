@@ -1,1 +1,1 @@
-1859 1790256925 +0200 fix(frontend): send an old file address to the file or the storage page
+1860 1790257026 +0200 test(ui): use the new storage and jobs addresses in stories and tests
