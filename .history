@@ -1,1 +1,1 @@
-2006 1790268297 +0200 fix(ui): reopen the fleet stream once after a password change
+2007 1790291954 +0200 fix(auth): end the pairings a person wrote when their password changes
