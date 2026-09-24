@@ -1,1 +1,1 @@
-1994 1790256550 +0200 fix(cli): refuse a reset against another version's database
+1995 1790256620 +0200 docs(accounts): restore the line break in the reset example
