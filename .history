@@ -1,1 +1,1 @@
-1866 1790261065 +0200 fix(frontend): decide an old file address on its own storage list read
+1867 1790261097 +0200 docs(frontend): say that the app reads the query each time it is asked
