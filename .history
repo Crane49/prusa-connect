@@ -1,1 +1,1 @@
-2001 1790264320 +0200 fix(auth): ask for a sign-in only where access is created
+2002 1790264986 +0200 fix(accounts): keep a person signed in after their own change
