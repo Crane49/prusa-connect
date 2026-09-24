@@ -1,1 +1,1 @@
-1861 1790260655 +0200 style(ui): store two storage and job test files with LF endings
+1862 1790260782 +0200 fix(frontend): send the root to the list only if the fleet never loaded
