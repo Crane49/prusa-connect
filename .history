@@ -1,1 +1,1 @@
-1997 1790262209 +0200 test(auth): hold the mint to reading generations before its check
+1998 1790262889 +0200 fix(auth): refuse a pairing saved by a session a change ended
