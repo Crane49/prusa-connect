@@ -1,1 +1,1 @@
-1936 1790268793 +0200 fix(printer-detail): say why each delete failed, and on which printer
+1937 1790269452 +0200 fix(transfers): share one stream, reread after a gap, check the origin
