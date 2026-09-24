@@ -1,1 +1,1 @@
-1993 1790256324 +0200 fix(demo): end the old credentials when the demo password changes
+1994 1790256550 +0200 fix(cli): refuse a reset against another version's database
