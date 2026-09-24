@@ -1,1 +1,1 @@
-1934 1790266214 +0200 refactor(printer-detail): use the shared transfers and storage stores
+1935 1790268419 +0200 fix(printer-detail): tie the command port to its own printer
