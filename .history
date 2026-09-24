@@ -1,1 +1,1 @@
-1889 1790261382 +0200 fix(api): say the later tag wins when the labels view shares a key
+1890 1790261597 +0200 fix(errors): describe the tag errors by the rules they now enforce
