@@ -1,1 +1,1 @@
-1935 1790268419 +0200 fix(printer-detail): tie the command port to its own printer
+1936 1790268793 +0200 fix(printer-detail): say why each delete failed, and on which printer
