@@ -1,1 +1,1 @@
-1886 1790261046 +0200 fix(devices): refuse every character Unicode lists as showing nothing
+1887 1790261274 +0200 fix(devices): accept emoji and joined scripts in a tag
