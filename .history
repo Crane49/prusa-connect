@@ -1,1 +1,1 @@
-1880 1790258024 +0200 fix(events): move the event-type set to 3.0.0 for the tags payload
+1881 1790258039 +0200 test(devices): hold the tag filter to the devices a caller can read
