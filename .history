@@ -1,1 +1,1 @@
-1862 1790260782 +0200 fix(frontend): send the root to the list only if the fleet never loaded
+1863 1790260911 +0200 fix(ui): link a print to the send that finished before it started
