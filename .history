@@ -1,1 +1,1 @@
-1846 1790251649 +0200 fix(frontend): keep the Printers page a list at every home setting
+1847 1790252205 +0200 fix(ui): send Print again through the print dialog and its checks
