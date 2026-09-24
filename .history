@@ -1,1 +1,1 @@
-1902 1790265580 +0200 perf(server): make the dummy hash cheap and render the API doc on use
+1903 1790265781 +0200 docs(build): say that the minimal build still carries SQLite
