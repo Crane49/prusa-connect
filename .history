@@ -1,1 +1,1 @@
-1895 1790263200 +0200 fix(errors): say what makes two tags the same in TAG_DUPLICATE
+1896 1790263284 +0200 fix(devices): match a bare labels key by the tag sameness
