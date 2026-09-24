@@ -1,1 +1,1 @@
-1871 1790254249 +0200 docs(decisions): record the tag decisions and amend the labels record
+1872 1790254282 +0200 fix(apicompat): classify a property named like a keyword as contract
