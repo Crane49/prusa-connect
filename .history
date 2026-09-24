@@ -1,1 +1,1 @@
-1918 1790256286 +0200 fix(frontend): encode the printer id in the printer page links
+1919 1790260075 +0200 fix(printer-detail): reread labels when any write in a batch was taken
