@@ -1,1 +1,1 @@
-2008 1790292275 +0200 fix(accounts): mint the new session at the change's own generation
+2009 1790292353 +0200 test(accounts): hold the rehash to the hash it checked
