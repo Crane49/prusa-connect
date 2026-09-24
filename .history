@@ -1,1 +1,1 @@
-1910 1790252539 +0200 fix(printer-detail): keep no copy of a printer's folders
+1911 1790253439 +0200 refactor(printer-detail): give only the Files tab a port that waits
