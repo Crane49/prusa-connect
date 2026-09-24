@@ -1,1 +1,1 @@
-1991 1790256008 +0200 fix(auth): take a session to administer accounts and pairings
+1992 1790256202 +0200 fix(auth): refuse a credential older than its kind may live
