@@ -1,1 +1,1 @@
-1877 1790257860 +0200 fix(devices): keep a tag the upgrade stored when the list is written
+1878 1790257949 +0200 fix(devices): refuse tag characters that show nothing
