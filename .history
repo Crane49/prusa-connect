@@ -1,1 +1,1 @@
-1911 1790253439 +0200 refactor(printer-detail): give only the Files tab a port that waits
+1912 1790253494 +0200 fix(printer-detail): wait for the answer to a rename, label or removal
