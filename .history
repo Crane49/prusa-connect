@@ -1,1 +1,1 @@
-2002 1790264986 +0200 fix(accounts): keep a person signed in after their own change
+2003 1790265280 +0200 fix(cli): tell an upgrade apart from a newer database in the reset
