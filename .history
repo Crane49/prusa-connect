@@ -1,1 +1,1 @@
-1987 1790252355 +0200 fix(auth): mint api tokens only from a session, for a year at most
+1988 1790254007 +0200 fix(accounts): say a password change also ends api credentials
