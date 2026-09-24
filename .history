@@ -1,1 +1,1 @@
-1879 1790257997 +0200 fix(api): say that the labels view keeps one tag per key
+1880 1790258024 +0200 fix(events): move the event-type set to 3.0.0 for the tags payload
