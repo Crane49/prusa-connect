@@ -1,1 +1,1 @@
-1921 1790260592 +0200 fix(printer-detail): keep the rename dialog open until its answer comes
+1922 1790260653 +0200 fix(printer-detail): offer no admin control on a record with no actions
