@@ -1,1 +1,1 @@
-1876 1790257815 +0200 fix(devices): refuse a labels filter term that no label can spell
+1877 1790257860 +0200 fix(devices): keep a tag the upgrade stored when the list is written
