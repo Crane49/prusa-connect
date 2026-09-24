@@ -1,1 +1,1 @@
-1919 1790260075 +0200 fix(printer-detail): reread labels when any write in a batch was taken
+1920 1790260472 +0200 fix(printer-detail): keep a pending state for each administrative act
