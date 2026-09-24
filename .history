@@ -1,1 +1,1 @@
-1995 1790256620 +0200 docs(accounts): restore the line break in the reset example
+1996 1790262085 +0200 fix(auth): fence credentials with a generation instead of a clock
