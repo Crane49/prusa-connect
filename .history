@@ -1,1 +1,1 @@
-1890 1790261597 +0200 fix(errors): describe the tag errors by the rules they now enforce
+1891 1790261678 +0200 test(devices): hold the long stored tag to its own device
