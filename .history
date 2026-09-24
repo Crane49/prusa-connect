@@ -1,1 +1,1 @@
-1963 1790267433 +0200 test(app): wait for the whole dialog issue in the fleet listing
+1964 1790267438 +0200 test(resourcehost): hold the child process open before the stop
