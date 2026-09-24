@@ -1,1 +1,1 @@
-1988 1790254007 +0200 fix(accounts): say a password change also ends api credentials
+1989 1790254961 +0200 fix(auth): refuse credentials issued before a password change
