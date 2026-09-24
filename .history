@@ -1,1 +1,1 @@
-1878 1790257949 +0200 fix(devices): refuse tag characters that show nothing
+1879 1790257997 +0200 fix(api): say that the labels view keeps one tag per key
