@@ -1,1 +1,1 @@
-1996 1790262085 +0200 fix(auth): fence credentials with a generation instead of a clock
+1997 1790262209 +0200 test(auth): hold the mint to reading generations before its check
