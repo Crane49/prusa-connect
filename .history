@@ -1,1 +1,1 @@
-1865 1790261002 +0200 fix(frontend): send an old file address with a dot segment to Storage
+1866 1790261065 +0200 fix(frontend): decide an old file address on its own storage list read
