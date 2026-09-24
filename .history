@@ -1,1 +1,1 @@
-1864 1790260963 +0200 fix(frontend): send an old file address with an empty path to Storage
+1865 1790261002 +0200 fix(frontend): send an old file address with a dot segment to Storage
