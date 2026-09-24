@@ -1,1 +1,1 @@
-1920 1790260472 +0200 fix(printer-detail): keep a pending state for each administrative act
+1921 1790260592 +0200 fix(printer-detail): keep the rename dialog open until its answer comes
