@@ -1,1 +1,1 @@
-2007 1790291954 +0200 fix(auth): end the pairings a person wrote when their password changes
+2008 1790292275 +0200 fix(accounts): mint the new session at the change's own generation
