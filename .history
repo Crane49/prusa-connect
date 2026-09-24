@@ -1,1 +1,1 @@
-1962 1790266174 +0200 fix(build): refuse an unknown word in EXTRA_BUILD_TAGS
+1963 1790267433 +0200 test(app): wait for the whole dialog issue in the fleet listing
