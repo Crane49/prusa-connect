@@ -1,1 +1,1 @@
-1974 1790327121 +0200 fix(app): bound decompression for clients without gzip
+1975 1790327683 +0200 chore(sdk): add APP_FILE_BUSY to the generated client error codes
