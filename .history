@@ -1,1 +1,1 @@
-2043 1790338948 +0200 feat(app): bound the preview cache by core.preview_cache_bytes
+2044 1790339098 +0200 feat(app): bound the SQLite page cache by a setting
