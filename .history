@@ -1,1 +1,1 @@
-2022 1790333110 +0200 docs(changelog): say what a sign-in from another tab restarts
+2023 1790337623 +0200 test(auth): run a chain through the handlers to its root's change
