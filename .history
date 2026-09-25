@@ -1,1 +1,1 @@
-1964 1790267438 +0200 test(resourcehost): hold the child process open before the stop
+1965 1790323845 +0200 fix(ci): run CI OK on a cancelled run and fail it there
