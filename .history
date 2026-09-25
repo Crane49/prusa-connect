@@ -1,1 +1,1 @@
-2075 1790369804 +0200 fix(auth): refuse a stored hash whose cost is outside the limits
+2076 1790370013 +0200 test(auth): pin the configured hasher on every path that hashes
