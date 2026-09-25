@@ -1,1 +1,1 @@
-2013 1790325553 +0200 test(auth): hold the creator's fence read before the session check
+2014 1790325960 +0200 fix(auth): count a Prusa Account sign-in only when it names a person
