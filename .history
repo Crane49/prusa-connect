@@ -1,1 +1,1 @@
-2050 1790358587 +0200 fix(config): refuse persistence.sqlite.page_cache_bytes on Postgres
+2051 1790358595 +0200 fix(db): refuse page_cache_bytes on the Postgres stores
