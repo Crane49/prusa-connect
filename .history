@@ -1,1 +1,1 @@
-2012 1790324474 +0200 fix(ui): keep the Printers list live after your own password change
+2013 1790325553 +0200 test(auth): hold the creator's fence read before the session check
