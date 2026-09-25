@@ -1,1 +1,1 @@
-1972 1790324849 +0200 docs: record that the server sends the web app compressed
+1973 1790324870 +0200 perf(app): send the web app gzip-compressed from a copy the build stores
