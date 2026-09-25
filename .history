@@ -1,1 +1,1 @@
-1980 1790335448 +0200 fix(new-module): expect the quoted folder the command prints on Windows
+1981 1790335452 +0200 fix(svelte): build the /@fs/ address in the dev test the way Vite does
