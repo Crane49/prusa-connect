@@ -1,1 +1,1 @@
-2038 1790358746 +0200 fix(ui): compare tags one letter at a time, as the server does
+2039 1790358749 +0200 fix(ui): write one form of an address and start a new page at the top
