@@ -1,1 +1,1 @@
-1981 1790335452 +0200 fix(svelte): build the /@fs/ address in the dev test the way Vite does
+1982 1790337565 +0200 fix(app): wait for the stopped-driver log line instead of reading once
