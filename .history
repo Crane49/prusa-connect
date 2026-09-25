@@ -1,1 +1,1 @@
-2052 1790359522 +0200 feat(build): add make build-printer for the binary a printer runs
+2053 1790339910 +0200 test(arch): refuse printer tags outside the printer build
