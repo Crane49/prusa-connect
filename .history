@@ -1,1 +1,1 @@
-2082 1790365098 +0200 fix(sdk): reconnect the event stream only for the person who opened it
+2083 1790368472 +0200 refactor(ui): delete the registrations store nothing uses
