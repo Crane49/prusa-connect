@@ -1,1 +1,1 @@
-2045 1790339188 +0200 feat(app): set the Go memory limit from core.memory_limit
+2046 1790339422 +0200 feat(db): give the SQLite stores a page_cache_bytes option
