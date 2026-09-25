@@ -1,1 +1,1 @@
-1973 1790324870 +0200 perf(app): send the web app gzip-compressed from a copy the build stores
+1974 1790327121 +0200 fix(app): bound decompression for clients without gzip
