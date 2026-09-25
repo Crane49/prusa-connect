@@ -1,1 +1,1 @@
-2033 1790337856 +0200 feat(ui): let the router carry a query and a fragment
+2034 1790337888 +0200 fix(ui): build each tag write on the list the server holds
