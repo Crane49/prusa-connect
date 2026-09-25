@@ -1,1 +1,1 @@
-2040 1790358760 +0200 fix(ui): read the tagged printers only while the Printers page is open
+2041 1790358771 +0200 fix(ui): link the printers waiting in notifications to /printers
