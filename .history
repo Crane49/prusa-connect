@@ -1,1 +1,1 @@
-2046 1790339422 +0200 feat(db): give the SQLite stores a page_cache_bytes option
+2047 1790339961 +0200 feat(config): add the configuration the printer installs
