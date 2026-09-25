@@ -1,1 +1,1 @@
-2039 1790358749 +0200 fix(ui): write one form of an address and start a new page at the top
+2040 1790358760 +0200 fix(ui): read the tagged printers only while the Printers page is open
