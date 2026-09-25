@@ -1,1 +1,1 @@
-2049 1790358452 +0200 docs(onboarding): point the start-up walk at the lines app.go has now
+2050 1790358587 +0200 fix(config): refuse persistence.sqlite.page_cache_bytes on Postgres
