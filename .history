@@ -1,1 +1,1 @@
-1940 1790323851 +0200 fix(printer-detail): start each printer's landing toasts from its read
+1941 1790324532 +0200 fix(printer-detail): show a refused delete's error one part per line
