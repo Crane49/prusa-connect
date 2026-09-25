@@ -1,1 +1,1 @@
-2074 1790368187 +0200 feat(auth): bound the password hashes that run at once by a setting
+2075 1790369804 +0200 fix(auth): refuse a stored hash whose cost is outside the limits
