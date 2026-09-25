@@ -1,1 +1,1 @@
-1939 1790323715 +0200 fix(transfers): answer a replaced read with the rows of the newer read
+1940 1790323851 +0200 fix(printer-detail): start each printer's landing toasts from its read
