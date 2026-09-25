@@ -1,1 +1,1 @@
-2044 1790339098 +0200 feat(app): bound the SQLite page cache by a setting
+2045 1790339188 +0200 feat(app): set the Go memory limit from core.memory_limit
