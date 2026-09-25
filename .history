@@ -1,1 +1,1 @@
-2081 1790367967 +0200 fix(app): empty every store of the last person when the person changes
+2082 1790365098 +0200 fix(sdk): reconnect the event stream only for the person who opened it
