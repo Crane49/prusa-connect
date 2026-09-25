@@ -1,1 +1,1 @@
-2057 1790341311 +0200 infra(build): add the printer binary to the binary budget
+2058 1790360723 +0200 fix(api): answer 404 at /dev and drop the developer tag on the printer
