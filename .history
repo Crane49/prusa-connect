@@ -1,1 +1,1 @@
-1941 1790324532 +0200 fix(printer-detail): show a refused delete's error one part per line
+1942 1790328200 +0200 feat(modules): add make new-module and a hot-reload dev loop for modules
