@@ -1,1 +1,1 @@
-1968 1790328380 +0200 refactor(svelte): draw the History chart as plain SVG
+1969 1790328728 +0200 chore(svelte): remove layerchart and the packages only it used
