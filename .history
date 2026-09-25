@@ -1,1 +1,1 @@
-2073 1790368187 +0200 feat(auth): make the argon2id memory and passes settings
+2074 1790368187 +0200 feat(auth): bound the password hashes that run at once by a setting
