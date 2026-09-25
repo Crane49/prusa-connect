@@ -1,1 +1,1 @@
-2059 1790360746 +0200 fix(build): refuse a printer binary whose profile is another model's
+2060 1790360759 +0200 infra(ci): run the printer build's tests in CI and in the gates
