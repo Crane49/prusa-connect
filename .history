@@ -1,1 +1,1 @@
-1982 1790337565 +0200 fix(app): wait for the stopped-driver log line instead of reading once
+1983 1790339152 +0200 docs(decisions): printers find each other, and a person pairs them
