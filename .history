@@ -1,1 +1,1 @@
-2014 1790325960 +0200 fix(auth): count a Prusa Account sign-in only when it names a person
+2015 1790326219 +0200 fix(accounts): say older pairings outlive a change and how to end them
