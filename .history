@@ -1,1 +1,1 @@
-1967 1790326752 +0200 fix(ci): fail a cancelled run from a step of its own
+1968 1790328380 +0200 refactor(svelte): draw the History chart as plain SVG
