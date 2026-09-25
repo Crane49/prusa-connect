@@ -1,1 +1,1 @@
-2083 1790368472 +0200 refactor(ui): delete the registrations store nothing uses
+2084 1790378870 +0200 feat(sdk): end every request of a client with a signal
