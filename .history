@@ -1,1 +1,1 @@
-2019 1790332367 +0200 fix(ui): restart the signed-in work only when the person changes
+2020 1790332640 +0200 fix(auth): say a sign-in as a person is what an act needs
