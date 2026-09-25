@@ -1,1 +1,1 @@
-1966 1790324368 +0200 fix(build): pin the golang builder stages by digest
+1967 1790326752 +0200 fix(ci): fail a cancelled run from a step of its own
