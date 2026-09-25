@@ -1,1 +1,1 @@
-2041 1790358771 +0200 fix(ui): link the printers waiting in notifications to /printers
+2042 1790360124 +0200 fix(ui): forget the tag read when the fleet is cleared
