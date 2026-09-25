@@ -1,1 +1,1 @@
-2037 1790339571 +0200 fix(ui): write the tag filter note as a full sentence
+2038 1790358746 +0200 fix(ui): compare tags one letter at a time, as the server does
