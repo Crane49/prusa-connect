@@ -1,1 +1,1 @@
-1951 1790327666 +0200 docs(changelog): drop the folder cache entry a rebase brought back
+1952 1790332352 +0200 fix(hooks): judge a rebased branch from main, not its old tip
