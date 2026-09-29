@@ -1,1 +1,1 @@
-2110 1790689073 +0200 fix(config): switch off the compatibility modules no release ships
+2111 1790690911 +0200 infra(deploy): ship a systemd unit and the starting configuration
