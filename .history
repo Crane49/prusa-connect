@@ -1,1 +1,1 @@
-2099 1790688882 +0200 docs(access): state the absent-person rules as the code now holds them
+2100 1790689072 +0200 fix(modules): cut the audit line's fields on a rune boundary
