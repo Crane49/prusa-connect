@@ -1,1 +1,1 @@
-2117 1790708899 +0200 infra(deploy): confine the systemd unit further and cap its restarts
+2118 1790709149 +0200 infra(release): cross-compile every full binary, drop QEMU and BuildKit
