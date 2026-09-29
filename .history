@@ -1,1 +1,1 @@
-2106 1790684192 +0200 fix(api): record a client that hung up as abandoned, not unexpected
+2107 1790689860 +0200 docs: record how the ping liveness test fails under load
