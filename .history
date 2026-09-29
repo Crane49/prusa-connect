@@ -1,1 +1,1 @@
-2116 1790708883 +0200 feat(app): say where the configuration was looked for when it is missing
+2117 1790708899 +0200 infra(deploy): confine the systemd unit further and cap its restarts
