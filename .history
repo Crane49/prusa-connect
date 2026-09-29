@@ -1,1 +1,1 @@
-2105 1790684099 +0200 fix(tests): wait for the whole demo fleet before reading who prints
+2106 1790684192 +0200 fix(api): record a client that hung up as abandoned, not unexpected
