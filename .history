@@ -1,1 +1,1 @@
-2118 1790709149 +0200 infra(release): cross-compile every full binary, drop QEMU and BuildKit
+2119 1790709738 +0200 docs(install): back up privately, and match the pages to a release
