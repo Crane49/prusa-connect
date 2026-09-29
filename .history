@@ -1,1 +1,1 @@
-2109 1790688909 +0200 infra(release): publish Windows and macOS builds, printer build optional
+2110 1790689073 +0200 fix(config): switch off the compatibility modules no release ships
