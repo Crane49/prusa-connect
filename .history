@@ -1,1 +1,1 @@
-2126 1790707201 +0200 docs(adr): ask a new install for a one-time setup code
+2127 1790707209 +0200 feat(auth): ask for a one-time setup code on the first run
