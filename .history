@@ -1,1 +1,1 @@
-2115 1790708547 +0200 fix(version): name only this tree's commit, and mark a dirty tag
+2116 1790708883 +0200 feat(app): say where the configuration was looked for when it is missing
