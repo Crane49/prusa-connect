@@ -1,1 +1,1 @@
-2113 1790691511 +0200 chore(deadcode): drop the allow line of the version accessor
+2114 1790708535 +0200 fix(modules): hold a prerelease core to a module range as its release
