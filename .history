@@ -1,1 +1,1 @@
-2127 1790707209 +0200 feat(auth): ask for a one-time setup code on the first run
+2128 1790707218 +0200 chore(sdk): add the setup code to the generated client
