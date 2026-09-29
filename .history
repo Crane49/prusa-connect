@@ -1,1 +1,1 @@
-2107 1790689860 +0200 docs: record how the ping liveness test fails under load
+2108 1790688669 +0200 fix(version): stamp the release version into every build
