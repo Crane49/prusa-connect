@@ -1,1 +1,1 @@
-2108 1790688669 +0200 fix(version): stamp the release version into every build
+2109 1790688909 +0200 infra(release): publish Windows and macOS builds, printer build optional
