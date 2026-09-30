@@ -1,1 +1,1 @@
-2146 1790759448 +0200 fix(app): keep a demo on loopback off the local network
+2147 1790759463 +0200 test(discovery): run the real-network tests only when opted in
