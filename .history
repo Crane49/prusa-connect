@@ -1,1 +1,1 @@
-2148 1790759464 +0200 test: start every test core with discovery off
+2149 1790759464 +0200 test(webrtc): switch pion's own mDNS off in the test viewer
