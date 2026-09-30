@@ -1,1 +1,1 @@
-2156 1790778058 +0200 fix(sdk): scope a module's CSS in the build, not in its stylesheet
+2157 1790778485 +0200 fix(xbuddy): read the long file name JOB_INFO sends as display_name
