@@ -1,1 +1,1 @@
-2150 1790759465 +0200 infra(ci): run the network tests on Linux runners and in ci-local
+2151 1790759466 +0200 test(arch): refuse a test harness that leaves loopback
