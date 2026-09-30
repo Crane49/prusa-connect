@@ -1,1 +1,1 @@
-2132 1790754724 +0200 docs(adr): record the decision and its review in the setup code record
+2133 1790754732 +0200 fix(config): refuse a weak or non-ASCII setup code
