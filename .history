@@ -1,1 +1,1 @@
-2133 1790754732 +0200 fix(config): refuse a weak or non-ASCII setup code
+2134 1790754743 +0200 fix(auth): ask for the setup code on the account path too
