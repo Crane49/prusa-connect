@@ -1,1 +1,1 @@
-2144 1790069545 +0200 feat(xbuddy): re-read the printer certificate when the file changes
+2145 1790760082 +0200 feat(metrics): serve the exposition on a listener of its own
