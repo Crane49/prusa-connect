@@ -1,1 +1,1 @@
-2155 1790776562 +0200 fix(app): show the version the server runs in the footer
+2156 1790778058 +0200 fix(sdk): scope a module's CSS in the build, not in its stylesheet
