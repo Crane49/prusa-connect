@@ -1,1 +1,1 @@
-2134 1790754743 +0200 fix(auth): ask for the setup code on the account path too
+2135 1790754751 +0200 fix(ui): say where the setup code is when the log lost it
