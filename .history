@@ -1,1 +1,1 @@
-2167 1790844498 +0200 feat(ui): draw every printer Prusa Connect has artwork for
+2168 1790778873 +0200 fix(auth): give a password hash's memory back to the system
