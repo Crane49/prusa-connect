@@ -1,1 +1,1 @@
-2147 1790759463 +0200 test(discovery): run the real-network tests only when opted in
+2148 1790759464 +0200 test: start every test core with discovery off
