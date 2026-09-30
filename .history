@@ -1,1 +1,1 @@
-2145 1790760082 +0200 feat(metrics): serve the exposition on a listener of its own
+2146 1790759448 +0200 fix(app): keep a demo on loopback off the local network
