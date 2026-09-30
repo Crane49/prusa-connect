@@ -1,1 +1,1 @@
-2149 1790759464 +0200 test(webrtc): switch pion's own mDNS off in the test viewer
+2150 1790759465 +0200 infra(ci): run the network tests on Linux runners and in ci-local
