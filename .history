@@ -1,1 +1,1 @@
-2165 1790840605 +0200 feat: per-tool temperatures for tool-changer printers, read-only
+2166 1790843984 +0200 feat: set a target temperature per toolhead on tool changers
