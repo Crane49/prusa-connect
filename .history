@@ -1,1 +1,1 @@
-2163 1790835810 +0200 chore(build): raise the amd64 minimal budget to 35 MiB
+2164 1790836975 +0200 test(app): give the old-address test's storages their extension list
