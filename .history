@@ -1,1 +1,1 @@
-2185 1790951046 +0200 docs: file the first release's changelog under 0.0.1-alpha.1
+2186 1790951366 +0200 infra: stamp the release version into every client package
