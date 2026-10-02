@@ -1,1 +1,1 @@
-2187 1790951368 +0200 chore(release): 0.0.1-alpha.1
+2188 1790952001 +0200 infra: keep the prerelease label in the tag, not in VERSION
