@@ -1,1 +1,1 @@
-2179 1790945532 +0200 feat(ui): set nozzle settings per tool and the printer hostname
+2180 1790947265 +0200 feat(ui): toast every printer command's final outcome
