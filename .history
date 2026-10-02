@@ -1,1 +1,1 @@
-2188 1790952001 +0200 infra: keep the prerelease label in the tag, not in VERSION
+2189 1790952016 +0200 infra: let a version named outright repair a VERSION file
