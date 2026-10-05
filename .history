@@ -1,1 +1,1 @@
-2207 1791189781 +0200 infra(parts): build, install and drive the parts module in CI
+2208 1791190808 +0200 fix(parts): stack with grid so library components keep their layout
