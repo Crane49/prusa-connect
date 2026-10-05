@@ -1,1 +1,1 @@
-2216 1791238375 +0200 docs(parts): keep the changelog entry and the README to short sentences
+2217 1791238526 +0200 infra(parts): ask a retryable 503 again when the check records a version
