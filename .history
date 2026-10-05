@@ -1,1 +1,1 @@
-2239 1791227992 +0200 test(modules): update a running module with a real child process
+2240 1791228434 +0200 test(app): cover an action that ends after a reset, and unlisted removal
