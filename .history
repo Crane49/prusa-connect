@@ -1,1 +1,1 @@
-2206 1791189463 +0200 feat(parts): the Parts page, drawn on the component library
+2207 1791189781 +0200 infra(parts): build, install and drive the parts module in CI
