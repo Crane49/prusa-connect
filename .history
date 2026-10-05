@@ -1,1 +1,1 @@
-2218 1791239861 +0200 infra(extensions): move the parts module out of the core's gates
+2219 1791239862 +0200 docs(extensions): say where first-party extensions live and their gates
