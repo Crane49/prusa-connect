@@ -1,1 +1,1 @@
-2210 1791197561 +0200 fix(parts): send an empty tag list for a part with no tags
+2211 1791197569 +0200 feat(parts): fold the folder tree and take files dropped onto a folder
