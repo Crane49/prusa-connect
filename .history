@@ -1,1 +1,1 @@
-2236 1791227975 +0200 fix(modules): leave a dead marketplace alone, offer installable rows
+2237 1791227984 +0200 fix(modules): take module installs and removals one at a time
