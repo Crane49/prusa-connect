@@ -1,1 +1,1 @@
-2209 1791190991 +0200 infra(parts): leave the demo's own storage to the demo
+2210 1791197561 +0200 fix(parts): send an empty tag list for a part with no tags
