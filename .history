@@ -1,1 +1,1 @@
-2247 1791384849 +0200 feat(modules): read the Prusa Research marketplace by default
+2248 1791386856 +0200 refactor(config): move the socket helpers out of config.go
