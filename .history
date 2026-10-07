@@ -1,1 +1,1 @@
-2224 1791273732 +0200 feat(parts): ask for 128 MiB for the catalogue's records
+2225 1791375103 +0200 fix(parts): apply catalogue changes one at a time
