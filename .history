@@ -1,1 +1,1 @@
-2259 1791416163 +0200 perf(ci): keep the cross-compiled packages between Build runs
+2260 1791416812 +0200 perf(ci): run the registry install check beside the broker suites
