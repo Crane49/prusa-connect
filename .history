@@ -1,1 +1,1 @@
-2193 1791245205 +0200 feat(modules): let an operator grant a module room for its records
+2194 1791359978 +0200 refactor(sdk): keep the record backend contract at 1.0.0
