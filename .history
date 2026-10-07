@@ -1,1 +1,1 @@
-2248 1791386856 +0200 refactor(config): move the socket helpers out of config.go
+2249 1791386857 +0200 feat(modules): grant only what the operator was shown on install
