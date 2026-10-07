@@ -1,1 +1,1 @@
-2199 1791377818 +0200 feat(ui): offer more printer commands and the Connect token command
+2200 1791377902 +0200 fix(ui): read a printer's prints again when one starts or ends
