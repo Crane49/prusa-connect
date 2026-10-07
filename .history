@@ -1,1 +1,1 @@
-2257 1791412572 +0200 fix(modules): report a modules directory that cannot be written
+2258 1791415557 +0200 infra(ci): measure the screens in parallel, fetch Chromium without apt
