@@ -1,1 +1,1 @@
-2197 1791376813 +0200 feat(ui): answer the printer's own dialog from the printer page
+2198 1791376838 +0200 refactor(ui): call setAccountRole from the generated client
