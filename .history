@@ -1,1 +1,1 @@
-2258 1791415557 +0200 infra(ci): measure the screens in parallel, fetch Chromium without apt
+2259 1791416163 +0200 perf(ci): keep the cross-compiled packages between Build runs
