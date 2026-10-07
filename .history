@@ -1,1 +1,1 @@
-2255 1791409428 +0200 fix(modules): read the catalogue on a build stamped with a commit
+2256 1791410202 +0200 fix(docker): ship the root certificates in the server image
