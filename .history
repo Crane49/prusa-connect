@@ -1,1 +1,1 @@
-2200 1791377902 +0200 fix(ui): read a printer's prints again when one starts or ends
+2201 1791378092 +0200 feat(ui): sign in through the identity provider when the server uses one
