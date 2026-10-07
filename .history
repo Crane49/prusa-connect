@@ -1,1 +1,1 @@
-2256 1791410202 +0200 fix(docker): ship the root certificates in the server image
+2257 1791412572 +0200 fix(modules): report a modules directory that cannot be written
