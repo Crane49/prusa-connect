@@ -1,1 +1,1 @@
-2293 1791463160 +0200 test(ux): measure the dashboard home and the printers page apart
+2294 1791463182 +0200 fix(app): pre-bundle what the dashboard chunk imports
