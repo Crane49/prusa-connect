@@ -1,1 +1,1 @@
-2412 1791469855 +0200 fix(parts): drop a card's read when it leaves, and share its frame
+2413 1791469861 +0200 chore(parts): remove the card heading the card frame replaced
