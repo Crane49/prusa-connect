@@ -1,1 +1,1 @@
-2264 1791417800 +0200 perf(ci): fetch Chromium without apt in the filament job too
+2265 1791417809 +0200 fix(client-ui): describe MODULE_INSTALL_FAILED in the error catalogue
