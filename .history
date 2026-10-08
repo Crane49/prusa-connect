@@ -1,1 +1,1 @@
-2263 1791417713 +0200 perf(ci): run the filament module gates in a job of their own
+2264 1791417800 +0200 perf(ci): fetch Chromium without apt in the filament job too
