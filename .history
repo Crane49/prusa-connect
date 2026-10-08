@@ -1,1 +1,1 @@
-2302 1791469597 +0200 fix(dashboards): hold the store to its limits under concurrency
+2303 1791469605 +0200 fix(dashboards): address the review of the dashboard screen
