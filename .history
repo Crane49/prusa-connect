@@ -1,1 +1,1 @@
-2267 1791417849 +0200 fix(sdk): bound every Close the events suite makes
+2268 1791417864 +0200 test(natsbind): run the end-to-end tests in parallel
