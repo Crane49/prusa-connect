@@ -1,1 +1,1 @@
-2294 1791463182 +0200 fix(app): pre-bundle what the dashboard chunk imports
+2295 1791463186 +0200 fix(compat-graphql): list the dashboard operations it does not serve
