@@ -1,1 +1,1 @@
-2300 1791464315 +0200 feat(slots): give a module the address of its own page
+2301 1791465195 +0200 fix(dashboards): name a card's module by its page in the gallery
