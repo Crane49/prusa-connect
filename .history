@@ -1,1 +1,1 @@
-2275 1791421531 +0200 perf(ci): set up no Go in the web app job
+2276 1791421555 +0200 docs(adr): record the shared Go build cache and the runner limit
