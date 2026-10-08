@@ -1,1 +1,1 @@
-2270 1791417864 +0200 infra(ci): run the sdk and the packages/ suites as two cells
+2271 1791418329 +0200 perf(error-codes): ask go list for the three fields the test reads
