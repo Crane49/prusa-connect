@@ -1,1 +1,1 @@
-2411 1791465325 +0200 feat(parts): add two dashboard cards, a folder and chosen parts
+2412 1791469855 +0200 fix(parts): drop a card's read when it leaves, and share its frame
