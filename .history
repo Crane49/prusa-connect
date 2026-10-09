@@ -1,1 +1,1 @@
-2278 1791531471 +0200 fix(deps): build with Go 1.26.9 and golang.org/x/net v0.60.0
+2279 1791534746 +0200 feat(app): switch and configure extensions from the web app
