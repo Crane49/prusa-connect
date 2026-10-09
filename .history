@@ -1,1 +1,1 @@
-2277 1791456806 +0200 feat(fleet-stats): add a statistics extension and a demo with history
+2278 1791531471 +0200 fix(deps): build with Go 1.26.9 and golang.org/x/net v0.60.0
