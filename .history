@@ -1,1 +1,1 @@
-2280 1791537091 +0200 feat(docker): carry the parts and fleet-stats releases in the image
+2281 1791540662 +0200 fix(fleet-stats): read what history keeps when a window is refused
