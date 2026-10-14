@@ -1,1 +1,1 @@
-2353 1792089413 +0200 fix(demo): hold a print's end for two record flushes before the next
+2354 1791984673 +0200 refactor(capability): find a session's optional interfaces in a wrapper
