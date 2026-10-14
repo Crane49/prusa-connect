@@ -1,1 +1,1 @@
-2355 1791985225 +0200 fix(app): stop waiting for a driver's probe when the arrival ends
+2356 1791984784 +0200 fix(app): keep a dialled printer's files, uploads, probe and presence
