@@ -1,1 +1,1 @@
-2282 1791547921 +0200 feat(extensions): extension cards and per-slot visibility
+2283 1791975468 +0200 fix(modules): write a module's grants and real state when installed over HTTP
