@@ -1,1 +1,1 @@
-2354 1791984673 +0200 refactor(capability): find a session's optional interfaces in a wrapper
+2355 1791985225 +0200 fix(app): stop waiting for a driver's probe when the arrival ends
