@@ -1,1 +1,1 @@
-2378 1792077202 +0200 fix(graphql): name the diagnostics download among unbound operations
+2379 1792079226 +0200 fix(diagnostics): project health.json and hash connector instances
