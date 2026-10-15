@@ -1,1 +1,1 @@
-2382 1792079270 +0200 fix(app): scrub the browser buffer with the server's patterns
+2383 1792079282 +0200 fix(diagnostics): scrub auth and cookie headers held in a JSON array
