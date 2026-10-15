@@ -1,1 +1,1 @@
-2284 1792069524 +0200 fix(jobs): show the printed file's preview in the jobs list and detail
+2285 1792072743 +0200 fix(gates): leave a squash merge's PR number out of the subject length
