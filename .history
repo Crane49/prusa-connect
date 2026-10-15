@@ -1,1 +1,1 @@
-2372 1792071237 +0200 feat(config): point the Support link at a configurable URL
+2373 1792072042 +0200 fix(diagnostics): report no map key the operator chose in config.json
