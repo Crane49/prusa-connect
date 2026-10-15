@@ -1,1 +1,1 @@
-2342 1792103373 +0200 style(compat-graphql): wrap the unbound operation list again
+2343 1792104244 +0200 perf(setup): load the wizard and its texts only on a new install
