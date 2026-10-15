@@ -1,1 +1,1 @@
-2327 1792093778 +0200 fix(setup): offer printers an address they can reach
+2328 1792094632 +0200 refactor(config): refuse core.mqtt and core.docs as unknown keys
