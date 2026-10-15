@@ -1,1 +1,1 @@
-2343 1792104244 +0200 perf(setup): load the wizard and its texts only on a new install
+2344 1792104468 +0200 infra(budget): give the 64-bit binaries room for the wizard too
