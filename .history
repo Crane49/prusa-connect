@@ -1,1 +1,1 @@
-2361 1792138306 +0200 test(xbuddy): wait out the printer's reset before reading its progress
+2362 1792070450 +0200 feat(observability): keep the newest log records in memory
