@@ -1,1 +1,1 @@
-2352 1792105297 +0200 infra(ci): walk the first-run wizard on every release binary, by hand
+2353 1792089413 +0200 fix(demo): hold a print's end for two record flushes before the next
