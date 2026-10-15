@@ -1,1 +1,1 @@
-2374 1792072927 +0200 feat(diagnostics): serve the bundle to admins and keep the last crash
+2375 1792075179 +0200 feat(app): download diagnostics from settings and from a crashed page
