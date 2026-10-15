@@ -1,1 +1,1 @@
-2387 1792085094 +0200 fix(diagnostics): date bundle entries with the time it was built
+2388 1792085102 +0200 feat(httpapi): log each refused operation once for diagnostics
