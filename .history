@@ -1,1 +1,1 @@
-2369 1792070790 +0200 feat(app): log failures to an in-memory ring for diagnostics
+2370 1792071235 +0200 fix(diagnostics): close log and frontend projection leaks
