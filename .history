@@ -1,1 +1,1 @@
-2367 1792071009 +0200 fix(diagnostics): redact schemeless URLs and JSON-form header secrets
+2368 1792071030 +0200 feat(diagnostics): project logs and browser errors through the policy
