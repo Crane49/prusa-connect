@@ -1,1 +1,1 @@
-2344 1792104468 +0200 infra(budget): give the 64-bit binaries room for the wizard too
+2345 1792104738 +0200 fix(setup): send nobody to a browser when the server serves no web app
