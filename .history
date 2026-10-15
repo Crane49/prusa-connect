@@ -1,1 +1,1 @@
-2381 1792079262 +0200 fix(app): link to Diagnostics only where the link can be followed
+2382 1792079270 +0200 fix(app): scrub the browser buffer with the server's patterns
