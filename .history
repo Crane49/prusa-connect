@@ -1,1 +1,1 @@
-2317 1792091384 +0200 feat(config): keep only the keys that change a running server
+2318 1792091392 +0200 docs: record that the config keeps only what does something
