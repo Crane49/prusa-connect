@@ -1,1 +1,1 @@
-2394 1792087854 +0200 docs(diagnostics): say only the full and printer builds carry the bundle
+2395 1792088177 +0200 fix(diagnostics): keep the log ring and secret sweep out of minimal
