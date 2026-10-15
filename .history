@@ -1,1 +1,1 @@
-2375 1792075179 +0200 feat(app): download diagnostics from settings and from a crashed page
+2376 1792076390 +0200 fix(app): copy at press time and keep the shell up when a screen fails
