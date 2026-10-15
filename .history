@@ -1,1 +1,1 @@
-2383 1792079282 +0200 fix(diagnostics): scrub auth and cookie headers held in a JSON array
+2384 1792079282 +0200 feat(diagnostics): name the build commit in the manifest
