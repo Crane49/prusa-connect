@@ -1,1 +1,1 @@
-2308 1792071889 +0200 fix(dashboards): refuse overlapping cards and keep config numbers exact
+2309 1792072672 +0200 fix(dashboards): keep the draft and the screen honest after a change
