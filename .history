@@ -1,1 +1,1 @@
-2331 1792097078 +0200 fix(setup): roll back a port that cannot open, and honour -addr
+2332 1792097614 +0200 fix(config): say what each key and wizard step really does
