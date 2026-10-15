@@ -1,1 +1,1 @@
-2285 1792072743 +0200 fix(gates): leave a squash merge's PR number out of the subject length
+2286 1792073096 +0200 fix(ci): judge only the commits a pull request adds
