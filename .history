@@ -1,1 +1,1 @@
-2363 1792070188 +0200 fix(ui): keep the trace id when a store reports a failure
+2364 1792069809 +0200 feat(sdk): report every failed call to an onFailure hook
