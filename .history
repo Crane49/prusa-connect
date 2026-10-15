@@ -1,1 +1,1 @@
-2370 1792071235 +0200 fix(diagnostics): close log and frontend projection leaks
+2371 1792071676 +0200 feat(diagnostics): build a redacted bundle and prove nothing leaks
