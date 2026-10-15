@@ -1,1 +1,1 @@
-2388 1792085102 +0200 feat(httpapi): log each refused operation once for diagnostics
+2389 1792085114 +0200 feat(diagnostics): name the verb, screen and printer behind an error
