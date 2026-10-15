@@ -1,1 +1,1 @@
-2330 1792095782 +0200 feat(config): give every part of the configuration a page of its own
+2331 1792097078 +0200 fix(setup): roll back a port that cannot open, and honour -addr
