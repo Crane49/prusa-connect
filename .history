@@ -1,1 +1,1 @@
-2373 1792072042 +0200 fix(diagnostics): report no map key the operator chose in config.json
+2374 1792072927 +0200 feat(diagnostics): serve the bundle to admins and keep the last crash
