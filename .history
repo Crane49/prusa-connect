@@ -1,1 +1,1 @@
-2339 1792102540 +0200 feat(auth): authenticate a confidential OIDC client with its secret
+2340 1792102593 +0200 feat(setup): sign in at your own OpenID Connect provider from the wizard
