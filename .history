@@ -1,1 +1,1 @@
-2311 1792079099 +0200 docs(adr): record that a new install is configured by a wizard
+2312 1792079192 +0200 feat(config): read the wizard's file under the operator's file
