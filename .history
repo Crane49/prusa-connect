@@ -1,1 +1,1 @@
-2348 1792104983 +0200 refactor(app): announce the setup code outside serveOver
+2349 1792106416 +0200 fix(dashboards): expect the default dashboard's new name on home
