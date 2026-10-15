@@ -1,1 +1,1 @@
-2341 1792103348 +0200 fix(compat-graphql): list the setup wizard operations it does not serve
+2342 1792103373 +0200 style(compat-graphql): wrap the unbound operation list again
