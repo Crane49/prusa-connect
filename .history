@@ -1,1 +1,1 @@
-2340 1792102593 +0200 feat(setup): sign in at your own OpenID Connect provider from the wizard
+2341 1792103348 +0200 fix(compat-graphql): list the setup wizard operations it does not serve
