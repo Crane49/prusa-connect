@@ -1,1 +1,1 @@
-2392 1792087484 +0200 feat(diagnostics): leave the support bundle out of the minimal build
+2393 1792087800 +0200 feat(app): hide the diagnostics download on a server without it
