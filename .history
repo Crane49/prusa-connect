@@ -1,1 +1,1 @@
-2389 1792085114 +0200 feat(diagnostics): name the verb, screen and printer behind an error
+2390 1792086234 +0200 fix(diagnostics): check param values in the browser too
