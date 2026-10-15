@@ -1,1 +1,1 @@
-2328 1792094632 +0200 refactor(config): refuse core.mqtt and core.docs as unknown keys
+2329 1792095753 +0200 feat(setup): link each field to its row in the configuration pages
