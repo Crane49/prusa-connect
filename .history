@@ -1,1 +1,1 @@
-2366 1792070877 +0200 fix(diagnostics): close scrubber gaps in secrets, frames, ids and homes
+2367 1792071009 +0200 fix(diagnostics): redact schemeless URLs and JSON-form header secrets
