@@ -1,1 +1,1 @@
-2307 1792070221 +0200 infra(extensions): exempt the test helpers from the version bump
+2308 1792071889 +0200 fix(dashboards): refuse overlapping cards and keep config numbers exact
