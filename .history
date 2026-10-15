@@ -1,1 +1,1 @@
-2338 1792102129 +0200 fix(setup): stop asking the org handover in the wizard
+2339 1792102540 +0200 feat(auth): authenticate a confidential OIDC client with its secret
