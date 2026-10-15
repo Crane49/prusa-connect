@@ -1,1 +1,1 @@
-2362 1792070450 +0200 feat(observability): keep the newest log records in memory
+2363 1792070188 +0200 fix(ui): keep the trace id when a store reports a failure
