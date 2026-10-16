@@ -1,1 +1,1 @@
-2395 1792088177 +0200 fix(diagnostics): keep the log ring and secret sweep out of minimal
+2396 1792139293 +0200 infra(budget): give arm64 full room for the diagnostics bundle
