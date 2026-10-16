@@ -1,1 +1,1 @@
-2358 1792134240 +0200 fix(jobs): give every print its own uuid so a reused job number is recorded
+2359 1792135091 +0200 fix(storage): clip a long file name inside its tile
