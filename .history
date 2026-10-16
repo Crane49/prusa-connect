@@ -1,1 +1,1 @@
-2503 1792578183 +0200 fix(authz): make a changed core.principal the administrator
+2504 1792145897 +0200 feat(connectors): let a driver declare the device models it reaches
