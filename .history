@@ -1,1 +1,1 @@
-2396 1792139293 +0200 infra(budget): give arm64 full room for the diagnostics bundle
+2397 1792141431 +0200 infra(ci): build a pull request's binaries when the beta portal asks
