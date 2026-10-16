@@ -1,1 +1,1 @@
-2416 1792145821 +0200 refactor(devices): keep device records, prints and registrations apart
+2417 1792146508 +0200 schema(history): squash the history and module stores to one baseline
