@@ -1,1 +1,1 @@
-2423 1792158451 +0000 fix(ui): stop offering a .3mf to a printer's upload zone
+2424 1792162832 +0200 fix(config): refuse a printer address only this machine answers on
