@@ -1,1 +1,1 @@
-2408 1792151236 +0200 infra(ci): leave the changelog out of the docs area label
+2409 1792150298 +0000 fix(xbuddy): refuse a handshake on /p/ws with no Fingerprint header
