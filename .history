@@ -1,1 +1,1 @@
-2400 1792145192 +0200 fix(release): tag a second prerelease that leaves VERSION as it was
+2401 1792145203 +0200 infra(release): file the pending changelog under a version with a script
