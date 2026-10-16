@@ -1,1 +1,1 @@
-2417 1792146508 +0200 schema(history): squash the history and module stores to one baseline
+2418 1792146576 +0200 docs(schema): record that a table's schema lives beside its code
