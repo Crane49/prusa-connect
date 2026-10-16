@@ -1,1 +1,1 @@
-2415 1792144846 +0200 schema(host): give each schema owner one baseline under one ledger
+2416 1792145821 +0200 refactor(devices): keep device records, prints and registrations apart
