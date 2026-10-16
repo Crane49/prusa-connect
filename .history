@@ -1,1 +1,1 @@
-2409 1792150298 +0000 fix(xbuddy): refuse a handshake on /p/ws with no Fingerprint header
+2410 1792146884 +0000 fix(ui): retire a printer from the remove item on its card
