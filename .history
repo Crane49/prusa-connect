@@ -1,1 +1,1 @@
-2357 1791984892 +0200 test(arch): refuse a session type assertion outside capability.As
+2358 1792134240 +0200 fix(jobs): give every print its own uuid so a reused job number is recorded
