@@ -1,1 +1,1 @@
-2640 1792335752 +0200 feat(sdk): report the progress of a file on its way up
+2641 1792337165 +0200 feat(ui): show how far an upload has gone, and let it be cancelled
