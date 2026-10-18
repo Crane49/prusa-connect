@@ -1,1 +1,1 @@
-2639 1792146509 +0000 fix(app): finish a file transfer when the page that started it goes away
+2640 1792335752 +0200 feat(sdk): report the progress of a file on its way up
