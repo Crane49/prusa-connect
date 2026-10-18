@@ -1,1 +1,1 @@
-2641 1792337165 +0200 feat(ui): show how far an upload has gone, and let it be cancelled
+2642 1792339668 +0200 feat(ui): hold a file's upload-then-send chain in a shared store
