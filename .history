@@ -1,1 +1,1 @@
-2427 1792358109 +0200 feat(xbuddy): log a printer's refused websocket once a minute
+2428 1792358134 +0200 fix(http): answer an unserved printer route 404 and log it
