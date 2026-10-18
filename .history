@@ -1,1 +1,1 @@
-2429 1792359299 +0200 feat(diagnostics): send the bundle to the Prusa beta portal
+2430 1792359766 +0200 fix(ui): tell a printer to ask to join, not to bring any token
