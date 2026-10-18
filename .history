@@ -1,1 +1,1 @@
-2428 1792358134 +0200 fix(http): answer an unserved printer route 404 and log it
+2429 1792359299 +0200 feat(diagnostics): send the bundle to the Prusa beta portal
