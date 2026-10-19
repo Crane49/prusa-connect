@@ -1,1 +1,1 @@
-2464 1792420597 +0200 docs: plan a module that keeps printer logs and metrics
+2465 1792421492 +0200 feat(sdk): let a module declare its ports and read what it was granted
