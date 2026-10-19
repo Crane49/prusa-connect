@@ -1,1 +1,1 @@
-2459 1792414800 +0200 feat(ui): lay out the add-printer guide like the first-run wizard
+2460 1792415715 +0200 feat(sdk): let a driver take back the credential it issued a device
