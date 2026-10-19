@@ -1,1 +1,1 @@
-2476 1792424998 +0200 fix(demo): build the demo with the diagnostics bundle
+2477 1792428219 +0200 fix(setup): leave out the keys the operator's file sets when confirming
