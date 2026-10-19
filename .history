@@ -1,1 +1,1 @@
-2449 1792404355 +0200 feat(api): say in GET /api/v1/ui how a new printer joins
+2450 1792404791 +0200 fix(ui): show a printer asking to join without a reload
