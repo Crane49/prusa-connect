@@ -1,1 +1,1 @@
-2478 1792436908 +0200 fix(i18n): record a missing key without changing state
+2479 1792441882 +0200 feat(docker): carry the Prusa printer logs release in the image
