@@ -1,1 +1,1 @@
-2522 1792451155 +0200 fix(discovery): announce only addresses another machine can open
+2523 1792451470 +0200 fix(discovery): keep one address for a machine on several networks
