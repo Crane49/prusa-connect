@@ -1,1 +1,1 @@
-2485 1792446797 +0000 fix(printer): say a printer refusing in silence is busy with a command
+2486 1792448773 +0200 fix(devices): let one record flush run at a time
