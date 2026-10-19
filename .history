@@ -1,1 +1,1 @@
-2460 1792415715 +0200 feat(sdk): let a driver take back the credential it issued a device
+2461 1792417204 +0200 fix(devices): take a removed printer's credential away
