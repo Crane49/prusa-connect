@@ -1,1 +1,1 @@
-2473 1792427421 +0200 feat(app): change an installed extension's ports from its Ports tab
+2474 1792423529 +0200 feat(simulator): send syslog and metrics after M334, as Buddy does
