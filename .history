@@ -1,1 +1,1 @@
-2494 1792478590 +0200 feat(ui): hide module installation while modules are switched off
+2495 1792418847 +0200 fix(ui): disable Remove for a module config.yaml declares
