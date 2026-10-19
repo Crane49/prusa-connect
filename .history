@@ -1,1 +1,1 @@
-2492 1792482800 +0200 feat(modules): start no installed module while modules are switched off
+2493 1792440722 +0200 feat(httpapi): say in GET /api/v1/ui whether modules are on
