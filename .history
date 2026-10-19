@@ -1,1 +1,1 @@
-2445 1792411394 +0200 fix(gates): pass the bot line GitHub adds to a squash merge
+2446 1792411463 +0200 fix(modules): skip AppleDouble entries when unpacking a release
