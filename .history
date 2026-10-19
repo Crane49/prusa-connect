@@ -1,1 +1,1 @@
-2474 1792423529 +0200 feat(simulator): send syslog and metrics after M334, as Buddy does
+2475 1792423371 +0200 feat(buddy-debug-logs): add an extension for printer syslog and metrics
