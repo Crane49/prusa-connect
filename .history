@@ -1,1 +1,1 @@
-2517 1792450748 +0200 fix(ui): say the discovery switch finds printers with PrusaLink on
+2518 1792450756 +0200 feat(sdk): let a session say which address its device connects from
