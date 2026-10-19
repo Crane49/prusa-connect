@@ -1,1 +1,1 @@
-2518 1792450756 +0200 feat(sdk): let a session say which address its device connects from
+2519 1792450767 +0200 fix(discovery): list a server on several networks as one row
