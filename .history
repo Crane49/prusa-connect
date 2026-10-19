@@ -1,1 +1,1 @@
-2490 1792416088 +0200 docs(modules): record that an operator may switch modules off
+2491 1792447498 +0200 feat(modules): refuse module installs while modules are switched off
