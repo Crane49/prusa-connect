@@ -1,1 +1,1 @@
-2448 1792404284 +0200 feat(devices): publish a printer refused on /p/ws as an event
+2449 1792404355 +0200 feat(api): say in GET /api/v1/ui how a new printer joins
