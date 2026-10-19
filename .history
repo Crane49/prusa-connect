@@ -1,1 +1,1 @@
-2438 1792406038 +0200 fix(ui): offer the storage print button only on g-code files
+2439 1792406690 +0200 fix(ui): say why a sent file did not reach the printer
