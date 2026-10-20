@@ -1,1 +1,1 @@
-2863 1792516643 +0200 feat(fractal): request the ancestor state and report a lost parent
+2864 1792517192 +0200 feat(natsbind): carry AREP, ALOS and ARBR and report the parent link
