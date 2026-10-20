@@ -1,1 +1,1 @@
-2860 1792515351 +0200 feat(fractal): add the ancestor messages and the store that keeps them
+2861 1792515566 +0200 refactor(fractal): decode every inbound message in one place
