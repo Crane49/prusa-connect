@@ -1,1 +1,1 @@
-2852 1792513489 +0200 feat(fractal): answer an unknown instance or method as not found
+2853 1792513619 +0200 feat(fractal): answer a missing printer or method as object not found
