@@ -1,1 +1,1 @@
-2496 1792441104 +0200 fix(resource): start no switched-off instance whose type changed
+2497 1792495913 +0200 fix(printer): hold the next command while a G-code command runs
