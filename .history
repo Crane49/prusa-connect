@@ -1,1 +1,1 @@
-2493 1792440722 +0200 feat(httpapi): say in GET /api/v1/ui whether modules are on
+2494 1792478590 +0200 feat(ui): hide module installation while modules are switched off
