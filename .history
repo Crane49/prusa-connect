@@ -1,1 +1,1 @@
-2497 1792495913 +0200 fix(printer): hold the next command while a G-code command runs
+2498 1792501845 +0200 feat(version): reserve a space for a download fingerprint
