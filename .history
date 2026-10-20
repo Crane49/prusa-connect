@@ -1,1 +1,1 @@
-2865 1792517764 +0200 test(natsbind): run the ancestor shadow on a tree of three servers
+2866 1792518013 +0200 fix(natsbind): advertise the granted leafnode address to the nodes below
