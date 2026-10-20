@@ -1,1 +1,1 @@
-2862 1792516104 +0200 feat(fractal): report state down the tree and keep the ancestor shadow
+2863 1792516643 +0200 feat(fractal): request the ancestor state and report a lost parent
