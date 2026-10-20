@@ -1,1 +1,1 @@
-2858 1792514710 +0200 fix(fractal): stamp a full state report with the time it was read
+2859 1792514970 +0200 feat(fractal): refuse a print or firmware URL that has a scheme
