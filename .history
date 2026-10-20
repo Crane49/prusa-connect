@@ -1,1 +1,1 @@
-2507 1792417368 +0200 feat(moonraker): declare the Klipper model from its own driver
+2508 1792493574 +0200 fix(ui): draw a printer in the add-printer guide by its model
