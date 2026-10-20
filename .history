@@ -1,1 +1,1 @@
-2861 1792515566 +0200 refactor(fractal): decode every inbound message in one place
+2862 1792516104 +0200 feat(fractal): report state down the tree and keep the ancestor shadow
