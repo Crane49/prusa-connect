@@ -1,1 +1,1 @@
-2552 1792622428 +0200 fix(config): say that module_admin_dsn is refused on SQLite
+2553 1792622428 +0200 docs: settle how a module's database is moved, purged and verified
