@@ -1,1 +1,1 @@
-2539 1792619715 +0200 feat(sdk): apply one upgrade of a module database in one transaction
+2540 1792619997 +0200 feat(modules): take back an update whose new release does not start
