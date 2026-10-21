@@ -1,1 +1,1 @@
-2508 1792493574 +0200 fix(ui): draw a printer in the add-printer guide by its model
+2509 1792581946 +0200 fix(connector): home fully before mesh bed leveling so a tool is picked
