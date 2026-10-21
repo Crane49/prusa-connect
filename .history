@@ -1,1 +1,1 @@
-2543 1792621009 +0200 feat(config): refuse a module admin connection the server cannot use
+2544 1792621020 +0200 fix(sdk): create a module's SQLite file readable by its owner alone
