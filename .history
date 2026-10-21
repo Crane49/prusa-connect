@@ -1,1 +1,1 @@
-2544 1792621020 +0200 fix(sdk): create a module's SQLite file readable by its owner alone
+2545 1792621093 +0200 infra(docker): name the developer module database notes
