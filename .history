@@ -1,1 +1,1 @@
-2515 1792589455 +0200 Revert "feat(printer): ask a printer for its USB drive"
+2516 1792590906 +0200 feat(printer): ask a printer for its USB drive and say when it has none
