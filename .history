@@ -1,1 +1,1 @@
-2563 1792594020 +0200 feat(extensions): let an operator hide file actions and print sections
+2564 1792599547 +0200 style(ui): drop a lint exception the second action slot made stale
