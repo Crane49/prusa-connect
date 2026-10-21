@@ -1,1 +1,1 @@
-2532 1792610683 +0200 feat(sdk): let a manifest ask for a database and carry its grant
+2533 1792610750 +0200 feat(sdk): open and migrate a module's own database
