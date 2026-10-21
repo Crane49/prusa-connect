@@ -1,1 +1,1 @@
-2536 1792611255 +0200 feat(modules): send a module the database it was granted
+2537 1792611421 +0200 docs: show how a module asks for, gets and migrates its own database
