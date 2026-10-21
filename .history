@@ -1,1 +1,1 @@
-2501 1792567958 +0200 fix(build): build with Go 1.26.10 for GO-2026-6809
+2502 1792569713 +0200 fix(ui): keep a long file name inside the dialog
