@@ -1,1 +1,1 @@
-2531 1792610313 +0200 infra(docker): add a dev Postgres with a core and a module database
+2532 1792610683 +0200 feat(sdk): let a manifest ask for a database and carry its grant
