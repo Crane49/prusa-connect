@@ -1,1 +1,1 @@
-2551 1792622059 +0200 test: drive a module's own database through its whole life
+2552 1792622428 +0200 fix(config): say that module_admin_dsn is refused on SQLite
