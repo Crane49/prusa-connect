@@ -1,1 +1,1 @@
-2541 1792620811 +0200 feat(modules): keep a module's left database listed until purged
+2542 1792621009 +0200 feat(sdk): let a module's core range name a prerelease of the core
