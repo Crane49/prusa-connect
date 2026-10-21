@@ -1,1 +1,1 @@
-2530 1792610078 +0200 docs(adr): let a module keep its data in a database of its own
+2531 1792610313 +0200 infra(docker): add a dev Postgres with a core and a module database
