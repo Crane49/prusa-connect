@@ -1,1 +1,1 @@
-2534 1792610755 +0200 feat(examples): show a module that keeps notes in its own database
+2535 1792611248 +0200 feat(modules): approve a module's database and make one on Postgres
