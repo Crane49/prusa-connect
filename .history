@@ -1,1 +1,1 @@
-2555 1792624142 +0200 chore(ci): raise every binary budget by 1 MiB
+2556 1792625321 +0200 fix(graphql): leave the module database routes out of the schema
