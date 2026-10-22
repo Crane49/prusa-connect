@@ -1,1 +1,1 @@
-2581 1792704826 +0200 feat(connector): report every Prusa tool on the zero-based tool model
+2582 1792704827 +0200 feat(web): read the tools from 0 and label them T0, T1
