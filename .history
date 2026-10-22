@@ -1,1 +1,1 @@
-2582 1792704827 +0200 feat(web): read the tools from 0 and label them T0, T1
+2583 1792705188 +0200 feat(moonraker): report each Klipper extruder as a tool
