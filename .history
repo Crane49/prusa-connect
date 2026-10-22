@@ -1,1 +1,1 @@
-2613 1792716681 +0200 feat(sdk): carry each filament's needs in storageapi.PrintInfo
+2614 1792706752 +0200 feat(sdk): judge a print file against a printer as the firmware does
