@@ -1,1 +1,1 @@
-2580 1792704817 +0200 feat(sdk): name one tool model that every driver normalizes onto
+2581 1792704826 +0200 feat(connector): report every Prusa tool on the zero-based tool model
