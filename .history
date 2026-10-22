@@ -1,1 +1,1 @@
-2585 1792712058 +0200 feat(connector): report the build volume of the INDX variants
+2586 1792705097 +0200 fix(modules): keep a module that needs records off a server with none
