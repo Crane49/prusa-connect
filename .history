@@ -1,1 +1,1 @@
-2879 1792664629 +0200 fix(fractal): forget the ancestor shadow of a revoked node
+2880 1792664778 +0200 fix(natsbind): forget the ancestor shadow when the join is revoked
