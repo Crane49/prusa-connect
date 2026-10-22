@@ -1,1 +1,1 @@
-2610 1792764230 +0000 feat(web): list a printer's file transfers on the History tab
+2611 1792709215 +0200 fix(events): share one event stream between the tabs of a browser
