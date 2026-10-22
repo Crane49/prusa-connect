@@ -1,1 +1,1 @@
-2526 1792599106 +0200 fix(lint): ignore the reflect.Kind switches without a nolint directive
+2527 1792644621 +0200 feat(ui): show the current print's picture on the printer page
