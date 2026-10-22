@@ -1,1 +1,1 @@
-2578 1792705843 +0200 fix(demo): declare no record backend when the operator's file has one
+2579 1792705939 +0200 docs(demo): say when the demo declares its own record backend
