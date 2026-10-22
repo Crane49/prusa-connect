@@ -1,1 +1,1 @@
-2880 1792664778 +0200 fix(natsbind): forget the ancestor shadow when the join is revoked
+2881 1792664796 +0200 docs(fractal): say that a revoked node forgets its ancestors
