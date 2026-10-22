@@ -1,1 +1,1 @@
-2873 1792658550 +0200 fix(fractal): report the parent link from the in-memory transport
+2874 1792658652 +0200 fix(fractal): give the refusal of a file URL a code of its own
