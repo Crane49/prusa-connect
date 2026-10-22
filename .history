@@ -1,1 +1,1 @@
-2872 1792658245 +0200 fix(fractal): answer an ARBR window outside the goroutine of the timers
+2873 1792658550 +0200 fix(fractal): report the parent link from the in-memory transport
