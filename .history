@@ -1,1 +1,1 @@
-2871 1792658063 +0200 fix(fractal): refuse an accept.advertise with no scheme or host
+2872 1792658245 +0200 fix(fractal): answer an ARBR window outside the goroutine of the timers
