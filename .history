@@ -1,1 +1,1 @@
-3149 1792754571 +0200 feat(fractal): publish the shared folders as content-addressed trees
+3150 1792755648 +0200 feat(fractal): expose one ContentStore1 per storage
