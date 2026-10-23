@@ -1,1 +1,1 @@
-2619 1792765647 +0200 fix(resources): name an unknown resource type once in its status
+2620 1792769587 +0200 ci(release): push the cut as the release app, past the pull request rule
