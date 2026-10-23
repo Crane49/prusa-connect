@@ -1,1 +1,1 @@
-2669 1792797806 +0200 fix(app): sweep only the copies made before the start
+2670 1792777755 +0200 fix(auth): check an ID token with any algorithm the issuer advertises
