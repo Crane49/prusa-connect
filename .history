@@ -1,1 +1,1 @@
-2670 1792777755 +0200 fix(auth): check an ID token with any algorithm the issuer advertises
+2671 1792777758 +0200 test(oidc): sign in at authentik with HS256 and at Authelia with ES256
