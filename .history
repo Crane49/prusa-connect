@@ -1,1 +1,1 @@
-2612 1792716680 +0200 feat(printfile): read what each filament of a print file needs
+2613 1792716681 +0200 feat(sdk): carry each filament's needs in storageapi.PrintInfo
