@@ -1,1 +1,1 @@
-2616 1792714609 +0200 test(printfile): read a PrusaSlicer 2.9.6 corpus for every Prusa printer
+2617 1792714614 +0200 test(sdk): judge the print file corpus against a fleet of printers
