@@ -1,1 +1,1 @@
-2599 1792740998 +0200 fix(xbuddy): remove what the next INFO no longer says about the tools
+2600 1792743414 +0200 fix(xbuddy): drop the readings of a tool telemetry reports as null
