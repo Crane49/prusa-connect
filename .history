@@ -1,1 +1,1 @@
-2634 1792773614 +0200 docs(auth): name the providers the sign-in is checked against
+2635 1792773660 +0200 infra(docker): build the provider fixtures in docker-check
