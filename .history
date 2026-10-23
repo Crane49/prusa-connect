@@ -1,1 +1,1 @@
-2607 1792764607 +0200 fix(sinks): stop warning that a module receives no events
+2608 1792764614 +0200 fix(demo): grant an approved module in the demo's own graph
