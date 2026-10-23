@@ -1,1 +1,1 @@
-3173 1792791736 +0200 fix(natsbind): read the admission of a link under its lock
+3174 1792791906 +0200 docs(natsbind): say how the server applies a batch of subscriptions
