@@ -1,1 +1,1 @@
-2686 1792798440 +0200 feat(moonraker): mark the extruder printing now as the active head
+2687 1792798441 +0200 feat(web): read each head's active member and the slot loaded into it
