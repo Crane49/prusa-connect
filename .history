@@ -1,1 +1,1 @@
-2675 1792779141 +0200 docs(auth): say that sessions outlive a restart
+2676 1792779157 +0200 test(oidc): check names, the button label and quiet logs per provider
