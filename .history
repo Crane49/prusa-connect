@@ -1,1 +1,1 @@
-2600 1792743414 +0200 fix(xbuddy): drop the readings of a tool telemetry reports as null
+2601 1792742104 +0200 feat(xbuddy): count the nozzle commands' tool argument from 0
