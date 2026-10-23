@@ -1,1 +1,1 @@
-2683 1792808383 +0200 infra(ci): run on a pull request only the jobs its change can reach
+2684 1792798429 +0200 feat(sdk): give each tool the architecture's active member
