@@ -1,1 +1,1 @@
-2635 1792773660 +0200 infra(docker): build the provider fixtures in docker-check
+2636 1792798740 +0200 infra(ci): run the provider sign-in on a pull request that reaches it
