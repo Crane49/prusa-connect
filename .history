@@ -1,1 +1,1 @@
-2632 1792773598 +0200 test(oidc): sign in end to end at Keycloak, authentik and Authelia
+2633 1792773614 +0200 infra(ci): run the sign-in check against each provider on every change
