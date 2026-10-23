@@ -1,1 +1,1 @@
-2674 1792779141 +0200 fix(auth): log a request with no credential at debug
+2675 1792779141 +0200 docs(auth): say that sessions outlive a restart
