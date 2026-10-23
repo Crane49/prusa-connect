@@ -1,1 +1,1 @@
-2631 1792773384 +0200 fix(ui): ask the sign-in provider again after the wizard restart
+2632 1792773598 +0200 test(oidc): sign in end to end at Keycloak, authentik and Authelia
