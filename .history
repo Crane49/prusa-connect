@@ -1,1 +1,1 @@
-3156 1792757958 +0200 feat(fractal): fetch a whole object from the parent and check its hash
+3157 1792758255 +0200 feat(fractal): keep fetched files in print/ under their identity
