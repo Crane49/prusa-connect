@@ -1,1 +1,1 @@
-3171 1792791480 +0200 fix(natsbind): end a pending fetch when the binding closes
+3172 1792791639 +0200 fix(natsbind): join once when a new node starts
