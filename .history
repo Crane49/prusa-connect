@@ -1,1 +1,1 @@
-2593 1792716267 +0200 feat(web): read the printer's heads from the tool tree
+2594 1792724676 +0200 fix(connector): keep a machine's one nozzle reading off the head path
