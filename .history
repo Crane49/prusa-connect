@@ -1,1 +1,1 @@
-2659 1792773974 +0200 fix(filament): name a printer under each material its tools hold
+2660 1792773979 +0200 fix(nozzle-watch): read the first head's nozzle from the tool tree
