@@ -1,1 +1,1 @@
-2630 1792800264 +0200 infra(release): build the eight full binaries side by side
+2631 1792773384 +0200 fix(ui): ask the sign-in provider again after the wizard restart
