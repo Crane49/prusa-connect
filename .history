@@ -1,1 +1,1 @@
-2618 1792709794 +0200 fix(resources): fail an instance whose type this build does not have
+2619 1792765647 +0200 fix(resources): name an unknown resource type once in its status
