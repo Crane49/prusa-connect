@@ -1,1 +1,1 @@
-3170 1792788842 +0200 fix(natsbind): count a link below up once the node below listens
+3171 1792791480 +0200 fix(natsbind): end a pending fetch when the binding closes
