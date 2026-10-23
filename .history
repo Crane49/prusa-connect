@@ -1,1 +1,1 @@
-2592 1792716267 +0200 feat(connector): put each printer's tools on a tree of heads and slots
+2593 1792716267 +0200 feat(web): read the printer's heads from the tool tree
