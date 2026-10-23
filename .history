@@ -1,1 +1,1 @@
-3148 1792754483 +0200 chore(deps): add golang.org/x/text to the Fractal module
+3149 1792754571 +0200 feat(fractal): publish the shared folders as content-addressed trees
