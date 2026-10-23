@@ -1,1 +1,1 @@
-3155 1792757084 +0200 feat(fractal): relay a request for an object to the parent
+3156 1792757958 +0200 feat(fractal): fetch a whole object from the parent and check its hash
