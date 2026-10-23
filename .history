@@ -1,1 +1,1 @@
-2606 1792764600 +0200 fix(modules): ask the marketplace with the whole prerelease core version
+2607 1792764607 +0200 fix(sinks): stop warning that a module receives no events
