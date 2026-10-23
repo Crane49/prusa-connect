@@ -1,1 +1,1 @@
-2673 1792779125 +0200 fix(auth): name the person and the provider a sign-in came from
+2674 1792779141 +0200 fix(auth): log a request with no credential at debug
