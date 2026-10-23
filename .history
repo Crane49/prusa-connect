@@ -1,1 +1,1 @@
-2657 1792774322 +0200 chore(client): regenerate the types for the one-head example printer
+2658 1792773963 +0200 fix(web): read each head of a printer from its tool tree
