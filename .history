@@ -1,1 +1,1 @@
-2660 1792773979 +0200 fix(nozzle-watch): read the first head's nozzle from the tool tree
+2661 1792775955 +0200 fix(auth): give an OIDC subject the graph cannot name a user id
