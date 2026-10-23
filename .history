@@ -1,1 +1,1 @@
-2597 1792740350 +0200 fix(simulator): read a tool setter under its tools.<k> key
+2598 1792740364 +0200 fix(xbuddy): send the tool setters under the key the firmware reads
