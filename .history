@@ -1,1 +1,1 @@
-3138 1792751276 +0200 feat(fractal): name a shared file by its hash and as a fractal URL
+3139 1792751485 +0200 feat(fractal): encode a directory listing in deterministic CBOR
