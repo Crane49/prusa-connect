@@ -1,1 +1,1 @@
-2596 1792743737 +0200 docs: say which tool T<n> selects on a machine with several feeders
+2597 1792740350 +0200 fix(simulator): read a tool setter under its tools.<k> key
