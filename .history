@@ -1,1 +1,1 @@
-3165 1792762405 +0200 docs(fractal): record that a fractal PrintFile skips the early check
+3166 1792762462 +0200 fix(fractal): leave an unreadable file out instead of failing the scan
