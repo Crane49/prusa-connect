@@ -1,1 +1,1 @@
-3162 1792762263 +0200 fix(fractal): forget every dropped copy even when one cannot be deleted
+3163 1792762389 +0200 docs(fractal): split the long sentence of ADR-20261023-7r3 rule 25
