@@ -1,1 +1,1 @@
-2637 1792798745 +0200 infra(oidc): run the lightest provider by default outside CI
+2638 1792799038 +0200 test(arch): join the CI OK script once and name the gated lookup
