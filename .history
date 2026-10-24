@@ -1,1 +1,1 @@
-2740 1792858822 +0200 feat(mqtt): clear a tool topic whose value is not known
+2741 1792858831 +0200 test(app): read the cleared tool topics back from a real broker
