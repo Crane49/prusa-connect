@@ -1,1 +1,1 @@
-2629 1792797845 +0200 fix(release): send the systemd unit and config.yaml to the beta portal
+2630 1792800264 +0200 infra(release): build the eight full binaries side by side
