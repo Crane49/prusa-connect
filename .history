@@ -1,1 +1,1 @@
-2726 1792862118 +0200 feat(authz): cut every decision down to the scopes of the credential
+2727 1792865045 +0200 feat(auth): limit api credentials to scopes and pair apps by a code
