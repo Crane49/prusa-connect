@@ -1,1 +1,1 @@
-2727 1792865045 +0200 feat(auth): limit api credentials to scopes and pair apps by a code
+2728 1792865067 +0200 feat(ui): choose a credential's scope and approve an app on /pair
