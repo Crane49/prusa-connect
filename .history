@@ -1,1 +1,1 @@
-2741 1792858831 +0200 test(app): read the cleared tool topics back from a real broker
+2742 1792860226 +0200 docs(mqtt): say what an empty tool payload means without naming a client
