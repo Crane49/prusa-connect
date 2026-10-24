@@ -1,1 +1,1 @@
-2735 1792817327 +0200 feat(mqtt): publish each head and feeder slot from the tool tree
+2736 1792817493 +0200 test(app): build the slot topic names without a quoted path
