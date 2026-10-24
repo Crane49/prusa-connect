@@ -1,1 +1,1 @@
-2678 1792804751 +0200 feat(ui): show every file on its way in the header, whoever sent it
+2679 1792805488 +0200 fix(api): describe the transfers list and list it as unbound in GraphQL
