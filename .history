@@ -1,1 +1,1 @@
-2689 1792823035 +0200 fix(build): build with Node.js 24.22.1 for CVE-2026-111497
+2690 1792809184 +0200 test(auth): count the unknown-user derivation instead of timing it
