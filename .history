@@ -1,1 +1,1 @@
-2728 1792865067 +0200 feat(ui): choose a credential's scope and approve an app on /pair
+2729 1792865321 +0200 refactor(auth): read the narrowest open scope without a context per loop
