@@ -1,1 +1,1 @@
-2703 1792891334 +0100 fix(ci): set up the extension tools when the version check fails
+2704 1792862082 +0200 feat(cameras): publish an event when a device's camera list changes
