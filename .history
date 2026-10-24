@@ -1,1 +1,1 @@
-2719 1792809373 +0200 feat(web): read every nozzle and material from the tool tree
+2720 1792810683 +0200 style: format the tool tree changes the way the linters and Prettier ask
