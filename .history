@@ -1,1 +1,1 @@
-2708 1792858680 +0200 docs: record that Home Assistant lives outside the core
+2709 1792862587 +0200 feat(api): give the server an id that survives a new address
