@@ -1,1 +1,1 @@
-2712 1792863364 +0200 feat(api): serve the states every mounted connector declared
+2713 1792863551 +0200 feat(api): serve each argument's type, range and unit per device
