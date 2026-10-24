@@ -1,1 +1,1 @@
-2704 1792862082 +0200 feat(cameras): publish an event when a device's camera list changes
+2705 1792885825 +0200 feat(cameras): track only list identity and cap the camera list event
