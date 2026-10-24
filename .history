@@ -1,1 +1,1 @@
-2682 1792797596 +0200 docs: leave the tool model fragment to the change that wrote it
+2683 1792808383 +0200 infra(ci): run on a pull request only the jobs its change can reach
