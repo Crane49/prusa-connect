@@ -1,1 +1,1 @@
-2713 1792863551 +0200 feat(api): serve each argument's type, range and unit per device
+2714 1792865050 +0200 test(web): give the device-state fixtures the members the server sends
