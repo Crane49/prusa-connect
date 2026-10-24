@@ -1,1 +1,1 @@
-2711 1792863294 +0200 feat(connector): declare each dialect's states and each argument's unit
+2712 1792863364 +0200 feat(api): serve the states every mounted connector declared
