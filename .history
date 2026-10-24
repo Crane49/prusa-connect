@@ -1,1 +1,1 @@
-2729 1792865321 +0200 refactor(auth): read the narrowest open scope without a context per loop
+2730 1792865499 +0200 infra(budget): give the amd64 minimal binary room for app pairing
