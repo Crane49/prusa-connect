@@ -1,1 +1,1 @@
-2717 1792809346 +0200 feat(filament): read the materials of a printer from its tool tree only
+2718 1792809347 +0200 feat(nozzle-watch): read the first head's nozzle from the tool tree
