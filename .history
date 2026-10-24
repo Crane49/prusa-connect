@@ -1,1 +1,1 @@
-2677 1792803982 +0200 feat(api): list the running transfers of every printer a caller reads
+2678 1792804751 +0200 feat(ui): show every file on its way in the header, whoever sent it
