@@ -1,1 +1,1 @@
-3175 1792940515 +0100 fix(natsbind): end a join connection when its context ends
+3176 1792940664 +0100 test(natsbind): wait for both ends of a link before sending upward
