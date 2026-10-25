@@ -1,1 +1,1 @@
-2940 1792970911 +0100 fix(db): migrate each store under one transaction and lock
+2941 1792971133 +0100 feat(upgrade): establish transactional upgrade foundations
