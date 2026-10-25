@@ -1,1 +1,1 @@
-2705 1792885825 +0200 feat(cameras): track only list identity and cap the camera list event
+2706 1792891521 +0100 fix(cameras): undo a change inside the gap in the trailing frame test
