@@ -1,1 +1,1 @@
-3174 1792791906 +0200 docs(natsbind): say how the server applies a batch of subscriptions
+3175 1792940515 +0100 fix(natsbind): end a join connection when its context ends
