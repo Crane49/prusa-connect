@@ -1,1 +1,1 @@
-3186 1793021281 +0100 fix(fractal): bound only the wait of a read for the body of an object
+3187 1793021372 +0100 fix(fractal): let go of a child that stops reading an object
