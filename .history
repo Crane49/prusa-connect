@@ -1,1 +1,1 @@
-3202 1793025726 +0100 test(fractal): block a child that stops reading after a few kilobytes
+3203 1793025848 +0100 fix(fractal): keep the file of a copy a print still holds
