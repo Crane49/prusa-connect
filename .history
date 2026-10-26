@@ -1,1 +1,1 @@
-2846 1793009585 +0100 fix(svelte): round the History temperature axis to 5 °C steps
+2847 1793009601 +0100 fix(ui): keep long names inside the dashboard and printer page
