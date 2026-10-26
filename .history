@@ -1,1 +1,1 @@
-3188 1793022560 +0100 fix(fractal): answer every full state report request
+3189 1793022736 +0100 fix(fractal): refuse a published file changed in place since the scan
