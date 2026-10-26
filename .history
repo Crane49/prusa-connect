@@ -1,1 +1,1 @@
-3201 1793024340 +0100 fix(fractal): never adopt a copy a former node path left behind
+3202 1793025726 +0100 test(fractal): block a child that stops reading after a few kilobytes
