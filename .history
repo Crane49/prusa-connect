@@ -1,1 +1,1 @@
-2847 1793009601 +0100 fix(ui): keep long names inside the dashboard and printer page
+2848 1793009617 +0100 fix(app): name the cause when an outbound request cannot connect
