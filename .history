@@ -1,1 +1,1 @@
-2886 1793012427 +0100 feat(svelte): draw printers with a 3D printer glyph
+2887 1793015167 +0100 fix(xbuddy): preheat the nozzle when loading or unloading filament
