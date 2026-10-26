@@ -1,1 +1,1 @@
-3180 1793018198 +0100 fix(fractal): name a file by its digest when the printer refuses a name
+3181 1793018368 +0100 fix(fractal): keep a copy in the cache index until its file is deleted
