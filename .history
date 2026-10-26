@@ -1,1 +1,1 @@
-2952 1793057363 +0100 fix(upgrade): restore protected paths exactly after rollback
+2953 1793057564 +0100 fix(upgrade): recheck normalized candidate fingerprints
