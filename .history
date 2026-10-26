@@ -1,1 +1,1 @@
-3204 1793026037 +0100 test(fractal): browse a store whose storage name has a hyphen
+3205 1793026126 +0100 fix(fractal): read the node path of the routes when a request comes
