@@ -1,1 +1,1 @@
-2897 1793056329 +0100 feat(sdk): read and rewrite 3MF projects in sdk/threemf
+2898 1793057713 +0100 feat(sdk): bound the work of a 3MF read and test it on real slicer files
