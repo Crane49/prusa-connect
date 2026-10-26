@@ -1,1 +1,1 @@
-3214 1793042023 +0100 fix(fractal): keep no-cache on every attempt after a mismatched copy
+3215 1793042055 +0100 test(fractal): pair the short-drop rule with the test that proves it
