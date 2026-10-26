@@ -1,1 +1,1 @@
-2951 1793057047 +0100 test(upgrade): cover transaction crash recovery
+2952 1793057363 +0100 fix(upgrade): restore protected paths exactly after rollback
