@@ -1,1 +1,1 @@
-3181 1793018368 +0100 fix(fractal): keep a copy in the cache index until its file is deleted
+3182 1793018620 +0100 test(fractal): cover the answers a fetch must refuse or keep nothing of
