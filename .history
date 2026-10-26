@@ -1,1 +1,1 @@
-3178 1793016777 +0100 docs(fractal): decide that a cut transfer does not resume after unshare
+3179 1793017941 +0100 fix(fractal): close a files connection that stops sending
