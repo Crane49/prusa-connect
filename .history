@@ -1,1 +1,1 @@
-2898 1793057713 +0100 feat(sdk): bound the work of a 3MF read and test it on real slicer files
+2899 1793057725 +0100 feat(printfile): read projects and object labels through sdk/threemf
