@@ -1,1 +1,1 @@
-2899 1793057725 +0100 feat(printfile): read projects and object labels through sdk/threemf
+2900 1793058371 +0100 refactor(sdk): read 3MF relationships without encoding/xml
