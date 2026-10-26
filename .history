@@ -1,1 +1,1 @@
-3207 1793028506 +0100 test(fractal): allow for the tls close alert when a child stalls
+3208 1793030044 +0100 fix(fractal): see every short drop of a node below
