@@ -1,1 +1,1 @@
-2948 1792973886 +0100 feat(platform): document managed upgrade workflows
+2949 1793056399 +0100 fix(upgrade): keep journal outside rollback payload
