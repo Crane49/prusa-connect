@@ -1,1 +1,1 @@
-2950 1793056921 +0100 fix(upgrade): accept forced Windows trial stop
+2951 1793057047 +0100 test(upgrade): cover transaction crash recovery
