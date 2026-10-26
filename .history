@@ -1,1 +1,1 @@
-3198 1793024094 +0100 feat(modules): let a link ask access.check about a server it reported
+3199 1793024106 +0100 fix(fractal): refuse a fractal print the server above may not start
