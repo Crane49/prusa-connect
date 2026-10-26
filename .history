@@ -1,1 +1,1 @@
-3068 1793058027 +0100 feat(slicer): add an extension that slices 3MF projects with PrusaSlicer
+3069 1793059063 +0100 feat(slicer): slice one bed or chosen objects with the threemf reader
