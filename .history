@@ -1,1 +1,1 @@
-3044 1793143608 +0100 fix(modules): read file types by name and never wait on a module twice
+3045 1793143609 +0100 fix(ui): answer a registered component at once and reset a failed view
