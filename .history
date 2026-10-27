@@ -1,1 +1,1 @@
-3078 1793065726 +0100 fix(slicer): never take an application through the link in a disk image
+3079 1793066329 +0100 feat(slicer): slice only projects that PrusaSlicer saved
