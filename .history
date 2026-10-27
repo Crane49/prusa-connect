@@ -1,1 +1,1 @@
-2963 1793063424 +0100 fix(upgrade): make PostgreSQL rollback atomic
+2964 1793063761 +0100 fix(api): refresh upgrade contracts
