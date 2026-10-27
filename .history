@@ -1,1 +1,1 @@
-3075 1793064290 +0100 feat(slicer): read the PrusaSlicer releases from the GitHub API
+3076 1793064989 +0100 feat(slicer): split the Slicer page into slicers and jobs
