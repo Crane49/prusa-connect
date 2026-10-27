@@ -1,1 +1,1 @@
-2922 1793109682 +0100 feat(modules): let a manifest require routes.call
+2923 1793112979 +0100 fix(api): publish calls in the module offer of the API document
