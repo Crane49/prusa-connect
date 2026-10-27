@@ -1,1 +1,1 @@
-3003 1793082790 +0100 fix(betaportal): mark a refused pairing revoked and retry a skewed clock
+3004 1793083584 +0100 fix(marketplace): sign only requests that start at the Beta Portal
