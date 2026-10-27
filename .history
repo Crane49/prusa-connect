@@ -1,1 +1,1 @@
-2985 1793079864 +0100 fix(upgrade): never leave Windows without a binary to restore
+2986 1793079952 +0100 fix(upgrade): keep PostgreSQL passwords off client command lines
