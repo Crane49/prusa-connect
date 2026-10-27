@@ -1,1 +1,1 @@
-2893 1793098484 +0100 fix(shell): drop a new credential's token when the screen is left
+2894 1793098488 +0100 fix(storageapi): allow .bff firmware files in the default upload list
