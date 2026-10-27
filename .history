@@ -1,1 +1,1 @@
-2982 1793078829 +0100 fix(upgrade): hash release binaries plainly, drop download fingerprints
+2983 1793079384 +0100 fix(upgrade): finish a rollback when PostgreSQL is backed up externally
