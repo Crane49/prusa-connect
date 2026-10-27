@@ -1,1 +1,1 @@
-3229 1793090979 +0100 refactor(fractal): say why each new discarded error does not matter
+3230 1793091023 +0100 test(fractal): wait on the event where a test slept to synchronise
