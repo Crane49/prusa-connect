@@ -1,1 +1,1 @@
-3008 1793083389 +0100 feat(ui): wait as long as the update server asks before listing releases
+3009 1793083430 +0100 fix(ui): read the pairing again when the release list fails
