@@ -1,1 +1,1 @@
-2993 1793080969 +0100 refactor(upgrade): read the backup ledger without its version column
+2994 1793081475 +0100 fix(upgrade): protect the module data root in upgrade backups
