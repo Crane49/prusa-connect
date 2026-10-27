@@ -1,1 +1,1 @@
-3015 1793093541 +0100 infra: budget the Beta Portal pairing check on arm64 minimal
+3016 1793123756 +0100 fix(upgrade): give the trial the server's flags and restart on rollback
