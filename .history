@@ -1,1 +1,1 @@
-3037 1793140362 +0100 feat(modules): declare file views, file types and shared components
+3038 1793141296 +0100 feat(modules): let a module read files of its types for the core
