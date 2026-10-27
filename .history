@@ -1,1 +1,1 @@
-3047 1793144015 +0100 style(modules): wrap a long line of the analysis tests
+3048 1793145089 +0100 fix(ui): register a component through buildRegister and fit module hosts
