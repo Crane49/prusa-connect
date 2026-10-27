@@ -1,1 +1,1 @@
-3009 1793083430 +0100 fix(ui): read the pairing again when the release list fails
+3010 1793084648 +0100 fix(ui): offer only the update action the server accepts next
