@@ -1,1 +1,1 @@
-2962 1793062071 +0100 docs(upgrade): clarify offline bundle validation
+2963 1793063424 +0100 fix(upgrade): make PostgreSQL rollback atomic
