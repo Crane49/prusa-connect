@@ -1,1 +1,1 @@
-2994 1793081475 +0100 fix(upgrade): protect the module data root in upgrade backups
+2995 1793081520 +0100 fix(upgrade): show and limit what bundled extensions ask for
