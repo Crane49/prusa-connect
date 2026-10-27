@@ -1,1 +1,1 @@
-2991 1793080828 +0100 fix(upgrade): survive a torn line in the upgrade history
+2992 1793080891 +0100 fix(upgrade): verify a new offline bundle before clearing the last one
