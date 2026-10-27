@@ -1,1 +1,1 @@
-3228 1793090950 +0100 refactor(fractal): pass the caller's context into the publisher
+3229 1793090979 +0100 refactor(fractal): say why each new discarded error does not matter
