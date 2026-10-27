@@ -1,1 +1,1 @@
-3217 1793085936 +0100 test(fractal): check that a revocation drops the copies from above
+3218 1793088104 +0100 fix(fractal): refuse to print a file whose retention is not unlimited
