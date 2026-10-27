@@ -1,1 +1,1 @@
-3216 1793085837 +0100 fix(fractal): check the saved grant before a restart brings the link up
+3217 1793085936 +0100 test(fractal): check that a revocation drops the copies from above
