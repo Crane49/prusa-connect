@@ -1,1 +1,1 @@
-2979 1793079915 +0100 fix(db): judge host and store migration ledgers by dated names
+2980 1793079920 +0100 infra(db): add migration-new and a gate over migration file names
