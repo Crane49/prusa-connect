@@ -1,1 +1,1 @@
-3243 1793108628 +0100 feat(fractal): log the copies a revocation or a new path drops
+3244 1793109506 +0100 docs(fractal): say when a revoked server learns of it
