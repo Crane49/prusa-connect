@@ -1,1 +1,1 @@
-2888 1793047656 +0100 fix(xbuddy): keep a printer that sends frames connected
+2889 1793088372 +0100 infra(gates): make the local gates read only the tree and run only what changed
