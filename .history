@@ -1,1 +1,1 @@
-2920 1793108093 +0100 feat(modules): let a module call the routes of another module
+2921 1793108100 +0100 feat(modules): grant storage reads and writes on the storage kind
