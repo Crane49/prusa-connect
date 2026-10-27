@@ -1,1 +1,1 @@
-3010 1793084648 +0100 fix(ui): offer only the update action the server accepts next
+3011 1793085817 +0100 fix(upgrade): ask for a new pairing when the update server refuses it
