@@ -1,1 +1,1 @@
-3007 1793083251 +0100 feat(ui): name the databases a rollback leaves for the operator
+3008 1793083389 +0100 feat(ui): wait as long as the update server asks before listing releases
