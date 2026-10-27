@@ -1,1 +1,1 @@
-2987 1793080092 +0100 fix(upgrade): stream online release downloads to a private file
+2988 1793080198 +0100 fix(upgrade): never accept an unsigned online download
