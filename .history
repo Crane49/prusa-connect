@@ -1,1 +1,1 @@
-2983 1793079384 +0100 fix(upgrade): finish a rollback when PostgreSQL is backed up externally
+2984 1793079816 +0100 fix(upgrade): swap a copy placed beside the binary, not the staged file
