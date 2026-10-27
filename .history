@@ -1,1 +1,1 @@
-3016 1793123756 +0100 fix(upgrade): give the trial the server's flags and restart on rollback
+3017 1793123767 +0100 feat(upgrade): offer every newer alpha and beta without a channel
