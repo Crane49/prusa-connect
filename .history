@@ -1,1 +1,1 @@
-3074 1793063144 +0100 feat(slicer): tell the page when a release came out and how large it is
+3075 1793064290 +0100 feat(slicer): read the PrusaSlicer releases from the GitHub API
