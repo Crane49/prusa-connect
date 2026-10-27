@@ -1,1 +1,1 @@
-2984 1793079816 +0100 fix(upgrade): swap a copy placed beside the binary, not the staged file
+2985 1793079864 +0100 fix(upgrade): never leave Windows without a binary to restore
