@@ -1,1 +1,1 @@
-2981 1793079987 +0100 docs(sdk): split two long sentences about module migrations
+2982 1793078829 +0100 fix(upgrade): hash release binaries plainly, drop download fingerprints
