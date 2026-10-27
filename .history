@@ -1,1 +1,1 @@
-2910 1793080570 +0100 fix(sdk): give a printer that feeds one hot end a single nozzle
+2911 1793080586 +0100 fix(sdk): read 3MF part names and extensions as the specifications say
