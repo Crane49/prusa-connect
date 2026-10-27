@@ -1,1 +1,1 @@
-2992 1793080891 +0100 fix(upgrade): verify a new offline bundle before clearing the last one
+2993 1793080969 +0100 refactor(upgrade): read the backup ledger without its version column
