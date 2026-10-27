@@ -1,1 +1,1 @@
-2921 1793108100 +0100 feat(modules): grant storage reads and writes on the storage kind
+2922 1793109682 +0100 feat(modules): let a manifest require routes.call
