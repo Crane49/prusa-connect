@@ -1,1 +1,1 @@
-2918 1793188624 +0100 infra(budget): give the 64-bit minimal binary 64 KiB more room
+2919 1793113449 +0000 fix(xbuddy): keep a printer connected while it sends a long listing
