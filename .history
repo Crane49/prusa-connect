@@ -1,1 +1,1 @@
-3234 1793098705 +0100 feat(sdk): refuse a print onto a held name with a code of its own
+3235 1793109428 +0100 fix(fractal): print a fractal URL again onto a name the printer holds
