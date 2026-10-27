@@ -1,1 +1,1 @@
-3071 1793060301 +0100 infra(slicer): ship the slicer extension in the server image
+3072 1793060539 +0100 docs(slicer): name the integration test by its go test command
