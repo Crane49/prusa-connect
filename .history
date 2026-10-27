@@ -1,1 +1,1 @@
-3224 1793090332 +0100 fix(fractal): ignore a URL name that is not in Normalization Form C
+3225 1793090640 +0100 refactor(fractal): keep only unlimited copies in the downward cache
