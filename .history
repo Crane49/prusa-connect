@@ -1,1 +1,1 @@
-3048 1793145089 +0100 fix(ui): register a component through buildRegister and fit module hosts
+3049 1793145136 +0100 style(ui): wrap a long line of the slot generator
