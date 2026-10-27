@@ -1,1 +1,1 @@
-3081 1793097291 +0100 feat(slicer): name the download and its digest on each release
+3082 1793097847 +0100 chore(slicer): generate the client types for the release asset
