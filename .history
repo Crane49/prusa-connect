@@ -1,1 +1,1 @@
-3070 1793060224 +0100 feat(slicer): add the Slicer page and the end-to-end gate
+3071 1793060301 +0100 infra(slicer): ship the slicer extension in the server image
