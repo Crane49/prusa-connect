@@ -1,1 +1,1 @@
-3045 1793143609 +0100 fix(ui): answer a registered component at once and reset a failed view
+3046 1793143772 +0100 feat(modules): refuse a UI import of a module the manifest omits
