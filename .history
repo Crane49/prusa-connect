@@ -1,1 +1,1 @@
-3079 1793066329 +0100 feat(slicer): slice only projects that PrusaSlicer saved
+3080 1793067383 +0100 feat(slicer): refuse a project the 3MF library will not rewrite
