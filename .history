@@ -1,1 +1,1 @@
-3004 1793083584 +0100 fix(marketplace): sign only requests that start at the Beta Portal
+3005 1793083585 +0100 fix(betaportal): trust a portal answer only within sane bounds
