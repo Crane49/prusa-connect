@@ -1,1 +1,1 @@
-3223 1793090275 +0100 docs(fractal): say why the module may ask before a fractal print
+3224 1793090332 +0100 fix(fractal): ignore a URL name that is not in Normalization Form C
