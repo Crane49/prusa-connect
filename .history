@@ -1,1 +1,1 @@
-2958 1793059075 +0100 infra: raise minimal binary budgets for upgrade support
+2959 1793061277 +0100 feat(upgrade): apply bundled extensions atomically
