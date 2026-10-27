@@ -1,1 +1,1 @@
-2894 1793098488 +0100 fix(storageapi): allow .bff firmware files in the default upload list
+2895 1793098790 +0100 fix(ui): copy to the clipboard without a secure context
