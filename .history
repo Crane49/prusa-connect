@@ -1,1 +1,1 @@
-3018 1793123781 +0100 feat(ui): open Settings, Server on an overview of the whole server
+3019 1793138704 +0100 test(upgrade): wait for the old version to return after a rollback
