@@ -1,1 +1,1 @@
-3060 1793147748 +0100 feat(threemf): read one object of a project as triangles
+3061 1793147863 +0100 feat(threemf): read .3mf files for the core and serve the project routes
