@@ -1,1 +1,1 @@
-3091 1793154697 +0100 fix(slicer): start each output name with a hash of its target
+3092 1793156956 +0100 fix(slicer): regenerate the typed client for the output name rule
