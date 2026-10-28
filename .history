@@ -1,1 +1,1 @@
-3027 1793150994 +0100 feat(upgrade): plan a core upgrade and its module releases together
+3028 1793184858 +0100 infra: raise the binary budgets for upgrades on the module resolver
