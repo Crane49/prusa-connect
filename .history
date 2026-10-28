@@ -1,1 +1,1 @@
-2934 1793193317 +0100 docs(decisions): settle how one module depends on another
+2935 1793193326 +0100 feat(modules): depend on other modules like Composer packages
