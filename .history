@@ -1,1 +1,1 @@
-3065 1793148148 +0100 docs(decisions): record that 3MF moved into the threemf extension
+3066 1793148149 +0100 infra(docker): carry the threemf extension in the server image
