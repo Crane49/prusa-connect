@@ -1,1 +1,1 @@
-3058 1793147733 +0100 refactor(threemf): move the 3MF reader out of the sdk into an extension
+3059 1793147742 +0100 feat(threemf): arrange copies of objects onto as few beds as hold them
