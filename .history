@@ -1,1 +1,1 @@
-2915 1793101384 +0100 feat(api): render a module's API document in the reference page
+2916 1793186993 +0100 feat(api): switch between the core and module documents at /docs
