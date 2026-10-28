@@ -1,1 +1,1 @@
-3024 1793144905 +0100 fix(release): sign SHA256SUMS in a job that has the code it runs
+3025 1793145993 +0100 fix(upgrade): give every signer caller the keys it must sign for
