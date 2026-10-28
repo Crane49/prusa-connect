@@ -1,1 +1,1 @@
-3056 1793221338 +0100 fix(modules): hold what a printer needs to the bounds of a file analysis
+3057 1793146573 +0100 refactor(printfile): read project pictures and labels without threemf
