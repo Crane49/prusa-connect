@@ -1,1 +1,1 @@
-3062 1793147670 +0100 feat(threemf): port the 3MF project view into the module's bundle
+3063 1793147676 +0100 feat(threemf): draw a .3mf file's page and hand the view to modules
