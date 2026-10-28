@@ -1,1 +1,1 @@
-2936 1793194782 +0100 refactor(api): name the example module planner
+2937 1793200478 +0100 fix(modules): hold a planned install to the plan, lock and ranges
