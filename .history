@@ -1,1 +1,1 @@
-3029 1793202189 +0100 feat(upgrade): refuse to prepare an update whose lock cannot be written
+3030 1793202189 +0100 feat(ui): confirm an install or update with the primary button
