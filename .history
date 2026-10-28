@@ -1,1 +1,1 @@
-3028 1793184858 +0100 infra: raise the binary budgets for upgrades on the module resolver
+3029 1793202189 +0100 feat(upgrade): refuse to prepare an update whose lock cannot be written
