@@ -1,1 +1,1 @@
-2937 1793200478 +0100 fix(modules): hold a planned install to the plan, lock and ranges
+2938 1793200500 +0100 fix(ui): wait for the install plan and show what it adds
