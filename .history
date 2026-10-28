@@ -1,1 +1,1 @@
-3025 1793145993 +0100 fix(upgrade): give every signer caller the keys it must sign for
+3026 1793149551 +0100 refactor(upgrade): build bundles and installs on the resolver's model
