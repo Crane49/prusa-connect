@@ -1,1 +1,1 @@
-3266 1793309793 +0100 feat(fractal): expose one FDMPrinterHead1 per head
+3267 1793255392 +0100 feat(fractal): expose one FilamentSlot1 per slot of the MMU
