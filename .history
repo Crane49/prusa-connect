@@ -1,1 +1,1 @@
-3267 1793255392 +0100 feat(fractal): expose one FilamentSlot1 per slot of the MMU
+3268 1793309844 +0100 fix(fractal): load TPU under the name the printer knows
