@@ -1,1 +1,1 @@
-3246 1793320393 +0100 feat(jobs): keep how a print ended, and read fleet-stats from it
+3247 1793317116 +0100 fix(history): keep a refused query from opening the breaker
