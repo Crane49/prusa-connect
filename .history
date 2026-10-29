@@ -1,1 +1,1 @@
-3251 1793254455 +0100 fix(fractal): read the nozzle of head 0 from the tool tree
+3252 1793309223 +0100 feat(fractal): report the fan speeds of a head
