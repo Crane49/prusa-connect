@@ -1,1 +1,1 @@
-3255 1793254635 +0100 fix(fractal): report an away or removed printer as blocked
+3256 1793309407 +0100 fix(fractal): show a dialog over a running print as a paused print
