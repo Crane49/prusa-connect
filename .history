@@ -1,1 +1,1 @@
-3268 1793309844 +0100 fix(fractal): load TPU under the name the printer knows
+3269 1793309851 +0100 fix(fractal): send a change of several properties in name order
