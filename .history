@@ -1,1 +1,1 @@
-3253 1793309251 +0100 fix(fractal): read a heater target of 0 as off
+3254 1793254569 +0100 fix(fractal): report the head's material from the tool tree
