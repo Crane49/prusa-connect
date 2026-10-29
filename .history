@@ -1,1 +1,1 @@
-3258 1793254858 +0100 fix(fractal): default the Extrude feedrate and round heater targets
+3259 1793254900 +0100 fix(fractal): report no job values while no job runs
