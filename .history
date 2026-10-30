@@ -1,1 +1,1 @@
-3195 1793365485 +0100 feat(extensions): show module memory, stops and log, and restart a module
+3196 1793379159 +0100 fix(app): let a retry join a printer listing that outlives its request
