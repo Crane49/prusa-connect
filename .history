@@ -1,1 +1,1 @@
-3134 1793354163 +0100 feat(modules): restart a module that stops responding
+3135 1793363492 +0100 fix(changelog): drop the exception for a commit the squash merge removed
