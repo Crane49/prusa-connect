@@ -1,1 +1,1 @@
-3133 1793353981 +0100 fix(upgrade): make backups work on Windows
+3134 1793354163 +0100 feat(modules): restart a module that stops responding
