@@ -1,1 +1,1 @@
-3130 1793294467 +0100 fix(upgrade): record a backed-up database by its full path
+3131 1793340797 +0100 perf(lint): lint the library and the app on every core
