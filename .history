@@ -1,1 +1,1 @@
-3131 1793340797 +0100 perf(lint): lint the library and the app on every core
+3132 1793343376 +0100 feat(modules): give each service module a memory budget
