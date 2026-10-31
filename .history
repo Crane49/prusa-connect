@@ -1,1 +1,1 @@
-3287 1793567002 +0100 fix(fractal): keep a refused grant version across restarts
+3288 1793451246 +0100 test(fractal): wait for the closed connection in the revoked-dial test
