@@ -1,1 +1,1 @@
-3294 1793451902 +0100 fix(fractal): refuse a new message when a queue is full
+3295 1793452067 +0100 fix(fractal): keep every report from below, with no shadow caps
