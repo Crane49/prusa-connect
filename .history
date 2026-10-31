@@ -1,1 +1,1 @@
-3284 1793450758 +0100 fix(fractal): log a join denial from the node above
+3285 1793451034 +0100 fix(fractal): keep a permanently denied node from asking again
