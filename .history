@@ -1,1 +1,1 @@
-3282 1793450529 +0100 fix(fractal): acknowledge an error answer only after it was sent
+3283 1793450648 +0100 fix(fractal): log a message dropped by a protocol check as an error
