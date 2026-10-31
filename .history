@@ -1,1 +1,1 @@
-3296 1793452271 +0100 fix(fractal): count only a heartbeat as a sign that a node is alive
+3297 1793452324 +0100 fix(fractal): forward an ancestor report request as it arrived
