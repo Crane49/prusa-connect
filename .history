@@ -1,1 +1,1 @@
-3295 1793452067 +0100 fix(fractal): keep every report from below, with no shadow caps
+3296 1793452271 +0100 fix(fractal): count only a heartbeat as a sign that a node is alive
