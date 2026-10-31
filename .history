@@ -1,1 +1,1 @@
-3247 1793317116 +0100 fix(history): keep a refused query from opening the breaker
+3248 1793458959 +0000 fix(sdk): reconnect the event stream after a gateway error
