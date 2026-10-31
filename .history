@@ -1,1 +1,1 @@
-3281 1793450476 +0100 fix(fractal): refuse a join credential at its exact expiry
+3282 1793450529 +0100 fix(fractal): acknowledge an error answer only after it was sent
