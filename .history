@@ -1,1 +1,1 @@
-3280 1793631966 +0100 fix(auth): warn when an issuer is set and core.principal is the default
+3281 1793450476 +0100 fix(fractal): refuse a join credential at its exact expiry
