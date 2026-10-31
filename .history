@@ -1,1 +1,1 @@
-3289 1793567201 +0100 fix(fractal): keep a full report from passing a newer change
+3290 1793451527 +0100 fix(fractal): scope the JetStream grants of a link to its own streams
