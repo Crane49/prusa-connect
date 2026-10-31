@@ -1,1 +1,1 @@
-3290 1793451527 +0100 fix(fractal): scope the JetStream grants of a link to its own streams
+3291 1793451569 +0100 test(fractal): make two conformance rows say what their test proves
