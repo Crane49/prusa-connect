@@ -1,1 +1,1 @@
-3293 1793451760 +0100 fix(fractal): check join requests at the same time up to the bound
+3294 1793451902 +0100 fix(fractal): refuse a new message when a queue is full
