@@ -1,1 +1,1 @@
-3292 1793608016 +0100 fix(fractal): reserve the identity while a join request is checked
+3293 1793451760 +0100 fix(fractal): check join requests at the same time up to the bound
