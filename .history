@@ -1,1 +1,1 @@
-3283 1793450648 +0100 fix(fractal): log a message dropped by a protocol check as an error
+3284 1793450758 +0100 fix(fractal): log a join denial from the node above
