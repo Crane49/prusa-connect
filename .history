@@ -1,1 +1,1 @@
-3288 1793451246 +0100 test(fractal): wait for the closed connection in the revoked-dial test
+3289 1793567201 +0100 fix(fractal): keep a full report from passing a newer change
