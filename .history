@@ -1,1 +1,1 @@
-3297 1793452324 +0100 fix(fractal): forward an ancestor report request as it arrived
+3298 1793567523 +0100 feat(fractal): forget a revoked node and the calls that wait for it
