@@ -1,1 +1,1 @@
-3285 1793451034 +0100 fix(fractal): keep a permanently denied node from asking again
+3286 1793566822 +0100 fix(fractal): never ask again after refusing another parent
