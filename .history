@@ -1,1 +1,1 @@
-3301 1793617619 +0100 fix(fractal): keep the Node ID of an identity whose Issue failed
+3302 1793617627 +0100 fix(fractal): read the admission of a link under its lock
