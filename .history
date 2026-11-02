@@ -1,1 +1,1 @@
-3273 1793608977 +0100 feat(server): restart into safe mode with every module off
+3274 1793616714 +0100 fix(ui): open the Print dialog on a printer, not the file preview
