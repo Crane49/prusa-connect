@@ -1,1 +1,1 @@
-3291 1793451569 +0100 test(fractal): make two conformance rows say what their test proves
+3292 1793608016 +0100 fix(fractal): reserve the identity while a join request is checked
