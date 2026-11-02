@@ -1,1 +1,1 @@
-3277 1793624645 +0100 fix(modules): do not switch off a module waiting on a dependency
+3278 1793624661 +0100 fix(ui): keep the collapsed sidebar's tooltip shut over its open menu
