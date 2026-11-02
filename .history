@@ -1,1 +1,1 @@
-3298 1793567523 +0100 feat(fractal): forget a revoked node and the calls that wait for it
+3299 1793607502 +0100 fix(fractal): keep a node revoked that rejoins during the revocation
