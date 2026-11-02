@@ -1,1 +1,1 @@
-3299 1793607502 +0100 fix(fractal): keep a node revoked that rejoins during the revocation
+3300 1793617610 +0100 fix(fractal): keep a revocation made during a first connection
