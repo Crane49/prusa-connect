@@ -1,1 +1,1 @@
-3302 1793617627 +0100 fix(fractal): read the admission of a link under its lock
+3303 1793700823 +0100 fix(ui): keep a one-of-several switch picked when it is clicked again
