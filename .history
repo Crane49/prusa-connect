@@ -1,1 +1,1 @@
-3466 1793731860 +0100 fix(ui): say why Storage shows no shared folders
+3467 1793731864 +0100 infra(fractal): update the client's dependencies and gate its drift
