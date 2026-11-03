@@ -1,1 +1,1 @@
-3309 1793710402 +0100 fix(discovery): skip Docker interfaces and log failed joins once
+3310 1793710414 +0100 fix(api): leave the switcher out of a reference framed over plain HTTP
