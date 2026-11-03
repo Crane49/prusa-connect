@@ -1,1 +1,1 @@
-3465 1793731848 +0100 fix(ui): keep the shared-folder stores right when their reads cross
+3466 1793731860 +0100 fix(ui): say why Storage shows no shared folders
