@@ -1,1 +1,1 @@
-3467 1793731864 +0100 infra(fractal): update the client's dependencies and gate its drift
+3468 1793731864 +0100 fix(ci): build the Fractal client where a check runs the app
