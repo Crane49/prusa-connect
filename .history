@@ -1,1 +1,1 @@
-3323 1793716581 +0100 fix(upgrade): switch the upgrade engine off with core.upgrade.enabled
+3324 1793716811 +0100 feat(web): hide updates and backups when the server prepares none
