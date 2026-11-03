@@ -1,1 +1,1 @@
-3313 1793699345 +0100 fix(devices): refuse to retire a printer the server runs on
+3314 1793699351 +0100 fix(shell): offer removal only where the server would allow it
