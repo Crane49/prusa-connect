@@ -1,1 +1,1 @@
-3308 1793710390 +0100 fix(ui): mask the password in the Set a password dialog
+3309 1793710402 +0100 fix(discovery): skip Docker interfaces and log failed joins once
