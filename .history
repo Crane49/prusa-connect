@@ -1,1 +1,1 @@
-3458 1794486689 +0100 feat: serve the time on UDP port 123, switched from the network settings
+3459 1793727033 +0100 chore(fractal): generate a typed client for the module's routes
