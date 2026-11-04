@@ -1,1 +1,1 @@
-3326 1793799820 +0100 fix(web): show the printer's reason and reopen a preview on a press
+3327 1793803098 +0100 infra(ci): run the browser tests in two halves so Chromium survives
