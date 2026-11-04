@@ -1,1 +1,1 @@
-3319 1793787147 +0100 fix(ui): show the server's state after an extension write
+3320 1793784488 +0100 feat(stream): tell a reader when an origin is withdrawn
