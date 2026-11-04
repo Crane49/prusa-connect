@@ -1,1 +1,1 @@
-3314 1793699351 +0100 fix(shell): offer removal only where the server would allow it
+3315 1793792393 +0100 fix(xbuddy): stop a transfer whose start the printer did not answer
