@@ -1,1 +1,1 @@
-3331 1793878432 +0100 infra(ci): stop the security scan restoring a second Go cache
+3332 1793799118 +0100 fix(xbuddy): flash firmware through M997 with the file's short name
