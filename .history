@@ -1,1 +1,1 @@
-3332 1793799118 +0100 fix(xbuddy): flash firmware through M997 with the file's short name
+3333 1793801024 +0100 chore(sdk): regenerate the client's error codes for FLASH_NOT_SENT
