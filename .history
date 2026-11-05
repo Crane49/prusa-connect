@@ -1,1 +1,1 @@
-3352 1793897859 +0100 fix(ui): accept a .bbf firmware image in a printer's upload zones
+3353 1793897248 +0100 fix(events): publish the end of a print once across a late report
