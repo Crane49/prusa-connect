@@ -1,1 +1,1 @@
-3343 1793886222 +0100 fix(authz): list a dangerous verb only for a subject holding its class
+3344 1793887182 +0100 chore(api): account for the device's verbs in the reference and modules
