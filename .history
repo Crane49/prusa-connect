@@ -1,1 +1,1 @@
-3351 1793897642 +0100 fix(storageapi): allow .bbf firmware files, not .bff
+3352 1793897859 +0100 fix(ui): accept a .bbf firmware image in a printer's upload zones
