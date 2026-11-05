@@ -1,1 +1,1 @@
-3360 1793911021 +0100 fix(sinks): tell a sink a printer's state only when it changes
+3361 1793911028 +0100 docs(scriptapi): name the kind a script is handed, and what stays empty
