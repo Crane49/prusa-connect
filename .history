@@ -1,1 +1,1 @@
-3363 1793913433 +0100 fix(app): wait for a Postgres that is still starting
+3364 1793913667 +0100 fix(xbuddy): report a transfer's progress inside a range
