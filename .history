@@ -1,1 +1,1 @@
-3347 1793890432 +0100 fix(authz): create the host database readable by its owner only
+3348 1793890465 +0100 fix(db): create the history and records stores owner-only
