@@ -1,1 +1,1 @@
-3348 1793890465 +0100 fix(db): create the history and records stores owner-only
+3349 1793893375 +0100 fix(upgrade): remove a staged release only inside the staging folder
