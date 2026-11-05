@@ -1,1 +1,1 @@
-3350 1793894748 +0100 fix(xbuddy): say the printer kept a file it holds open
+3351 1793897642 +0100 fix(storageapi): allow .bbf firmware files, not .bff
