@@ -1,1 +1,1 @@
-3341 1793884655 +0100 feat(devices): list the verbs a caller may send on each printer
+3342 1793884665 +0100 fix(ui): offer a printer's commands only to a caller who may send them
