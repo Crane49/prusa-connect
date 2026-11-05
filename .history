@@ -1,1 +1,1 @@
-3358 1793909689 +0100 fix(observability): count a printer once after its firmware moves
+3359 1793910050 +0100 fix(ui): count a print's finish from when the time left arrived
