@@ -1,1 +1,1 @@
-3359 1793910050 +0100 fix(ui): count a print's finish from when the time left arrived
+3360 1793911021 +0100 fix(sinks): tell a sink a printer's state only when it changes
