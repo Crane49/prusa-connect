@@ -1,1 +1,1 @@
-3353 1793897248 +0100 fix(events): publish the end of a print once across a late report
+3354 1793897273 +0100 fix(app): open no print for a print preview under an ended number
