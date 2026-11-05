@@ -1,1 +1,1 @@
-3371 1793888669 +0100 infra(ci): lint with golangci-lint v2.14.0 and key the Go cache by Go
+3372 1793889289 +0100 fix(changelog): match a trailer against news any commit in range added
