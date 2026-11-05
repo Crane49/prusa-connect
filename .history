@@ -1,1 +1,1 @@
-3342 1793884665 +0100 fix(ui): offer a printer's commands only to a caller who may send them
+3343 1793886222 +0100 fix(authz): list a dangerous verb only for a subject holding its class
