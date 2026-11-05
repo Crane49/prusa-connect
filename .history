@@ -1,1 +1,1 @@
-3362 1793911683 +0100 fix(ui): head the retired list as such and offer no add there
+3363 1793913433 +0100 fix(app): wait for a Postgres that is still starting
