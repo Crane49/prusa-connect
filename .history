@@ -1,1 +1,1 @@
-3356 1793906985 +0100 fix(buddy-debug-logs): read the lines again on refresh
+3357 1793908777 +0100 test(app): wait for what a tools case reads, not for its tools
