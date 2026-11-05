@@ -1,1 +1,1 @@
-3328 1793858731 +0100 feat(web): list a module's pages under one row when it has several
+3329 1793866018 +0100 refactor(ui): draw every control from the primitives and gate it
