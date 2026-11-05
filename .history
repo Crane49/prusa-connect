@@ -1,1 +1,1 @@
-3346 1793890281 +0100 fix(auth): end the credential a logout carries with local accounts
+3347 1793890432 +0100 fix(authz): create the host database readable by its owner only
