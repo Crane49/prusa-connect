@@ -1,1 +1,1 @@
-3564 1793985207 +0100 feat(cameras): let a module offer camera types the core runs as generic
+3565 1793993041 +0100 fix(cameras): show a pushed camera's new still when it arrives
