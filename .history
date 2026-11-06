@@ -1,1 +1,1 @@
-3560 1793980511 +0100 fix(cameras): skip RTSP packets that arrive before the PLAY answer
+3561 1793981644 +0100 feat(cameras): add a generic camera with a still source and a stream
