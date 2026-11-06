@@ -1,1 +1,1 @@
-3380 1793958322 +0100 fix(discovery): count no packet on loopback as one that left
+3381 1793961170 +0000 docs(changelog): file the pending news under 0.0.1-alpha.8
