@@ -1,1 +1,1 @@
-3379 1793958136 +0100 fix(discovery): say when the machine refuses every mdns packet
+3380 1793958322 +0100 fix(discovery): count no packet on loopback as one that left
