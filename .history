@@ -1,1 +1,1 @@
-3373 1793890476 +0100 test(ui): collect Chromium's garbage every tenth browser test file
+3374 1793953090 +0100 test(ui): read the installed row afresh after a marketplace install
