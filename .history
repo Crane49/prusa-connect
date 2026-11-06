@@ -1,1 +1,1 @@
-3561 1793981644 +0100 feat(cameras): add a generic camera with a still source and a stream
+3562 1793968127 +0100 feat(sdk): let a module hand a frame to a push camera
