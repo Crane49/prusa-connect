@@ -1,1 +1,1 @@
-3416 1794043487 +0100 test(upgrade): upgrade the previous release to this checkout
+3417 1794044484 +0100 test(upgrade): skip the previous release journey under a plain go test
