@@ -1,1 +1,1 @@
-3411 1794042233 +0100 fix(upgrade): leave the contract to the module impact
+3412 1794042536 +0100 fix(upgrade): read a version report with fields this build lacks
