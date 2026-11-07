@@ -1,1 +1,1 @@
-3410 1794041448 +0100 fix(upgrade): end a transaction whose verify or rehearsal fails
+3411 1794042233 +0100 fix(upgrade): leave the contract to the module impact
