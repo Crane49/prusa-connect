@@ -1,1 +1,1 @@
-3408 1794301830 +0100 feat(slicer): name the existing file when a job stops on OUTPUT_EXISTS
+3409 1794040814 +0100 fix(upgrade): accept a candidate whose contract has a newer minor
