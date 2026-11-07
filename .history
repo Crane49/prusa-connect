@@ -1,1 +1,1 @@
-3412 1794042536 +0100 fix(upgrade): read a version report with fields this build lacks
+3413 1794043045 +0100 refactor(app): move the disk budget beside the preflight helpers
