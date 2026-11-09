@@ -1,1 +1,1 @@
-3496 1794217288 +0100 feat(printcompat): warn about an INDX file without the INDX lock
+3497 1794217348 +0100 feat(printcompat): list the INDX nozzle cleaner check as unverified
