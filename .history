@@ -1,1 +1,1 @@
-3389 1794221967 +0100 fix(xbuddy): count a byte a printer asks for again once
+3390 1794222061 +0100 fix(xbuddy): say in the log why a printer's connection ended
