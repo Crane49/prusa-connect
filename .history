@@ -1,1 +1,1 @@
-3495 1794417845 +0100 feat(printersim): end each print after -print-time, 5 minutes by default
+3496 1794217288 +0100 feat(printcompat): warn about an INDX file without the INDX lock
