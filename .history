@@ -1,1 +1,1 @@
-3388 1794220500 +0100 fix(ui): offer Print again only for a file the printer holds
+3389 1794221967 +0100 fix(xbuddy): count a byte a printer asks for again once
