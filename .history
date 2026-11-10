@@ -1,1 +1,1 @@
-3427 1794318841 +0100 fix(api): answer HEAD on a stored file without reading it
+3428 1794318849 +0100 fix(ui): offer Download in a stored file's menu
