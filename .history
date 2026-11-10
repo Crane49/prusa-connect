@@ -1,1 +1,1 @@
-3422 1794312514 +0100 fix(ui): offer Pause and Stop in the printer menu only when they apply
+3423 1794314270 +0100 fix(ui): keep a settings row's label and value side by side
