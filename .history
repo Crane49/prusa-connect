@@ -1,1 +1,1 @@
-3404 1794301357 +0100 chore(deps): bump modernc.org/sqlite
+3405 1794301362 +0100 perf(sdk): build the printer model lookup once in printcompat
