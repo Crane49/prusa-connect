@@ -1,1 +1,1 @@
-3419 1794304991 +0100 fix(devices): find a printer by the model name its card shows
+3420 1794312501 +0100 fix(ui): say All printers away when no printer of a connector is in
