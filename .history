@@ -1,1 +1,1 @@
-3417 1794044484 +0100 test(upgrade): skip the previous release journey under a plain go test
+3418 1794304982 +0100 fix(ui): keep a long file name inside the confirm dialog
