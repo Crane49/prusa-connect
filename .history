@@ -1,1 +1,1 @@
-3426 1794318760 +0100 fix(ui): say not checked where the server could not read releases
+3427 1794318841 +0100 fix(api): answer HEAD on a stored file without reading it
