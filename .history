@@ -1,1 +1,1 @@
-3446 1794413798 +0100 fix(ui): show a spinner on a command button while its command runs
+3447 1794415958 +0100 test(ui): give the command panel fakes a pending verb
