@@ -1,1 +1,1 @@
-3445 1794410844 +0100 fix(authz): narrow a device listing's actions to the credential's scope
+3446 1794413798 +0100 fix(ui): show a spinner on a command button while its command runs
