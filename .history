@@ -1,1 +1,1 @@
-3471 1794491476 +0100 fix(ui): show a print's send progress and the printer writing the file
+3472 1794418166 +0100 fix(connector): count transfer progress by distinct bytes served
