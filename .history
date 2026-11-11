@@ -1,1 +1,1 @@
-3456 1794481176 +0100 fix(ui): show a switch's state by outline and tick, not colour alone
+3457 1794412960 +0100 fix(cameras): never ask a camera with no still image for one
