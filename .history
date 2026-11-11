@@ -1,1 +1,1 @@
-3437 1794390388 +0100 fix(ui): count a finished or stopped printer as done
+3438 1794390494 +0100 fix(auth): print the setup code once the port is open
