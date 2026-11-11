@@ -1,1 +1,1 @@
-3438 1794390494 +0100 fix(auth): print the setup code once the port is open
+3439 1794404719 +0100 fix(build): build with Go 1.26.11 for GO-2026-6859
