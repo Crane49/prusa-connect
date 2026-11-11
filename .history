@@ -1,1 +1,1 @@
-3472 1794418166 +0100 fix(connector): count transfer progress by distinct bytes served
+3473 1794418174 +0100 feat(ui): draw a progress bar with no reading in grey
