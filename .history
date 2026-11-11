@@ -1,1 +1,1 @@
-3448 1794438230 +0100 infra(ci): pin every action to a commit sha
+3449 1794438266 +0100 infra(ci): narrow the tokens and read release secrets from environments
