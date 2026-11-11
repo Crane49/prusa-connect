@@ -1,1 +1,1 @@
-3439 1794404719 +0100 fix(build): build with Go 1.26.11 for GO-2026-6859
+3440 1794406567 +0100 feat(ui): let a browser install the web app, add a qr-code icon
