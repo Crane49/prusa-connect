@@ -1,1 +1,1 @@
-3470 1794482448 +0100 fix(ui): retry a failed extension import and a failed restart read
+3471 1794491476 +0100 fix(ui): show a print's send progress and the printer writing the file
