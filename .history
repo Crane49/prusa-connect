@@ -1,1 +1,1 @@
-3457 1794412960 +0100 fix(cameras): never ask a camera with no still image for one
+3458 1794486689 +0100 feat: serve the time on UDP port 123, switched from the network settings
