@@ -1,1 +1,1 @@
-3469 1794317667 +0100 fix(ui): let the back button walk the shared folders
+3470 1794482448 +0100 fix(ui): retry a failed extension import and a failed restart read
