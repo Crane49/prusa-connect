@@ -1,1 +1,1 @@
-3455 1794480635 +0100 fix(xbuddy): beep with the firmware's own tone instead of a click
+3456 1794481176 +0100 fix(ui): show a switch's state by outline and tick, not colour alone
