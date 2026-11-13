@@ -1,1 +1,1 @@
-3573 1794565367 +0100 fix(cameras): decide a module's frame from the camera's current type
+3574 1794565485 +0100 refactor(cameras): one JPEG check and size limit for both push doors
