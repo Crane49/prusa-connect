@@ -1,1 +1,1 @@
-3571 1794556532 +0100 fix(sdk): refuse a module's frame before reading it
+3572 1794565123 +0100 Revert "feat(cameras): let a config switch the WebRTC live view off"
