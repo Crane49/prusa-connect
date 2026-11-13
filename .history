@@ -1,1 +1,1 @@
-3578 1794567124 +0100 fix(sdk): refuse camera_types in a manifest without operate
+3579 1794567818 +0100 fix(ui): stop a camera's live view when its stream fails
