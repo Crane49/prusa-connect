@@ -1,1 +1,1 @@
-3569 1794234242 +0100 fix(ui): draw a camera's still and play only once it sent a picture
+3570 1794554364 +0100 fix(resources): keep a camera whose module is switched off or removed
