@@ -1,1 +1,1 @@
-3580 1794567823 +0100 fix(ui): say why the Cameras tab has no cameras when the read fails
+3581 1794567941 +0100 fix(cameras): let a pushed generic camera declare no pace
