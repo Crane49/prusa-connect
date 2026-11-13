@@ -1,1 +1,1 @@
-3572 1794565123 +0100 Revert "feat(cameras): let a config switch the WebRTC live view off"
+3573 1794565367 +0100 fix(cameras): decide a module's frame from the camera's current type
