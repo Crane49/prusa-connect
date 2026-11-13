@@ -1,1 +1,1 @@
-3570 1794554364 +0100 fix(resources): keep a camera whose module is switched off or removed
+3571 1794556532 +0100 fix(sdk): refuse a module's frame before reading it
