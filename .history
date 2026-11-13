@@ -1,1 +1,1 @@
-3579 1794567818 +0100 fix(ui): stop a camera's live view when its stream fails
+3580 1794567823 +0100 fix(ui): say why the Cameras tab has no cameras when the read fails
