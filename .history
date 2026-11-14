@@ -1,1 +1,1 @@
-3516 1794686718 +0100 feat(simulator): keep the nozzle a tool setter sets
+3517 1794688591 +0100 test(config): fail when an example configuration switches Fractal on
