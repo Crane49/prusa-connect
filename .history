@@ -1,1 +1,1 @@
-3524 1794589750 +0100 infra(ci): lint the root module as Windows builds it
+3525 1794773958 +0100 infra(ci): shorten the comments on the Windows lint step
