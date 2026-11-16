@@ -1,1 +1,1 @@
-3584 1794824395 +0100 feat(cameras): make a camera a device kept in the host database
+3585 1794833782 +0100 fix(graphql): name the camera routes the module does not serve
