@@ -1,1 +1,1 @@
-3608 1794870202 +0100 fix(sdk): refuse control and invisible characters in a licence or egress
+3609 1794870310 +0100 feat(ui): show an extension's licence and connections before install
