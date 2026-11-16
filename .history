@@ -1,1 +1,1 @@
-3595 1794853944 +0100 fix(extensions): strip the symbols from a release's binaries
+3596 1794854070 +0100 fix(release): skip the upgrade journey on a repository's first release
