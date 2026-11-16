@@ -1,1 +1,1 @@
-3593 1794849547 +0100 feat(ui): list only official extensions until community ones are on
+3594 1794849643 +0100 fix(api): drop record ids from the texts a user or a client reads
