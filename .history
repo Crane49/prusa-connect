@@ -1,1 +1,1 @@
-3525 1794773958 +0100 infra(ci): shorten the comments on the Windows lint step
+3526 1794815087 +0100 feat(printer): never block on a printer's file listing
