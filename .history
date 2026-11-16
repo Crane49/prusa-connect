@@ -1,1 +1,1 @@
-3594 1794849643 +0100 fix(api): drop record ids from the texts a user or a client reads
+3595 1794853944 +0100 fix(extensions): strip the symbols from a release's binaries
