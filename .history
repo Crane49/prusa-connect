@@ -1,1 +1,1 @@
-3534 1794791226 +0100 docs(reference): regenerate the Go SDK pages from the shorter comments
+3535 1794791313 +0100 fix(sdk): drop the record id from two manifest refusals
