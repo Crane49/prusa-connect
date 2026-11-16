@@ -1,1 +1,1 @@
-3583 1794824387 +0100 schema(devices): add the table a camera's settings are kept in
+3584 1794824395 +0100 feat(cameras): make a camera a device kept in the host database
