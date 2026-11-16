@@ -1,1 +1,1 @@
-3585 1794833782 +0100 fix(graphql): name the camera routes the module does not serve
+3586 1794843598 +0100 fix(resource): sweep the secrets of a sink, now a camera is no resource
