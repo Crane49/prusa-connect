@@ -1,1 +1,1 @@
-3526 1794815087 +0100 feat(printer): never block on a printer's file listing
+3527 1794822732 +0100 fix(sdk): point an error's type at a page Prusa owns
