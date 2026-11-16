@@ -1,1 +1,1 @@
-3613 1794872084 +0100 docs(decisions): describe a private device class in general terms
+3614 1794873338 +0100 infra(ci): run each extension's gate in its own job
