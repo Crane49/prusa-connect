@@ -1,1 +1,1 @@
-3626 1794872490 +0100 chore(extensions): leave the extension comments for a versioned change
+3627 1794876345 +0100 fix(modules): run pnpm from inside the project in the module install.sh
