@@ -1,0 +1,25 @@
+{
+  "published_migrations": [
+    {
+      "path": "internal/authz/migrations/sqlite/0001_schema.sql",
+      "sha256": "f12c6cc08e609937664dd3afd2bf66eb6c7aecf4a9dfc8837054a6076d1385d4"
+    },
+    {
+      "path": "internal/authz/migrations/postgres/0001_schema.sql",
+      "sha256": "de7ddb211c67c6227abd99996f22b4bab9ddd3350cb66f722601d3d7ab7a7bb5"
+    },
+    {
+      "path": "internal/platform/dashboards/migrations/sqlite/0001_schema.sql",
+      "sha256": "1a5c43f5b099e9bd5f300799f201292532b96c0c97e96f80d628f0f384f69714"
+    },
+    {
+      "path": "internal/platform/dashboards/migrations/postgres/0001_schema.sql",
+      "sha256": "9b65193d25d01274ee7751d468714bb748527ea0668326c2883c8625d71b4b93"
+    }
+  ],
+  "synthetic_extension_releases": {
+    "module": "github.com/acme/spools",
+    "from": "1.0.0",
+    "to": "1.1.0"
+  }
+}

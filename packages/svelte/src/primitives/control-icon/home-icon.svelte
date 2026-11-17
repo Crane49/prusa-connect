@@ -1,0 +1,19 @@
+<script lang="ts">
+  import type { ControlIconProps } from './types';
+  import { base } from './variants';
+
+  let { class: className, ...rest }: ControlIconProps = $props();
+</script>
+
+<svg
+  viewBox="0 0 24 24"
+  xmlns="http://www.w3.org/2000/svg"
+  data-slot="control-icon"
+  class={[base, className]}
+  {...rest}
+>
+  <path
+    fill="currentColor"
+    d="M18.67 7.911V3.667h-2.5v1.744zm3.333 4.923-10-10-10 10h2.5v8.333h5.833V17h3.333v4.167h5.833v-8.333zm-4.167 6.667h-2.5v-4.167H8.669v4.167h-2.5v-8.55l5.833-5.76 5.833 5.825z"
+  />
+</svg>

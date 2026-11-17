@@ -1,0 +1,11 @@
+# One tenant instance: kubectl apply -k deploy/kubernetes/ -n <tenant>
+#
+# The order below is the order the objects are read in, not an order kubectl
+# applies them in. A pod whose ConfigMap or claim is not bound yet waits for it.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - configmap.yaml
+  - pvc.yaml
+  - service.yaml
+  - deployment.yaml

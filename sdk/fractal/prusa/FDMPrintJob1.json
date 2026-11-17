@@ -1,0 +1,7 @@
+{
+  "interface": "FDMPrintJob1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "filamentUsed", "type": "float", "access": "ro", "nullable": true }
+  ]
+}

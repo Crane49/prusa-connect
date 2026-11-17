@@ -1,0 +1,13 @@
+{
+  "node_id": "workshop",
+  "data_dir": "/data/fractal",
+  "join": {
+    "address": "nats://brno:4222"
+  },
+  "heartbeat_interval": "2s",
+  "poll_interval": "1s",
+  "files": {
+    "base_url": "http://workshop:8443",
+    "allow_cleartext_parent": true
+  }
+}

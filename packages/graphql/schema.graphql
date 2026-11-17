@@ -1,0 +1,448 @@
+# The GraphQL surface of Prusa Connect, in the core's own vocabulary.
+#
+# Generated from internal/transport/http/httpapi/openapi.json, which the core publishes as version test.
+# Run `go generate ./...` in packages/graphql to write it again.
+# Nothing here is edited by hand: a gate refuses a copy that has fallen
+# behind the document.
+
+"""
+A whole number up to 64 bits wide. GraphQL's own Int is 32 bits, which a file size, a byte count or an epoch counter outgrows, so every core member the document declares as format int64 is this type.
+"""
+scalar Int64
+
+"""
+An open JSON object, keyed by strings. The core uses one where the keys are not a closed set: a device's state tree, whose paths a driver declares, and a label set an operator writes. Selecting members of it is not possible, because a schema cannot name keys it does not know.
+"""
+scalar JSONObject
+
+type Device {
+  """
+  What type of device this is. It is printer on every record this server produces. A federated peer running a newer core may name a kind this build does not carry, so read it as an open value.
+  """
+  kind: String!
+
+  """
+  The printer's identity, stable across reconnections and never reissued.
+  """
+  id: String!
+
+  """
+  The display name, which is the model and the serial until somebody renames it.
+  """
+  name: String!
+
+  """
+  Who made it.
+  """
+  vendor: String!
+
+  """
+  The model it reported in the handshake.
+  """
+  model: String!
+
+  """
+  The firmware version it reported. Read it, do not order by it: a firmware lineup that forks is not a totally ordered set.
+  """
+  firmware: String!
+
+  """
+  The serial number it reported. A printer that reported none is rendered under its unit_uid instead, because a blank field names no machine and the unit id is what such a printer is told apart by. Read unit_uid beside it to see which of the two this is.
+  """
+  serial: String!
+
+  """
+  The connector instance it arrived through.
+  """
+  driver: String!
+
+  """
+  Whether a session is open right now.
+  """
+  connected: Boolean!
+
+  """
+  The verbs this printer accepts, sorted.
+  """
+  capabilities: [String!]
+
+  """
+  Changes whenever the printer reconnects. A capability set cached under an older epoch describes a printer that is no longer there.
+  """
+  capability_epoch: Int64!
+
+  """
+  The addressable state tree, keyed by path.
+  """
+  state: JSONObject!
+
+  """
+  The operator's tags on this device, such as workshop or night shift, in the order the operator gave them. It is empty on a device nobody has tagged. Nothing in the authorization graph reads a tag, so a tag filters a listing and never decides who may see what.
+  """
+  tags: [String!]
+
+  """
+  Deprecated. The tags read as labels: a tag key: value is the label key with that value, and any other tag is a label with an empty value. When two tags have the same key, only the later one is shown. Read tags instead. This member is removed in a later release.
+  """
+  labels: JSONObject!
+}
+
+type DevicePage {
+  items: [Device!]
+
+  """
+  How many printers the request matched over every page. With with_issues set, it counts only the printers carrying an issue.
+  """
+  total: Int64!
+
+  """
+  The page size the server applied, which is the cap when a larger one was asked for.
+  """
+  limit: Int64!
+
+  """
+  The offset the server applied.
+  """
+  offset: Int64!
+}
+
+type DeviceJobs {
+  """
+  The print on the bed now. It is absent when the machine is not printing.
+  """
+  current: DeviceJob
+
+  """
+  The most recent print that has ended. It is absent until one has, and it is not the same row as the current print ever is.
+  """
+  last: DeviceJob
+}
+
+type DeviceJob {
+  """
+  The print's identity, a version 7 UUID this server gives each print. A print that reuses a job number the machine issued before is a print of its own with an id of its own.
+  """
+  id: String!
+
+  """
+  The job number the machine issued, as the machine spells it. It is not unique: a machine reuses its numbers after a firmware reset and when its counter wraps.
+  """
+  device_job_id: String!
+
+  """
+  The file on the machine's own storage, as the machine spells it.
+  """
+  path: String!
+
+  """
+  What the machine shows on its screen for the file.
+  """
+  display_name: String!
+
+  """
+  The machine's own word for what the print was doing when this row was last written. Read it as an open value: the states belong to the device kind that declares them.
+  """
+  state: String!
+
+  """
+  How far the print had got when this row was last written, in whole percent. A print that finished reads 100 and one that was interrupted keeps the figure it was interrupted at.
+  """
+  progress: Float!
+
+  """
+  How much time the machine thought was left when this row was last written, in milliseconds. The machine reports whole seconds, so this value is always a multiple of 1000.
+  """
+  time_remaining_ms: Int64!
+
+  """
+  When this server first saw the print.
+  """
+  started: String!
+
+  """
+  When this server saw the print stop. It is absent while the print is running, which is what tells the current job from a finished one.
+  """
+  ended: String
+}
+
+type DeviceFile {
+  """
+  The storage-prefixed path, such as usb/models/part.bgcode. It is what the files endpoint takes.
+  """
+  path: String!
+
+  """
+  What the printer addresses the entry by. On a FAT storage that is the short name, which is not what a person reads.
+  """
+  name: String!
+
+  """
+  The name written for a person, absent when the printer reports only one name.
+  """
+  display_name: String
+
+  """
+  Whether the entry holds other entries.
+  """
+  folder: Boolean!
+
+  """
+  Bytes the entry occupies, zero for a folder.
+  """
+  size: Int64!
+
+  """
+  When the entry last changed, as an RFC 3339 string. The printer reports whole seconds, so this value has no fraction of a second. It is absent for a board that reported no timestamp.
+  """
+  modified: String
+
+  """
+  Whether the printer refuses to change this entry.
+  """
+  read_only: Boolean!
+}
+
+type DeviceStorages {
+  """
+  The storage devices, in the order the printer reported them.
+  """
+  items: [DeviceStorage!]
+}
+
+type DeviceStorage {
+  """
+  The printer-side path, with its leading slash. It is what identifies the device.
+  """
+  mountpoint: String!
+
+  """
+  The first path segment of every file on this storage, such as usb.
+  """
+  name: String!
+
+  """
+  The device class as the printer spelled it, such as USB. The set is the firmware's, so read it, do not switch on it exhaustively.
+  """
+  type: String!
+
+  """
+  Bytes left, or null when the printer reported no figure. Zero is a full device.
+  """
+  free_space: Int64
+
+  """
+  Whether the printer refuses writes to this device.
+  """
+  read_only: Boolean!
+}
+
+type DeviceListing {
+  """
+  The directory that was asked for.
+  """
+  directory: DeviceFile!
+
+  """
+  What is directly inside it, in the order the device reported them.
+  """
+  items: [DeviceFile!]
+}
+
+type Registration {
+  """
+  What the device is polling with, and what an operator reads off its screen. It is the id every operation on this surface takes.
+  """
+  code: String!
+
+  """
+  The connector instance holding this registration. A deployment with several connectors reads it to know which wire the device is on.
+  """
+  connector: String!
+
+  """
+  The identity the device keeps across reconnections. Once the registration is approved, this is what the connector's allowlist is keyed by.
+  """
+  fingerprint: String!
+
+  """
+  The serial number the device reported, in its own spelling.
+  """
+  serial: String
+
+  """
+  The model the device reported, in its own spelling.
+  """
+  model: String
+
+  """
+  The firmware version the device reported, in its own spelling.
+  """
+  firmware: String
+
+  """
+  Whether anything has let this device through: an operator, or a connector configured to approve on arrival. The listing carries only registrations waiting for a decision, so it is false on every row there.
+  """
+  approved: Boolean!
+}
+
+type PrinterResult {
+  """
+  Whether the printer accepted the command.
+  """
+  ok: Boolean!
+
+  """
+  Why the printer refused, in the printer's own words, passed through as it spelled them. It is the machine's vocabulary rather than this API's: no list of values is published, a firmware may send one this server has never seen, and it is meant to be shown to a person rather than branched on. Absent on a command the printer accepted, and absent for a printer whose dialect has no such word: a printer that refused and said nothing carries fault_code and no reason. To branch on the refusal, read fault_code beside it.
+  """
+  machine_reason: String
+
+  """
+  Parameters the printer dropped.
+  """
+  ignored: [String!]
+
+  """
+  Parameters the printer replaced, and with what.
+  """
+  substituted: JSONObject
+}
+
+type Query {
+  """
+  The devices this caller may see
+
+  Every printer that has dialled in and that the caller holds observe on. A printer appears here when it is admitted, not when it is configured: nothing in the configuration file names one. A printer whose session has ended stays on the list, carrying the last state it reported and a `departed` member saying why it went, so a machine that was here reads differently from an id that never answered. The answer is one page: it carries the total over every page and the limit and offset that were applied, so a fleet larger than one page is walked with the offset parameter rather than truncated.
+
+  Every printer carries an `issues` array saying what this server has found wrong with it, worst first, and the page carries the rollup of those issues over every printer the caller may see. So one request is enough to load a fleet page and say which machines need somebody. `with_issues=true` narrows the page to those machines. The reasons are a closed set published at `/api/v1/vocabularies/device-issues`, which carries the sentence and what to do about each one.
+
+  It answers the core operation list-devices and resolves through the module wire method device.list.
+  """
+  devices(
+    """
+    How many printers to return. Omitted or zero is the server's default page size. A value above the server's cap is answered with the cap, and the answer says which limit was applied.
+    """
+    limit: Int64
+
+    """
+    How many printers to skip. The order is stable across pages, so paging by offset walks the fleet exactly once.
+    """
+    offset: Int64
+
+    """
+    Return only the devices carrying every one of these tags, comma separated. The match is on the whole tag and ignores case, joiners and emoji selectors, so petg only finds PETG only. It narrows items and total and never the issues rollup, and it can only narrow: a tag decides no permission.
+    """
+    tag: [String!]
+
+    """
+    Deprecated. The tag filter spelled as labels, each key or key=value, comma separated. key=value finds the tag key: value, and a bare key finds the tag key or any tag that starts with key and a colon. A term that is not a valid label key or value is refused. Use tag instead. This parameter is removed in a later release.
+    """
+    labels: [String!]
+  ): DevicePage!
+
+  """
+  One device
+
+  What the printer said it is, the capability set this server resolved for it, and the state it last reported. A printer whose session has ended is answered here too, with a `departed` member saying why it went; an id this server has never been dialled by is a 404.
+
+  It answers the core operation get-device and resolves through the module wire method device.get.
+  """
+  device(
+    """
+    The device's identity, as the listing reports it.
+    """
+    device_id: String!
+  ): Device!
+
+  """
+  The print on a device and the one before it
+
+  What the machine is printing now and what it printed last, from the record store rather than from the live session. So a print survives a restart of this server: the row was written as the machine reported it and is read back here whether or not the machine is connected.
+
+  `current` is the print on the bed and is absent when there is none. `last` is the most recent print that ended, and the two are never the same row. A print's `state` is the machine's own word for what it is doing, from the vocabulary the device kind declares, so read it as an open value.
+
+  It takes observe on the device, which is what `GET /api/v1/devices/{device_id}` takes: a job is a reading about a machine. A device the caller reaches nothing on and an id this server has never been dialled by are the same 404.
+
+  It answers the core operation get-device-jobs and resolves through the module wire method device.jobs.
+  """
+  device_jobs(
+    """
+    The device's identity, as the listing reports it.
+    """
+    device_id: String!
+  ): DeviceJobs!
+
+  """
+  One directory of a printer's file tree
+
+  Asks the printer what is at a path and waits for its answer. An MK4S takes 12 to 15 s to list a USB root of about 300 files, so give the query a timeout to match. An empty path is refused: device_storages answers what is mounted. A path carrying a .. segment is refused and never reaches the printer. It takes operate on the printer.
+
+  It answers the core operation list-device-files and resolves through the module wire method device.files.
+  """
+  device_files(
+    """
+    The device's identity, as the listing reports it.
+    """
+    device_id: String!
+
+    """
+    The storage-prefixed directory to list, such as usb or usb/models. Empty lists the storages themselves.
+    """
+    path: String
+  ): DeviceListing!
+
+  """
+  The storage devices a printer reported
+
+  What the printer said its storages are the last time it was asked, answered at once. It does not ask the printer again. Every answer that changes the list is published as com.prusa.connect.device.storages.changed. It takes observe on the printer.
+
+  It answers the core operation list-device-storages and resolves through the module wire method device.files.
+  """
+  device_storages(
+    """
+    The device's identity, as the listing reports it.
+    """
+    device_id: String!
+  ): DeviceStorages!
+}
+
+type Mutation {
+  """
+  Send a command to a device
+
+  Validates the command against the capability set this server resolved for the device and, only if it passes, sends it. A verb the device does not have and an argument the verb does not accept are both refused here, so the driver is never reached with something nothing checked. It takes operate on the device.
+
+  It answers the core operation send-device-command and resolves through the module wire method device.command.
+  """
+  send_device_command(
+    """
+    The device's identity, as the listing reports it.
+    """
+    device_id: String!
+
+    """
+    The capability key to invoke. It must be one the printer's capability set lists.
+    """
+    verb: String!
+
+    """
+    Argument values as text, checked against the capability descriptor before sending.
+    """
+    args: JSONObject
+  ): PrinterResult!
+
+  """
+  Let one device onto this server
+
+  Approves the registration, so the device's next poll is answered with the credential it then dials with. The device appears on `/api/v1/devices` once it has dialled, which is its own next step and not this one: approving decides admission and does not open a connection.
+
+  Approving twice is the same answer as approving once. A code no connector holds is a 404, and so is one that was already rejected. It takes admit_device on the driver resource kind.
+
+  It answers the core operation approve-registration and resolves through the module wire method device.approve.
+  """
+  approve_registration(
+    """
+    The registration code, as the listing reports it and as the device displays it.
+    """
+    code: String!
+  ): Registration!
+}

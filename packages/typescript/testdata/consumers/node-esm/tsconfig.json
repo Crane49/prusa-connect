@@ -1,0 +1,28 @@
+{
+  // skipLibCheck is off on purpose: the point of this consumer is that the
+  // shipped .d.ts files hold under a strict consumer, not only that the
+  // consumer's own lines do.
+  //
+  // DOM is in the lib because the generated operations.d.ts names BodyInit,
+  // which @types/node declares nowhere. RequestInit["body"] would name the
+  // same type from the fetch declarations Node carries; until the generator
+  // writes that, a Node consumer without the DOM lib cannot check the
+  // package's types.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noEmitOnError": true,
+    "rootDir": "src",
+    "outDir": "dist",
+    "skipLibCheck": false
+  },
+  "include": ["src"]
+}

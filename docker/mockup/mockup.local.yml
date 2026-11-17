@@ -1,0 +1,23 @@
+# Local overrides for the Fractal mockup: host ports, on the loopback address
+# only. Every port reads from the root .env with a default, so two developers
+# running different ports never edit tracked yaml.
+#
+# The NATS ports of the Fractal module are not published. A server below
+# reaches the server above it by service name on the compose network, which is
+# where that traffic belongs.
+services:
+  hq:
+    ports:
+      - "127.0.0.1:${PCL_MOCKUP_HQ_PORT:-18080}:8080"
+
+  brno:
+    ports:
+      - "127.0.0.1:${PCL_MOCKUP_BRNO_PORT:-18081}:8080"
+
+  workshop:
+    ports:
+      - "127.0.0.1:${PCL_MOCKUP_WORKSHOP_PORT:-18082}:8080"
+
+  garage:
+    ports:
+      - "127.0.0.1:${PCL_MOCKUP_GARAGE_PORT:-18083}:8080"

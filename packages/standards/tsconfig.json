@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["svelte", "vite/client", "node"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    // Both are set by the reference repository's tsconfig.json and both are
+    // free of cost: neither catches anything the strict flags above already
+    // catch, and both catch a real class of bug none of them does.
+    //
+    // forceConsistentCasingInFileNames refuses an import whose case does not
+    // match the file on disk. macOS and Windows resolve it anyway, so the
+    // mistake is invisible until a Linux build breaks.
+    "forceConsistentCasingInFileNames": true,
+    // resolveJsonModule lets a component import a fixture or a small config
+    // file directly, typed, instead of an ambient `declare module '*.json'`.
+    "resolveJsonModule": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "_meta.language": "Čeština",
+  "_meta.note": "Texty této aplikace v češtině, ve jmenném prostoru `app`. Klíč, který tu chybí, se ukáže anglicky.",
+  "app.nav.dashboards": "Nástěnky",
+  "app.nav.extensions": "Rozšíření",
+  "app.nav.jobs": "Úlohy",
+  "app.nav.printers": "Tiskárny",
+  "app.nav.settings": "Nastavení",
+  "app.nav.settings.account": "Účet",
+  "app.nav.settings.appearance": "Vzhled",
+  "app.nav.settings.diagnostics": "Diagnostika",
+  "app.nav.settings.extensions": "Rozšíření",
+  "app.nav.settings.people": "Uživatelé",
+  "app.nav.settings.server": "Server",
+  "app.nav.settings.tokens": "Přístupové údaje k API",
+  "app.nav.storage": "Úložiště",
+  "app.nav.tags": "Štítky"
+}

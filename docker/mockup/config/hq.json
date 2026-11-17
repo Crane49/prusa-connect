@@ -1,0 +1,23 @@
+{
+  "node_id": "hq",
+  "data_dir": "/data/fractal",
+  "accept": {
+    "advertise": "nats://hq:7422",
+    "client_listen": "0.0.0.0:4222",
+    "leaf_listen": "0.0.0.0:7422",
+    "ask_first": true
+  },
+  "shadow": {
+    "patterns": [
+      "*"
+    ]
+  },
+  "files": {
+    "base_url": "http://hq:8443",
+    "allow_cleartext_parent": true
+  },
+  "heartbeat_interval": "2s",
+  "max_heartbeat_interval": "3s",
+  "liveness_multiple": 2,
+  "poll_interval": "1s"
+}

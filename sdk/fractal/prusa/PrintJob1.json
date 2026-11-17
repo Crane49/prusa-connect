@@ -1,0 +1,10 @@
+{
+  "interface": "PrintJob1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "currentJobID", "type": "int", "access": "ro", "nullable": true },
+    { "name": "progress", "type": "int", "access": "ro", "nullable": true },
+    { "name": "timePrinting", "type": "int", "access": "ro", "nullable": true },
+    { "name": "timeRemaining", "type": "int", "access": "ro", "nullable": true }
+  ]
+}

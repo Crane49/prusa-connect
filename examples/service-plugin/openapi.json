@@ -1,0 +1,504 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "example-service",
+    "version": "1.0.0",
+    "description": "The routes examples/service-plugin serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at <mount>/openapi.json."
+  },
+  "components": {
+    "schemas": {
+      "Refusal": {
+        "type": "object",
+        "description": "What a route answers when the host or the module refused the call.",
+        "properties": {
+          "error": {"type": "string", "description": "The refusal, in the words the host gave the module."}
+        },
+        "required": ["error"]
+      },
+      "BurstCounts": {
+        "type": "object",
+        "description": "What a burst of concurrent calls was told, one count per outcome.",
+        "properties": {
+          "sent": {"type": "integer", "description": "Calls the host accepted. Present on an emit burst."},
+          "kept": {"type": "integer", "description": "Calls the host accepted. Present on a state burst."},
+          "busy": {"type": "integer", "description": "Calls the host refused for being over its limit."},
+          "failed": {"type": "integer", "description": "Calls that failed for another reason."},
+          "refusal": {"type": "string", "description": "The last refusal's text, or empty."}
+        },
+        "required": ["busy", "failed", "refusal"]
+      }
+    },
+    "responses": {
+      "Refused": {
+        "description": "The host or the module refused the call. The status says which limit or permission it met.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Refusal"}}}
+      }
+    }
+  },
+  "paths": {
+    "/spools": {
+      "get": {
+        "operationId": "list-spools",
+        "summary": "The spools on the shelf",
+        "description": "A fixed pair of spools and the principal the host authorized, which is the host's answer and never a header the caller set. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The listing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "spools": {"type": "array", "items": {"type": "string"}, "description": "The spool names."},
+                    "principal": {"type": "string", "description": "Who the host says is calling."}
+                  },
+                  "required": ["spools", "principal"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create-spool",
+        "summary": "Add a spool",
+        "description": "Echoes the body as the spool it created, with the principal the host authorized. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {"text/plain": {"schema": {"type": "string", "description": "The spool name."}}}
+        },
+        "responses": {
+          "201": {
+            "description": "The spool was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "created": {"type": "string", "description": "The body as it arrived."},
+                    "principal": {"type": "string", "description": "Who the host says is calling."}
+                  },
+                  "required": ["created", "principal"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/records": {
+      "get": {
+        "operationId": "list-state-keys",
+        "summary": "The keys this module keeps",
+        "description": "Every key under the prefix, from the record store the host serves this module under its own namespace.",
+        "parameters": [
+          {"name": "prefix", "in": "query", "description": "Keep only keys starting with this.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The keys.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "keys": {"type": "array", "items": {"type": "string"}, "description": "The keys, in the store's order."}
+                  },
+                  "required": ["keys"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/records/{key}": {
+      "parameters": [
+        {"name": "key", "in": "path", "required": true, "description": "The record key, which may carry slashes.", "schema": {"type": "string"}}
+      ],
+      "get": {
+        "operationId": "get-state",
+        "summary": "One record",
+        "description": "The value and the version the module holds under the key.",
+        "responses": {
+          "200": {
+            "description": "The record.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "value": {"type": "string", "description": "The stored bytes as text."},
+                    "version": {"type": "integer", "description": "The version a conditional write quotes."}
+                  },
+                  "required": ["value", "version"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      },
+      "put": {
+        "operationId": "put-state",
+        "summary": "Write one record",
+        "description": "Stores the body under the key. With version the write is conditional on the version quoted, which is how two writers of one key avoid losing an update.",
+        "parameters": [
+          {"name": "version", "in": "query", "description": "The version last read. Absent means an unconditional write.", "schema": {"type": "integer"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {"application/octet-stream": {"schema": {"type": "string", "format": "binary", "description": "The bytes to keep."}}}
+        },
+        "responses": {
+          "200": {
+            "description": "The record was written.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {"type": "integer", "description": "The version the write produced."}
+                  },
+                  "required": ["version"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      },
+      "delete": {
+        "operationId": "delete-state",
+        "summary": "Remove one record",
+        "description": "Deletes the key. A key that was never written is not a refusal.",
+        "responses": {
+          "200": {
+            "description": "The record is gone.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "deleted": {"type": "string", "description": "The key that was removed."}
+                  },
+                  "required": ["deleted"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "operationId": "list-fleet-devices",
+        "summary": "The devices the caller may see",
+        "description": "The host's fleet, read as the person the module is serving, or as the module itself with as=self. The host decides every row before it reaches the module.",
+        "parameters": [
+          {"name": "as", "in": "query", "description": "Who to read as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}},
+          {"name": "label", "in": "query", "description": "Keep only devices carrying every label given.", "schema": {"type": "array", "items": {"type": "string"}}}
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of devices, in the shape sdk/deviceapi publishes.",
+            "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "A deviceapi.Page."}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/devices/{id}": {
+      "parameters": [
+        {"name": "id", "in": "path", "required": true, "description": "The device id.", "schema": {"type": "string"}}
+      ],
+      "get": {
+        "operationId": "get-fleet-device",
+        "summary": "One device",
+        "description": "One device from the host's fleet, on the same permission rule as the listing.",
+        "parameters": [
+          {"name": "as", "in": "query", "description": "Who to read as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The device, in the shape sdk/deviceapi publishes.",
+            "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "A deviceapi.Device."}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/devices/{id}/jobs": {
+      "get": {
+        "operationId": "get-fleet-device-jobs",
+        "summary": "What a device is printing and what it printed last",
+        "description": "The device's current print and the one before it, read through the host from its record store, on the same permission rule as reading the device.",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "The device id.", "schema": {"type": "string"}},
+          {"name": "as", "in": "query", "description": "Who to read as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The two prints, in the shape sdk/deviceapi publishes.",
+            "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "A deviceapi.Jobs."}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/devices/{id}/files": {
+      "get": {
+        "operationId": "list-fleet-device-files",
+        "summary": "One window of what a device holds",
+        "description": "The storages a device reported when the path is empty, or one directory of its file tree asked of the machine, through the host. No file content crosses: a transfer is an HTTP operation on the host.",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "The device id.", "schema": {"type": "string"}},
+          {"name": "path", "in": "query", "description": "The storage-prefixed path to list, such as usb/models. Empty is the root, which answers the storages.", "schema": {"type": "string"}},
+          {"name": "limit", "in": "query", "description": "How many entries to return. Zero is the host's default page size.", "schema": {"type": "integer"}},
+          {"name": "offset", "in": "query", "description": "How many entries to skip.", "schema": {"type": "integer"}},
+          {"name": "as", "in": "query", "description": "Who to read as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "One window of the listing, in the shape sdk/deviceapi publishes.",
+            "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "A deviceapi.Listing."}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/devices/{id}/command": {
+      "post": {
+        "operationId": "send-fleet-command",
+        "summary": "Send a device one command",
+        "description": "Runs the verb on the device through the host, which checks the caller's permission on that device before the command leaves the module.",
+        "parameters": [
+          {"name": "id", "in": "path", "required": true, "description": "The device id.", "schema": {"type": "string"}},
+          {"name": "verb", "in": "query", "required": true, "description": "The command verb, from the capability vocabulary.", "schema": {"type": "string"}},
+          {"name": "as", "in": "query", "description": "Who to act as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"type": "object", "additionalProperties": {"type": "string"}, "description": "The verb's arguments."}}}
+        },
+        "responses": {
+          "200": {
+            "description": "What the device answered, in the shape sdk/deviceapi publishes.",
+            "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "A deviceapi.Result."}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/registrations/{code}/approve": {
+      "post": {
+        "operationId": "approve-registration",
+        "summary": "Approve a device by its code",
+        "description": "Approves the pending registration showing this code, through the host and on the caller's permission.",
+        "parameters": [
+          {"name": "code", "in": "path", "required": true, "description": "The code the device shows.", "schema": {"type": "string"}},
+          {"name": "as", "in": "query", "description": "Who to act as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The registration, in the shape sdk/deviceapi publishes.",
+            "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "A deviceapi.Registration."}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "read-event-windows",
+        "summary": "Read windows off the host's event stream",
+        "description": "Opens a subscription as the caller, waits for the number of windows asked for or the module's own deadline, and answers with what arrived.",
+        "parameters": [
+          {"name": "windows", "in": "query", "description": "How many windows to wait for. Absent means one.", "schema": {"type": "integer", "minimum": 1}},
+          {"name": "type", "in": "query", "description": "Keep only events of these types.", "schema": {"type": "array", "items": {"type": "string"}}},
+          {"name": "as", "in": "query", "description": "Who to read as. Absent means the authorized caller, self means the module's own grant.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The windows that arrived.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "windows": {"type": "array", "items": {"type": "object", "additionalProperties": true, "description": "A busapi.Window."}, "description": "The windows, oldest first."}
+                  },
+                  "required": ["windows"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/emit": {
+      "post": {
+        "operationId": "emit-event",
+        "summary": "Publish one event",
+        "description": "Publishes the body on the endpoint named, which the operator declared for this instance. An endpoint the operator did not declare is refused by the host.",
+        "parameters": [
+          {"name": "endpoint", "in": "query", "description": "The declared endpoint. Absent means changed.", "schema": {"type": "string"}},
+          {"name": "key", "in": "query", "description": "The event key.", "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"type": "object", "additionalProperties": true, "description": "The event payload."}}}
+        },
+        "responses": {
+          "200": {
+            "description": "The event was published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "emitted": {"type": "string", "description": "The endpoint it went out on."}
+                  },
+                  "required": ["emitted"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/emit-burst": {
+      "post": {
+        "operationId": "emit-burst",
+        "summary": "Publish many events at once",
+        "description": "Publishes n events concurrently and counts what each was told, which is how the host's per-module emit limit is read from outside.",
+        "parameters": [
+          {"name": "n", "in": "query", "required": true, "description": "How many events to publish at once.", "schema": {"type": "integer", "minimum": 1}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The counts.",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BurstCounts"}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/state-burst": {
+      "post": {
+        "operationId": "state-burst",
+        "summary": "Write many records at once",
+        "description": "Writes n records concurrently and counts what each was told, which is how the host's per-module state limit is read from outside.",
+        "parameters": [
+          {"name": "n", "in": "query", "required": true, "description": "How many writes to make at once.", "schema": {"type": "integer", "minimum": 1}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The counts.",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/BurstCounts"}}}
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/state-late/{key}": {
+      "put": {
+        "operationId": "put-state-late",
+        "summary": "Write one record after some work",
+        "description": "Does a fixed amount of work before it writes, so the ordering between the host's routes slot and its state slot can be observed.",
+        "parameters": [
+          {"name": "key", "in": "path", "required": true, "description": "The record key.", "schema": {"type": "string"}}
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {"application/octet-stream": {"schema": {"type": "string", "format": "binary", "description": "The bytes to keep."}}}
+        },
+        "responses": {
+          "200": {
+            "description": "The record was written.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {"type": "integer", "description": "The version the write produced."}
+                  },
+                  "required": ["version"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    },
+    "/startup": {
+      "get": {
+        "operationId": "get-startup",
+        "summary": "What the host said to a call made before the module was ready",
+        "description": "The answer the store gave to a read made from inside plugin.info, which is the earliest a module can speak and before the host has finished starting it.",
+        "responses": {
+          "200": {
+            "description": "The answer, recorded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "early_state_call": {"type": "string", "description": "The error text, or empty when the call has not been made."}
+                  },
+                  "required": ["early_state_call"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/call": {
+      "get": {
+        "operationId": "call-contract",
+        "summary": "Call another module",
+        "description": "Calls a GET route of another module, through the host and as this module, and answers what that module answered. This module names it under requires or suggests.",
+        "parameters": [
+          {"name": "module", "in": "query", "required": true, "schema": {"type": "string"}, "description": "The namespace of the module to call."},
+          {"name": "path", "in": "query", "required": true, "schema": {"type": "string"}, "description": "The route of that module, such as /spools."}
+        ],
+        "responses": {
+          "200": {
+            "description": "What the other module answered.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {"type": "integer", "description": "The status the other module answered."},
+                    "body": {"description": "The body the other module answered."}
+                  },
+                  "required": ["status"]
+                }
+              }
+            }
+          },
+          "400": {"description": "The call is outside the bounds the host publishes."},
+          "403": {"description": "This module did not name that module under calls, requires or suggests."},
+          "503": {"description": "That module is not running."}
+        }
+      }
+    },
+    "/panic": {
+      "get": {
+        "operationId": "panic",
+        "summary": "A handler that panics",
+        "description": "Panics inside the module's own process, so a host can show what an ill-behaved module costs the server: this instance, and nothing else.",
+        "responses": {
+          "500": {"description": "The module's process unwound the call."}
+        }
+      }
+    }
+  }
+}

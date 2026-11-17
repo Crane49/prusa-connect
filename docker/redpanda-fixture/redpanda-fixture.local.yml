@@ -1,0 +1,11 @@
+# Host port for the fixture, so the test suite on the host can reach it. Reads
+# from the root .env with a default, so two developers on different ports never
+# edit tracked yaml.
+#
+# The base file's --advertise-kafka-addr reads the same variable, because a
+# Kafka client is redirected to the advertised address after its first metadata
+# call and a mismatch here fails on the second request rather than the first.
+services:
+  redpanda-fixture:
+    ports:
+      - "${KAFKA_FIXTURE_PORT:-59092}:9092"

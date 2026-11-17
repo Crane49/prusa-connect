@@ -1,0 +1,65 @@
+{
+  "name": "prusa-connect-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The core's own pages: the sign-in and the fleet, on @prusa/connect-ui and the client SDK. Plain Vite, client-only, no SvelteKit.",
+  "type": "module",
+  "scripts": {
+    "build:library": "pnpm --dir ../packages/svelte run build",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build -o storybook-static",
+    "lint": "eslint . --concurrency=auto",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:svelte": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "test": "vitest run",
+    "test:ux": "vitest run --config vitest.ux.config.ts",
+    "test:craft": "vitest run --config vitest.craft.config.ts",
+    "test:modules": "vitest run --config vitest.modules.config.ts",
+    "test:craft:record": "node --experimental-strip-types test/craft/record.ts",
+    "check": "pnpm run lint && pnpm run format:check && pnpm run check:svelte && pnpm run test",
+    "prepare": "cd .. && husky frontend/.husky"
+  },
+  "lint-staged": {
+    "*": "prettier --write --ignore-unknown",
+    "*.{ts,js,mjs,cjs,svelte}": "eslint --fix --no-warn-ignored"
+  },
+  "dependencies": {
+    "@lucide/svelte": "1.58.0",
+    "@prusa/connect": "0.1.0",
+    "@prusa/connect-ui": "0.1.0",
+    "fractal-client": "link:../packages/fractal/client"
+  },
+  "devDependencies": {
+    "@prusa/frontend-standards": "0.1.0",
+    "@storybook/addon-docs": "10.6.2",
+    "@storybook/addon-svelte-csf": "5.1.5",
+    "@storybook/svelte": "10.6.2",
+    "@storybook/svelte-vite": "10.6.2",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "22.20.5",
+    "@vitest/browser-playwright": "5.0.5",
+    "eslint": "10.12.0",
+    "husky": "9.1.7",
+    "lint-staged": "17.6.0",
+    "playwright": "1.64.1",
+    "prettier": "3.9.10",
+    "storybook": "10.6.2",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.5",
+    "vitest-browser-svelte": "3.1.0"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

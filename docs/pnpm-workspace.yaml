@@ -1,0 +1,26 @@
+# Dependencies must have been public for 3 days before pnpm will resolve them.
+# Blunts the window in which a compromised release reaches a build.
+minimumReleaseAge: 4320
+
+# Everything else installs with scripts disabled; only these may run them.
+allowBuilds:
+  esbuild: true # Vite/Astro bundler, needs its platform binary
+  sharp: true # Astro image optimisation, needs its libvips binding
+  '@scarf/scarf': false # install-time analytics ping, nothing depends on it running
+
+# Written versions stay exact; a caret range would erode the pinning one
+# `pnpm add` at a time.
+savePrefix: ''
+
+# Refuse to run a script when node_modules has drifted from the lockfile,
+# instead of failing later with a confusing error.
+verifyDepsBeforeRun: error
+
+# Packages a security advisory names, held above the fixed version whatever
+# their parent asks for. Remove a line once the parent moves on its own.
+overrides:
+  'js-yaml@>=4.0.0 <4.3.2': '4.3.2'
+  'svgo@>=4.0.0 <4.1.0': '>=4.1.0'
+  'nanoid@<3.3.18': '3.3.18'
+  'lodash-es@<4.18.0': '>=4.18.0'
+  'devalue@<5.9.2': '5.9.2'

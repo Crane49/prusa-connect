@@ -1,0 +1,30 @@
+{
+  "name": "prusa-connect-docs",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev --port 4322",
+    "generate:protocol-reference-pages": "node ./scripts/generate-native-asyncapi-pages.mjs",
+    "prebuild": "pnpm run generate:protocol-reference-pages",
+    "build": "astro build",
+    "build:swagger": "node ./scripts/build-swagger.mjs",
+    "build:static": "pnpm run generate:protocol-reference-pages && pnpm run build:swagger && astro build && node ./scripts/postbuild-static.mjs",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.41.11",
+    "astro": "7.4.0",
+    "js-yaml": "4.3.2",
+    "mermaid": "12.2.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "jsdom": "30.1.3",
+    "swagger-ui-dist": "5.33.3"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

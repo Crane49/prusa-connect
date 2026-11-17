@@ -1,0 +1,39 @@
+{
+  "firmware": "8.0.0",
+  "tool_count": 5,
+  "tools": {
+    "0": {
+      "type": "FFF_PRINT_HEAD",
+      "features": {
+        "nozzle_diameter": 0.4,
+        "nozzle_hardened": false,
+        "nozzle_high_flow": false
+      },
+      "material_package_instance": null
+    },
+    "1": {
+      "type": "FFF_PRINT_HEAD",
+      "features": {
+        "nozzle_diameter": 0.6,
+        "nozzle_hardened": false,
+        "nozzle_high_flow": false
+      },
+      "material_package_instance": {
+        "class": "FFF",
+        "package": {
+          "class": "FFF",
+          "material": {
+            "class": "FFF",
+            "abbreviation": "PLA",
+            "primary_color": {
+              "color_rgba": "#ff8000"
+            }
+          }
+        }
+      }
+    },
+    "2": null,
+    "3": null,
+    "4": null
+  }
+}

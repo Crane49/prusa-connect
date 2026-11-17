@@ -1,0 +1,42 @@
+# What the retired server's durable command queue keeps and what it sweeps,
+# the old backlog. Earlier research has the command lifecycle and says
+# nothing about retention, the cleanup interval or the sweep at startup.
+#
+# Columns: case, subject, value, outcome. A subject of status:X is a command in
+# that state. A subject of error:X is the reason a recovered command carries.
+# Any other subject is a key in config/config.yaml and the value is what that
+# file declares.
+#
+# Read from a run, not from the source. Six commands were written straight into
+# ./data/commands.db at the ages below, then the server was started with
+# queue.cleanup_interval shortened to 3s so the retention sweep could be watched
+# inside one session. The binary was built with CGO_ENABLED=1 inside golang:1.26
+# on 2026-08-29. The log named `recovered: 1` at startup and `Cleaned up old
+# commands, count: 1` three seconds later, and the table then held five rows.
+#
+# What the run found:
+#
+#   A sent command past queue.recovery_timeout becomes failed, not timeout. The
+#   comment beside that key in config/config.yaml says "will be marked as
+#   timeout" and CommandStatusTimeout is declared and never assigned.
+#
+#   Retention deletes completed commands and nothing else. A pending or failed
+#   command is kept at any age, so the file grows without bound for every
+#   command that never completed.
+#
+#   The recovery sweep runs once, at startup. A sent command inside the window
+#   at that moment is never looked at again by it.
+#
+#   The core has no durable queue, so an upgrade leaves ./data/commands.db on
+#   disk and reads none of it. docs/CHANGELOG.md carries that loss.
+sent-past-the-recovery-timeout	status:sent	sent_at 30m ago	failed
+sent-inside-the-recovery-timeout	status:sent	sent_at 5s ago	sent
+completed-past-retention	status:completed	completed_at 47h ago	deleted
+completed-inside-retention	status:completed	completed_at 4m ago	completed
+pending-at-any-age	status:pending	created_at 48h ago	pending
+failed-at-any-age	status:failed	created_at 48h ago	failed
+the-recovered-command-carries-a-reason	error:sent	Command timeout after server restart	failed
+the-retention-window	queue.retention	24h	a completed command past this age is deleted
+the-sweep-cadence	queue.cleanup_interval	1h	how often the retention sweep runs
+the-recovery-window	queue.recovery_timeout	5m	a sent command older than this is swept at startup
+the-file-that-survives-a-restart	queue.db_path	./data/commands.db	the sqlite file holding every row above

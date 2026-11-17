@@ -1,0 +1,14 @@
+{
+  "firstRun.code": "Setup code",
+  "firstRun.codeWhere": "The server printed this code in its log when it started. Read it with docker logs for a container, or journalctl for a service. If the log no longer shows it, restart the server to print a new one. An install that sets the code in its configuration prints none.",
+  "firstRun.confirm": "Confirm password",
+  "firstRun.missingCode": "Enter the setup code from the server's log.",
+  "firstRun.missingUsername": "Enter the name this administrator signs in with.",
+  "firstRun.note": "This server has no accounts yet. The one you create now is an administrator.",
+  "firstRun.password": "Password",
+  "firstRun.passwordShort": "Use at least eight characters.",
+  "firstRun.passwordsDiffer": "The two passwords do not match.",
+  "firstRun.submit": "Create administrator",
+  "firstRun.title": "Welcome",
+  "firstRun.username": "Username"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@prusa/connect",
+  "version": "0.0.1",
+  "description": "A typed client for the Prusa Connect HTTP API, generated from the core's own contracts.",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prusa3d/prusa-connect.git",
+    "directory": "packages/typescript"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "generate:types": "openapi-typescript ../../internal/transport/http/httpapi/openapi.json -o src/generated/core-api.ts",
+    "test": "tsc -p tsconfig.test.json && node --test \"test/*.test.ts\""
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.5",
+    "openapi-typescript": "7.13.0",
+    "publint": "0.3.25",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

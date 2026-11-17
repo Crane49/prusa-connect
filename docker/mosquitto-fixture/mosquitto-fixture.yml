@@ -1,0 +1,101 @@
+# The MQTT broker the event sink adapter is verified against.
+#
+# A fixture, not a deployment: it holds nothing worth keeping, and the topic
+# contract it proves is the one existing subscribers read, so the comparison
+# has to run against a real broker rather than a fake. adapters/events/mqtt
+# writes MQTT 3.1.1 publish on the standard library (ADR-20260825-n55 rule 2), and a
+# wire written by hand is exactly the code that must be tested against the
+# thing it claims to speak.
+#
+# The configuration is baked into the image by the Dockerfile beside this file
+# rather than mounted; the Dockerfile says why. Nothing here touches a host
+# path, so the fixture starts on a host whose Docker refuses bind mounts.
+#
+# No host port here. It is in mosquitto-fixture.local.yml.
+services:
+  mosquitto-fixture:
+    # Built from the Dockerfile beside this file, whose FROM is pinned by
+    # digest. The tag is what compose names the built image.
+    image: prusa-connect-mosquitto-fixture:local
+    build:
+      context: .
+    container_name: prusa_connect_mosquitto_fixture
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition leaves it out and only a command that names the service
+    # starts it, which activates the profile on its own. The Docker job and
+    # `make docker-check` bring the stack up with --no-build against images
+    # already built, and this service has to be built. `make fixtures-up` and
+    # `make test-adapters` name it.
+    profiles:
+      - fixtures
+    # A fixture does not come back on its own. It holds nothing worth keeping,
+    # every suite that uses it skips cleanly when it is absent, and
+    # unless-stopped resurrects it on every reboot forever, which is how six
+    # idle containers were found running after a restart nobody asked for.
+    # Started by a test run or by `make fixtures-up`, and gone when it stops.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    labels:
+      com.prusa3d.description: "Throwaway MQTT broker the event sink conformance run publishes to"
+      com.prusa3d.service: "test-fixture"
+
+    # Nothing persists, so the image's data and log paths are scratch. Owned by
+    # 1883 because the image drops to that uid, and a tmpfs mounts root-owned:
+    # the entrypoint's chown is what fails otherwise, proved by
+    # "chown: /mosquitto/data: Operation not permitted" in the container log.
+    #
+    # Not read_only: the entrypoint writes to /mosquitto before it drops.
+    tmpfs:
+      - /mosquitto/data:uid=1883,gid=1883
+      - /mosquitto/log:uid=1883,gid=1883
+
+    healthcheck:
+      # mosquitto_sub ships in the image, so this needs no curl and no extra
+      # layer. $SYS/broker/uptime is published by the broker itself, so a
+      # single message proves it is accepting subscriptions and publishing.
+      test: ["CMD-SHELL", "mosquitto_sub -p 1883 -t '$$SYS/broker/uptime' -C 1 -W 3 >/dev/null"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      start_period: 5s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    # The image starts as root, takes its data directories, and drops to the
+    # mosquitto user. Without these it exits with "Error setting groups whilst
+    # dropping privileges".
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 256M
+        reservations:
+          cpus: "0.05"
+          memory: 32M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

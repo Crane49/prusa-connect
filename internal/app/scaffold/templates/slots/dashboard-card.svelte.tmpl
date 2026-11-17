@@ -1,0 +1,40 @@
+<script lang="ts">
+  import type { CardProps } from '@prusa/connect-ui/slots';
+
+  import { heldHost } from './host';
+
+  // What a card receives, and nothing else: its settings, checked against the
+  // schema in module.yaml, the heading a person wrote over it, its size in
+  // cells, and whether the dashboard is being changed.
+  let { config, title, size, editing }: CardProps = $props();
+
+  // The fleet is already on the host: the app reads it once and keeps it
+  // current from the event stream. A card opens no stream and polls nothing
+  // of its own, so a wall of cards costs the printers nothing more.
+  const host = heldHost();
+  const fleet = host.fleet;
+  const t = host.t;
+
+  // The settings are checked before they arrive, so `device` is a string, and
+  // the empty one until a person picks a printer.
+  const device = $derived(fleet.device(String(config.device)));
+  // A person's heading wins. With none, the card writes its own.
+  const heading = $derived(
+    title === '' ? t('{{$.Name}}.dashboardCard.title') : title,
+  );
+</script>
+
+<!-- The card fills its cell, so it draws no frame and sets no outer size. It
+     reads `size` to leave out what does not fit a small cell. -->
+<div class="flex h-full flex-col gap-1 p-3">
+  <h3 class="truncate text-sm font-medium">{heading}</h3>
+  {#if device === undefined}
+    <p class="text-sm text-muted-foreground">
+      {t('{{$.Name}}.dashboardCard.absent')}
+    </p>
+  {:else if size.h > 1 && !editing}
+    <p class="text-sm text-muted-foreground">
+      {t('{{$.Name}}.dashboardCard.body')}
+    </p>
+  {/if}
+</div>

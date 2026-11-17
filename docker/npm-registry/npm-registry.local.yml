@@ -1,0 +1,15 @@
+# Host port for the local npm registry, so a publish from the host and an
+# install from any project on the machine both reach it. Reads from the root
+# .env with a default, so two developers on different ports never edit tracked
+# yaml.
+#
+# Bound to 127.0.0.1 and not to every interface. The registry accepts an
+# unauthenticated publish of the @prusa scope, and a port open to the network
+# would let anyone on it replace a package the machine then installs.
+#
+# 54874, one above the fixture's 54873, so the two can run at once: the
+# install check starts and removes its own registry while this one stays up.
+services:
+  npm-registry:
+    ports:
+      - "127.0.0.1:${NPM_REGISTRY_PORT:-54874}:4873"

@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("qoif\xff000\xff00000000000000")

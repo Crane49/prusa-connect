@@ -1,0 +1,18 @@
+[
+  {
+    "model": "MK4",
+    "machine": "prusa-mk4-027c",
+    "preset": "mk4",
+    "firmware_ref": "master@e96ce2b92",
+    "firmware_sha256": "58c0b7457705e1d8306c82217d9c8636bb698bc5495977e6cb371a5eab4ffc44",
+    "mini404_sha": "b1d64ef6a0"
+  },
+  {
+    "model": "COREONE",
+    "machine": "prusa-coreone",
+    "preset": "coreone",
+    "firmware_ref": "master@e96ce2b92",
+    "firmware_sha256": "b18bfd2ba7256fcce4aea392ae8ad47b52db07942e9650cd6d7030da63eea738",
+    "mini404_sha": "b1d64ef6a0"
+  }
+]

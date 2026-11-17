@@ -1,0 +1,425 @@
+// Package webrtc remuxes a camera's H.264 elementary stream into a WebRTC
+// track a browser plays.
+//
+// It reads NAL boundaries and never a pixel. There is no pure-Go H.264 encoder
+// and the Pi 5 has no hardware one, so code that re-encoded could not run on
+// the target machine. What happens here is start-code framing in and RTP
+// payloads out.
+//
+// The engine defaults to no ICE server. Host candidates are addresses bound on
+// this machine (RFC 8445 section 3), so a browser on the same network completes
+// a connection with no STUN and no TURN, and an air-gapped install keeps
+// working. A public STUN server would be a hidden cloud dependency, so an
+// operator must name one explicitly.
+package webrtc
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"log/slog"
+	"net"
+	"sync"
+	"time"
+
+	"github.com/pion/ice/v4"
+	"github.com/pion/interceptor"
+	pion "github.com/pion/webrtc/v4"
+	"github.com/pion/webrtc/v4/pkg/media"
+)
+
+// The refusals a caller inspects with errors.Is.
+var (
+	// ErrNotAnOffer reports a body that is not an SDP offer this engine can
+	// answer, which is a client error and never a camera's.
+	ErrNotAnOffer = errors.New("webrtc: the body is not an SDP offer with a video track")
+	// ErrOfferTooLarge reports an offer over the ceiling. An SDP a browser
+	// produces is a few kilobytes.
+	ErrOfferTooLarge = errors.New("webrtc: the offer is over the ceiling")
+)
+
+const (
+	// offerCeiling bounds one offer. Chrome's offer for a single recvonly video
+	// transceiver is about 2 KiB, so 64 KiB is ample and still refuses a body
+	// sent to make this server allocate.
+	offerCeiling = 64 << 10
+
+	// defaultConnectTimeout is how long a negotiated view may fail to connect
+	// before it is torn down. A client that asks for an answer and never dials
+	// otherwise holds a camera's bulkhead slot and a device socket for ever.
+	defaultConnectTimeout = 30 * time.Second
+
+	// h264ClockRate is the RTP clock H.264 is carried on, fixed by RFC 6184.
+	h264ClockRate = 90000
+
+	// reportBuffer holds one receiver report. It is the usual path MTU, which
+	// is larger than any RTCP compound this receives.
+	reportBuffer = 1500
+
+	// The bounds on one access unit's duration. A camera that stalls and then
+	// resumes must not advance the RTP clock by the length of the stall, and
+	// two units in the same millisecond must still advance it.
+	minUnitDuration = time.Millisecond
+	maxUnitDuration = time.Second
+)
+
+// Config is what the composition root supplies.
+type Config struct {
+	// Logger is where a view's failures are reported. It is required.
+	Logger *slog.Logger
+	// ICEServers is the STUN and TURN list, empty by default. An operator who
+	// watches a camera across a NAT names one here and takes the dependency
+	// deliberately.
+	ICEServers []pion.ICEServer
+	// ConnectTimeout bounds how long a negotiated view may stay unconnected.
+	// Zero takes defaultConnectTimeout.
+	ConnectTimeout time.Duration
+	// LoopbackOnly gathers candidates on the loopback interface and nowhere
+	// else, so no socket is bound on an address another machine can reach.
+	//
+	// The tests of this package set it, and so does a core started with
+	// app.Options.LoopbackOnly. Gathering on every interface opens a UDP
+	// socket on each one, and on Windows the firewall then asks the person at
+	// the keyboard to allow the binary, on every run.
+	LoopbackOnly bool
+}
+
+// Engine negotiates viewers and relays frames to them. One engine serves every
+// camera, because a peer connection is per viewer and nothing here is per
+// device.
+type Engine struct {
+	api     *pion.API
+	config  pion.Configuration
+	timeout time.Duration
+	log     *slog.Logger
+}
+
+// New builds the engine. It fails only on a media engine this build cannot
+// construct, which is a programming error rather than an operator's.
+func New(cfg Config) (*Engine, error) {
+	if cfg.Logger == nil {
+		return nil, errors.New("webrtc: a logger is required")
+	}
+
+	engine := &pion.MediaEngine{}
+	if err := engine.RegisterDefaultCodecs(); err != nil {
+		return nil, fmt.Errorf("register the media codecs: %w", err)
+	}
+
+	interceptors := &interceptor.Registry{}
+	if err := pion.RegisterDefaultInterceptors(engine, interceptors); err != nil {
+		return nil, fmt.Errorf("register the media interceptors: %w", err)
+	}
+
+	settings := pion.SettingEngine{}
+
+	// A server publishes the address a browser dials. mDNS obfuscation is a
+	// browser-side privacy feature and here it would hide the only candidate
+	// that works on a LAN with no mDNS responder.
+	settings.SetICEMulticastDNSMode(ice.MulticastDNSModeDisabled)
+
+	// A host with no interface up but loopback is the air-gapped case and the
+	// container case, and without this it gathers no candidate at all.
+	settings.SetIncludeLoopbackCandidate(true)
+
+	if cfg.LoopbackOnly {
+		keepLoopbackOnly(&settings)
+	}
+
+	timeout := cfg.ConnectTimeout
+	if timeout <= 0 {
+		timeout = defaultConnectTimeout
+	}
+
+	return &Engine{
+		api: pion.NewAPI(
+			pion.WithMediaEngine(engine),
+			pion.WithInterceptorRegistry(interceptors),
+			pion.WithSettingEngine(settings),
+		),
+		config:  pion.Configuration{ICEServers: cfg.ICEServers},
+		timeout: timeout,
+		log:     cfg.Logger,
+	}, nil
+}
+
+// keepLoopbackOnly holds candidate gathering to the loopback interface.
+//
+// Both filters are set, because the two answer different questions. The
+// interface filter is asked once per interface and the address filter once per
+// address, and an interface named lo can still carry an address that is not a
+// loopback one.
+func keepLoopbackOnly(settings *pion.SettingEngine) {
+	settings.SetInterfaceFilter(func(name string) bool {
+		found, err := net.InterfaceByName(name)
+		if err != nil {
+			return false
+		}
+
+		return found.Flags&net.FlagLoopback != 0
+	})
+
+	settings.SetIPFilter(func(address net.IP) bool { return address.IsLoopback() })
+}
+
+// Offer answers one browser's SDP offer and starts relaying frames to it.
+//
+// It takes ownership of frames and closes them when the view ends, whichever
+// way it ends: the browser going away, the camera stopping, the connection
+// failing, or the connect deadline passing with nothing dialled. Closing the
+// stream is what gives the camera's bulkhead slot and its device socket back,
+// so every exit here goes through one close.
+func (e *Engine) Offer(ctx context.Context, offer string, frames io.ReadCloser) (string, error) {
+	if frames == nil {
+		return "", errors.New("webrtc: no frames to relay")
+	}
+
+	if err := checkOffer(offer); err != nil {
+		_ = frames.Close()
+
+		return "", err
+	}
+
+	peer, err := e.api.NewPeerConnection(e.config)
+	if err != nil {
+		_ = frames.Close()
+
+		return "", fmt.Errorf("open a peer connection: %w", err)
+	}
+
+	view := &view{peer: peer, frames: frames, log: e.log, connected: make(chan struct{})}
+
+	// Watched before the offer is read, because a connection that arrives
+	// during the negotiation would otherwise change state with nothing
+	// listening, and the deadline below would then close a working view.
+	view.watch()
+
+	answer, err := e.negotiate(ctx, view, offer)
+	if err != nil {
+		view.close()
+
+		return "", err
+	}
+
+	// The deadline starts here and not above, because it bounds a view that was
+	// answered and never dialled. A clock started before the answer exists
+	// closes the connection the negotiation is still building, and the caller
+	// is then told the offer failed on a machine that was only slow.
+	view.deadline(e.timeout)
+
+	go view.relay()
+
+	return answer, nil
+}
+
+// negotiate adds the track, answers the offer and waits for the candidates.
+//
+// The answer is returned with every candidate already in it. Trickle needs a
+// second channel from the server back to the client, and this surface is one
+// request and one response, so the candidates are gathered to completion and
+// one POST is enough.
+func (e *Engine) negotiate(ctx context.Context, v *view, offer string) (string, error) {
+	track, err := pion.NewTrackLocalStaticSample(
+		pion.RTPCodecCapability{MimeType: pion.MimeTypeH264, ClockRate: h264ClockRate},
+		"video", "camera")
+	if err != nil {
+		return "", fmt.Errorf("open a video track: %w", err)
+	}
+
+	v.track = track
+
+	sender, err := v.peer.AddTrack(track)
+	if err != nil {
+		return "", fmt.Errorf("attach the video track: %w", err)
+	}
+
+	go drainReports(sender)
+
+	if err = v.peer.SetRemoteDescription(
+		pion.SessionDescription{Type: pion.SDPTypeOffer, SDP: offer}); err != nil {
+		return "", fmt.Errorf("%w: %w", ErrNotAnOffer, err)
+	}
+
+	answer, err := v.peer.CreateAnswer(nil)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrNotAnOffer, err)
+	}
+
+	gathered := pion.GatheringCompletePromise(v.peer)
+
+	if err = v.peer.SetLocalDescription(answer); err != nil {
+		return "", fmt.Errorf("set the local description: %w", err)
+	}
+
+	select {
+	case <-gathered:
+	case <-ctx.Done():
+		return "", fmt.Errorf("gather ice candidates: %w", ctx.Err())
+	}
+
+	local := v.peer.LocalDescription()
+	if local == nil {
+		return "", errors.New("webrtc: the peer connection produced no answer")
+	}
+
+	return local.SDP, nil
+}
+
+// view is one viewer: their peer connection, the camera stream feeding it, and
+// the one close that ends both.
+type view struct {
+	peer   *pion.PeerConnection
+	track  *pion.TrackLocalStaticSample
+	frames io.ReadCloser
+	log    *slog.Logger
+
+	connected chan struct{}
+	once      sync.Once
+	ready     sync.Once
+}
+
+// watch ends the view when the connection fails or goes away.
+func (v *view) watch() {
+	v.peer.OnConnectionStateChange(func(state pion.PeerConnectionState) {
+		switch state {
+		case pion.PeerConnectionStateConnected:
+			v.ready.Do(func() { close(v.connected) })
+		case pion.PeerConnectionStateFailed,
+			pion.PeerConnectionStateClosed,
+			pion.PeerConnectionStateDisconnected:
+			v.close()
+		case pion.PeerConnectionStateNew,
+			pion.PeerConnectionStateConnecting,
+			pion.PeerConnectionStateUnknown:
+		}
+	})
+}
+
+// deadline ends the view when the answer is never dialled. It is started once
+// the answer exists, so the clock measures the wait for the browser and not the
+// negotiation this server did first.
+func (v *view) deadline(timeout time.Duration) {
+	timer := time.AfterFunc(timeout, func() {
+		select {
+		case <-v.connected:
+		default:
+			v.log.Warn("a camera view was answered and never dialled",
+				"timeout", timeout.String())
+			v.close()
+		}
+	})
+
+	// The timer holds a reference to the view until it fires, so it is stopped
+	// as soon as the connection arrives rather than left to run.
+	go func() {
+		<-v.connected
+		timer.Stop()
+	}()
+}
+
+// relay reads access units from the camera and writes them as samples.
+//
+// Each sample is one access unit, so the payloader marks the last packet of a
+// picture and not the last packet of a NAL unit. The mark tells a decoder that
+// a frame is complete.
+func (v *view) relay() {
+	defer v.close()
+
+	pictures := newPictures(v.frames).withLog(v.log)
+
+	var last time.Time
+
+	for {
+		unit, err := pictures.next()
+		if err != nil {
+			if !errors.Is(err, io.EOF) {
+				v.log.Warn("a camera view ended on a stream failure", "error", err.Error())
+			}
+
+			return
+		}
+
+		now := time.Now()
+
+		duration := minUnitDuration
+		if !last.IsZero() {
+			duration = clamp(now.Sub(last))
+		}
+
+		last = now
+
+		if err = v.track.WriteSample(media.Sample{Data: unit, Duration: duration}); err != nil {
+			if !errors.Is(err, io.ErrClosedPipe) {
+				v.log.Warn("a camera view ended on a write failure", "error", err.Error())
+			}
+
+			return
+		}
+	}
+}
+
+// close ends the view once. Closing the camera stream is what releases the
+// device connection and the instance's bulkhead slot, so it happens on every
+// path out.
+func (v *view) close() {
+	v.once.Do(func() {
+		v.ready.Do(func() { close(v.connected) })
+
+		if err := v.frames.Close(); err != nil {
+			v.log.Warn("a camera stream did not close cleanly", "error", err.Error())
+		}
+
+		if err := v.peer.Close(); err != nil {
+			v.log.Warn("a peer connection did not close cleanly", "error", err.Error())
+		}
+	})
+}
+
+// drainReports reads the receiver reports the browser sends back. They are not
+// acted on, and they have to be read: the interceptor chain buffers them, and a
+// buffer nobody drains stops the chain.
+func drainReports(sender *pion.RTPSender) {
+	report := make([]byte, reportBuffer)
+
+	for {
+		if _, _, err := sender.Read(report); err != nil {
+			return
+		}
+	}
+}
+
+// checkOffer refuses a body that is not an offer this engine can answer, before
+// a peer connection is built for it.
+func checkOffer(offer string) error {
+	if len(offer) > offerCeiling {
+		return fmt.Errorf("%w: %d bytes", ErrOfferTooLarge, len(offer))
+	}
+
+	parsed, err := (&pion.SessionDescription{Type: pion.SDPTypeOffer, SDP: offer}).Unmarshal()
+	if err != nil {
+		return fmt.Errorf("%w: %w", ErrNotAnOffer, err)
+	}
+
+	for _, medium := range parsed.MediaDescriptions {
+		if medium.MediaName.Media == "video" {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("%w: it offers no video", ErrNotAnOffer)
+}
+
+// clamp bounds one access unit's duration. The elementary stream carries no
+// timing, so the pace of arrival is the pace of the stream, and a camera that
+// stalls for a minute must not advance the RTP clock by a minute.
+func clamp(d time.Duration) time.Duration {
+	switch {
+	case d < minUnitDuration:
+		return minUnitDuration
+	case d > maxUnitDuration:
+		return maxUnitDuration
+	default:
+		return d
+	}
+}

@@ -1,0 +1,27 @@
+# What stays out of the race image's build context. Read by BuildKit instead
+# of the root .dockerignore because this Dockerfile is named on the command
+# line, and it keeps .github, which the gates under internal/arch read.
+
+# Host node_modules never reach the image: pnpm's store is a symlink farm and
+# the native binaries are built for the host.
+**/node_modules
+
+# Build output the tests do not read.
+bin/
+**/dist
+docs/.astro
+docs/out
+
+# The history is not under test, and it is most of the checkout.
+.git
+
+# Runtime state a developer's server wrote beside the tree.
+data/
+files/
+storage/
+*.log
+*.db
+*.db-shm
+*.db-wal
+.venv/
+**/__pycache__

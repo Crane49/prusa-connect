@@ -1,0 +1,5709 @@
+{
+  "schema": 1,
+  "generated_by": "go test ./internal/printer/profile -run TestProfilesMatchTheRetiredMatrix -update",
+  "profiles": [
+    {
+      "model": "CoreOne",
+      "device_type_id": "7.1.0",
+      "firmware_device_type_id": "7.1.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_addon_power": {
+          "flag": true
+        },
+        "core.command.set_addon_power#addon_power": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_fan_target": {
+          "flag": true
+        },
+        "core.command.set_chamber_fan_target#chamber.fan_pwm_target": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_led_intensity": {
+          "flag": true
+        },
+        "core.command.set_chamber_led_intensity#chamber.led_intensity": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_target_temp": {
+          "flag": true
+        },
+        "core.command.set_chamber_target_temp#chamber.target_temp": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_addon_params": {
+          "flag": true
+        },
+        "core.feature.set_chamber_params": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "CoreOneL",
+      "device_type_id": "8.1.0",
+      "firmware_device_type_id": "8.1.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_addon_power": {
+          "flag": true
+        },
+        "core.command.set_addon_power#addon_power": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_fan_target": {
+          "flag": true
+        },
+        "core.command.set_chamber_fan_target#chamber.fan_pwm_target": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_led_intensity": {
+          "flag": true
+        },
+        "core.command.set_chamber_led_intensity#chamber.led_intensity": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_target_temp": {
+          "flag": true
+        },
+        "core.command.set_chamber_target_temp#chamber.target_temp": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_addon_params": {
+          "flag": true
+        },
+        "core.feature.set_chamber_params": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "CoreOneL_INDX",
+      "device_type_id": "8.10.0",
+      "firmware_device_type_id": "8.10.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_addon_power": {
+          "flag": true
+        },
+        "core.command.set_addon_power#addon_power": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_fan_target": {
+          "flag": true
+        },
+        "core.command.set_chamber_fan_target#chamber.fan_pwm_target": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_led_intensity": {
+          "flag": true
+        },
+        "core.command.set_chamber_led_intensity#chamber.led_intensity": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_target_temp": {
+          "flag": true
+        },
+        "core.command.set_chamber_target_temp#chamber.target_temp": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_nozzle_temperature#tool": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_addon_params": {
+          "flag": true
+        },
+        "core.feature.set_chamber_params": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "CoreOne_INDX",
+      "device_type_id": "7.10.0",
+      "firmware_device_type_id": "7.10.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_addon_power": {
+          "flag": true
+        },
+        "core.command.set_addon_power#addon_power": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_fan_target": {
+          "flag": true
+        },
+        "core.command.set_chamber_fan_target#chamber.fan_pwm_target": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_led_intensity": {
+          "flag": true
+        },
+        "core.command.set_chamber_led_intensity#chamber.led_intensity": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_target_temp": {
+          "flag": true
+        },
+        "core.command.set_chamber_target_temp#chamber.target_temp": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_nozzle_temperature#tool": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_addon_params": {
+          "flag": true
+        },
+        "core.feature.set_chamber_params": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "IX",
+      "device_type_id": "4.1.0",
+      "firmware_device_type_id": "4.1.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_led_intensity": {
+          "flag": true
+        },
+        "core.command.set_chamber_led_intensity#chamber.led_intensity": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.z_power_move": {
+          "flag": true
+        },
+        "core.command.z_power_move#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MINI",
+      "device_type_id": "2.1.0",
+      "firmware_device_type_id": "2.1.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MK3.5",
+      "device_type_id": "1.3.5",
+      "firmware_device_type_id": "1.3.5",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MK3.5S",
+      "device_type_id": "1.3.6",
+      "firmware_device_type_id": "1.3.5",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MK3.9",
+      "device_type_id": "1.3.9",
+      "firmware_device_type_id": "1.4.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MK3.9S",
+      "device_type_id": "1.3.10",
+      "firmware_device_type_id": "1.4.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MK4",
+      "device_type_id": "1.4.0",
+      "firmware_device_type_id": "1.4.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "MK4S",
+      "device_type_id": "1.4.1",
+      "firmware_device_type_id": "1.4.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    },
+    {
+      "model": "XL",
+      "device_type_id": "3.1.0",
+      "firmware_device_type_id": "3.1.0",
+      "firmware": {
+        "from": "6.4.0-0"
+      },
+      "capabilities": {
+        "core.command.beep": {
+          "flag": true
+        },
+        "core.command.cancel_object": {
+          "flag": true
+        },
+        "core.command.cancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.cancel_printer_ready": {
+          "flag": true
+        },
+        "core.command.create_folder": {
+          "flag": true
+        },
+        "core.command.create_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_file": {
+          "flag": true
+        },
+        "core.command.delete_file#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.delete_folder": {
+          "flag": true
+        },
+        "core.command.delete_folder#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action": {
+          "flag": true
+        },
+        "core.command.dialog_action#button": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.dialog_action#dialog_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.disable_steppers": {
+          "flag": true
+        },
+        "core.command.flash": {
+          "flag": true
+        },
+        "core.command.flash#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.force_gcode": {
+          "flag": true
+        },
+        "core.command.force_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.home": {
+          "flag": true
+        },
+        "core.command.home#axis": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.load_filament": {
+          "flag": true
+        },
+        "core.command.load_filament#filament": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.command.mesh_bed_leveling": {
+          "flag": true
+        },
+        "core.command.move": {
+          "flag": true
+        },
+        "core.command.move#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move#x": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move#y": {
+          "flag": true,
+          "kind": "number"
+        },
+        "core.command.move_e": {
+          "flag": true
+        },
+        "core.command.move_e#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.move_e#length": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z": {
+          "flag": true
+        },
+        "core.command.move_z#distance": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.move_z#feedrate": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.pause_print": {
+          "flag": true
+        },
+        "core.command.reset": {
+          "flag": true
+        },
+        "core.command.reset_printer": {
+          "flag": true
+        },
+        "core.command.resume_print": {
+          "flag": true
+        },
+        "core.command.send_file_info": {
+          "flag": true
+        },
+        "core.command.send_file_info#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_gcode": {
+          "flag": true
+        },
+        "core.command.send_gcode#gcode": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.send_info": {
+          "flag": true
+        },
+        "core.command.send_job_info": {
+          "flag": true
+        },
+        "core.command.send_job_info#job_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.send_state_info": {
+          "flag": true
+        },
+        "core.command.send_transfer_info": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature": {
+          "flag": true
+        },
+        "core.command.set_bed_temperature#bed_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_chamber_led_intensity": {
+          "flag": true
+        },
+        "core.command.set_chamber_led_intensity#chamber.led_intensity": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_enclosure_enabled": {
+          "flag": true
+        },
+        "core.command.set_enclosure_enabled#enclosure_enabled": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_enclosure_postprint": {
+          "flag": true
+        },
+        "core.command.set_enclosure_postprint#enclosure_postprint": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_enclosure_postprint_filtration_time": {
+          "flag": true
+        },
+        "core.command.set_enclosure_postprint_filtration_time#enclosure_postprint_filtration_time": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_enclosure_printing_filtration": {
+          "flag": true
+        },
+        "core.command.set_enclosure_printing_filtration#enclosure_printing_filtration": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_flow": {
+          "flag": true
+        },
+        "core.command.set_flow#flow": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_hostname": {
+          "flag": true
+        },
+        "core.command.set_hostname#hostname": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_idle": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature": {
+          "flag": true
+        },
+        "core.command.set_nozzle_temperature#nozzle_temperature": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_nozzle_temperature#tool": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.set_printer_ready": {
+          "flag": true
+        },
+        "core.command.set_speed": {
+          "flag": true
+        },
+        "core.command.set_speed#speed": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_token": {
+          "flag": true
+        },
+        "core.command.set_token#token": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.set_tool_hardened": {
+          "flag": true
+        },
+        "core.command.set_tool_hardened#hardened": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_hardened#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_high_flow": {
+          "flag": true
+        },
+        "core.command.set_tool_high_flow#high_flow": {
+          "flag": true,
+          "kind": "boolean",
+          "required": true
+        },
+        "core.command.set_tool_high_flow#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter": {
+          "flag": true
+        },
+        "core.command.set_tool_nozzle_diameter#nozzle_diameter": {
+          "flag": true,
+          "kind": "number",
+          "required": true
+        },
+        "core.command.set_tool_nozzle_diameter#tool": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download": {
+          "flag": true
+        },
+        "core.command.start_connect_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_connect_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_connect_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download": {
+          "flag": true
+        },
+        "core.command.start_encrypted_download#iv": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#key": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_encrypted_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_encrypted_download#port": {
+          "flag": true,
+          "kind": "integer"
+        },
+        "core.command.start_inline_download": {
+          "flag": true
+        },
+        "core.command.start_inline_download#hash": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#orig_size": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_inline_download#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_inline_download#team_id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.start_print": {
+          "flag": true
+        },
+        "core.command.start_print#path": {
+          "flag": true,
+          "kind": "string",
+          "required": true
+        },
+        "core.command.start_print#tool_mapping": {
+          "flag": true,
+          "kind": "opaque"
+        },
+        "core.command.stop_print": {
+          "flag": true
+        },
+        "core.command.stop_transfer": {
+          "flag": true
+        },
+        "core.command.uncancel_object": {
+          "flag": true
+        },
+        "core.command.uncancel_object#id": {
+          "flag": true,
+          "kind": "integer",
+          "required": true
+        },
+        "core.command.unload_filament": {
+          "flag": true
+        },
+        "core.command.upgrade": {
+          "flag": true
+        },
+        "core.command.upgrade#path": {
+          "flag": true,
+          "kind": "string"
+        },
+        "core.feature.bgcode": {
+          "flag": true
+        },
+        "core.feature.dialogs": {
+          "flag": true
+        },
+        "core.feature.filament": {
+          "flag": true
+        },
+        "core.feature.file_upload": {
+          "flag": true
+        },
+        "core.feature.files": {
+          "flag": true
+        },
+        "core.feature.fw_update_path": {
+          "flag": true
+        },
+        "core.feature.lazy_file_protocol": {
+          "flag": true
+        },
+        "core.feature.old_job_info": {
+          "flag": true
+        },
+        "core.feature.queue": {
+          "flag": true
+        },
+        "core.feature.recursive_delete": {
+          "flag": true
+        },
+        "core.feature.set_enclosure_params": {
+          "flag": true
+        },
+        "core.feature.set_hostname": {
+          "flag": true
+        },
+        "core.feature.set_tool_params": {
+          "flag": true
+        },
+        "core.feature.tool_mapping": {
+          "flag": true
+        }
+      }
+    }
+  ]
+}

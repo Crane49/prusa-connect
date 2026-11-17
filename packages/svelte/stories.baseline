@@ -1,0 +1,11 @@
+# Barrel components with no story yet, for src/stories-cover-components.test.ts.
+# Format: the path, a space, the reason. Delete a line when its component gets
+# a story. Never add one: a new component ships with its story.
+src/primitives/alert-dialog/alert-dialog-overlay.svelte AlertDialogContent draws it, and every alert dialog story shows that
+src/primitives/alert-dialog/alert-dialog-portal.svelte AlertDialogContent draws it, and it has no look of its own
+src/primitives/dialog/dialog-overlay.svelte DialogContent draws it, and every dialog story shows that
+src/primitives/dialog/dialog-portal.svelte DialogContent draws it, and it has no look of its own
+src/primitives/scroll-area/scroll-bar.svelte ScrollArea draws it, and every scroll area story shows that
+src/primitives/select/select-scroll-down-button.svelte SelectContent draws it when the list is taller than the window
+src/primitives/select/select-scroll-up-button.svelte SelectContent draws it when the list is taller than the window
+src/primitives/sheet/sheet-portal.svelte SheetContent draws it, and it has no look of its own

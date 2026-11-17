@@ -1,0 +1,14 @@
+{
+  "printerDetailCameras.alt": "The camera {camera} on {printer}",
+  "printerDetailCameras.empty.heading": "No cameras",
+  "printerDetailCameras.empty.note": "This printer has no camera yet.",
+  "printerDetailCameras.live": "Live",
+  "printerDetailCameras.liveFailed": "The camera did not start streaming. Press play to try again.",
+  "printerDetailCameras.loading": "Loading cameras",
+  "printerDetailCameras.noPicture": "This camera has sent no picture yet.",
+  "printerDetailCameras.none": "This camera offers no picture this page can show.",
+  "printerDetailCameras.notRunningNote": "This camera is not running.",
+  "printerDetailCameras.notServing": "Not running",
+  "printerDetailCameras.play": "Play {camera} live",
+  "printerDetailCameras.stop": "Stop {camera}"
+}

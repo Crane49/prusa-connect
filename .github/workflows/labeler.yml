@@ -1,0 +1,29 @@
+name: Label pull requests
+
+# Labels every pull request from .github/labeler.yml: its kind from the branch
+# prefix, its area from the paths it touches. sync-labels removes an area label
+# once the change no longer touches it.
+#
+# pull_request_target, so a Dependabot or fork pull request gets a token that
+# can write labels. That is safe only because nothing here checks out or runs
+# the pull request's code: the labeler reads the file list through the API.
+# Never add a checkout or a run step to this file. Code from a fork would then
+# run with a token that can write to this repository.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  label:
+    name: Label
+    runs-on: ubuntu-latest
+    # The token reads the labeler configuration and writes labels, nothing more.
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        with:
+          sync-labels: true

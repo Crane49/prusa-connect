@@ -1,0 +1,126 @@
+# The OpenID Connect issuer the login is developed and tested against.
+#
+# An earlier design decision makes login an OAuth 2.1 authorization code flow with PKCE. A
+# flow like that cannot be exercised without an issuer, and the alternative to
+# running one is a branch in the server that skips the check under a test flag.
+# That branch is the thing this container exists to make unnecessary: the
+# shortcut is a real issuer that happens to run locally, not a check that does
+# not run. internal/platform/auth has no test-only path, and this is why it
+# does not need one.
+#
+# A fixture, not a deployment. Every session, code and signing key it holds is
+# in memory and gone with the container, and the image says of itself that it
+# is not production-ready. The application never talks to this one outside
+# development and CI.
+#
+# Absent from docker-compose.yml on purpose: a production-shaped composition
+# has no business publishing an issuer that authenticates anyone who asks.
+#
+# The subjects file is baked into the image by the Dockerfile beside this
+# file rather than mounted; the Dockerfile says why. Nothing here touches a
+# host path, so the issuer starts on a host whose Docker refuses bind mounts.
+#
+# No host port here. It is in mock-oidc.local.yml.
+services:
+  mock-oidc:
+    # Built from the Dockerfile beside this file, whose FROM is pinned by
+    # digest rather than by tag. docker-services.md refuses `latest` because a
+    # floating reference makes a build unreproducible; a digest is the same
+    # rule taken to its end, since a tag can be repointed at a new image and a
+    # digest cannot. The tag here is what compose names the built image.
+    image: prusa-connect-mock-oidc:local
+    build:
+      context: .
+    container_name: prusa_connect_mock_oidc
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition leaves it out and only a command that names the service
+    # starts it, which activates the profile on its own. The Docker job and
+    # `make docker-check` bring the stack up with --no-build against images
+    # already built, and this service has to be built. `make fixtures-up`
+    # names it.
+    profiles:
+      - fixtures
+    # The issuer is a fixture too: the login suite skips when it is absent, and
+    # a container that authenticates whoever asks has no business surviving a
+    # reboot nobody asked for.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    environment:
+      # The root .env carries PCL_* names, so nothing here collides with the
+      # generic PORT and TTL this image reads. Both are pinned explicitly so
+      # the container port stays true whatever the .env holds.
+      PORT: "8092"
+      # Token lifetime in seconds. The issuer's token is spent once, at the
+      # callback, and what a caller carries afterwards is a credential this
+      # server minted, so a short life here costs nothing.
+      TTL: "300"
+      USERS_FILE: /config/users.yaml
+
+    labels:
+      com.prusa3d.description: "Throwaway OpenID Connect issuer the A9 login flow is developed and tested against"
+      com.prusa3d.service: "test-fixture"
+
+    # The image declares USER 0 and binds 80 by default. Neither is necessary:
+    # moving the listener above 1024 lets it run as a non-root uid with every
+    # capability dropped, which is what docker-services.md asks for wherever
+    # the base image allows it. Verified: `id` reports 65532 and a write to
+    # /app returns EROFS.
+    user: "65532:65532"
+
+    read_only: true
+    tmpfs:
+      - /tmp
+
+    healthcheck:
+      # The image carries node and no curl, so the probe is node's own fetch
+      # against the document every OIDC client starts from. A container whose
+      # discovery endpoint does not answer is of no use to a login even if the
+      # process is alive.
+      test:
+        [
+          "CMD",
+          "/nodejs/bin/node",
+          "-e",
+          "fetch('http://localhost:8092/.well-known/openid-configuration').then(r=>{if(!r.ok)throw 1}).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      # Cold start is generating an RSA signing key and binding a port, which
+      # measured under two seconds. Rounded up.
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          # Measured at 24 MiB idle serving discovery. The ceiling is generous
+          # against a heap that grows with in-memory sessions.
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.1"
+          memory: 32M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

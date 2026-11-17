@@ -1,0 +1,13 @@
+{
+  "node_id": "garage",
+  "data_dir": "/data/fractal",
+  "join": {
+    "address": "nats://hq:4222"
+  },
+  "heartbeat_interval": "2s",
+  "poll_interval": "1s",
+  "files": {
+    "base_url": "http://garage:8443",
+    "allow_cleartext_parent": true
+  }
+}

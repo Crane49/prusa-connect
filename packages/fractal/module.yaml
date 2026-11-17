@@ -1,0 +1,183 @@
+# The manifest of the Fractal module. The module is one Go process, built from
+# main.go. It has no web page of its own.
+#
+# `prusa-connect module add` reads this file from the release and writes
+# one entry into the server's configuration file. That entry records the digest
+# of the installed release. The digest is not in this file, because it changes
+# with every build.
+#
+# This file names no namespace. The host derives the namespace from the module
+# path the operator installed, so a module cannot take the address of another
+# module.
+
+name: fractal
+summary: Connects this server to a Prusa Fractal network. It can join a server above it and accept servers below it.
+codeowner: Prusa Research
+# A link is this server's connection to the server above it and to the servers
+# below it. The links page shows every instance of kind link.
+kind: link
+version: 1.0.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The document of the routes this module serves. The host checks it at the
+# start and publishes it rebased under the mount, so a client reads it beside
+# the routes.
+openapi: openapi.json
+# The major version of the protocol between this process and the host.
+contract_major: 1
+
+# The host methods this module calls. The host does not start the module when
+# it cannot answer one of them.
+require:
+  # List the printers of this server and read their state.
+  core-device.list: "*"
+  core-device.get: "*"
+  # Send a command to a printer. The module sends one for every method call
+  # that arrives from the server above.
+  core-device.command: "*"
+  # Receive an event when a printer changes, so the module does not have to
+  # list all printers again to notice it.
+  core-bus.subscribe: "*"
+  # Read the shared folders of this server's storages: list a folder, read
+  # the length and digest of a file, and read a file the storage keeps no
+  # digest for, to hash it. Only a server with a files block calls them.
+  core-storage.stat: "*"
+  core-storage.read: "*"
+  core-storage.list: "*"
+  # Print a file a server above shares, from its storage or from the copy in
+  # the folder print/ of the data directory.
+  core-device.print: "*"
+  # Ask whether the server above may print, before a print of a file from the
+  # network is answered.
+  core-access.check: "*"
+
+# What the module needs beyond the API. The operator approves each of them.
+# Only a server with a files block uses them, and the module refuses to start
+# with a files block when one is not granted.
+needs:
+  listen:
+    - name: files
+      tcp: 8443
+      why: the servers below fetch the files this server shares over HTTPS
+  # The shared folders, the digests the module computed, and the copies of
+  # files from the servers above.
+  data: true
+
+# The settings of this module. Each key has a type, a default and a description.
+#
+# An operator writes a key under `config:` in this module's entry of the server
+# configuration file. A key the operator does not write keeps the default below.
+# The host refuses a key that is not in this list, before the process starts.
+#
+# `node_id` and `data_dir` have no default, because no value fits every server.
+# The module does not start without them, and the error names the missing key.
+#
+# README.md has the same table. manifest_test.go fails when the two differ.
+options:
+  - key: node_id
+    type: string
+    required: true
+    summary: The name of this server in the Fractal network, for example `brno`.
+  - key: data_dir
+    type: string
+    required: true
+    summary: The directory where the module stores its key, the servers it admitted and the commands that wait.
+  - key: identity
+    type: secret
+    summary: The private key of this server, as NKEY seed text. By default the module creates one in `data_dir`.
+
+  - key: join
+    type: object
+    summary: The server above this one. A server at the top of the network does not set it.
+  - key: accept
+    type: object
+    summary: Lets other servers and printers join this server. A server that accepts nobody does not set it.
+  - key: tls
+    type: object
+    summary: The TLS certificate of this server and the authorities it trusts. Without it, nothing is encrypted.
+  - key: files
+    type: object
+    summary: Turns on file sharing in the Fractal network. Its base_url is the files address that every grant carries.
+  - key: shadow
+    type: object
+    default: "{}"
+    summary: Selects which state of the servers and printers below is copied to this server. The default copies nothing.
+
+  - key: command_principal
+    type: string
+    default: node
+    summary: "Whose permissions this server checks for a command from the server above: `node` or `self`."
+
+  - key: dedup_window
+    type: duration
+    default: 5m
+    summary: How long the module remembers the id of a command, so a command that arrives twice runs once.
+  - key: credential_lifetime
+    type: duration
+    default: 24h
+    summary: How long the credentials stay valid that this server issues to a server below it.
+  - key: heartbeat_interval
+    type: duration
+    default: 5s
+    summary: How often this server sends a heartbeat to the server above. A heartbeat shows the sender is running.
+  - key: max_heartbeat_interval
+    type: duration
+    default: 10s
+    summary: The longest heartbeat interval this server allows a server below it to use.
+  - key: liveness_multiple
+    type: int
+    default: "3"
+    summary: How many heartbeats in a row a server below may miss before this server marks it as disconnected.
+  - key: ack_wait
+    type: duration
+    default: 30s
+    summary: How long the module waits for the receiver to confirm a command before it sends the command again.
+  - key: stream_max_age
+    type: duration
+    default: 168h
+    summary: How long a command waits for a disconnected server before the module deletes the command.
+  - key: stream_max_bytes
+    type: int
+    default: "268435456"
+    summary: The most disk space, in bytes, for the waiting commands of one server. When it is full, a new command fails.
+  - key: max_payload
+    type: int
+    default: "8388608"
+    summary: The largest message the module sends or accepts, in bytes. The default is 8 MiB.
+  - key: poll_interval
+    type: duration
+    default: 1s
+    summary: How often the module checks whether each server below is still connected.
+
+  - key: flush_interval
+    type: duration
+    default: 500ms
+    summary: How often the module sends changed printer state to the server above. It sends the changes together.
+  - key: resync_interval
+    type: duration
+    default: 30s
+    summary: How often the module lists all printers again, to find a change it received no event for.
+
+# The most this module may do on this server. The host refuses any other
+# action from it.
+#
+# `observe` lets the module read printers, so it can send their state to the
+# server above. `operate` lets it send a command to a printer. Without
+# `operate`, the module still sends state and refuses every command from the
+# network. `read_storage` lets it list and read the shared folders and print a
+# file with device.print (ADR-20261023-sns rules 2 and 6). Only a server with a files
+# block uses it.
+#
+# This list does not grant access to any printer. The permissions of this
+# server decide that for each printer, for the identity named by
+# `command_principal`.
+permissions:
+  - observe
+  - operate
+  - read_storage
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64

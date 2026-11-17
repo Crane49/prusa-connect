@@ -1,0 +1,8 @@
+# Host port for the Authelia fixture, so the server and the browser on the
+# host reach one issuer at one address. Reads from the root .env with a
+# default. The portal address in the baked configuration reads the same
+# variable, and so does scripts/check-oidc-providers.sh.
+services:
+  authelia-fixture:
+    ports:
+      - "127.0.0.1:${PCL_AUTHELIA_FIXTURE_PORT:-58191}:9091"

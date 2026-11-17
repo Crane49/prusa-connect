@@ -1,0 +1,20 @@
+{
+  "name": "prusa-connect-consumer-node-esm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A plain Node program that installs @prusa/connect from a registry and runs it against a server. No bundler.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/main.js"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

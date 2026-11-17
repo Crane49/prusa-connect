@@ -1,0 +1,58 @@
+# Prusa Connect profile: a TLS browser/API listener and a second,
+# TLS printer-facing listener.
+#
+# The two are separate sockets because the two clients cannot be satisfied at
+# once. A printer verifies against one CA certificate loaded from a USB stick
+# and speaks TLS 1.2 with a single ECDSA cipher suite; a browser verifies
+# against its own trust store and is held to TLS 1.3. One socket would make the
+# printer's floor everybody's floor, and would answer the whole API on whatever
+# network the printers are on.
+#
+# There is no minimum-version key on either listener. Each floor has one
+# correct answer, and nobody has to choose it.
+#
+# `make certificate-all` writes both keypairs below.
+#
+# Every key below is one this build reads. A key it does not read is refused at
+# startup, naming the key and the line it is on.
+
+persistence:
+  type: "sqlite"
+
+core:
+  api:
+    addr: ":8443"
+    tls:
+      certificate: certs/server/api.crt
+      key: certs/server/api.key
+  # The second socket belongs to the dialect that serves those printers, so it
+  # is written under that connector. `xbuddy` here is a name you choose; the
+  # dialect is `type`.
+  connectors:
+    xbuddy:
+      type: xbuddy
+      config:
+        listener:
+          addr: ":8444"
+          # Must be ECDSA: the firmware offers one cipher suite and that suite
+          # needs an ECDSA key. A certificate naming an IP address must carry it
+          # as both IP: and DNS:, because mbedTLS 2.x matches a hostname against
+          # DNS entries only. `make certificate-prusa` emits both.
+          tls:
+            certificate: certs/server/printer.crt
+            key: certs/server/printer.key
+          # How long a printer is given to complete its TLS handshake. 60s is
+          # the default, above the API listener's own bound, because a printer
+          # that is busy printing loses a shorter one.
+          handshake_timeout: 60s
+  log:
+    level: info
+    format: text
+
+resources:
+  storage:
+    local:
+      type: filesystem
+      enabled: true
+      config:
+        root: ./storage

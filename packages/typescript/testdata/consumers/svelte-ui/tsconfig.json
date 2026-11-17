@@ -1,0 +1,23 @@
+{
+  // skipLibCheck is on here and off in the other three consumers. The library
+  // ships a `.d.ts` per source file, written by svelte2tsx, and those files
+  // name the Svelte shims rather than a public type. packages/svelte checks
+  // them where they are written; a consumer checks its own lines against
+  // them, which is what svelte-check does below.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["svelte", "vite/client"],
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte", "*.config.ts"]
+}

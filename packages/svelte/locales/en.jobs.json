@@ -1,0 +1,23 @@
+{
+  "jobs.action.openPrinter": "Open printer",
+  "jobs.action.printAgain": "Print again",
+  "jobs.actions": "Actions",
+  "jobs.caption": "Every print this server knows about, newest first",
+  "jobs.duration": "Duration",
+  "jobs.empty.heading": "No prints yet",
+  "jobs.empty.note": "A print appears here as soon as one of your printers starts printing.",
+  "jobs.file": "File",
+  "jobs.filtered.heading": "No prints match these filters",
+  "jobs.filtered.note": "No print fits every filter and the search at once.",
+  "jobs.loading": "Loading prints",
+  "jobs.preview": "Preview",
+  "jobs.printer": "Printer",
+  "jobs.progress": "Progress",
+  "jobs.progressFor": "Progress of {name}",
+  "jobs.search.label": "Search prints",
+  "jobs.search.placeholder": "Search by file name…",
+  "jobs.started": "Started",
+  "jobs.state": "State",
+  "jobs.title": "Jobs",
+  "jobs.unit": "{count, plural, one {print} other {prints}}"
+}

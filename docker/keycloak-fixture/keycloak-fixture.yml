@@ -1,0 +1,92 @@
+# Keycloak, one of the real OpenID Connect providers the sign-in is checked
+# against by `make oidc-providers-check` (scripts/check-oidc-providers.sh).
+#
+# A fixture, not a deployment. It runs in development mode with an in-memory
+# database, and the realm, the client and both people in it are baked into the
+# image from config/pcl-realm.json. Nothing it holds survives the container.
+#
+# Development mode takes the issuer's host name from each request, so the
+# server on the host and the browser both see the issuer at the host port
+# keycloak-fixture.local.yml publishes.
+#
+# No host port here. It is in keycloak-fixture.local.yml.
+services:
+  keycloak-fixture:
+    # Built from the Dockerfile beside this file, whose FROM is pinned by
+    # digest. The tag is what compose names the built image.
+    image: prusa-connect-keycloak-fixture:local
+    build:
+      context: .
+    container_name: prusa_connect_keycloak_fixture
+    # Behind a profile of its own, so neither a whole-stack `up` nor
+    # `make fixtures-up` starts a provider that takes a minute and 512 MiB.
+    # scripts/check-oidc-providers.sh names it.
+    profiles:
+      - oidc-providers
+    restart: "no"
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    environment:
+      KC_HEALTH_ENABLED: "true"
+      KC_LOG_LEVEL: "warn"
+      # The administrator of the master realm. The check provisions nothing
+      # through it: everything it needs is in the imported realm.
+      KC_BOOTSTRAP_ADMIN_USERNAME: "admin"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "admin"
+
+    labels:
+      com.prusa3d.description: "Keycloak with a throwaway realm, for the sign-in check against real providers"
+      com.prusa3d.service: "test-fixture"
+
+    # Development mode builds the server into /opt/keycloak at start and keeps
+    # its database under /opt/keycloak/data, so the root file system stays
+    # writable. The image runs as uid 1000 and needs no capability.
+    user: "1000:0"
+
+    healthcheck:
+      # The image has bash and no curl, so the probe opens the management
+      # port with bash's own /dev/tcp.
+      test:
+        [
+          "CMD-SHELL",
+          "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q UP <&3",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      # A cold start builds the server and imports the realm. Measured at 25
+      # seconds on an eight-core laptop. Rounded up for a two-core runner.
+      start_period: 90s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

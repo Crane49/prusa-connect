@@ -1,0 +1,1016 @@
+# What the shipping command validator accepts, one row per value offered to it.
+# That validator is the retired connector's, and these rows were taken by running
+# it rather than by reading its conditionals.
+#
+# Columns: command, argument, type, value, refused, reason. refused is true when
+# the validator rejected the value for the value's own sake. reason is the error
+# it gave, and is empty on an accepted value.
+#
+# A refusal about anything else, a required argument that is missing or a printer
+# state that forbids the command, says nothing about the value, so such a value
+# is recorded here as accepted. While one argument was offered a value, every
+# other argument of the command carried a value the validator had already
+# accepted, because a command missing a required argument is refused before any
+# value is read.
+#
+# The values offered straddle every bound the validator enforces, one on each
+# side, and add the shapes it refuses for what they are rather than for how large
+# they are. Every model was probed at firmware 6.4.0 and the commands were
+# unioned: no model has all of them, and the bounds are firmware struct sizes and
+# protocol widths rather than per-model rules.
+#
+# internal/connector/xbuddy/limits_test.go compares the argument bounds in
+# verbs.go with these rows, and fails on a difference that is not listed there
+# with its reason.
+CANCEL_OBJECT	id	integer	-4294967296	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -4294967296
+CANCEL_OBJECT	id	integer	-65536	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -65536
+CANCEL_OBJECT	id	integer	-2	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -2
+CANCEL_OBJECT	id	integer	-1	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -1
+CANCEL_OBJECT	id	integer	0	false	
+CANCEL_OBJECT	id	integer	1	false	
+CANCEL_OBJECT	id	integer	4	false	
+CANCEL_OBJECT	id	integer	5	false	
+CANCEL_OBJECT	id	integer	6	false	
+CANCEL_OBJECT	id	integer	59	false	
+CANCEL_OBJECT	id	integer	60	false	
+CANCEL_OBJECT	id	integer	61	false	
+CANCEL_OBJECT	id	integer	90	false	
+CANCEL_OBJECT	id	integer	100	false	
+CANCEL_OBJECT	id	integer	101	false	
+CANCEL_OBJECT	id	integer	120	false	
+CANCEL_OBJECT	id	integer	3600	false	
+CANCEL_OBJECT	id	integer	5399	false	
+CANCEL_OBJECT	id	integer	5400	false	
+CANCEL_OBJECT	id	integer	5401	false	
+CANCEL_OBJECT	id	integer	65535	false	
+CANCEL_OBJECT	id	integer	65536	true	argument out of range: id must be between 0 and 65535 (uint16_t), got 65536
+CANCEL_OBJECT	id	integer	4294967295	true	argument out of range: id must be between 0 and 65535 (uint16_t), got 4294967295
+CANCEL_OBJECT	id	integer	4294967296	true	argument out of range: id must be between 0 and 65535 (uint16_t), got 4294967296
+CREATE_FOLDER	path	string		false	
+CREATE_FOLDER	path	string	a	false	
+CREATE_FOLDER	path	string	X	false	
+CREATE_FOLDER	path	string	XY	false	
+CREATE_FOLDER	path	string	xyz	false	
+CREATE_FOLDER	path	string	W	false	
+CREATE_FOLDER	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+CREATE_FOLDER	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+CREATE_FOLDER	path	string	usb/model.gcode	false	
+CREATE_FOLDER	path	string	00112233445566778899aabbccddeeff	false	
+CREATE_FOLDER	path	string	00112233445566778899aabbccddeegg	false	
+CREATE_FOLDER	path	string	0011223344556677	false	
+CREATE_FOLDER	path	string	00112233445566778899aabbccddeeff00	false	
+CREATE_FOLDER	path	string	12345678901234567890	false	
+CREATE_FOLDER	path	string	123456789012345678901	false	
+CREATE_FOLDER	path	string	12345678901234567890123456789	false	
+CREATE_FOLDER	path	string	123456789012345678901234567890	false	
+CREATE_FOLDER	path	string	12345678901234567890123456789012345	false	
+CREATE_FOLDER	path	string	123456789012345678901234567890123456	false	
+DELETE_FILE	path	string		false	
+DELETE_FILE	path	string	a	false	
+DELETE_FILE	path	string	X	false	
+DELETE_FILE	path	string	XY	false	
+DELETE_FILE	path	string	xyz	false	
+DELETE_FILE	path	string	W	false	
+DELETE_FILE	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+DELETE_FILE	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+DELETE_FILE	path	string	usb/model.gcode	false	
+DELETE_FILE	path	string	00112233445566778899aabbccddeeff	false	
+DELETE_FILE	path	string	00112233445566778899aabbccddeegg	false	
+DELETE_FILE	path	string	0011223344556677	false	
+DELETE_FILE	path	string	00112233445566778899aabbccddeeff00	false	
+DELETE_FILE	path	string	12345678901234567890	false	
+DELETE_FILE	path	string	123456789012345678901	false	
+DELETE_FILE	path	string	12345678901234567890123456789	false	
+DELETE_FILE	path	string	123456789012345678901234567890	false	
+DELETE_FILE	path	string	12345678901234567890123456789012345	false	
+DELETE_FILE	path	string	123456789012345678901234567890123456	false	
+DELETE_FOLDER	path	string		false	
+DELETE_FOLDER	path	string	a	false	
+DELETE_FOLDER	path	string	X	false	
+DELETE_FOLDER	path	string	XY	false	
+DELETE_FOLDER	path	string	xyz	false	
+DELETE_FOLDER	path	string	W	false	
+DELETE_FOLDER	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+DELETE_FOLDER	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+DELETE_FOLDER	path	string	usb/model.gcode	false	
+DELETE_FOLDER	path	string	00112233445566778899aabbccddeeff	false	
+DELETE_FOLDER	path	string	00112233445566778899aabbccddeegg	false	
+DELETE_FOLDER	path	string	0011223344556677	false	
+DELETE_FOLDER	path	string	00112233445566778899aabbccddeeff00	false	
+DELETE_FOLDER	path	string	12345678901234567890	false	
+DELETE_FOLDER	path	string	123456789012345678901	false	
+DELETE_FOLDER	path	string	12345678901234567890123456789	false	
+DELETE_FOLDER	path	string	123456789012345678901234567890	false	
+DELETE_FOLDER	path	string	12345678901234567890123456789012345	false	
+DELETE_FOLDER	path	string	123456789012345678901234567890123456	false	
+DIALOG_ACTION	button	string		false	
+DIALOG_ACTION	button	string	a	false	
+DIALOG_ACTION	button	string	X	false	
+DIALOG_ACTION	button	string	XY	false	
+DIALOG_ACTION	button	string	xyz	false	
+DIALOG_ACTION	button	string	W	false	
+DIALOG_ACTION	button	string	..	false	
+DIALOG_ACTION	button	string	usb/../etc/passwd	false	
+DIALOG_ACTION	button	string	usb/model.gcode	false	
+DIALOG_ACTION	button	string	00112233445566778899aabbccddeeff	false	
+DIALOG_ACTION	button	string	00112233445566778899aabbccddeegg	false	
+DIALOG_ACTION	button	string	0011223344556677	false	
+DIALOG_ACTION	button	string	00112233445566778899aabbccddeeff00	false	
+DIALOG_ACTION	button	string	12345678901234567890	false	
+DIALOG_ACTION	button	string	123456789012345678901	false	
+DIALOG_ACTION	button	string	12345678901234567890123456789	false	
+DIALOG_ACTION	button	string	123456789012345678901234567890	false	
+DIALOG_ACTION	button	string	12345678901234567890123456789012345	false	
+DIALOG_ACTION	button	string	123456789012345678901234567890123456	false	
+DIALOG_ACTION	dialog_id	integer	-4294967296	true	argument out of range: dialog_id must be between 0 and 4294967295 (uint32_t), got -4294967296
+DIALOG_ACTION	dialog_id	integer	-65536	true	argument out of range: dialog_id must be between 0 and 4294967295 (uint32_t), got -65536
+DIALOG_ACTION	dialog_id	integer	-2	true	argument out of range: dialog_id must be between 0 and 4294967295 (uint32_t), got -2
+DIALOG_ACTION	dialog_id	integer	-1	true	argument out of range: dialog_id must be between 0 and 4294967295 (uint32_t), got -1
+DIALOG_ACTION	dialog_id	integer	0	false	
+DIALOG_ACTION	dialog_id	integer	1	false	
+DIALOG_ACTION	dialog_id	integer	4	false	
+DIALOG_ACTION	dialog_id	integer	5	false	
+DIALOG_ACTION	dialog_id	integer	6	false	
+DIALOG_ACTION	dialog_id	integer	59	false	
+DIALOG_ACTION	dialog_id	integer	60	false	
+DIALOG_ACTION	dialog_id	integer	61	false	
+DIALOG_ACTION	dialog_id	integer	90	false	
+DIALOG_ACTION	dialog_id	integer	100	false	
+DIALOG_ACTION	dialog_id	integer	101	false	
+DIALOG_ACTION	dialog_id	integer	120	false	
+DIALOG_ACTION	dialog_id	integer	3600	false	
+DIALOG_ACTION	dialog_id	integer	5399	false	
+DIALOG_ACTION	dialog_id	integer	5400	false	
+DIALOG_ACTION	dialog_id	integer	5401	false	
+DIALOG_ACTION	dialog_id	integer	65535	false	
+DIALOG_ACTION	dialog_id	integer	65536	false	
+DIALOG_ACTION	dialog_id	integer	4294967295	false	
+DIALOG_ACTION	dialog_id	integer	4294967296	true	argument out of range: dialog_id must be between 0 and 4294967295 (uint32_t), got 4294967296
+FLASH	path	string		false	
+FLASH	path	string	a	false	
+FLASH	path	string	X	false	
+FLASH	path	string	XY	false	
+FLASH	path	string	xyz	false	
+FLASH	path	string	W	false	
+FLASH	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+FLASH	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+FLASH	path	string	usb/model.gcode	false	
+FLASH	path	string	00112233445566778899aabbccddeeff	false	
+FLASH	path	string	00112233445566778899aabbccddeegg	false	
+FLASH	path	string	0011223344556677	false	
+FLASH	path	string	00112233445566778899aabbccddeeff00	false	
+FLASH	path	string	12345678901234567890	false	
+FLASH	path	string	123456789012345678901	false	
+FLASH	path	string	12345678901234567890123456789	false	
+FLASH	path	string	123456789012345678901234567890	false	
+FLASH	path	string	12345678901234567890123456789012345	false	
+FLASH	path	string	123456789012345678901234567890123456	false	
+HOME	axis	string		false	
+HOME	axis	string	a	true	invalid axis, expected any combination of X, Y and Z: "a"
+HOME	axis	string	X	false	
+HOME	axis	string	XY	false	
+HOME	axis	string	xyz	false	
+HOME	axis	string	W	true	invalid axis, expected any combination of X, Y and Z: "W"
+HOME	axis	string	..	true	invalid axis, expected any combination of X, Y and Z: ".."
+HOME	axis	string	usb/../etc/passwd	true	invalid axis, expected any combination of X, Y and Z: "usb/../etc/passwd"
+HOME	axis	string	usb/model.gcode	true	invalid axis, expected any combination of X, Y and Z: "usb/model.gcode"
+HOME	axis	string	00112233445566778899aabbccddeeff	true	invalid axis, expected any combination of X, Y and Z: "00112233445566778899aabbccddeeff"
+HOME	axis	string	00112233445566778899aabbccddeegg	true	invalid axis, expected any combination of X, Y and Z: "00112233445566778899aabbccddeegg"
+HOME	axis	string	0011223344556677	true	invalid axis, expected any combination of X, Y and Z: "0011223344556677"
+HOME	axis	string	00112233445566778899aabbccddeeff00	true	invalid axis, expected any combination of X, Y and Z: "00112233445566778899aabbccddeeff00"
+HOME	axis	string	12345678901234567890	true	invalid axis, expected any combination of X, Y and Z: "12345678901234567890"
+HOME	axis	string	123456789012345678901	true	invalid axis, expected any combination of X, Y and Z: "123456789012345678901"
+HOME	axis	string	12345678901234567890123456789	true	invalid axis, expected any combination of X, Y and Z: "12345678901234567890123456789"
+HOME	axis	string	123456789012345678901234567890	true	invalid axis, expected any combination of X, Y and Z: "123456789012345678901234567890"
+HOME	axis	string	12345678901234567890123456789012345	true	invalid axis, expected any combination of X, Y and Z: "12345678901234567890123456789012345"
+HOME	axis	string	123456789012345678901234567890123456	true	invalid axis, expected any combination of X, Y and Z: "123456789012345678901234567890123456"
+LOAD_FILAMENT	filament	string		false	
+LOAD_FILAMENT	filament	string	a	false	
+LOAD_FILAMENT	filament	string	X	false	
+LOAD_FILAMENT	filament	string	XY	false	
+LOAD_FILAMENT	filament	string	xyz	false	
+LOAD_FILAMENT	filament	string	W	false	
+LOAD_FILAMENT	filament	string	..	false	
+LOAD_FILAMENT	filament	string	usb/../etc/passwd	false	
+LOAD_FILAMENT	filament	string	usb/model.gcode	false	
+LOAD_FILAMENT	filament	string	00112233445566778899aabbccddeeff	false	
+LOAD_FILAMENT	filament	string	00112233445566778899aabbccddeegg	false	
+LOAD_FILAMENT	filament	string	0011223344556677	false	
+LOAD_FILAMENT	filament	string	00112233445566778899aabbccddeeff00	false	
+LOAD_FILAMENT	filament	string	12345678901234567890	false	
+LOAD_FILAMENT	filament	string	123456789012345678901	false	
+LOAD_FILAMENT	filament	string	12345678901234567890123456789	false	
+LOAD_FILAMENT	filament	string	123456789012345678901234567890	false	
+LOAD_FILAMENT	filament	string	12345678901234567890123456789012345	false	
+LOAD_FILAMENT	filament	string	123456789012345678901234567890123456	false	
+MOVE	feedrate	integer	-4294967296	false	
+MOVE	feedrate	integer	-65536	false	
+MOVE	feedrate	integer	-2	false	
+MOVE	feedrate	integer	-1	false	
+MOVE	feedrate	integer	0	false	
+MOVE	feedrate	integer	1	false	
+MOVE	feedrate	integer	4	false	
+MOVE	feedrate	integer	5	false	
+MOVE	feedrate	integer	6	false	
+MOVE	feedrate	integer	59	false	
+MOVE	feedrate	integer	60	false	
+MOVE	feedrate	integer	61	false	
+MOVE	feedrate	integer	90	false	
+MOVE	feedrate	integer	100	false	
+MOVE	feedrate	integer	101	false	
+MOVE	feedrate	integer	120	false	
+MOVE	feedrate	integer	3600	false	
+MOVE	feedrate	integer	5399	false	
+MOVE	feedrate	integer	5400	false	
+MOVE	feedrate	integer	5401	false	
+MOVE	feedrate	integer	65535	false	
+MOVE	feedrate	integer	65536	false	
+MOVE	feedrate	integer	4294967295	false	
+MOVE	feedrate	integer	4294967296	false	
+MOVE	x	float	-1	false	
+MOVE	x	float	-0.5	false	
+MOVE	x	float	0	false	
+MOVE	x	float	0.25	false	
+MOVE	x	float	0.4	false	
+MOVE	x	float	1	false	
+MOVE	x	float	300	false	
+MOVE	y	float	-1	false	
+MOVE	y	float	-0.5	false	
+MOVE	y	float	0	false	
+MOVE	y	float	0.25	false	
+MOVE	y	float	0.4	false	
+MOVE	y	float	1	false	
+MOVE	y	float	300	false	
+MOVE_E	feedrate	integer	-4294967296	false	
+MOVE_E	feedrate	integer	-65536	false	
+MOVE_E	feedrate	integer	-2	false	
+MOVE_E	feedrate	integer	-1	false	
+MOVE_E	feedrate	integer	0	false	
+MOVE_E	feedrate	integer	1	false	
+MOVE_E	feedrate	integer	4	false	
+MOVE_E	feedrate	integer	5	false	
+MOVE_E	feedrate	integer	6	false	
+MOVE_E	feedrate	integer	59	false	
+MOVE_E	feedrate	integer	60	false	
+MOVE_E	feedrate	integer	61	false	
+MOVE_E	feedrate	integer	90	false	
+MOVE_E	feedrate	integer	100	false	
+MOVE_E	feedrate	integer	101	false	
+MOVE_E	feedrate	integer	120	false	
+MOVE_E	feedrate	integer	3600	false	
+MOVE_E	feedrate	integer	5399	false	
+MOVE_E	feedrate	integer	5400	false	
+MOVE_E	feedrate	integer	5401	false	
+MOVE_E	feedrate	integer	65535	false	
+MOVE_E	feedrate	integer	65536	false	
+MOVE_E	feedrate	integer	4294967295	false	
+MOVE_E	feedrate	integer	4294967296	false	
+MOVE_E	length	float	-1	false	
+MOVE_E	length	float	-0.5	false	
+MOVE_E	length	float	0	false	
+MOVE_E	length	float	0.25	false	
+MOVE_E	length	float	0.4	false	
+MOVE_E	length	float	1	false	
+MOVE_E	length	float	300	false	
+MOVE_Z	distance	float	-1	false	
+MOVE_Z	distance	float	-0.5	false	
+MOVE_Z	distance	float	0	false	
+MOVE_Z	distance	float	0.25	false	
+MOVE_Z	distance	float	0.4	false	
+MOVE_Z	distance	float	1	false	
+MOVE_Z	distance	float	300	false	
+MOVE_Z	feedrate	integer	-4294967296	false	
+MOVE_Z	feedrate	integer	-65536	false	
+MOVE_Z	feedrate	integer	-2	false	
+MOVE_Z	feedrate	integer	-1	false	
+MOVE_Z	feedrate	integer	0	false	
+MOVE_Z	feedrate	integer	1	false	
+MOVE_Z	feedrate	integer	4	false	
+MOVE_Z	feedrate	integer	5	false	
+MOVE_Z	feedrate	integer	6	false	
+MOVE_Z	feedrate	integer	59	false	
+MOVE_Z	feedrate	integer	60	false	
+MOVE_Z	feedrate	integer	61	false	
+MOVE_Z	feedrate	integer	90	false	
+MOVE_Z	feedrate	integer	100	false	
+MOVE_Z	feedrate	integer	101	false	
+MOVE_Z	feedrate	integer	120	false	
+MOVE_Z	feedrate	integer	3600	false	
+MOVE_Z	feedrate	integer	5399	false	
+MOVE_Z	feedrate	integer	5400	false	
+MOVE_Z	feedrate	integer	5401	false	
+MOVE_Z	feedrate	integer	65535	false	
+MOVE_Z	feedrate	integer	65536	false	
+MOVE_Z	feedrate	integer	4294967295	false	
+MOVE_Z	feedrate	integer	4294967296	false	
+SEND_FILE_INFO	path	string		false	
+SEND_FILE_INFO	path	string	a	false	
+SEND_FILE_INFO	path	string	X	false	
+SEND_FILE_INFO	path	string	XY	false	
+SEND_FILE_INFO	path	string	xyz	false	
+SEND_FILE_INFO	path	string	W	false	
+SEND_FILE_INFO	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+SEND_FILE_INFO	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+SEND_FILE_INFO	path	string	usb/model.gcode	false	
+SEND_FILE_INFO	path	string	00112233445566778899aabbccddeeff	false	
+SEND_FILE_INFO	path	string	00112233445566778899aabbccddeegg	false	
+SEND_FILE_INFO	path	string	0011223344556677	false	
+SEND_FILE_INFO	path	string	00112233445566778899aabbccddeeff00	false	
+SEND_FILE_INFO	path	string	12345678901234567890	false	
+SEND_FILE_INFO	path	string	123456789012345678901	false	
+SEND_FILE_INFO	path	string	12345678901234567890123456789	false	
+SEND_FILE_INFO	path	string	123456789012345678901234567890	false	
+SEND_FILE_INFO	path	string	12345678901234567890123456789012345	false	
+SEND_FILE_INFO	path	string	123456789012345678901234567890123456	false	
+SEND_JOB_INFO	job_id	integer	-4294967296	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got -4294967296
+SEND_JOB_INFO	job_id	integer	-65536	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got -65536
+SEND_JOB_INFO	job_id	integer	-2	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got -2
+SEND_JOB_INFO	job_id	integer	-1	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got -1
+SEND_JOB_INFO	job_id	integer	0	false	
+SEND_JOB_INFO	job_id	integer	1	false	
+SEND_JOB_INFO	job_id	integer	4	false	
+SEND_JOB_INFO	job_id	integer	5	false	
+SEND_JOB_INFO	job_id	integer	6	false	
+SEND_JOB_INFO	job_id	integer	59	false	
+SEND_JOB_INFO	job_id	integer	60	false	
+SEND_JOB_INFO	job_id	integer	61	false	
+SEND_JOB_INFO	job_id	integer	90	false	
+SEND_JOB_INFO	job_id	integer	100	false	
+SEND_JOB_INFO	job_id	integer	101	false	
+SEND_JOB_INFO	job_id	integer	120	false	
+SEND_JOB_INFO	job_id	integer	3600	false	
+SEND_JOB_INFO	job_id	integer	5399	false	
+SEND_JOB_INFO	job_id	integer	5400	false	
+SEND_JOB_INFO	job_id	integer	5401	false	
+SEND_JOB_INFO	job_id	integer	65535	false	
+SEND_JOB_INFO	job_id	integer	65536	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got 65536
+SEND_JOB_INFO	job_id	integer	4294967295	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got 4294967295
+SEND_JOB_INFO	job_id	integer	4294967296	true	argument out of range: job_id must be between 0 and 65535 (uint16_t), got 4294967296
+SET_ADDON_POWER	addon_power	boolean	true	false	
+SET_ADDON_POWER	addon_power	boolean	false	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	-4294967296	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got -4294967296
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	-65536	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got -65536
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	-2	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got -2
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	-1	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	0	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	1	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	4	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	5	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	6	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	59	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	60	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	61	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	90	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	100	false	
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	101	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 101
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	120	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 120
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	3600	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 3600
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	5399	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 5399
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	5400	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 5400
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	5401	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 5401
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	65535	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 65535
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	65536	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 65536
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	4294967295	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 4294967295
+SET_CHAMBER_FAN_TARGET	chamber.fan_pwm_target	integer	4294967296	true	argument out of range: chamber.fan_pwm_target must be between -1 (auto) and 100 (PWM percentage), got 4294967296
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	-4294967296	true	argument out of range: chamber.led_intensity must be between 0 and 100, got -4294967296
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	-65536	true	argument out of range: chamber.led_intensity must be between 0 and 100, got -65536
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	-2	true	argument out of range: chamber.led_intensity must be between 0 and 100, got -2
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	-1	true	argument out of range: chamber.led_intensity must be between 0 and 100, got -1
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	0	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	1	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	4	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	5	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	6	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	59	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	60	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	61	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	90	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	100	false	
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	101	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 101
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	120	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 120
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	3600	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 3600
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	5399	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 5399
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	5400	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 5400
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	5401	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 5401
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	65535	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 65535
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	65536	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 65536
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	4294967295	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 4294967295
+SET_CHAMBER_LED_INTENSITY	chamber.led_intensity	integer	4294967296	true	argument out of range: chamber.led_intensity must be between 0 and 100, got 4294967296
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	-4294967296	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	-65536	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	-2	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	-1	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	0	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	1	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	4	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	5	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	6	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	59	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	60	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	61	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	90	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	100	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	101	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	120	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	3600	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	5399	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	5400	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	5401	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	65535	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	65536	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	4294967295	false	
+SET_CHAMBER_TARGET_TEMP	chamber.target_temp	integer	4294967296	false	
+SET_ENCLOSURE_ENABLED	enclosure_enabled	boolean	true	false	
+SET_ENCLOSURE_ENABLED	enclosure_enabled	boolean	false	false	
+SET_ENCLOSURE_POSTPRINT	enclosure_postprint	boolean	true	false	
+SET_ENCLOSURE_POSTPRINT	enclosure_postprint	boolean	false	false	
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	-4294967296	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got -4294967296 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	-65536	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got -65536 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	-2	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got -2 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	-1	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got -1 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	0	true	argument out of range: enclosure_postprint_filtration_time must be between 60 and 5400 seconds (1-90 minutes), got 0
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	1	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 1 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	4	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 4 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	5	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 5 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	6	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 6 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	59	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 59 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	60	false	
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	61	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 61 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	90	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 90 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	100	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 100 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	101	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 101 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	120	false	
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	3600	false	
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	5399	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 5399 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	5400	false	
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	5401	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 5401 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	65535	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 65535 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	65536	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 65536 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	4294967295	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 4294967295 seconds
+SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME	enclosure_postprint_filtration_time	integer	4294967296	true	argument out of range: enclosure_postprint_filtration_time must be whole minutes (divisible by 60), got 4294967296 seconds
+SET_ENCLOSURE_PRINTING_FILTRATION	enclosure_printing_filtration	boolean	true	false	
+SET_ENCLOSURE_PRINTING_FILTRATION	enclosure_printing_filtration	boolean	false	false	
+SET_FLOW	flow	integer	-4294967296	false	
+SET_FLOW	flow	integer	-65536	false	
+SET_FLOW	flow	integer	-2	false	
+SET_FLOW	flow	integer	-1	false	
+SET_FLOW	flow	integer	0	false	
+SET_FLOW	flow	integer	1	false	
+SET_FLOW	flow	integer	4	false	
+SET_FLOW	flow	integer	5	false	
+SET_FLOW	flow	integer	6	false	
+SET_FLOW	flow	integer	59	false	
+SET_FLOW	flow	integer	60	false	
+SET_FLOW	flow	integer	61	false	
+SET_FLOW	flow	integer	90	false	
+SET_FLOW	flow	integer	100	false	
+SET_FLOW	flow	integer	101	false	
+SET_FLOW	flow	integer	120	false	
+SET_FLOW	flow	integer	3600	false	
+SET_FLOW	flow	integer	5399	false	
+SET_FLOW	flow	integer	5400	false	
+SET_FLOW	flow	integer	5401	false	
+SET_FLOW	flow	integer	65535	false	
+SET_FLOW	flow	integer	65536	false	
+SET_FLOW	flow	integer	4294967295	false	
+SET_FLOW	flow	integer	4294967296	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	-4294967296	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	-65536	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	-2	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	-1	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	0	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	1	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	4	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	5	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	6	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	59	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	60	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	61	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	90	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	100	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	101	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	120	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	3600	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	5399	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	5400	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	5401	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	65535	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	65536	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	4294967295	false	
+SET_HEATBED_TEMPERATURE	bed_temperature	integer	4294967296	false	
+SET_HOSTNAME	hostname	string		false	
+SET_HOSTNAME	hostname	string	a	false	
+SET_HOSTNAME	hostname	string	X	false	
+SET_HOSTNAME	hostname	string	XY	false	
+SET_HOSTNAME	hostname	string	xyz	false	
+SET_HOSTNAME	hostname	string	W	false	
+SET_HOSTNAME	hostname	string	..	false	
+SET_HOSTNAME	hostname	string	usb/../etc/passwd	false	
+SET_HOSTNAME	hostname	string	usb/model.gcode	false	
+SET_HOSTNAME	hostname	string	00112233445566778899aabbccddeeff	false	
+SET_HOSTNAME	hostname	string	00112233445566778899aabbccddeegg	false	
+SET_HOSTNAME	hostname	string	0011223344556677	false	
+SET_HOSTNAME	hostname	string	00112233445566778899aabbccddeeff00	false	
+SET_HOSTNAME	hostname	string	12345678901234567890	false	
+SET_HOSTNAME	hostname	string	123456789012345678901	false	
+SET_HOSTNAME	hostname	string	12345678901234567890123456789	false	
+SET_HOSTNAME	hostname	string	123456789012345678901234567890	false	
+SET_HOSTNAME	hostname	string	12345678901234567890123456789012345	false	
+SET_HOSTNAME	hostname	string	123456789012345678901234567890123456	true	invalid string length: hostname must be at most 35 characters (HOSTNAME_LEN), got 36
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	-4294967296	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	-65536	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	-2	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	-1	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	0	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	1	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	4	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	5	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	6	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	59	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	60	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	61	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	90	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	100	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	101	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	120	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	3600	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	5399	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	5400	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	5401	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	65535	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	65536	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	4294967295	false	
+SET_NOZZLE_TEMPERATURE	nozzle_temperature	integer	4294967296	false	
+SET_SPEED	speed	integer	-4294967296	false	
+SET_SPEED	speed	integer	-65536	false	
+SET_SPEED	speed	integer	-2	false	
+SET_SPEED	speed	integer	-1	false	
+SET_SPEED	speed	integer	0	false	
+SET_SPEED	speed	integer	1	false	
+SET_SPEED	speed	integer	4	false	
+SET_SPEED	speed	integer	5	false	
+SET_SPEED	speed	integer	6	false	
+SET_SPEED	speed	integer	59	false	
+SET_SPEED	speed	integer	60	false	
+SET_SPEED	speed	integer	61	false	
+SET_SPEED	speed	integer	90	false	
+SET_SPEED	speed	integer	100	false	
+SET_SPEED	speed	integer	101	false	
+SET_SPEED	speed	integer	120	false	
+SET_SPEED	speed	integer	3600	false	
+SET_SPEED	speed	integer	5399	false	
+SET_SPEED	speed	integer	5400	false	
+SET_SPEED	speed	integer	5401	false	
+SET_SPEED	speed	integer	65535	false	
+SET_SPEED	speed	integer	65536	false	
+SET_SPEED	speed	integer	4294967295	false	
+SET_SPEED	speed	integer	4294967296	false	
+SET_TOKEN	token	string		false	
+SET_TOKEN	token	string	a	false	
+SET_TOKEN	token	string	X	false	
+SET_TOKEN	token	string	XY	false	
+SET_TOKEN	token	string	xyz	false	
+SET_TOKEN	token	string	W	false	
+SET_TOKEN	token	string	..	false	
+SET_TOKEN	token	string	usb/../etc/passwd	false	
+SET_TOKEN	token	string	usb/model.gcode	false	
+SET_TOKEN	token	string	00112233445566778899aabbccddeeff	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 32
+SET_TOKEN	token	string	00112233445566778899aabbccddeegg	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 32
+SET_TOKEN	token	string	0011223344556677	false	
+SET_TOKEN	token	string	00112233445566778899aabbccddeeff00	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 34
+SET_TOKEN	token	string	12345678901234567890	false	
+SET_TOKEN	token	string	123456789012345678901	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 21
+SET_TOKEN	token	string	12345678901234567890123456789	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 29
+SET_TOKEN	token	string	123456789012345678901234567890	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 30
+SET_TOKEN	token	string	12345678901234567890123456789012345	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 35
+SET_TOKEN	token	string	123456789012345678901234567890123456	true	invalid string length: token must be at most 20 characters (CONNECT_TOKEN_LEN), got 36
+SET_TOOL_HARDENED	hardened	boolean	true	false	
+SET_TOOL_HARDENED	hardened	boolean	false	false	
+SET_TOOL_HARDENED	tool	integer	-4294967296	true	argument out of range: tool must be between 1 and 5, got -4294967296
+SET_TOOL_HARDENED	tool	integer	-65536	true	argument out of range: tool must be between 1 and 5, got -65536
+SET_TOOL_HARDENED	tool	integer	-2	true	argument out of range: tool must be between 1 and 5, got -2
+SET_TOOL_HARDENED	tool	integer	-1	true	argument out of range: tool must be between 1 and 5, got -1
+SET_TOOL_HARDENED	tool	integer	0	true	argument out of range: tool must be between 1 and 5, got 0
+SET_TOOL_HARDENED	tool	integer	1	false	
+SET_TOOL_HARDENED	tool	integer	4	false	
+SET_TOOL_HARDENED	tool	integer	5	false	
+SET_TOOL_HARDENED	tool	integer	6	true	argument out of range: tool must be between 1 and 5, got 6
+SET_TOOL_HARDENED	tool	integer	59	true	argument out of range: tool must be between 1 and 5, got 59
+SET_TOOL_HARDENED	tool	integer	60	true	argument out of range: tool must be between 1 and 5, got 60
+SET_TOOL_HARDENED	tool	integer	61	true	argument out of range: tool must be between 1 and 5, got 61
+SET_TOOL_HARDENED	tool	integer	90	true	argument out of range: tool must be between 1 and 5, got 90
+SET_TOOL_HARDENED	tool	integer	100	true	argument out of range: tool must be between 1 and 5, got 100
+SET_TOOL_HARDENED	tool	integer	101	true	argument out of range: tool must be between 1 and 5, got 101
+SET_TOOL_HARDENED	tool	integer	120	true	argument out of range: tool must be between 1 and 5, got 120
+SET_TOOL_HARDENED	tool	integer	3600	true	argument out of range: tool must be between 1 and 5, got 3600
+SET_TOOL_HARDENED	tool	integer	5399	true	argument out of range: tool must be between 1 and 5, got 5399
+SET_TOOL_HARDENED	tool	integer	5400	true	argument out of range: tool must be between 1 and 5, got 5400
+SET_TOOL_HARDENED	tool	integer	5401	true	argument out of range: tool must be between 1 and 5, got 5401
+SET_TOOL_HARDENED	tool	integer	65535	true	argument out of range: tool must be between 1 and 5, got 65535
+SET_TOOL_HARDENED	tool	integer	65536	true	argument out of range: tool must be between 1 and 5, got 65536
+SET_TOOL_HARDENED	tool	integer	4294967295	true	argument out of range: tool must be between 1 and 5, got 4294967295
+SET_TOOL_HARDENED	tool	integer	4294967296	true	argument out of range: tool must be between 1 and 5, got 4294967296
+SET_TOOL_HIGH_FLOW	high_flow	boolean	true	false	
+SET_TOOL_HIGH_FLOW	high_flow	boolean	false	false	
+SET_TOOL_HIGH_FLOW	tool	integer	-4294967296	true	argument out of range: tool must be between 1 and 5, got -4294967296
+SET_TOOL_HIGH_FLOW	tool	integer	-65536	true	argument out of range: tool must be between 1 and 5, got -65536
+SET_TOOL_HIGH_FLOW	tool	integer	-2	true	argument out of range: tool must be between 1 and 5, got -2
+SET_TOOL_HIGH_FLOW	tool	integer	-1	true	argument out of range: tool must be between 1 and 5, got -1
+SET_TOOL_HIGH_FLOW	tool	integer	0	true	argument out of range: tool must be between 1 and 5, got 0
+SET_TOOL_HIGH_FLOW	tool	integer	1	false	
+SET_TOOL_HIGH_FLOW	tool	integer	4	false	
+SET_TOOL_HIGH_FLOW	tool	integer	5	false	
+SET_TOOL_HIGH_FLOW	tool	integer	6	true	argument out of range: tool must be between 1 and 5, got 6
+SET_TOOL_HIGH_FLOW	tool	integer	59	true	argument out of range: tool must be between 1 and 5, got 59
+SET_TOOL_HIGH_FLOW	tool	integer	60	true	argument out of range: tool must be between 1 and 5, got 60
+SET_TOOL_HIGH_FLOW	tool	integer	61	true	argument out of range: tool must be between 1 and 5, got 61
+SET_TOOL_HIGH_FLOW	tool	integer	90	true	argument out of range: tool must be between 1 and 5, got 90
+SET_TOOL_HIGH_FLOW	tool	integer	100	true	argument out of range: tool must be between 1 and 5, got 100
+SET_TOOL_HIGH_FLOW	tool	integer	101	true	argument out of range: tool must be between 1 and 5, got 101
+SET_TOOL_HIGH_FLOW	tool	integer	120	true	argument out of range: tool must be between 1 and 5, got 120
+SET_TOOL_HIGH_FLOW	tool	integer	3600	true	argument out of range: tool must be between 1 and 5, got 3600
+SET_TOOL_HIGH_FLOW	tool	integer	5399	true	argument out of range: tool must be between 1 and 5, got 5399
+SET_TOOL_HIGH_FLOW	tool	integer	5400	true	argument out of range: tool must be between 1 and 5, got 5400
+SET_TOOL_HIGH_FLOW	tool	integer	5401	true	argument out of range: tool must be between 1 and 5, got 5401
+SET_TOOL_HIGH_FLOW	tool	integer	65535	true	argument out of range: tool must be between 1 and 5, got 65535
+SET_TOOL_HIGH_FLOW	tool	integer	65536	true	argument out of range: tool must be between 1 and 5, got 65536
+SET_TOOL_HIGH_FLOW	tool	integer	4294967295	true	argument out of range: tool must be between 1 and 5, got 4294967295
+SET_TOOL_HIGH_FLOW	tool	integer	4294967296	true	argument out of range: tool must be between 1 and 5, got 4294967296
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	-1	true	argument out of range: nozzle_diameter must be positive, got -1.000000
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	-0.5	true	argument out of range: nozzle_diameter must be positive, got -0.500000
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	0	true	argument out of range: nozzle_diameter must be positive, got 0.000000
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	0.25	false	
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	0.4	false	
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	1	false	
+SET_TOOL_NOZZLE_DIAMETER	nozzle_diameter	float	300	false	
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	-4294967296	true	argument out of range: tool must be between 1 and 5, got -4294967296
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	-65536	true	argument out of range: tool must be between 1 and 5, got -65536
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	-2	true	argument out of range: tool must be between 1 and 5, got -2
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	-1	true	argument out of range: tool must be between 1 and 5, got -1
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	0	true	argument out of range: tool must be between 1 and 5, got 0
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	1	false	
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	4	false	
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	5	false	
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	6	true	argument out of range: tool must be between 1 and 5, got 6
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	59	true	argument out of range: tool must be between 1 and 5, got 59
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	60	true	argument out of range: tool must be between 1 and 5, got 60
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	61	true	argument out of range: tool must be between 1 and 5, got 61
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	90	true	argument out of range: tool must be between 1 and 5, got 90
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	100	true	argument out of range: tool must be between 1 and 5, got 100
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	101	true	argument out of range: tool must be between 1 and 5, got 101
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	120	true	argument out of range: tool must be between 1 and 5, got 120
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	3600	true	argument out of range: tool must be between 1 and 5, got 3600
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	5399	true	argument out of range: tool must be between 1 and 5, got 5399
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	5400	true	argument out of range: tool must be between 1 and 5, got 5400
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	5401	true	argument out of range: tool must be between 1 and 5, got 5401
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	65535	true	argument out of range: tool must be between 1 and 5, got 65535
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	65536	true	argument out of range: tool must be between 1 and 5, got 65536
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	4294967295	true	argument out of range: tool must be between 1 and 5, got 4294967295
+SET_TOOL_NOZZLE_DIAMETER	tool	integer	4294967296	true	argument out of range: tool must be between 1 and 5, got 4294967296
+START_CONNECT_DOWNLOAD	hash	string		false	
+START_CONNECT_DOWNLOAD	hash	string	a	false	
+START_CONNECT_DOWNLOAD	hash	string	X	false	
+START_CONNECT_DOWNLOAD	hash	string	XY	false	
+START_CONNECT_DOWNLOAD	hash	string	xyz	false	
+START_CONNECT_DOWNLOAD	hash	string	W	false	
+START_CONNECT_DOWNLOAD	hash	string	..	false	
+START_CONNECT_DOWNLOAD	hash	string	usb/../etc/passwd	false	
+START_CONNECT_DOWNLOAD	hash	string	usb/model.gcode	false	
+START_CONNECT_DOWNLOAD	hash	string	00112233445566778899aabbccddeeff	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 32
+START_CONNECT_DOWNLOAD	hash	string	00112233445566778899aabbccddeegg	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 32
+START_CONNECT_DOWNLOAD	hash	string	0011223344556677	false	
+START_CONNECT_DOWNLOAD	hash	string	00112233445566778899aabbccddeeff00	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 34
+START_CONNECT_DOWNLOAD	hash	string	12345678901234567890	false	
+START_CONNECT_DOWNLOAD	hash	string	123456789012345678901	false	
+START_CONNECT_DOWNLOAD	hash	string	12345678901234567890123456789	false	
+START_CONNECT_DOWNLOAD	hash	string	123456789012345678901234567890	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 30
+START_CONNECT_DOWNLOAD	hash	string	12345678901234567890123456789012345	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 35
+START_CONNECT_DOWNLOAD	hash	string	123456789012345678901234567890123456	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 36
+START_CONNECT_DOWNLOAD	orig_size	integer	-4294967296	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -4294967296
+START_CONNECT_DOWNLOAD	orig_size	integer	-65536	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -65536
+START_CONNECT_DOWNLOAD	orig_size	integer	-2	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -2
+START_CONNECT_DOWNLOAD	orig_size	integer	-1	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -1
+START_CONNECT_DOWNLOAD	orig_size	integer	0	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	1	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	4	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	5	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	6	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	59	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	60	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	61	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	90	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	100	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	101	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	120	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	3600	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	5399	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	5400	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	5401	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	65535	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	65536	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	4294967295	false	
+START_CONNECT_DOWNLOAD	orig_size	integer	4294967296	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got 4294967296
+START_CONNECT_DOWNLOAD	path	string		false	
+START_CONNECT_DOWNLOAD	path	string	a	false	
+START_CONNECT_DOWNLOAD	path	string	X	false	
+START_CONNECT_DOWNLOAD	path	string	XY	false	
+START_CONNECT_DOWNLOAD	path	string	xyz	false	
+START_CONNECT_DOWNLOAD	path	string	W	false	
+START_CONNECT_DOWNLOAD	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+START_CONNECT_DOWNLOAD	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+START_CONNECT_DOWNLOAD	path	string	usb/model.gcode	false	
+START_CONNECT_DOWNLOAD	path	string	00112233445566778899aabbccddeeff	false	
+START_CONNECT_DOWNLOAD	path	string	00112233445566778899aabbccddeegg	false	
+START_CONNECT_DOWNLOAD	path	string	0011223344556677	false	
+START_CONNECT_DOWNLOAD	path	string	00112233445566778899aabbccddeeff00	false	
+START_CONNECT_DOWNLOAD	path	string	12345678901234567890	false	
+START_CONNECT_DOWNLOAD	path	string	123456789012345678901	false	
+START_CONNECT_DOWNLOAD	path	string	12345678901234567890123456789	false	
+START_CONNECT_DOWNLOAD	path	string	123456789012345678901234567890	false	
+START_CONNECT_DOWNLOAD	path	string	12345678901234567890123456789012345	false	
+START_CONNECT_DOWNLOAD	path	string	123456789012345678901234567890123456	false	
+START_CONNECT_DOWNLOAD	team_id	integer	-4294967296	true	argument out of range: team_id must be non-negative (uint64_t), got -4294967296
+START_CONNECT_DOWNLOAD	team_id	integer	-65536	true	argument out of range: team_id must be non-negative (uint64_t), got -65536
+START_CONNECT_DOWNLOAD	team_id	integer	-2	true	argument out of range: team_id must be non-negative (uint64_t), got -2
+START_CONNECT_DOWNLOAD	team_id	integer	-1	true	argument out of range: team_id must be non-negative (uint64_t), got -1
+START_CONNECT_DOWNLOAD	team_id	integer	0	false	
+START_CONNECT_DOWNLOAD	team_id	integer	1	false	
+START_CONNECT_DOWNLOAD	team_id	integer	4	false	
+START_CONNECT_DOWNLOAD	team_id	integer	5	false	
+START_CONNECT_DOWNLOAD	team_id	integer	6	false	
+START_CONNECT_DOWNLOAD	team_id	integer	59	false	
+START_CONNECT_DOWNLOAD	team_id	integer	60	false	
+START_CONNECT_DOWNLOAD	team_id	integer	61	false	
+START_CONNECT_DOWNLOAD	team_id	integer	90	false	
+START_CONNECT_DOWNLOAD	team_id	integer	100	false	
+START_CONNECT_DOWNLOAD	team_id	integer	101	false	
+START_CONNECT_DOWNLOAD	team_id	integer	120	false	
+START_CONNECT_DOWNLOAD	team_id	integer	3600	false	
+START_CONNECT_DOWNLOAD	team_id	integer	5399	false	
+START_CONNECT_DOWNLOAD	team_id	integer	5400	false	
+START_CONNECT_DOWNLOAD	team_id	integer	5401	false	
+START_CONNECT_DOWNLOAD	team_id	integer	65535	false	
+START_CONNECT_DOWNLOAD	team_id	integer	65536	false	
+START_CONNECT_DOWNLOAD	team_id	integer	4294967295	false	
+START_CONNECT_DOWNLOAD	team_id	integer	4294967296	false	
+START_ENCRYPTED_DOWNLOAD	iv	string		true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 0
+START_ENCRYPTED_DOWNLOAD	iv	string	a	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 1
+START_ENCRYPTED_DOWNLOAD	iv	string	X	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 1
+START_ENCRYPTED_DOWNLOAD	iv	string	XY	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 2
+START_ENCRYPTED_DOWNLOAD	iv	string	xyz	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 3
+START_ENCRYPTED_DOWNLOAD	iv	string	W	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 1
+START_ENCRYPTED_DOWNLOAD	iv	string	..	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 2
+START_ENCRYPTED_DOWNLOAD	iv	string	usb/../etc/passwd	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 17
+START_ENCRYPTED_DOWNLOAD	iv	string	usb/model.gcode	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 15
+START_ENCRYPTED_DOWNLOAD	iv	string	00112233445566778899aabbccddeeff	false	
+START_ENCRYPTED_DOWNLOAD	iv	string	00112233445566778899aabbccddeegg	true	invalid hex string: iv must contain only hex characters (0-9, a-f, A-F)
+START_ENCRYPTED_DOWNLOAD	iv	string	0011223344556677	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 16
+START_ENCRYPTED_DOWNLOAD	iv	string	00112233445566778899aabbccddeeff00	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 34
+START_ENCRYPTED_DOWNLOAD	iv	string	12345678901234567890	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 20
+START_ENCRYPTED_DOWNLOAD	iv	string	123456789012345678901	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 21
+START_ENCRYPTED_DOWNLOAD	iv	string	12345678901234567890123456789	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 29
+START_ENCRYPTED_DOWNLOAD	iv	string	123456789012345678901234567890	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 30
+START_ENCRYPTED_DOWNLOAD	iv	string	12345678901234567890123456789012345	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 35
+START_ENCRYPTED_DOWNLOAD	iv	string	123456789012345678901234567890123456	true	invalid string length: iv must be exactly 32 hex characters (16 bytes), got 36
+START_ENCRYPTED_DOWNLOAD	key	string		true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 0
+START_ENCRYPTED_DOWNLOAD	key	string	a	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 1
+START_ENCRYPTED_DOWNLOAD	key	string	X	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 1
+START_ENCRYPTED_DOWNLOAD	key	string	XY	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 2
+START_ENCRYPTED_DOWNLOAD	key	string	xyz	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 3
+START_ENCRYPTED_DOWNLOAD	key	string	W	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 1
+START_ENCRYPTED_DOWNLOAD	key	string	..	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 2
+START_ENCRYPTED_DOWNLOAD	key	string	usb/../etc/passwd	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 17
+START_ENCRYPTED_DOWNLOAD	key	string	usb/model.gcode	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 15
+START_ENCRYPTED_DOWNLOAD	key	string	00112233445566778899aabbccddeeff	false	
+START_ENCRYPTED_DOWNLOAD	key	string	00112233445566778899aabbccddeegg	true	invalid hex string: key must contain only hex characters (0-9, a-f, A-F)
+START_ENCRYPTED_DOWNLOAD	key	string	0011223344556677	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 16
+START_ENCRYPTED_DOWNLOAD	key	string	00112233445566778899aabbccddeeff00	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 34
+START_ENCRYPTED_DOWNLOAD	key	string	12345678901234567890	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 20
+START_ENCRYPTED_DOWNLOAD	key	string	123456789012345678901	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 21
+START_ENCRYPTED_DOWNLOAD	key	string	12345678901234567890123456789	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 29
+START_ENCRYPTED_DOWNLOAD	key	string	123456789012345678901234567890	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 30
+START_ENCRYPTED_DOWNLOAD	key	string	12345678901234567890123456789012345	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 35
+START_ENCRYPTED_DOWNLOAD	key	string	123456789012345678901234567890123456	true	invalid string length: key must be exactly 32 hex characters (16 bytes), got 36
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	-4294967296	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -4294967296
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	-65536	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -65536
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	-2	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -2
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	-1	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -1
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	0	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	1	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	4	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	5	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	6	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	59	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	60	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	61	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	90	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	100	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	101	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	120	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	3600	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	5399	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	5400	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	5401	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	65535	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	65536	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	4294967295	false	
+START_ENCRYPTED_DOWNLOAD	orig_size	integer	4294967296	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got 4294967296
+START_ENCRYPTED_DOWNLOAD	path	string		false	
+START_ENCRYPTED_DOWNLOAD	path	string	a	false	
+START_ENCRYPTED_DOWNLOAD	path	string	X	false	
+START_ENCRYPTED_DOWNLOAD	path	string	XY	false	
+START_ENCRYPTED_DOWNLOAD	path	string	xyz	false	
+START_ENCRYPTED_DOWNLOAD	path	string	W	false	
+START_ENCRYPTED_DOWNLOAD	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+START_ENCRYPTED_DOWNLOAD	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+START_ENCRYPTED_DOWNLOAD	path	string	usb/model.gcode	false	
+START_ENCRYPTED_DOWNLOAD	path	string	00112233445566778899aabbccddeeff	false	
+START_ENCRYPTED_DOWNLOAD	path	string	00112233445566778899aabbccddeegg	false	
+START_ENCRYPTED_DOWNLOAD	path	string	0011223344556677	false	
+START_ENCRYPTED_DOWNLOAD	path	string	00112233445566778899aabbccddeeff00	false	
+START_ENCRYPTED_DOWNLOAD	path	string	12345678901234567890	false	
+START_ENCRYPTED_DOWNLOAD	path	string	123456789012345678901	false	
+START_ENCRYPTED_DOWNLOAD	path	string	12345678901234567890123456789	false	
+START_ENCRYPTED_DOWNLOAD	path	string	123456789012345678901234567890	false	
+START_ENCRYPTED_DOWNLOAD	path	string	12345678901234567890123456789012345	false	
+START_ENCRYPTED_DOWNLOAD	path	string	123456789012345678901234567890123456	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	-4294967296	true	argument out of range: port must be between 0 and 65535 (uint16_t), got -4294967296
+START_ENCRYPTED_DOWNLOAD	port	integer	-65536	true	argument out of range: port must be between 0 and 65535 (uint16_t), got -65536
+START_ENCRYPTED_DOWNLOAD	port	integer	-2	true	argument out of range: port must be between 0 and 65535 (uint16_t), got -2
+START_ENCRYPTED_DOWNLOAD	port	integer	-1	true	argument out of range: port must be between 0 and 65535 (uint16_t), got -1
+START_ENCRYPTED_DOWNLOAD	port	integer	0	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	1	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	4	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	5	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	6	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	59	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	60	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	61	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	90	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	100	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	101	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	120	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	3600	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	5399	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	5400	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	5401	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	65535	false	
+START_ENCRYPTED_DOWNLOAD	port	integer	65536	true	argument out of range: port must be between 0 and 65535 (uint16_t), got 65536
+START_ENCRYPTED_DOWNLOAD	port	integer	4294967295	true	argument out of range: port must be between 0 and 65535 (uint16_t), got 4294967295
+START_ENCRYPTED_DOWNLOAD	port	integer	4294967296	true	argument out of range: port must be between 0 and 65535 (uint16_t), got 4294967296
+START_INLINE_DOWNLOAD	hash	string		false	
+START_INLINE_DOWNLOAD	hash	string	a	false	
+START_INLINE_DOWNLOAD	hash	string	X	false	
+START_INLINE_DOWNLOAD	hash	string	XY	false	
+START_INLINE_DOWNLOAD	hash	string	xyz	false	
+START_INLINE_DOWNLOAD	hash	string	W	false	
+START_INLINE_DOWNLOAD	hash	string	..	false	
+START_INLINE_DOWNLOAD	hash	string	usb/../etc/passwd	false	
+START_INLINE_DOWNLOAD	hash	string	usb/model.gcode	false	
+START_INLINE_DOWNLOAD	hash	string	00112233445566778899aabbccddeeff	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 32
+START_INLINE_DOWNLOAD	hash	string	00112233445566778899aabbccddeegg	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 32
+START_INLINE_DOWNLOAD	hash	string	0011223344556677	false	
+START_INLINE_DOWNLOAD	hash	string	00112233445566778899aabbccddeeff00	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 34
+START_INLINE_DOWNLOAD	hash	string	12345678901234567890	false	
+START_INLINE_DOWNLOAD	hash	string	123456789012345678901	false	
+START_INLINE_DOWNLOAD	hash	string	12345678901234567890123456789	false	
+START_INLINE_DOWNLOAD	hash	string	123456789012345678901234567890	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 30
+START_INLINE_DOWNLOAD	hash	string	12345678901234567890123456789012345	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 35
+START_INLINE_DOWNLOAD	hash	string	123456789012345678901234567890123456	true	invalid string length: hash must be at most 29 characters (base64-encoded 16-byte hash), got 36
+START_INLINE_DOWNLOAD	orig_size	integer	-4294967296	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -4294967296
+START_INLINE_DOWNLOAD	orig_size	integer	-65536	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -65536
+START_INLINE_DOWNLOAD	orig_size	integer	-2	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -2
+START_INLINE_DOWNLOAD	orig_size	integer	-1	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got -1
+START_INLINE_DOWNLOAD	orig_size	integer	0	false	
+START_INLINE_DOWNLOAD	orig_size	integer	1	false	
+START_INLINE_DOWNLOAD	orig_size	integer	4	false	
+START_INLINE_DOWNLOAD	orig_size	integer	5	false	
+START_INLINE_DOWNLOAD	orig_size	integer	6	false	
+START_INLINE_DOWNLOAD	orig_size	integer	59	false	
+START_INLINE_DOWNLOAD	orig_size	integer	60	false	
+START_INLINE_DOWNLOAD	orig_size	integer	61	false	
+START_INLINE_DOWNLOAD	orig_size	integer	90	false	
+START_INLINE_DOWNLOAD	orig_size	integer	100	false	
+START_INLINE_DOWNLOAD	orig_size	integer	101	false	
+START_INLINE_DOWNLOAD	orig_size	integer	120	false	
+START_INLINE_DOWNLOAD	orig_size	integer	3600	false	
+START_INLINE_DOWNLOAD	orig_size	integer	5399	false	
+START_INLINE_DOWNLOAD	orig_size	integer	5400	false	
+START_INLINE_DOWNLOAD	orig_size	integer	5401	false	
+START_INLINE_DOWNLOAD	orig_size	integer	65535	false	
+START_INLINE_DOWNLOAD	orig_size	integer	65536	false	
+START_INLINE_DOWNLOAD	orig_size	integer	4294967295	false	
+START_INLINE_DOWNLOAD	orig_size	integer	4294967296	true	argument out of range: orig_size must be between 0 and 4294967295 (uint32_t), got 4294967296
+START_INLINE_DOWNLOAD	path	string		false	
+START_INLINE_DOWNLOAD	path	string	a	false	
+START_INLINE_DOWNLOAD	path	string	X	false	
+START_INLINE_DOWNLOAD	path	string	XY	false	
+START_INLINE_DOWNLOAD	path	string	xyz	false	
+START_INLINE_DOWNLOAD	path	string	W	false	
+START_INLINE_DOWNLOAD	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+START_INLINE_DOWNLOAD	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+START_INLINE_DOWNLOAD	path	string	usb/model.gcode	false	
+START_INLINE_DOWNLOAD	path	string	00112233445566778899aabbccddeeff	false	
+START_INLINE_DOWNLOAD	path	string	00112233445566778899aabbccddeegg	false	
+START_INLINE_DOWNLOAD	path	string	0011223344556677	false	
+START_INLINE_DOWNLOAD	path	string	00112233445566778899aabbccddeeff00	false	
+START_INLINE_DOWNLOAD	path	string	12345678901234567890	false	
+START_INLINE_DOWNLOAD	path	string	123456789012345678901	false	
+START_INLINE_DOWNLOAD	path	string	12345678901234567890123456789	false	
+START_INLINE_DOWNLOAD	path	string	123456789012345678901234567890	false	
+START_INLINE_DOWNLOAD	path	string	12345678901234567890123456789012345	false	
+START_INLINE_DOWNLOAD	path	string	123456789012345678901234567890123456	false	
+START_INLINE_DOWNLOAD	team_id	integer	-4294967296	true	argument out of range: team_id must be non-negative (uint64_t), got -4294967296
+START_INLINE_DOWNLOAD	team_id	integer	-65536	true	argument out of range: team_id must be non-negative (uint64_t), got -65536
+START_INLINE_DOWNLOAD	team_id	integer	-2	true	argument out of range: team_id must be non-negative (uint64_t), got -2
+START_INLINE_DOWNLOAD	team_id	integer	-1	true	argument out of range: team_id must be non-negative (uint64_t), got -1
+START_INLINE_DOWNLOAD	team_id	integer	0	false	
+START_INLINE_DOWNLOAD	team_id	integer	1	false	
+START_INLINE_DOWNLOAD	team_id	integer	4	false	
+START_INLINE_DOWNLOAD	team_id	integer	5	false	
+START_INLINE_DOWNLOAD	team_id	integer	6	false	
+START_INLINE_DOWNLOAD	team_id	integer	59	false	
+START_INLINE_DOWNLOAD	team_id	integer	60	false	
+START_INLINE_DOWNLOAD	team_id	integer	61	false	
+START_INLINE_DOWNLOAD	team_id	integer	90	false	
+START_INLINE_DOWNLOAD	team_id	integer	100	false	
+START_INLINE_DOWNLOAD	team_id	integer	101	false	
+START_INLINE_DOWNLOAD	team_id	integer	120	false	
+START_INLINE_DOWNLOAD	team_id	integer	3600	false	
+START_INLINE_DOWNLOAD	team_id	integer	5399	false	
+START_INLINE_DOWNLOAD	team_id	integer	5400	false	
+START_INLINE_DOWNLOAD	team_id	integer	5401	false	
+START_INLINE_DOWNLOAD	team_id	integer	65535	false	
+START_INLINE_DOWNLOAD	team_id	integer	65536	false	
+START_INLINE_DOWNLOAD	team_id	integer	4294967295	false	
+START_INLINE_DOWNLOAD	team_id	integer	4294967296	false	
+START_PRINT	path	string		false	
+START_PRINT	path	string	a	false	
+START_PRINT	path	string	X	false	
+START_PRINT	path	string	XY	false	
+START_PRINT	path	string	xyz	false	
+START_PRINT	path	string	W	false	
+START_PRINT	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+START_PRINT	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+START_PRINT	path	string	usb/model.gcode	false	
+START_PRINT	path	string	00112233445566778899aabbccddeeff	false	
+START_PRINT	path	string	00112233445566778899aabbccddeegg	false	
+START_PRINT	path	string	0011223344556677	false	
+START_PRINT	path	string	00112233445566778899aabbccddeeff00	false	
+START_PRINT	path	string	12345678901234567890	false	
+START_PRINT	path	string	123456789012345678901	false	
+START_PRINT	path	string	12345678901234567890123456789	false	
+START_PRINT	path	string	123456789012345678901234567890	false	
+START_PRINT	path	string	12345678901234567890123456789012345	false	
+START_PRINT	path	string	123456789012345678901234567890123456	false	
+START_PRINT	tool_mapping	object	{}	false	
+UNCANCEL_OBJECT	id	integer	-4294967296	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -4294967296
+UNCANCEL_OBJECT	id	integer	-65536	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -65536
+UNCANCEL_OBJECT	id	integer	-2	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -2
+UNCANCEL_OBJECT	id	integer	-1	true	argument out of range: id must be between 0 and 65535 (uint16_t), got -1
+UNCANCEL_OBJECT	id	integer	0	false	
+UNCANCEL_OBJECT	id	integer	1	false	
+UNCANCEL_OBJECT	id	integer	4	false	
+UNCANCEL_OBJECT	id	integer	5	false	
+UNCANCEL_OBJECT	id	integer	6	false	
+UNCANCEL_OBJECT	id	integer	59	false	
+UNCANCEL_OBJECT	id	integer	60	false	
+UNCANCEL_OBJECT	id	integer	61	false	
+UNCANCEL_OBJECT	id	integer	90	false	
+UNCANCEL_OBJECT	id	integer	100	false	
+UNCANCEL_OBJECT	id	integer	101	false	
+UNCANCEL_OBJECT	id	integer	120	false	
+UNCANCEL_OBJECT	id	integer	3600	false	
+UNCANCEL_OBJECT	id	integer	5399	false	
+UNCANCEL_OBJECT	id	integer	5400	false	
+UNCANCEL_OBJECT	id	integer	5401	false	
+UNCANCEL_OBJECT	id	integer	65535	false	
+UNCANCEL_OBJECT	id	integer	65536	true	argument out of range: id must be between 0 and 65535 (uint16_t), got 65536
+UNCANCEL_OBJECT	id	integer	4294967295	true	argument out of range: id must be between 0 and 65535 (uint16_t), got 4294967295
+UNCANCEL_OBJECT	id	integer	4294967296	true	argument out of range: id must be between 0 and 65535 (uint16_t), got 4294967296
+UPGRADE	path	string		false	
+UPGRADE	path	string	a	false	
+UPGRADE	path	string	X	false	
+UPGRADE	path	string	XY	false	
+UPGRADE	path	string	xyz	false	
+UPGRADE	path	string	W	false	
+UPGRADE	path	string	..	true	invalid path: path must not contain a .. segment (path traversal not allowed), got ..
+UPGRADE	path	string	usb/../etc/passwd	true	invalid path: path must not contain a .. segment (path traversal not allowed), got usb/../etc/passwd
+UPGRADE	path	string	usb/model.gcode	false	
+UPGRADE	path	string	00112233445566778899aabbccddeeff	false	
+UPGRADE	path	string	00112233445566778899aabbccddeegg	false	
+UPGRADE	path	string	0011223344556677	false	
+UPGRADE	path	string	00112233445566778899aabbccddeeff00	false	
+UPGRADE	path	string	12345678901234567890	false	
+UPGRADE	path	string	123456789012345678901	false	
+UPGRADE	path	string	12345678901234567890123456789	false	
+UPGRADE	path	string	123456789012345678901234567890	false	
+UPGRADE	path	string	12345678901234567890123456789012345	false	
+UPGRADE	path	string	123456789012345678901234567890123456	false	
+Z_POWER_MOVE	distance	float	-1	false	
+Z_POWER_MOVE	distance	float	-0.5	false	
+Z_POWER_MOVE	distance	float	0	false	
+Z_POWER_MOVE	distance	float	0.25	false	
+Z_POWER_MOVE	distance	float	0.4	false	
+Z_POWER_MOVE	distance	float	1	false	
+Z_POWER_MOVE	distance	float	300	false	

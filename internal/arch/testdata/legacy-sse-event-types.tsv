@@ -1,0 +1,21 @@
+# The SSE event types the retired server publishes, the old backlog.
+#
+# Columns: the constant that declared it, the value a client reads in the
+# `event:` field of a frame.
+#
+# Frozen from the `EventType` constants in legacy/printer/state/broadcaster.go
+# before that file left the gate's reach. It is the second source
+# TestTheSSEDocumentDescribesEveryEventTypeTheServerPublishes holds
+# shipping-sse-asyncapi.yaml against, so a channel added to or dropped from the
+# document fails here.
+EventTypePrinterConnected	prusa-connect.printer.connected
+EventTypePrinterDisconnected	prusa-connect.printer.disconnected
+EventTypePrinterRemoved	prusa-connect.printer.removed
+EventTypePrinterStateChanged	prusa-connect.printer.state_changed
+EventTypeTransferUpdate	prusa-connect.transfer.update
+EventTypeJobUpdate	prusa-connect.job.update
+EventTypeFileChanged	prusa-connect.file.changed
+EventTypePrinterEvent	prusa-connect.printer.event
+EventTypeInitialState	prusa-connect.printer.initial_state
+EventTypeAuthExpired	prusa-connect.auth.expired
+EventTypeShadowStatusChanged	prusa-connect.printer.shadow_status_changed

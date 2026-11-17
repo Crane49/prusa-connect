@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="A printer on a desk, its cable leading off the edge">
+  <!-- The desk, the cable, the filament and the inner rails: the quiet half
+       of the drawing, so the machine itself reads first. -->
+  <g stroke-opacity=".45">
+    <path d="M12 124h216"/>
+    <path d="M22 129h196"/>
+    <path d="M30 129v20M210 129v20"/>
+    <path d="M162 121c22 5 30 13 36 22s16 16 30 16"/>
+    <path d="M110 20c8 0 12 6 12 14"/>
+    <path d="M96 56v58M144 56v58"/>
+    <path d="M96 110h48"/>
+  </g>
+  <!-- The machine: one box on the desk, the chamber open at the front. -->
+  <rect x="76" y="34" width="88" height="90" rx="4"/>
+  <path d="M76 48h88"/>
+  <circle cx="126" cy="41" r="2.5"/>
+  <rect x="134" y="37.5" width="22" height="7" rx="1.5"/>
+  <rect x="86" y="56" width="68" height="58" rx="2"/>
+  <path d="M96 76h48"/>
+  <rect x="112" y="76" width="16" height="10" rx="1.5"/>
+  <path d="M120 86v4"/>
+  <path d="M92 106h56"/>
+  <!-- The spool on the lid. -->
+  <circle cx="100" cy="23" r="11"/>
+  <circle cx="100" cy="23" r="3.2"/>
+</svg>

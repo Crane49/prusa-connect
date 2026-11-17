@@ -1,0 +1,111 @@
+# The npm registry a developer publishes the two client packages to while the
+# repository is closed.
+#
+# Nothing goes to npmjs until the repository opens. Until then local
+# development runs against a Verdaccio of its own, and this service is that
+# Verdaccio. `make registry-up` starts it, `make registry-publish`
+# puts both packages in it, and any project on the machine installs from it
+# with the two lines `make registry-use` prints.
+#
+# It is not the fixture. docker/npm-registry-fixture is started and removed by
+# `make client-sdk-install-check` for one run and holds nothing afterwards.
+# This one keeps what it holds in a named volume, so a version published on
+# Monday is still installable on Friday, and `registry-down` followed by
+# `registry-up` finds it again. `make registry-reset` is the one command that
+# empties it.
+#
+# The two services share one image and one configuration, built from
+# docker/npm-registry-fixture. They differ in where /verdaccio/storage lives:
+# a tmpfs there for the fixture, this named volume here. Baking a second
+# Dockerfile with the same content would be one more thing to keep true.
+#
+# No uplink, the same as the fixture: a package that was not published here
+# answers 404 rather than being served from npmjs by a registry nobody meant
+# to proxy.
+#
+# No host port here. It is in npm-registry.local.yml.
+services:
+  npm-registry:
+    image: prusa-connect-npm-registry-fixture:local
+    build:
+      context: ../npm-registry-fixture
+    container_name: prusa_connect_npm_registry
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition leaves it out and only a command that names the service
+    # starts it. It is the second service in the composition that has to be
+    # built, and `make docker-check` brings the stack up with --no-build.
+    profiles:
+      - registry
+    # A developer registry is worth having back after a reboot, which is the
+    # whole difference between this and the fixture beside it.
+    restart: unless-stopped
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    labels:
+      com.prusa3d.description: "The local npm registry the client packages are published to while the repository is closed"
+      com.prusa3d.service: "developer-tool"
+
+    # The image runs as uid 10001 and writes packages, the htpasswd file and
+    # its own metadata under /verdaccio/storage. Docker fills an empty named
+    # volume from the image's own directory and copies its ownership, so this
+    # needs no chown and no entrypoint.
+    user: "10001:65533"
+    read_only: true
+    volumes:
+      - npm_registry_storage:/verdaccio/storage
+    tmpfs:
+      - /tmp
+
+    healthcheck:
+      # wget ships in the image, so this needs no curl and no extra layer.
+      # /-/ping is the registry's own liveness route. The loopback address is
+      # written out because `localhost` resolves to ::1 in this image and the
+      # server listens on IPv4.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:4873/-/ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      # A cold start is Node loading the server and binding a port, measured
+      # under three seconds. Rounded up.
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
+
+    networks:
+      - prusa_connect_backend
+
+volumes:
+  # Named, and labelled to keep, so `make docker-clean` lists it rather than
+  # removing it the way it removes every other dangling volume of this
+  # project. `make registry-reset` is the command that drops it.
+  npm_registry_storage:
+    name: prusa_connect_npm_registry_storage
+    labels:
+      com.prusa3d.keep: "the versions published to the local npm registry"
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

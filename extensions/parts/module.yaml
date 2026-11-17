@@ -1,0 +1,143 @@
+# The one manifest for both halves of this module: the Go process in main.go
+# and the browser bundle under ui/.
+#
+# `prusa-connect module add` reads it out of the release, writes one
+# declaration, and copies it into the bundle directory it installs, because
+# that is where the host reads the ui block from. The digest covers it there,
+# so the manifest the host reads is the one the install recorded.
+#
+# This file names no namespace. The host derives the namespace from the module
+# path the operator installed, so a module cannot take the address of another
+# module.
+
+name: parts
+# The two keys an extensions page prints on the card, beside the version.
+title: Parts
+summary: A private catalogue of parts, with folders, versions of their files, comments and printing.
+codeowner: Prusa Research
+# The kind the one instance is declared under. It offers the service runtime,
+# which is what a module with a process half needs; the browser half is
+# declared in the same entry as `service.assets`.
+kind: sink
+version: 0.3.7
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The major version of the protocol between this process and the host.
+contract_major: 1
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+
+# What this module cannot run without. core is the first core that reads
+# needs.database, and an older core refuses the manifest before it writes
+# anything. Each other entry is a wire method it calls, and a host that serves
+# none of them would start a module whose every route answers a refusal.
+#
+# The record store is not on the list. The catalogue is in a database of the
+# module's own, and the module reads the record store only to move what a
+# release up to 0.2.3 kept there. A server with no record backend has nothing
+# to move.
+require:
+  core: ">=0.0.1-alpha.7"
+  core-storage.stat: "*"
+
+# A database of its own for the catalogue. The operator chooses where it goes
+# at install: a SQLite file in the module's data directory, which is the
+# default, or a database on a Postgres server.
+needs:
+  database: true
+
+# The settings this module reads, with the default of each. The host applies
+# every default, writes the `config:` block of the instance over it key by key,
+# and sends the result on plugin.configure before any request arrives. A key
+# not named here is refused before the process starts.
+#
+# README.md has the same table. manifest_test.go fails when the two differ.
+options:
+  - key: storage
+    type: string
+    default: local
+    summary: The server storage the catalogue's files are uploaded to.
+  - key: root
+    type: string
+    default: parts
+    summary: The folder inside that storage the catalogue's files are kept under.
+
+# No `permissions` key. This module acts only for the person the host
+# authorized and takes nothing as itself: it runs no loop and no background
+# work. The host takes view_resource on the instance before a GET and
+# operate_resource before every other method, which openapi.json states on each
+# operation. The files are the person's to upload and delete through the
+# core's storage routes, which take write_storage for that person.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+ui:
+  # The built bundle, relative to the bundle root. The host serves it at
+  # /api/v1/modules/<namespace>/ui/ui/index.js.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against. The app
+  # refuses a bundle its own version falls outside of.
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    pages:
+      - path: parts
+        title: Parts
+        icon: package
+    # Two cards a person can put on a dashboard. Each draws its own settings
+    # editor, because the schema has no kind for a folder or a part of this
+    # module; the fields below still set the defaults and are what the core
+    # holds every value to.
+    cards:
+      - id: folder
+        title: Parts folder
+        description: The newest parts of one folder of the catalogue, with their pictures.
+        icon: layers
+        size: {w: 6, h: 5}
+        least: {w: 2, h: 3}
+        settings:
+          - key: folder
+            kind: number
+            label: Folder
+            min: 0
+            max: 1000000000
+            step: 1
+            default: 0
+          - key: deep
+            kind: switch
+            label: Include the folders inside it
+            default: false
+          - key: tag
+            kind: text
+            label: Tag
+            max_bytes: 32
+            default: ""
+          - key: order
+            kind: choice
+            label: Order
+            options:
+              - {value: changed, label: Newest change first}
+              - {value: name, label: By name}
+            default: changed
+          - key: limit
+            kind: number
+            label: How many parts
+            min: 1
+            max: 24
+            step: 1
+            default: 8
+      - id: chosen
+        title: Chosen parts
+        description: Parts a person chose one by one, such as the spare parts printed most.
+        icon: package
+        size: {w: 4, h: 4}
+        least: {w: 2, h: 2}
+        settings:
+          - key: parts
+            kind: text
+            label: Parts
+            max_bytes: 200
+            default: ""

@@ -1,0 +1,78 @@
+# Authelia, one of the real OpenID Connect providers the sign-in is checked
+# against by `make oidc-providers-check` (scripts/check-oidc-providers.sh).
+#
+# A fixture, not a deployment. Its database and its mail are files under a
+# tmpfs, and the client and both people come from the configuration baked
+# into the image. It serves TLS on a certificate the image made, because
+# Authelia refuses a portal address that is not https.
+#
+# No host port here. It is in authelia-fixture.local.yml.
+services:
+  authelia-fixture:
+    # Built from the Dockerfile beside this file, whose FROM is pinned by
+    # digest. The tag is what compose names the built image.
+    image: prusa-connect-authelia-fixture:local
+    build:
+      context: .
+    container_name: prusa_connect_authelia_fixture
+    # Behind a profile of its own, so neither a whole-stack `up` nor
+    # `make fixtures-up` starts it. scripts/check-oidc-providers.sh names it.
+    profiles:
+      - oidc-providers
+    restart: "no"
+    # The image's entrypoint switches users when it starts as root. Started
+    # as the owner of /config, it runs Authelia directly.
+    user: "8000:8000"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    labels:
+      com.prusa3d.description: "Authelia with two throwaway people, for the sign-in check against real providers"
+      com.prusa3d.service: "test-fixture"
+
+    # Not read_only: Authelia's start-up checks fail on a read-only root file
+    # system, and the log names no path. The database and the mail are under
+    # /tmp all the same.
+    tmpfs:
+      - /tmp:uid=8000,gid=8000
+
+    healthcheck:
+      # The image's own probe reads a file the entrypoint writes as root. This
+      # is the same request, made directly.
+      test: ["CMD", "wget", "--quiet", "--no-check-certificate", "--tries=1", "--spider", "https://127.0.0.1:9091/api/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      # Measured at under two seconds. Rounded up.
+      start_period: 20s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

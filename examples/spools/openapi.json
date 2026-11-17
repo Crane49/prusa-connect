@@ -1,0 +1,100 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "spools",
+    "version": "1.0.0",
+    "description": "The routes examples/spools serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at <mount>/openapi.json."
+  },
+  "components": {
+    "schemas": {
+      "Spool": {
+        "type": "object",
+        "description": "One reel on the shelf.",
+        "properties": {
+          "id": {"type": "string", "description": "What this spool is called. It is unique on the shelf."},
+          "material": {"type": "string", "description": "The filament, such as PETG."},
+          "colour": {"type": "string", "description": "The colour, in the words the operator uses."},
+          "device": {"type": "string", "description": "The device it is loaded on, and absent for a spool nothing is printing from."},
+          "grams": {"type": "integer", "description": "What is left on the reel, in grams."}
+        },
+        "required": ["id", "material", "colour", "grams"]
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "One refusal, as RFC 9457 names it. The client SDK reads this shape: code reaches ApiError.code and detail reaches ApiError.message.",
+        "properties": {
+          "type": {"type": "string", "description": "about:blank, because this module publishes no page per code."},
+          "status": {"type": "integer", "description": "The HTTP status, repeated in the body."},
+          "code": {"type": "string", "description": "The module's own code, such as spools/SPOOL_TAKEN. It is outside the core's registry."},
+          "title": {"type": "string", "description": "What went wrong, in one phrase that never varies."},
+          "detail": {"type": "string", "description": "What went wrong this time, naming the value that caused it."},
+          "params": {"type": "object", "additionalProperties": true, "description": "What the code fills in."},
+          "retryable": {"type": "boolean", "description": "Whether sending the same request again could work."}
+        },
+        "required": ["type", "status", "code", "title", "detail", "params", "retryable"]
+      }
+    },
+    "responses": {
+      "Refused": {
+        "description": "The module refused the call. The status says which rule it met.",
+        "content": {"application/problem+json": {"schema": {"$ref": "#/components/schemas/Refusal"}}}
+      }
+    }
+  },
+  "paths": {
+    "/spools": {
+      "get": {
+        "operationId": "list-spools",
+        "summary": "The spools on the shelf",
+        "description": "Every spool the module holds, and the principal the host authorized, which is the host's answer and never a header the caller set. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {"name": "device", "in": "query", "description": "Keep only the spools loaded on this device. Absent answers the whole shelf.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {
+            "description": "The shelf.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "spools": {"type": "array", "items": {"$ref": "#/components/schemas/Spool"}, "description": "The spools, in the order they were added."},
+                    "principal": {"type": "string", "description": "Who the host says is calling."}
+                  },
+                  "required": ["spools", "principal"]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "create-spool",
+        "summary": "Add a spool to the shelf",
+        "description": "Keeps one spool and answers the row that was added, with the principal the host authorized. An id the shelf already holds is refused with 409. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Spool"}}}
+        },
+        "responses": {
+          "201": {
+            "description": "The spool is on the shelf.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "spool": {"$ref": "#/components/schemas/Spool"},
+                    "principal": {"type": "string", "description": "Who the host says is calling."}
+                  },
+                  "required": ["spool", "principal"]
+                }
+              }
+            }
+          },
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    }
+  }
+}

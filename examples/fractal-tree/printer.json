@@ -1,0 +1,15 @@
+{
+  "interface": "FDMPrinter1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "nozzleTemp", "type": "float", "access": "ro" },
+    { "name": "nozzleTempTarget", "type": "float", "access": "rw", "nullable": true }
+  ],
+  "methods": [
+    {
+      "name": "SetNozzleTemp",
+      "params": [{ "name": "target", "type": "float" }],
+      "returns": "bool"
+    }
+  ]
+}

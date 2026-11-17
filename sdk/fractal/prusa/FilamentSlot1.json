@@ -1,0 +1,18 @@
+{
+  "interface": "FilamentSlot1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "material", "type": "FDMMaterial", "access": "ro", "nullable": true },
+    { "name": "tempPreheater", "type": "float", "access": "ro", "nullable": true },
+    { "name": "fanHotend", "type": "int", "access": "ro", "nullable": true },
+    { "name": "fanPrint", "type": "int", "access": "ro", "nullable": true }
+  ],
+  "methods": [
+    {
+      "name": "SetMaterial",
+      "params": [
+        { "name": "material", "type": "FDMMaterial" }
+      ]
+    }
+  ]
+}

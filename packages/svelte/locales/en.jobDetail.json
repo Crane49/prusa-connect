@@ -1,0 +1,23 @@
+{
+  "jobDetail.action.printAgain": "Print again",
+  "jobDetail.failed.detail": "This server does not record why a print failed.",
+  "jobDetail.failed.heading": "This print failed",
+  "jobDetail.file.heading": "File",
+  "jobDetail.file.name": "Name",
+  "jobDetail.file.open": "Open this file",
+  "jobDetail.file.path": "Path on the printer",
+  "jobDetail.jobs": "Jobs",
+  "jobDetail.loading": "Reading this print",
+  "jobDetail.missing.detail": "This server holds no print with that address.",
+  "jobDetail.missing.heading": "No such print",
+  "jobDetail.origin.heading": "Origin",
+  "jobDetail.origin.jobId": "Print id",
+  "jobDetail.origin.model": "Model",
+  "jobDetail.origin.printerJobId": "Printer job id",
+  "jobDetail.progress.label": "Progress of {name}",
+  "jobDetail.run.duration": "Duration",
+  "jobDetail.run.ended": "Ended",
+  "jobDetail.run.heading": "Run",
+  "jobDetail.run.started": "Started",
+  "jobDetail.run.timeLeft": "Time left"
+}

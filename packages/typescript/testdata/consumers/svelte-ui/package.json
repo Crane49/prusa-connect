@@ -1,0 +1,29 @@
+{
+  "name": "prusa-connect-consumer-svelte-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A Svelte 5 page bundled by Vite that installs @prusa/connect and @prusa/connect-ui from a registry and draws the library's primitives. No SvelteKit.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tailwindcss/vite": "4.3.3",
+    "@vitest/browser-playwright": "5.0.5",
+    "playwright": "1.64.1",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.5",
+    "vitest-browser-svelte": "3.1.0"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

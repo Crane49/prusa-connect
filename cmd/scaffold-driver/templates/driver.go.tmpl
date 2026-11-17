@@ -1,0 +1,495 @@
+// Package {{.Package}} is a printer driver for {{.Name}} devices.
+//
+// It is an outbound dialect: the host dials an address, this driver asks the
+// device what it is, narrows what it offers to what the host offered, and
+// drives it. The wire is JSON over HTTP because that is the plainest one that
+// is still real.
+//
+// The address is not a key in this driver's config block. The server keeps its
+// own list of what to dial, in the file it owns rather than the operator's, and
+// hands one connectorapi.Endpoint per address to Connect. So a printer is added
+// without a restart and without an edit here.
+//
+// # What to change
+//
+// Three requests and one capability table. identify, Do and stream carry the
+// vendor's framing; Baseline declares what this code can do at all. Everything
+// else is the contract and is the same for every driver.
+//
+// # The rule the whole model rests on
+//
+// A capability set narrows and never widens. Baseline is the ceiling, the
+// host's profile subtracts from it, and what the device claims subtracts again.
+// A driver that adds a capability back fails the conformance suite rather than
+// the field.
+package {{.Package}}
+
+import (
+	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/prusa3d/prusa-connect/sdk/connectorapi"
+	"github.com/prusa3d/prusa-connect/sdk/extension"
+	"github.com/prusa3d/prusa-connect/sdk/fault"
+)
+
+// Type is the value of a connector's `type` in configuration that selects this
+// driver.
+const Type connectorapi.TypeName = "{{.Name}}"
+
+// The capabilities this driver's code can do at all. It is the ceiling: a
+// profile and the device's own probe may subtract from it and neither can add
+// to it.
+//
+// The keys come from the published capability vocabulary. A key nothing there
+// names resolves and validates like any other and reaches no caller that knows
+// what to send.
+const (
+	// VerbSendStateInfo reads the printer's state and moves nothing, which is
+	// what makes it the verb a conformance run may send.
+	VerbSendStateInfo = connectorapi.Capability("core.command.send_state_info")
+	// VerbNozzleTarget sets the nozzle's target temperature.
+	VerbNozzleTarget = connectorapi.Capability("core.command.set_nozzle_temperature")
+	// ArgNozzleTemperature is the target, in whole degrees celsius.
+	ArgNozzleTemperature = connectorapi.Capability("core.command.set_nozzle_temperature#nozzle_temperature")
+)
+
+// The routes this dialect speaks. A vendor's own paths replace them.
+const (
+	identityPath = "/identity"
+	commandPath  = "/command"
+	statePath    = "/state"
+)
+
+const (
+	// nozzleCeiling is the highest target this driver will pass on, in degrees
+	// celsius. The host refuses anything above it before this code is reached,
+	// which is why nothing below re-checks it.
+	nozzleCeiling = 300
+
+	// DefaultTimeout bounds one request to the printer when the operator sets
+	// no timeout. The state stream is not one request in that sense and is
+	// bounded by the session instead.
+	//
+	// It is the default the `timeout` setting declares in Doc, and the two are
+	// the same number on purpose: what the settings table publishes is what
+	// this code does when nobody overrides it.
+	DefaultTimeout = 10 * time.Second
+
+	// patchBacklog bounds how many state patches may wait for the host to read
+	// them, so a device reporting a burst costs a fixed amount of memory.
+	patchBacklog = 32
+
+	// maxPatchBytes bounds one line of the state stream, so nothing here
+	// allocates in proportion to what a device sends.
+	maxPatchBytes = 1 << 20
+)
+
+// The failures this driver reports are the codes in faults.go. A caller
+// branches on the code with fault.HasCode, which survives wrapping, so this
+// file declares no sentinel of its own.
+
+//nolint:gochecknoinits // registration has to happen before main; the host reaches it through a blank import.
+func init() {
+	connectorapi.Register(Type, Doc(), New)
+{{if .KindName}}
+	// The device kind this module declares, in kind.go beside this. A dialect
+	// whose machines are printers declares none and its devices are printers,
+	// which is what every device this server registered before kinds existed
+	// was.
+	connectorapi.RegisterKind(kindDeclaration(), kindDoc())
+{{end}}}
+
+// Doc is what the published extension reference says about this driver, and the
+// settings table an operator reads. Every mandatory field is checked at
+// registration, so a missing one stops the binary rather than shipping an empty
+// cell. It is exported so a test can hold the declared defaults to the code's.
+func Doc() extension.Doc {
+	return extension.Doc{
+		Summary: "A {{.Name}} printer, reached over JSON on HTTP.",
+		Description: "The host dials the address configuration names, asks the device what it is, and " +
+			"drives it over three requests. It narrows what it offers to the tier the host resolved and " +
+			"never widens it.",
+		Version:   "0.1.0",
+		Contract:  connectorapi.Contract,
+		Stability: extension.StabilityExperimental,
+		Options: []extension.Option{
+			{
+				Key:     "timeout",
+				Type:    extension.OptionDuration,
+				Default:  DefaultTimeout.String(),
+				Summary: "How long one request to the device may take before it is abandoned.",
+			},
+		},
+	}
+}
+
+// Config is what an operator writes under a connector's `config` block.
+type Config struct {
+	// Timeout bounds one request to the device, as time.ParseDuration reads a
+	// duration.
+	Timeout string `json:"timeout,omitempty"`
+}
+
+// Driver is the connectorapi.Outbound this package registers. It holds no
+// per-device state: a device's state lives on the Session built for it.
+type Driver struct {
+	timeout time.Duration
+	client  *http.Client
+}
+
+// New builds a Driver from its spec. It is the connectorapi.Factory for Type.
+func New(spec connectorapi.Spec) (connectorapi.Driver, error) {
+	var cfg Config
+	if err := spec.DecodeConfig(&cfg); err != nil {
+		return nil, InvalidConfig.New("the config block is not readable").Wrap(err)
+	}
+
+	timeout := DefaultTimeout
+
+	if cfg.Timeout != "" {
+		parsed, err := time.ParseDuration(cfg.Timeout)
+		if err != nil {
+			return nil, InvalidConfig.New("timeout is not a duration").
+				With(fault.StringParam("key", "timeout")).Wrap(err)
+		}
+
+		if parsed <= 0 {
+			return nil, InvalidConfig.New("timeout must be positive, and it is "+parsed.String()).
+				With(fault.StringParam("key", "timeout"))
+		}
+
+		timeout = parsed
+	}
+
+	return NewDriver(timeout), nil
+}
+
+// NewDriver returns a driver with its timeout given directly, for a host that
+// wires its own built-ins and for tests. A timeout of zero or less takes the
+// default.
+//
+// The client carries no timeout of its own. Every call bounds itself with a
+// context, and a client deadline would cut the state stream, which is meant to
+// stay open.
+func NewDriver(timeout time.Duration) *Driver {
+	if timeout <= 0 {
+		timeout = DefaultTimeout
+	}
+
+	return &Driver{timeout: timeout, client: &http.Client{}}
+}
+
+// Baseline is what this driver's code can do, for any device.
+//
+// It is pure: it reads nothing and returns a fresh set each time, so a caller
+// that edits what it was handed cannot change the next answer.
+func (d *Driver) Baseline() connectorapi.Set {
+	return connectorapi.Set{
+		VerbSendStateInfo:       {Flag: true},
+		VerbNozzleTarget: {Flag: true},
+		ArgNozzleTemperature: {
+			Flag: true, Kind: connectorapi.KindInteger, Required: true,
+			Min: 0, HasMin: true, Limit: nozzleCeiling, HasLimit: true,
+		},
+	}
+}
+
+// Connect performs the identity exchange and the probe and returns a session.
+//
+// profile is what the host offers. This driver may narrow it and may not widen
+// it, which is why the merge is an intersection and why the device's own claim
+// is intersected on top rather than added.
+//
+// The host cannot resolve a tier before it has an identity, and there is no
+// identity until this call has run, so what it passes on the outbound path is
+// this driver's own baseline. Nothing is lost by that: the host wraps the
+// returned session in the tier it resolves from the identity, and every command
+// is validated against that wrapper before Do is reached.
+func (d *Driver) Connect(
+	ctx context.Context, endpoint connectorapi.Endpoint, profile connectorapi.Set,
+) (connectorapi.Session, error) {
+	base := strings.TrimSuffix(endpoint.Address, "/")
+	if base == "" {
+		return nil, InvalidConfig.New("the endpoint names no address").
+			With(fault.StringParam("key", "address"))
+	}
+
+	reported, err := d.identify(ctx, base)
+	if err != nil {
+		return nil, err
+	}
+
+	resolved := d.Baseline().Intersect(profile)
+	if len(reported.Capabilities) > 0 {
+		resolved = resolved.Intersect(claimed(resolved, reported.Capabilities))
+	}
+
+	identity := connectorapi.Identity{
+		Vendor:   reported.Vendor,
+		Model:    reported.Model,
+		Firmware: connectorapi.NewFirmwareLabel(reported.Firmware),
+		Serial:   reported.Serial,
+		UnitUID:  reported.UnitUID,
+	}
+
+	return newSession(d.client, base, d.timeout, identity, resolved), nil
+}
+
+// identify asks the device what it is. A driver whose devices announce
+// themselves on a socket reads the same fields out of that handshake instead.
+func (d *Driver) identify(ctx context.Context, base string) (wireIdentity, error) {
+	callCtx, cancel := context.WithTimeout(ctx, d.timeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(callCtx, http.MethodGet, base+identityPath, nil)
+	if err != nil {
+		return wireIdentity{}, fmt.Errorf("{{.Name}}: build the identity request: %w", err)
+	}
+
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return wireIdentity{}, unreachable(base, "the printer did not answer the identity request").Wrap(err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return wireIdentity{}, unreachable(base, "the identity request answered "+resp.Status)
+	}
+
+	var reported wireIdentity
+	if err = json.NewDecoder(io.LimitReader(resp.Body, maxPatchBytes)).Decode(&reported); err != nil {
+		return wireIdentity{}, unreachable(base, "the identity is not readable").Wrap(err)
+	}
+
+	if reported.Model == "" {
+		return wireIdentity{}, unreachable(base,
+			"the printer reported no model, so no profile can ever be selected for it")
+	}
+
+	return reported, nil
+}
+
+// unreachable is one DEVICE_UNREACHABLE naming the address that did not
+// answer, which is the value an operator needs in order to act on it.
+func unreachable(address, message string) *fault.Fault {
+	return DeviceUnreachable.New(message).With(fault.StringParam("address", address))
+}
+
+// wireIdentity is what the device says about itself. The field names are a
+// contract with every device that speaks this dialect, so a field whose meaning
+// changes gets a new name rather than a new meaning.
+type wireIdentity struct {
+	Vendor       string                    `json:"vendor"`
+	Model        string                    `json:"model"`
+	Firmware     string                    `json:"firmware"`
+	Serial       string                    `json:"serial"`
+	UnitUID      string                    `json:"unit_uid"`
+	Capabilities []connectorapi.Capability `json:"capabilities,omitempty"`
+}
+
+// wireCommand is one command on its way to the device.
+type wireCommand struct {
+	Verb connectorapi.Capability `json:"verb"`
+	Args map[string]string       `json:"args,omitempty"`
+}
+
+// wireResult is what the device made of one command.
+type wireResult struct {
+	OK          bool              `json:"ok"`
+	Ignored     []string          `json:"ignored,omitempty"`
+	Substituted map[string]string `json:"substituted,omitempty"`
+	Raw         json.RawMessage   `json:"raw,omitempty"`
+}
+
+// claimed turns the keys a device reports into a tier that can be intersected
+// with the others. A key the resolved set does not already carry is dropped
+// rather than minted, because a probe narrows and never widens.
+func claimed(resolved connectorapi.Set, probe []connectorapi.Capability) connectorapi.Set {
+	out := make(connectorapi.Set, len(probe))
+
+	for _, key := range probe {
+		declared, ok := resolved[key]
+		if !ok {
+			continue
+		}
+
+		out[key] = declared
+	}
+
+	return out
+}
+
+// Session is one connected printer.
+type Session struct {
+	identity connectorapi.Identity
+	caps     connectorapi.Set
+
+	client  *http.Client
+	base    string
+	timeout time.Duration
+
+	// patches is what the host ranges over. stream is its only writer and
+	// therefore its only closer, so Close cannot race a send.
+	patches chan connectorapi.StatePatch
+	// cancel ends the state stream. Calling it more than once is safe, which is
+	// what makes Close idempotent.
+	cancel context.CancelFunc
+}
+
+// newSession builds a session and starts reading the device's state stream. The
+// stream's context is detached from the call that built the session: a session
+// outlives Connect, and a stream cancelled when Connect returned would close
+// the state channel immediately.
+func newSession(
+	client *http.Client, base string, timeout time.Duration,
+	identity connectorapi.Identity, caps connectorapi.Set,
+) *Session {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	s := &Session{
+		identity: identity,
+		caps:     caps,
+		client:   client,
+		base:     base,
+		timeout:  timeout,
+		patches:  make(chan connectorapi.StatePatch, patchBacklog),
+		cancel:   cancel,
+	}
+
+	go s.stream(ctx)
+
+	return s
+}
+
+// Identity is what the device said it is.
+func (s *Session) Identity() connectorapi.Identity { return s.identity }
+
+// Capabilities is the resolved set and its epoch.
+//
+// The set is copied out. The contract promises it does not move within an
+// epoch, and a caller handed the live map can move it, which would leave the
+// digest describing a set that is not in force.
+//
+// The epoch is 1 and never changes: this dialect has no renegotiation, so a
+// device whose capabilities change is reconnected as a new session. A dialect
+// that renegotiates in place bumps the epoch and swaps the set atomically.
+func (s *Session) Capabilities() (connectorapi.Set, uint64) { return s.caps.Clone(), 1 }
+
+// State is the addressable state tree's update channel. It closes when the
+// session does.
+func (s *Session) State() <-chan connectorapi.StatePatch { return s.patches }
+
+// Do sends one command to the device and reports what it made of it.
+//
+// The arguments were validated against Capabilities and the declared defaults
+// filled in before this was reached, which is why nothing here re-checks a
+// value this driver declared.
+func (s *Session) Do(ctx context.Context, cmd connectorapi.Command) (connectorapi.Result, error) {
+	// The host already refused a verb this printer does not have, so this is
+	// the last line rather than the first. It is here because a device that
+	// answers for a verb nothing declared reports an outcome that did not
+	// happen, and no caller can tell that apart from one that did.
+	if !s.caps.Has(cmd.Verb) {
+		return connectorapi.Result{}, connectorapi.CapabilityNotSupported.
+			New("the printer does not have that capability").
+			With(fault.StringParam("verb", cmd.Verb.String()))
+	}
+
+	body, err := json.Marshal(wireCommand{Verb: cmd.Verb, Args: cmd.Args})
+	if err != nil {
+		return connectorapi.Result{}, fmt.Errorf("{{.Name}}: encode %s: %w", cmd.Verb, err)
+	}
+
+	callCtx, cancel := context.WithTimeout(ctx, s.timeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(callCtx, http.MethodPost, s.base+commandPath, bytes.NewReader(body))
+	if err != nil {
+		return connectorapi.Result{}, fmt.Errorf("{{.Name}}: build the request for %s: %w", cmd.Verb, err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return connectorapi.Result{}, unreachable(s.base,
+			"the printer did not answer "+cmd.Verb.String()).Wrap(err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return connectorapi.Result{}, unreachable(s.base, cmd.Verb.String()+" answered "+resp.Status)
+	}
+
+	var reported wireResult
+	if err = json.NewDecoder(io.LimitReader(resp.Body, maxPatchBytes)).Decode(&reported); err != nil {
+		return connectorapi.Result{}, unreachable(s.base,
+			"the reply to "+cmd.Verb.String()+" is not readable").Wrap(err)
+	}
+
+	return connectorapi.Result{
+		OK:          reported.OK,
+		Ignored:     reported.Ignored,
+		Substituted: reported.Substituted,
+		Raw:         reported.Raw,
+	}, nil
+}
+
+// Close releases the session. It is safe to call more than once, because a host
+// shutting down after an error may reach it on a path that already did.
+func (s *Session) Close() error {
+	s.cancel()
+
+	return nil
+}
+
+// stream reads the device's state stream and is the only writer to the patch
+// channel, which is what lets it be the only closer. One line is one patch.
+//
+// It ends when the stream ends or when Close cancels the context, and closing
+// the channel is how the host learns the printer went away.
+func (s *Session) stream(ctx context.Context) {
+	defer close(s.patches)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.base+statePath, nil)
+	if err != nil {
+		return
+	}
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return
+	}
+
+	lines := bufio.NewScanner(resp.Body)
+	lines.Buffer(nil, maxPatchBytes)
+
+	for lines.Scan() {
+		var patch connectorapi.StatePatch
+		if json.Unmarshal(lines.Bytes(), &patch) != nil || patch.Path == "" {
+			continue
+		}
+
+		select {
+		case s.patches <- patch:
+		case <-ctx.Done():
+			return
+		}
+	}
+}

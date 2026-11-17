@@ -1,0 +1,16 @@
+node_modules/
+dist/
+out/
+.astro/
+public/swagger/
+
+# Built by scripts/records.mjs on every build. A committed index of the records
+# was a table every new record edited.
+src/content/docs/records/
+
+# pnpm-lock.yaml is the only supported lockfile. A stray `npm install` here
+# resolves differently from CI, so keep foreign lockfiles out of the repo.
+package-lock.json
+yarn.lock
+bun.lock
+bun.lockb

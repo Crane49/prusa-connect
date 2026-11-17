@@ -1,0 +1,22 @@
+# Prusa Connect profile: the server on its own, with no `resources`
+# block.
+#
+# Nothing is declared here, so no storage is opened, no history store is
+# created and no measurement is written. The server runs only what it cannot
+# start without.
+#
+# Everything the server writes goes beside this file in config.d/. Deleting
+# that directory resets the deployment.
+#
+# Every key below is one this build reads. A key it does not read is refused at
+# startup, naming the key and the line it is on.
+
+persistence:
+  type: "sqlite"
+
+core:
+  api:
+    addr: ":8080"
+  log:
+    level: debug
+    format: text

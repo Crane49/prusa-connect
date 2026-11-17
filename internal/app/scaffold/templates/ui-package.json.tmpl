@@ -1,0 +1,35 @@
+{
+  "name": "{{.Name}}-ui",
+  "version": "{{.Version}}",
+  "private": true,
+  "description": "{{if not .Process}}The whole of the {{.Name}} module{{else}}The browser half of the {{.Name}} module{{end}}, on the component library, built into the bundle the host serves.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "format:check": "prettier --check .",
+    "check:svelte": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "check": "pnpm run lint && pnpm run format:check && pnpm run check:svelte"
+  },
+  "dependencies": {
+    "@prusa/connect": "{{.Packages}}",
+    "@prusa/connect-ui": "{{.Packages}}"
+  },
+  "devDependencies": {
+    "@prusa/frontend-standards": "{{.Packages}}",
+    "@sveltejs/vite-plugin-svelte": "7.3.0",
+    "@types/node": "22.20.1",
+    "eslint": "10.10.0",
+    "prettier": "3.9.6",
+    "svelte": "5.57.0",
+    "svelte-check": "4.7.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vite": "8.2.2"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

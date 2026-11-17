@@ -1,0 +1,75 @@
+name: Bug report
+description: Something in the server, the web app or the API does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public, and it is also copied into the Prusa beta portal, where the team sorts reports.
+        Do not paste tokens, passwords, setup codes, IP addresses, host names or printer serial numbers.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The shortest list of steps that shows the problem on a fresh server, if you can find one.
+      placeholder: |
+        1. Start the server with ...
+        2. Open ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown at the bottom of the web app after you sign in, or printed by `prusa-connect -version`. In Docker, run `docker exec <container> prusa-connect -version`.
+    validations:
+      required: true
+  - type: input
+    id: last-working-version
+    attributes:
+      label: Last version that worked
+      description: If this worked in an earlier version, which one. Leave it empty if you do not know.
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Where the server runs, with the system version if you know it.
+      placeholder: Linux (Debian 12), Raspberry Pi 5, Windows 11, macOS 15, Docker
+    validations:
+      required: true
+  - type: input
+    id: printers
+    attributes:
+      label: Printers and firmware
+      description: The printer models and firmware versions involved, if any. For example, Core One, firmware 6.4.0.
+  - type: dropdown
+    id: safe-mode
+    attributes:
+      label: Does it happen with every module off?
+      description: Start the server once with `-safe`. It starts with every module and extension off, so this shows whether the problem is in the server itself or in a module.
+      options:
+        - I did not try
+        - Yes, it still happens
+        - No, it happens only with a module on
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: The server log around the time of the problem. Remove tokens, passwords, setup codes, IP addresses, host names and printer serial numbers first.
+      render: text
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: |
+        Settings → Diagnostics makes a file with the server's logs and configuration. Do not attach it here, because this issue is public.
+        If you have a Prusa beta portal account, choose Send to Prusa and add the file to your report there, so it stays private. Then write here that you sent it.
+        If an error showed a trace id, paste it here. A trace id is safe to share.

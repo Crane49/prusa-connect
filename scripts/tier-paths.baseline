@@ -1,0 +1,22 @@
+# Baseline for TestNoPageNamesAPathAboveItsTier, ADR-20260826-53y rules 3, 7 and 8.
+# Format: counter, page, count, tab separated. The page is relative to
+# docs/src/content/docs.
+#
+# A count that rises fails. A count that falls fails until the line is
+# corrected, so the ratchet cannot be left behind. A page with no line here
+# expects zero, which is what a new page is held to.
+#
+# One counter. A path above the tier is drift, and the fix is rewriting the
+# sentence. A second counter held `legacy/` paths apart while that directory
+# existed, because a path there fell to zero by deletion rather than by writing.
+# The directory is gone and the counter with it.
+#
+#   above   a path the page's own tier forbids: `internal/`, `sdk/` and `cmd/`
+#           on a `run` page, `internal/` on an `extend` page
+above	connector-contract.md	15
+above	human-auth.md	3
+above	metrics.md	3
+above	plugin-architecture.md	5
+above	plugin-wire-protocol.md	6
+above	storage.md	3
+above	writing-a-driver.md	4

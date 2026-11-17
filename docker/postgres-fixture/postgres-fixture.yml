@@ -1,0 +1,115 @@
+# The Postgres the dual-target SQL is verified against.
+#
+# A fixture, not a deployment: it is rebuilt by every run, holds nothing worth
+# keeping, and is a different thing from the Postgres a real install persists
+# to. The application never talks to this one.
+#
+# internal/authz targets SQLite and Postgres from one hand-written file per
+# engine, and a suite that can only reach one of them proves half of what it
+# claims. SQLite needs no container: modernc.org/sqlite is pure Go and runs
+# inside the test process, which is the same property an earlier design decision relies on for
+# CGO_ENABLED=0.
+#
+# No host port here. It is in postgres-fixture.local.yml.
+services:
+  postgres-fixture:
+    image: postgres:18
+    container_name: prusa_connect_postgres_fixture
+    # A fixture does not come back on its own. It holds nothing worth keeping,
+    # every suite that uses it skips cleanly when it is absent, and
+    # unless-stopped resurrects it on every reboot forever, which is how six
+    # idle containers were found running after a restart nobody asked for.
+    # Started by a test run or by `make fixtures-up`, and gone when it stops.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    environment:
+      POSTGRES_USER: ${PGFIXTURE_USER:-authz}
+      POSTGRES_PASSWORD: ${PGFIXTURE_PASSWORD:-authz}
+      POSTGRES_DB: ${PGFIXTURE_DB:-authz}
+
+    labels:
+      com.prusa3d.description: "Throwaway Postgres the dual-engine authz suite runs against"
+      com.prusa3d.service: "test-fixture"
+
+    # Postgres 18 wants a single mount at /var/lib/postgresql and places the
+    # cluster in a subdirectory of it; mounting /var/lib/postgresql/data as
+    # earlier majors did makes the container exit at boot. tmpfs rather than a
+    # volume because nothing here outlives the container, and it keeps a Pi's
+    # SD card out of the write path.
+    tmpfs:
+      - /var/lib/postgresql
+
+    command:
+      - postgres
+      # Durability off is correct for a database that is discarded after every
+      # run, and it is most of the speed. Never copy these into a deployment.
+      - -c
+      - fsync=off
+      - -c
+      - full_page_writes=off
+      - -c
+      - synchronous_commit=off
+      # The suite runs its cases in parallel, each on a database of its own,
+      # and a migration takes a second connection for the advisory lock while
+      # it runs. Postgres defaults to 100, which the suite reaches. The run
+      # then answers "sorry, too many clients already" from whichever case was
+      # unlucky, and that looks like the case failing rather than like the
+      # fixture being too small.
+      #
+      # Every backend costs memory, and the cluster lives in this container's
+      # own tmpfs, so the two numbers below are one budget. At 300 connections
+      # under the 1G limit the kernel killed the checkpointer.
+      - -c
+      - max_connections=200
+      - -c
+      - shared_buffers=64MB
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      # An empty cluster is initialised on first boot, which is the longest
+      # path this container has.
+      start_period: 15s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Postgres drops from root to the postgres user at start-up and needs these
+    # to do it and to own its data directory.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - FOWNER
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

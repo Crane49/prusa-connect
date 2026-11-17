@@ -1,0 +1,56 @@
+# The metric names the retired server publishes, the old backlog.
+#
+# Columns: name, instrument, unit, attributes, whether a helper that records it
+# has a caller, description. A unit of - is an instrument declared without one.
+#
+# Read from a run, not from the source. The binary was built with
+# `-tags "full mqtt mqttbroker observability sqlite"` and CGO_ENABLED=1, started
+# as `prusa-connect serve` on 2026-08-29 with
+# observability.metrics.enabled and its prometheus exporter both true, and
+# scraped at GET /metrics. One simulated CORE One dialled the printer listener,
+# one authenticated GET /api/printers was made, one was refused, and the printer
+# was killed outright.
+#
+# 11 of these 18 names appeared on that scrape:
+# api_request_duration_seconds, api_requests_total,
+# queue_command_duration_seconds, queue_commands_completed_total,
+# queue_commands_pending, queue_commands_total, websocket_connected_printers,
+# websocket_message_bytes_received_total, websocket_message_bytes_sent_total,
+# websocket_messages_received_total and websocket_messages_sent_total. An OTel
+# instrument reaches a Prometheus scrape only once it has recorded, so a name
+# absent from that list is one no dashboard on this deployment ever drew.
+#
+# The recorded column is coarser than the scrape: it says a helper touching the
+# instrument is called somewhere under legacy/. api_request_errors_total is
+# recorded by that measure and needs a status of 400 or more from the one call
+# site, which is GET /api/printers at legacy/transport/httpapi/handlers.go:174.
+#
+# Three names are never-recorded because RecordCommandSent and
+# RecordCommandExecuted have no caller anywhere in the tree. A dashboard built
+# on commands_total has always drawn nothing.
+#
+# printer_id sits on queue_command_duration_seconds and command_duration_seconds,
+# which are histograms. An earlier design decision forbids exactly that label on a
+# histogram, and the scrape above carried it.
+#
+# Nothing in the core answers any of these names. The core's own /metrics
+# carries pcl_* names and the overlap is zero, which docs/CHANGELOG.md records
+# as a loss rather than a migration.
+api_request_duration_seconds	Float64Histogram	s	endpoint,method,status_code	recorded	API request duration in seconds
+api_request_errors_total	Int64Counter	1	endpoint,method,status_code	recorded	Total number of API request errors
+api_requests_total	Int64Counter	-	endpoint,method,status_code	recorded	Total number of API requests
+command_duration_seconds	Float64Histogram	s	command,printer_id,success	never-recorded	Command execution duration in seconds
+command_errors_total	Int64Counter	1	command,printer_id	never-recorded	Total number of command errors
+commands_total	Int64Counter	-	command,printer_id	never-recorded	Total number of commands sent to printers
+queue_command_duration_seconds	Float64Histogram	s	command_type,printer_id	recorded	Command processing duration in seconds (from queue to completion)
+queue_commands_completed_total	Int64Counter	-	command_type,printer_id	recorded	Total number of completed commands
+queue_commands_failed_total	Int64Counter	-	command_type,printer_id,reason	recorded	Total number of failed commands
+queue_commands_pending	Int64UpDownCounter	-	printer_id	recorded	Current number of pending commands in queue
+queue_commands_total	Int64Counter	-	command_type,printer_id	recorded	Total number of commands added to queue
+websocket_connected_printers	Int64UpDownCounter	-	printer_id	recorded	Number of currently connected printers
+websocket_connection_errors_total	Int64Counter	1	error_type,printer_id	recorded	Total number of WebSocket connection errors
+websocket_message_bytes_received_total	Int64Counter	-	printer_id	recorded	Total bytes received from printers
+websocket_message_bytes_sent_total	Int64Counter	-	printer_id	recorded	Total bytes sent to printers
+websocket_message_errors_total	Int64Counter	1	error_type,printer_id	recorded	Total number of WebSocket message processing errors
+websocket_messages_received_total	Int64Counter	-	message_type,printer_id	recorded	Total number of messages received from printers
+websocket_messages_sent_total	Int64Counter	-	message_type,printer_id	recorded	Total number of messages sent to printers

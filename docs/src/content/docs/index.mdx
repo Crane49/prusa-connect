@@ -1,0 +1,105 @@
+---
+title: Prusa Connect
+description: A self-hosted server that gives 1 to 400 printers one HTTP, SSE and MQTT surface, with no cloud dependency. One static binary, from a Raspberry Pi to a datacenter.
+template: splash
+hero:
+  title: Prusa Connect
+  tagline: Bring your own hardware. We bring the REST (API & MQTT & SSE).
+  actions:
+    - text: Install from a release
+      link: /docs/install-from-a-release/
+      icon: right-arrow
+      variant: primary
+    - text: Get started from source
+      link: /docs/getting-started/
+      icon: right-arrow
+      variant: secondary
+    - text: Configuration
+      link: /docs/config/
+      icon: open-book
+audience: run
+rewrite:
+  describes: current
+  implementedBy:
+    - cmd/prusa-connect
+    - internal/app
+---
+
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+import NetworkDiagram from '../../components/NetworkDiagram.astro';
+import DeploymentGrid from '../../components/DeploymentGrid.astro';
+
+## What Prusa Connect is
+
+One server that speaks to your printers and gives you one API for all of them.
+It talks the **xBuddy websocket protocol** that Prusa printers already use, and
+exposes what it learns as **HTTP REST**, **server-sent events** and **MQTT**.
+It runs on your own hardware, offline, with no external service in the path.
+
+The full build serves a web application at `/`, and the minimal build answers
+404 there. Either way the API is the surface a program writes against, and a
+developer view at `/dev` shows what every printer is doing while you work.
+
+<NetworkDiagram />
+
+---
+
+## The three protocols
+
+<CardGrid>
+  <Card title="HTTP REST API" icon="laptop">
+    Printer state, commands, print jobs, files, storages, grants. The running server serves an interactive **API reference** at `/docs`, and the OpenAPI document behind it at `/openapi.json`.
+  </Card>
+  <Card title="Server-Sent Events" icon="rocket">
+    One resumable stream of everything that changes, authorized when you subscribe and renarrowed while you hold it. [SSE docs](./sse-overview.md)
+  </Card>
+  <Card title="MQTT" icon="puzzle">
+    Telemetry and command topics for automation systems and brokers, published by a sink you configure. [MQTT docs](./mqtt-overview.md)
+  </Card>
+</CardGrid>
+
+<Aside type="tip" title="Not a wrapper around Prusa Connect">
+  This is an independent, open implementation of the xBuddy protocol with its own API layer. Nothing leaves your network unless you configure something that sends it.
+</Aside>
+
+---
+
+## Where it runs
+
+<DeploymentGrid>
+  <Card title="Raspberry Pi Zero and Zero 2 W" icon="laptop">
+    One printer, smallest binary. The `minimal` build variant drops every optional feature, links no cgo, and cross-compiles to any architecture.
+  </Card>
+  <Card title="Raspberry Pi 3/4/5" icon="rocket">
+    A multi-printer hub. The `standard` build adds the features your config file switches on, MQTT and persistence among them.
+  </Card>
+  <Card title="Your own server" icon="puzzle">
+    Self-hosted, air-gapped or private cloud. The `full` build carries the Prometheus client, and `core.observability.enabled` is what publishes `/metrics`. Bring your own TLS.
+  </Card>
+  <Card title="Docker and Kubernetes" icon="cloud-download">
+    One static binary in a read-only, unprivileged image. Liveness and readiness endpoints, and a readiness answer that names what is blocking. [Container deployment](./container.md)
+  </Card>
+</DeploymentGrid>
+
+A build variant never decides behaviour on its own. Your config file names the
+features you want, and `adapters/tags.json` maps each one onto a build tag. A
+config file never names a tag itself.
+
+---
+
+## How it works inside
+
+<DeploymentGrid>
+  <Card title="State in memory" icon="rocket">
+    Every printer's state tree is held in RAM and answered from there, so a listing costs no database round trip however many printers are connected.
+  </Card>
+  <Card title="Marshal once, share the bytes" icon="puzzle">
+    A telemetry frame becomes one envelope, marshalled once, and the same bytes go to every subscriber of that printer. Nothing on that path allocates memory per subscriber, so the cost of a frame does not grow with the fleet.
+  </Card>
+  <Card title="Authorization at three surfaces" icon="setting">
+    Every request, every subscriber and every command is checked against the same relation graph. A permission held at one surface and not the others is worse than none.
+  </Card>
+</DeploymentGrid>
+
+Read [the shape of the system](./onboarding/index.md) for the component map and
+the package that holds each part. It is the first of the onboarding pages.

@@ -1,0 +1,19 @@
+{
+  "name": "prusa-connect-consumer-browser-vite",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A browser page bundled by Vite that installs @prusa/connect from a registry, lists devices and reads the stream.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vite": "8.3.4"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

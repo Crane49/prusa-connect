@@ -1,0 +1,14 @@
+# The subjects the local issuer will authenticate. Supplying this file replaces
+# the image's built-in `foo` and `bar`, so the subjects a login produces are
+# this project's rather than the fixture's.
+#
+# `sub` is what reaches internal/authz as the principal. The claims under
+# idClaims land in the ID token and nowhere else.
+- sub: operator
+  idClaims:
+    name: Operator
+    email: operator@example.invalid
+- sub: viewer
+  idClaims:
+    name: Viewer
+    email: viewer@example.invalid

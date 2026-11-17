@@ -1,0 +1,200 @@
+name: Release an extension
+
+# Releases one first-party extension to the marketplace, where a person
+# reviews it before operators can install it. A person starts it from the
+# Actions tab. extensions/README.md, "Releasing to the marketplace", lists the
+# inputs and the setup it needs.
+#
+# The check job runs the extension's own gate first. The marketplace's builder
+# (prusa3d/prusa-connect-marketplace-publish) then builds the program and the
+# bundle from the commit the run checked out. It signs the release with the key
+# in the GitHub environment marketplace-production and records a build
+# provenance attestation. It uploads the release with its source, which the
+# marketplace reviews. The tag job tags the released commit.
+on:
+  workflow_dispatch:
+    inputs:
+      extension:
+        description: The folder under extensions/ to release
+        type: choice
+        required: true
+        options:
+          - buddy-debug-logs
+          - parts
+          - fleet-stats
+          - threemf
+          - server-slicing
+          - materials
+      channel:
+        description: The marketplace channel
+        type: choice
+        required: true
+        default: stable
+        options:
+          - stable
+          - beta
+      dry_run:
+        description: Build, check and sign, but upload nothing and push no tag
+        type: boolean
+        default: false
+
+# Two runs for one extension would race for the same version. A run waits for
+# the one before it and is never cancelled halfway through an upload.
+concurrency:
+  group: extension-release-${{ inputs.extension }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check ${{ inputs.extension }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      notes: ${{ steps.release.outputs.notes }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: packages/typescript/package.json
+
+      # A release is checked without a cache another run could have written,
+      # so neither setup step restores one.
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      # Each tag names a version the marketplace already has. The check runs
+      # before the gate, so a forgotten version bump fails in seconds.
+      - name: Check the version is not released yet
+        if: ${{ !inputs.dry_run }}
+        env:
+          EXT: ${{ inputs.extension }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          VERSION=$(sed -n 's/^version:[ 	]*//p' "extensions/$EXT/module.yaml" | head -1)
+          TAG="extensions/$EXT/v$VERSION"
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" > /dev/null 2>&1; then
+            echo "::error::$TAG exists, so $EXT $VERSION is released. Raise the version in module.yaml and CHANGELOG.md."
+            exit 1
+          fi
+
+      # The shape check, the Go tests and lint, and the extension's end to end
+      # gate. The builder builds what ships from the same commit.
+      - name: Run the extension's gate
+        env:
+          EXT: ${{ inputs.extension }}
+        run: make -C extensions check EXT="$EXT"
+
+      - name: Read the version and the release notes
+        id: release
+        env:
+          EXT: ${{ inputs.extension }}
+        run: |
+          set -eu
+          VERSION=$(sed -n 's/^version:[ 	]*//p' "extensions/$EXT/module.yaml" | head -1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          {
+            echo 'notes<<RELEASE_NOTES_END'
+            sh extensions/scripts/release-notes.sh "extensions/$EXT"
+            echo 'RELEASE_NOTES_END'
+          } >> "$GITHUB_OUTPUT"
+
+  # The builder's jobs build the program (go build -trimpath, no cgo) and the
+  # bundle (the command below, in a job with no secret), then sign, attest
+  # and upload in the environment marketplace-production, whose secret
+  # PRUSA_CONNECT_EXTENSION_SIGNING_KEY holds the Prusa Research author key.
+  publish:
+    name: Publish
+    needs: check
+    uses: prusa3d/prusa-connect-marketplace-publish/.github/workflows/publish.yml@448af8c91938825d28df9d28cbd253022ecaaea7 # v1.0.1
+    with:
+      path: extensions/${{ inputs.extension }}
+      # fleet-stats has no go.mod, so the module path is named, not read.
+      module: github.com/prusa3d/${{ inputs.extension }}
+      environment: marketplace-production
+      channel: ${{ inputs.channel }}
+      changelog: ${{ needs.check.outputs.notes }}
+      node-version: '24'
+      dry-run: ${{ inputs.dry_run }}
+      # Run in extensions/<name>. The ui links the two libraries through its
+      # pnpm-workspace.yaml overrides and needs their dist; the typed client
+      # is built when the extension has one. Every project pins pnpm 11.3.0.
+      bundle-command: >-
+        set -e;
+        export COREPACK_ENABLE_DOWNLOAD_PROMPT=0;
+        pnpm() { corepack pnpm@11.3.0 "$@"; };
+        (cd ../../packages/svelte && pnpm install --frozen-lockfile && pnpm run build);
+        (cd ../../packages/typescript && pnpm install --frozen-lockfile && pnpm run build);
+        if [ -d client ]; then (cd client && pnpm install --frozen-lockfile && pnpm run build); fi;
+        cd ui && pnpm install --frozen-lockfile && pnpm run build
+      bundle-output: ui/dist
+    secrets: inherit
+    permissions:
+      contents: read
+      id-token: write     # lets the run prove which repository, workflow and builder it is
+      attestations: write # the build provenance of the archive and every binary
+
+  # The tag points at the commit the release was built from. It is made
+  # through the API, so the job's token never reaches the build.
+  tag:
+    name: Tag
+    needs: [check, publish]
+    if: ${{ always() && needs.check.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Tag the released commit
+        if: ${{ !inputs.dry_run && needs.publish.outputs.status == 'in_review' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: extensions/${{ inputs.extension }}/v${{ needs.check.outputs.version }}
+        run: gh api "repos/$GITHUB_REPOSITORY/git/refs" -f "ref=refs/tags/$TAG" -f "sha=$GITHUB_SHA"
+
+      - name: Write the summary
+        env:
+          EXT: ${{ inputs.extension }}
+          VERSION: ${{ needs.check.outputs.version }}
+          CHANNEL: ${{ inputs.channel }}
+          STATUS: ${{ needs.publish.outputs.status }}
+          URL: ${{ needs.publish.outputs.url }}
+        run: |
+          {
+            echo "### $EXT $VERSION, $CHANNEL channel"
+            echo
+            case $STATUS in
+              in_review)
+                echo "Built from this commit and uploaded with its source. The release waits for a person to review it in the marketplace, and operators cannot install it before that."
+                echo
+                echo "Review: $URL"
+                echo
+                echo "Tag: \`extensions/$EXT/v$VERSION\`"
+                ;;
+              dry-run)
+                echo "Dry run. The release was built, checked and signed, and nothing was uploaded or tagged."
+                ;;
+              *)
+                echo "Not uploaded. The log of the job **Publish** says why."
+                ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"

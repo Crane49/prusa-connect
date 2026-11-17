@@ -1,0 +1,90 @@
+package {{.Package}}
+
+import (
+	"io"
+	"strings"
+	"testing"
+
+	"github.com/prusa3d/prusa-connect/sdk/storageapi"
+)
+
+// sampleGcode is what this case writes and reads back. The external test file
+// writes the same bytes; they are separate constants because the two files are
+// separate packages, which is itself the thing this file exists to work around.
+const sampleGcode = "G28\nG1 X10 Y10 Z0.2 F1200\nM104 S215\n"
+
+// An operator writes a type in configuration, and the host resolves it through
+// the registry. A store that could not be named there would prove nothing about
+// the contract being replaceable, so this case goes the whole way round:
+// Declare, a registry built from the declaration, and a provider built from a
+// spec naming the type. It is the same path internal/app/builtin walks when it
+// folds a contract registry onto the resource plane, walked here with no host
+// present, because nothing below knows that a host exists.
+//
+// It has to be an internal test, and the reason is worth writing down because
+// it will catch the next adapter author too. sdk/extension derives a
+// registration's namespace from the module of the package that called Declare,
+// read off the live call stack. An external test package compiles as
+// "{{.Module}}_test", which is in no module of the build
+// graph, so Declare refuses it with ErrNoNamespace. In the core module the
+// refusal never fired, because the core's own module path is a prefix of its
+// test packages' paths by accident of layout. Registering from the package that
+// owns the name is what the walk asks for, and here that means `package
+// {{.Package}}`.
+func TestThisProviderCanBeNamedInConfig(t *testing.T) {
+	t.Parallel()
+
+	declared, err := storageapi.Declare(Type, Doc(), New)
+	if err != nil {
+		t.Fatalf("declare the provider: %v", err)
+	}
+
+	registry, err := storageapi.NewRegistryFrom(declared)
+	if err != nil {
+		t.Fatalf("build a registry from the declaration: %v", err)
+	}
+
+	built, err := registry.BuildProvider(storageapi.ProviderSpec{
+		ID:                "scratch",
+		Type:              Type,
+		AllowedExtensions: storageapi.DefaultAllowedExtensions,
+	})
+	if err != nil {
+		t.Fatalf("build a provider from a spec naming %q: %v", Type, err)
+	}
+
+	if got := built.Name(); got != "scratch" {
+		t.Errorf("the store answers to the id the spec gave it: got %q, want %q", got, "scratch")
+	}
+
+	ctx := t.Context()
+
+	written, err := storageapi.Save(ctx, built, "models/bench.gcode", strings.NewReader(sampleGcode))
+	if err != nil {
+		t.Fatalf("save an object: %v", err)
+	}
+
+	if written.Size != int64(len(sampleGcode)) {
+		t.Errorf("the write reports what was written: got %d bytes, want %d", written.Size, len(sampleGcode))
+	}
+
+	reader, err := built.Open(ctx, "models/bench.gcode")
+	if err != nil {
+		t.Fatalf("open the object back: %v", err)
+	}
+
+	defer func() {
+		if closeErr := reader.Close(); closeErr != nil {
+			t.Errorf("close the reader: %v", closeErr)
+		}
+	}()
+
+	read, err := io.ReadAll(reader)
+	if err != nil {
+		t.Fatalf("read the object back: %v", err)
+	}
+
+	if string(read) != sampleGcode {
+		t.Errorf("the bytes come back as they went in:\n got %q\nwant %q", read, sampleGcode)
+	}
+}

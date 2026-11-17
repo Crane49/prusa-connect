@@ -1,0 +1,13 @@
+{
+  "interface": "SLAPrinter1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "axisZ", "type": "float", "access": "ro", "nullable": true },
+    { "name": "tempUVLED", "type": "float", "access": "ro", "nullable": true },
+    { "name": "uvLEDFanRPM", "type": "int", "access": "ro", "nullable": true },
+    { "name": "material", "type": "SLAMaterial", "access": "ro", "nullable": true }
+  ],
+  "methods": [
+    { "name": "Home" }
+  ]
+}

@@ -1,0 +1,6 @@
+node_modules/
+pnpm-lock.yaml
+
+# Copied verbatim from .agents/rules/. Formatting them here would drift them
+# from the source of truth instead of publishing it unchanged.
+rules/

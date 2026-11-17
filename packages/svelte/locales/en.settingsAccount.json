@@ -1,0 +1,21 @@
+{
+  "settingsAccount.identity.added": "Added",
+  "settingsAccount.identity.name": "Name",
+  "settingsAccount.identity.note": "Who this browser is signed in as. A reader without the administrator role is shown their name and subject alone.",
+  "settingsAccount.identity.role": "Role",
+  "settingsAccount.identity.roleNote": "What this account may do. Only an administrator can change it.",
+  "settingsAccount.identity.subject": "Signed in as",
+  "settingsAccount.identity.title": "Identity",
+  "settingsAccount.identity.username": "Username",
+  "settingsAccount.loading": "Loading the account",
+  "settingsAccount.password.changed": "Your password was changed.",
+  "settingsAccount.password.confirm": "Confirm new password",
+  "settingsAccount.password.current": "Current password",
+  "settingsAccount.password.length": "Use 8 to 72 characters.",
+  "settingsAccount.password.mismatch": "These two passwords do not match.",
+  "settingsAccount.password.next": "New password",
+  "settingsAccount.password.note": "A new password closes every session and every API credential you created.",
+  "settingsAccount.password.submit": "Change password",
+  "settingsAccount.password.title": "Password",
+  "settingsAccount.title": "Account"
+}

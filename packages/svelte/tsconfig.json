@@ -1,0 +1,26 @@
+{
+  "extends": "@prusa/frontend-standards/tsconfig.json",
+  "compilerOptions": {
+    "types": ["svelte", "vite/client", "node"],
+    // The SDK's types, read from its source so that a fresh checkout type-checks
+    // before anything builds packages/typescript. Only `import type` reaches it:
+    // vite.config.ts marks the package external, so a consumer's copy is the
+    // one that runs.
+    "paths": {
+      "@prusa/connect": ["../typescript/src/index.ts"]
+    }
+  },
+  // build/testdata is a module author's tree, not this package's. It names
+  // this package by its published name, which nothing here resolves, and
+  // build/module.test.ts is what type-checks it by building it.
+  "include": [
+    "src",
+    "scripts",
+    "build",
+    ".storybook/**/*",
+    "*.config.ts",
+    "*.config.js",
+    ".prettierrc.js"
+  ],
+  "exclude": ["build/testdata"]
+}

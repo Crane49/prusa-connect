@@ -1,0 +1,88 @@
+# The documentation site, served from a container the way it is deployed:
+# a static directory under nginx at the /docs base, and nothing else.
+#
+# This is not the API reference the server serves at /docs. That one is
+# compiled into the binary. This site is published on a host of its own, and
+# this service is that host on a laptop, so what a reader sees in a browser
+# comes from the deploy build and not from a dev server.
+#
+# The image is built from the Dockerfile beside this file, from the repository
+# root, and nothing here touches a host path. `make docs-up` builds and starts
+# it; `make docs-down` removes it.
+#
+# No host port here. It is in docs.local.yml.
+services:
+  docs:
+    # Built from the Dockerfile beside this file, whose two FROM lines are
+    # pinned by digest. The tag is what compose names the built image.
+    image: prusa-connect-docs:local
+    build:
+      context: ../..
+      dockerfile: docker/docs/Dockerfile
+    container_name: prusa_connect_docs
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition leaves it out and only a command that names the service
+    # starts it. The Docker job and `make docker-check` bring the stack up
+    # with --no-build against images already built, and this service has to
+    # be built.
+    profiles:
+      - docs
+    # Comes back with the daemon, the way the published site is always up,
+    # until `make docs-down` removes it.
+    restart: unless-stopped
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    labels:
+      com.prusa3d.description: "The documentation site, built as it is deployed and served by nginx"
+      com.prusa3d.service: "documentation"
+
+    # The image runs as uid 101 and writes only its pid file and temp paths,
+    # all under /tmp. The rest of the root filesystem is read-only.
+    user: "101:101"
+    read_only: true
+    tmpfs:
+      - /tmp:uid=101,gid=101
+
+    # Mirrors the Dockerfile's HEALTHCHECK, so `up --wait` has something to
+    # wait on and the timings are tunable here. It fetches the site's index
+    # through the wget the image ships.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/docs/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # A cold start is nginx reading one directory and binding a port,
+      # measured under one second. Rounded up.
+      start_period: 5s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.05"
+          memory: 16M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

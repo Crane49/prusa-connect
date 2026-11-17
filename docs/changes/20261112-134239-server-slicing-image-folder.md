@@ -1,0 +1,2 @@
+### Changed
+- The container image carries the slicing extension in `/opt/modules/server-slicing`, with the module path `github.com/prusa3d/server-slicing`. It was `/opt/modules/slicer` with `github.com/prusa3d/slicer`, and a `core.modules_local` entry that names that pair finds no folder. Replace the entry with the new pair and switch the extension on again. It is a new module with a new data folder, so install the PrusaSlicer versions again.

@@ -1,0 +1,57 @@
+{
+  "estimated_seconds": 182,
+  "filament_mm": 168.24,
+  "filament_g": 0.45,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.6,
+  "material": "PA",
+  "printer_model": "XLIS",
+  "print_profile": "0.20mm SPEED @XLIS 0.6",
+  "printer_profile": "Original Prusa XL Input Shaper 0.6 nozzle",
+  "filament_profile": "Prusament PA11 Carbon Fiber @XL 0.6",
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PA",
+      "nozzle_mm": 0.6,
+      "high_flow": false,
+      "abrasive": true,
+      "nozzle_temp_c": 280,
+      "first_layer_nozzle_temp_c": 275,
+      "bed_temp_c": 105,
+      "first_layer_bed_temp_c": 90,
+      "filament_g": 0.45,
+      "filament_mm": 168.24,
+      "colour": "#BBBBBB"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 175,
+    "min_y_mm": 175,
+    "max_x_mm": 185,
+    "max_y_mm": 185
+  },
+  "bed": {
+    "width_mm": 360,
+    "depth_mm": 360,
+    "height_mm": 360
+  },
+  "checks": {
+    "printer_model": "XL",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.6,
+        "hardened": true,
+        "high_flow": false
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.4.1+12026"
+  }
+}

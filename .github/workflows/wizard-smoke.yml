@@ -1,0 +1,202 @@
+name: Wizard smoke test
+
+# Builds every binary a release publishes and walks the first-run wizard on
+# each, on the operating system and processor it is for. It runs only when
+# somebody starts it: Actions, "Wizard smoke test", "Run workflow". The ref
+# input names what is tested, a branch, a tag or a commit, and the workflow's
+# own ref is where the test command comes from, so an old tag can be tested by
+# the current one.
+#
+# What one run checks is in cmd/wizard-smoke: the wizard over the API, the
+# restart it asks for, HTTPS, the printers' TLS port, a storage, a sign-in,
+# and a second start that keeps all of it. The command is built here for every
+# runner, so a runner needs no toolchain.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The branch, tag or commit to test. Empty tests the ref this run starts from.
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the binaries
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.tested.outputs.sha }}
+    steps:
+      - name: Check out the code under test
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.ref }}
+          path: src
+          persist-credentials: false
+
+      - name: Check out the test command
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          path: harness
+          persist-credentials: false
+
+      - name: Name the commit under test
+        id: tested
+        working-directory: src
+        run: |
+          sha=$(git rev-parse HEAD)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Testing \`${{ inputs.ref || github.ref_name }}\` at \`$sha\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: src/go.mod
+          cache: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: src/packages/typescript/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: src/.nvmrc
+          package-manager-cache: false
+
+      - name: Build the web app into the embed directory
+        run: make -C src embed-app
+
+      # The same targets, tags and flags as release.yml, so a pass here is a
+      # pass for what a release publishes.
+      - name: Build the full and the minimal binaries
+        working-directory: src
+        env:
+          CGO_ENABLED: 0
+          STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+          DOCS: -X github.com/prusa3d/prusa-connect/internal/kernel/version.docsURL=${{ vars.DOCS_URL || 'https://beta.prusa3d.com/connect-local/docs/{version}/' }}
+        run: |
+          set -eu
+          VERSION="0.0.0-smoke+$(git rev-parse --short=12 HEAD)"
+          out="$GITHUB_WORKSPACE/binaries"
+          mkdir -p "$out"
+          while read -r goos goarch goarm name; do
+            echo "Building $name"
+            GOOS=$goos GOARCH=$goarch GOARM=${goarm#-} go build -tags "full observability postgres" -ldflags="$STAMP=$VERSION $DOCS" -o "$out/$name" ./cmd/prusa-connect
+          done <<'TARGETS'
+          linux amd64 - prusa_connect_amd64
+          linux arm64 - prusa_connect_aarch64
+          linux arm 7 prusa_connect_armv7
+          linux arm 6 prusa_connect_armhf
+          windows amd64 - prusa_connect_windows_amd64.exe
+          windows arm64 - prusa_connect_windows_arm64.exe
+          darwin amd64 - prusa_connect_macos_amd64
+          darwin arm64 - prusa_connect_macos_arm64
+          TARGETS
+          while read -r goarch goarm name; do
+            echo "Building $name"
+            GOOS=linux GOARCH=$goarch GOARM=${goarm#-} go build -tags minimal -ldflags="-s -w $STAMP=$VERSION $DOCS" -o "$out/$name" ./cmd/prusa-connect
+          done <<'TARGETS'
+          amd64 - prusa_connect_minimal_amd64
+          arm64 - prusa_connect_minimal_aarch64
+          arm 7 prusa_connect_minimal_armv7
+          arm 6 prusa_connect_minimal_armhf
+          TARGETS
+          ls -l "$out"
+
+      # The printer's model stays out of this file, as in release.yml. Without
+      # the repository variable there is no printer binary and its job skips.
+      - name: Build the printer binary
+        if: vars.PRINTER_MODEL != ''
+        working-directory: src
+        env:
+          PRINTER_MODEL: ${{ vars.PRINTER_MODEL }}
+        run: |
+          make build-printer PRINTER_MODEL="$PRINTER_MODEL" BUILD_VERSION="0.0.0-smoke"
+          cp bin/server-printer "$GITHUB_WORKSPACE/binaries/prusa_connect_printer"
+
+      - name: Build the test command for every runner
+        working-directory: harness
+        env:
+          CGO_ENABLED: 0
+        run: |
+          set -eu
+          for target in linux/amd64 linux/arm64 windows/amd64 windows/arm64 darwin/amd64 darwin/arm64; do
+            goos=${target%/*} goarch=${target#*/}
+            ext=""; [ "$goos" = windows ] && ext=.exe
+            GOOS=$goos GOARCH=$goarch go build -o "$GITHUB_WORKSPACE/binaries/wizard-smoke_${goos}_${goarch}$ext" ./cmd/wizard-smoke
+          done
+
+      - name: Keep the binaries and the test command
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: wizard-smoke
+          path: binaries
+          retention-days: 3
+          if-no-files-found: error
+
+  walk:
+    name: ${{ matrix.name }}
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Linux amd64, runner: ubuntu-latest, binary: prusa_connect_amd64, smoke: wizard-smoke_linux_amd64 }
+          - { name: Linux aarch64, runner: ubuntu-24.04-arm, binary: prusa_connect_aarch64, smoke: wizard-smoke_linux_arm64 }
+          - { name: Linux armv7, runner: ubuntu-latest, binary: prusa_connect_armv7, smoke: wizard-smoke_linux_amd64, platform: linux/arm/v7, image: 'debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587' }
+          - { name: Linux armhf, runner: ubuntu-latest, binary: prusa_connect_armhf, smoke: wizard-smoke_linux_amd64, platform: linux/arm/v6, image: 'alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc' }
+          - { name: Minimal amd64, runner: ubuntu-latest, binary: prusa_connect_minimal_amd64, smoke: wizard-smoke_linux_amd64, flags: -no-web-app }
+          - { name: Minimal aarch64, runner: ubuntu-24.04-arm, binary: prusa_connect_minimal_aarch64, smoke: wizard-smoke_linux_arm64, flags: -no-web-app }
+          - { name: Minimal armv7, runner: ubuntu-latest, binary: prusa_connect_minimal_armv7, smoke: wizard-smoke_linux_amd64, flags: -no-web-app, platform: linux/arm/v7, image: 'debian:bookworm-slim@sha256:7c7b2c966bc9ee8cedfeef67e0e279108992c77681fa595db4a9d65c06ccc587' }
+          - { name: Minimal armhf, runner: ubuntu-latest, binary: prusa_connect_minimal_armhf, smoke: wizard-smoke_linux_amd64, flags: -no-web-app, platform: linux/arm/v6, image: 'alpine:3.20@sha256:d9e853e87e55526f6b2917df91a2115c36dd7c696a35be12163d44e6e2a4b6bc' }
+          - { name: Windows amd64, runner: windows-latest, binary: prusa_connect_windows_amd64.exe, smoke: wizard-smoke_windows_amd64.exe }
+          - { name: Windows arm64, runner: windows-11-arm, binary: prusa_connect_windows_arm64.exe, smoke: wizard-smoke_windows_arm64.exe }
+          - { name: macOS arm64, runner: macos-latest, binary: prusa_connect_macos_arm64, smoke: wizard-smoke_darwin_arm64 }
+          - { name: macOS amd64, runner: macos-15-intel, binary: prusa_connect_macos_amd64, smoke: wizard-smoke_darwin_amd64 }
+    steps:
+      - name: Fetch the binaries and the test command
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: wizard-smoke
+
+      # A 32-bit ARM binary runs in a container under QEMU on an x86 runner.
+      - name: Teach Docker to run 32-bit ARM
+        if: matrix.platform != ''
+        run: docker run --privileged --rm tonistiigi/binfmt:qemu-v9.2.2@sha256:1b804311fe87047a4c96d38b4b3ef6f62fca8cd125265917a9e3dc3c996c39e6 --install arm
+
+      - name: Walk the wizard
+        shell: bash
+        run: |
+          set -o pipefail
+          chmod +x binaries/* 2>/dev/null || true
+          args=(-binary "binaries/${{ matrix.binary }}" ${{ matrix.flags }})
+          if [ -n "${{ matrix.platform }}" ]; then
+            args+=(-docker-platform "${{ matrix.platform }}" -docker-image "${{ matrix.image }}")
+          fi
+          "binaries/${{ matrix.smoke }}" "${args[@]}" | tee walk.log
+          echo "**${{ matrix.name }}**: $(grep '^RESULT' walk.log)" >> "$GITHUB_STEP_SUMMARY"
+
+  printer:
+    name: Printer build
+    needs: build
+    if: vars.PRINTER_MODEL != ''
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 20
+    steps:
+      - name: Fetch the binaries and the test command
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: wizard-smoke
+
+      - name: Walk the wizard
+        run: |
+          set -o pipefail
+          chmod +x binaries/wizard-smoke_linux_arm64
+          binaries/wizard-smoke_linux_arm64 -binary binaries/prusa_connect_printer | tee walk.log
+          echo "**Printer build**: $(grep '^RESULT' walk.log)" >> "$GITHUB_STEP_SUMMARY"

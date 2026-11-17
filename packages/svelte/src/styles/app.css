@@ -1,0 +1,14 @@
+/* The stylesheet an application imports. It is the theme plus the scan of this
+   package's own components.
+
+   `@source` takes a path, never a package name: a bare specifier compiles
+   without a warning and scans nothing, so an application that wrote one would
+   ship a build with no library utilities in it. A path is safe here and only
+   here, because both ends are inside this package and travel in one tarball.
+   `../` is `dist/` in a published copy and `src/` in this checkout.
+
+   A module imports `tokens.css` instead. It emits only the utilities it names
+   itself (ADR-20260914-244 rules 10 to 13), and this scan would put the whole
+   library's in every module bundle. */
+@import './tokens.css';
+@source '../';

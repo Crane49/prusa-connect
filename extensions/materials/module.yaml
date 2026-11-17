@@ -1,0 +1,141 @@
+# The one manifest for both halves of materials: the Go process in main.go and
+# the browser bundle under ui/.
+#
+# `prusa-connect module add` reads it out of the release, writes one
+# declaration, and copies it into the bundle directory it installs, because
+# that is where the host reads the ui block from. The digest covers it there,
+# so the manifest the host reads is the one the install recorded.
+#
+# The namespace is absent on purpose. The host derives it from the repository
+# address the operator installed, so no module can name another module's
+# address. For this module that is com.github.aux.prusa3d.materials.
+
+name: materials
+# The kind the one instance is declared under. It offers the service runtime,
+# which is what a module with a process needs. The browser half is declared
+# beside it, as `service.assets`.
+kind: sink
+version: 0.2.5
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# What a marketplace card prints beside the name: the title a person reads,
+# one sentence about this module, and who answers for it. The install copies
+# them into the declaration, so `GET /api/v1/resources` carries them for an
+# installed module.
+title: Materials
+summary: A catalogue of filament materials, and the spools a person has of them.
+codeowner: Prusa Research
+# The module wire major the process half speaks.
+contract_major: 1
+# The first core that reads needs.database, and each wire method this module
+# calls on the host.
+require:
+  core: ">=0.0.1-alpha.7"
+  core-device.list: "*"
+  core-device.get: "*"
+  core-bus.subscribe: "*"
+  core-access.check: "*"
+
+# A database of its own for the catalogue and the spools. The operator chooses
+# where it goes at install: a SQLite file in the module's data directory, or a
+# database on a Postgres server.
+needs:
+  database: true
+  # The catalogue ZIP, up to 64 MiB, is downloaded here and removed once read.
+  data: true
+
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+# The platforms the release ships a binary for, each a GOOS_GOARCH pair. Drop
+# the ones you do not build, and add the ones you do.
+# Every connection the process makes outside Prusa Connect. The operator
+# reads them at install, and the marketplace checks them against the code.
+egress:
+  - option: catalogue_url
+    why: Downloads the OpenPrintTag material database the materials and spools are read from.
+    sends: Only the request for the archive.
+  - host: codeload.github.com
+    why: GitHub serves the default catalogue archive from there after a redirect.
+    sends: Only the request for the archive.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+# Every setting this module reads, each with its type, its default and one
+# sentence saying what it controls. The host applies every default, writes the
+# `config:` block of the instance over it key by key, and sends the result on
+# plugin.configure before the first request arrives. A key not named here is
+# refused before the process starts, and nothing in main.go reads an
+# environment variable, so this list is where an operator finds every knob.
+#
+# An operator who wants another line writes:
+#
+#   resources:
+#     sink:
+#       materials:
+#         config:
+#           max_spools: 500
+options:
+  - key: max_spools
+    type: int
+    default: "2000"
+    summary: How many spools the module holds before it refuses to add another.
+  - key: catalogue_url
+    type: string
+    default: https://github.com/OpenPrintTag/openprinttag-database/archive/refs/heads/main.zip
+    summary: The https address the OpenPrintTag catalogue ZIP is downloaded from.
+  - key: catalogue_ca
+    type: string
+    default: ""
+    summary: A PEM file the catalogue download trusts beside the system roots.
+
+# The actions this module may take as itself are a request rather than a grant.
+# The operator reads them before `module add -approve` writes them into the
+# declaration and grants this module what they name.
+permissions:
+  # Read every printer and its event stream, to follow the material on each tool.
+  - observe
+# Ask whether a person may operate a printer before changing a tool's material.
+# The module never operates a printer itself, so it only asks (ADR-20261106-jnb).
+checks:
+  - operate
+
+# What other modules are told, on the host's event stream: a tool whose
+# material or spool changed, and a spool that changed. The host writes the
+# namespace in front of each type.
+events:
+  tool: tool
+  spool: spool
+
+ui:
+  # The built bundle's entry, relative to the bundle root. The host serves it
+  # at /api/v1/modules/com.github.aux.prusa3d.materials/ui/ui/index.js.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against. The app
+  # refuses a bundle its own version falls outside of.
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    # The whole of what this bundle may register. A registration the block
+    # does not declare is refused at run time and the app drops this module.
+    # Every entry here has one `host.register` call behind it in
+    # ui/src/index.ts, and the generator wrote the pair from one answer.
+    pages:
+      - path: materials
+        title: Materials
+        icon: materials
+      - path: material
+        title: Material
+        hidden: true
+    settings:
+      - id: catalogue
+        title: Catalogue
+      - id: locations
+        title: Locations
+    # The Tools tab of the printer page: what is on each tool
+    # or MMU slot, with Assign, Change, Unload and Unassign.
+    device_tab:
+      - id: tools
+        title: Tools

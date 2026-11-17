@@ -1,0 +1,56 @@
+# The provider, the application and the two people the sign-in check uses.
+# The worker applies every blueprint under /blueprints at start.
+#
+# The provider keeps authentik's defaults wherever a self-hoster would: the
+# implicit-consent authorization flow, the default authentication flow, the
+# subject mode, a 64 character hash of the user that this server maps to an id
+# of its own (ADR-20261023-wgv), and no signing key, so ID tokens are signed HS256 with
+# the client secret.
+version: 1
+metadata:
+  name: Prusa Connect sign-in check
+entries:
+  - model: authentik_core.user
+    identifiers:
+      username: pcl-admin
+    attrs:
+      name: Ada Admin
+      email: pcl-admin@example.com
+      password: pcl-admin-password
+      is_active: true
+  - model: authentik_core.user
+    identifiers:
+      username: pcl-viewer
+    attrs:
+      name: Vera Viewer
+      email: pcl-viewer@example.com
+      password: pcl-viewer-password
+      is_active: true
+  - model: authentik_providers_oauth2.oauth2provider
+    id: pcl-provider
+    identifiers:
+      name: prusa-connect
+    attrs:
+      client_type: confidential
+      client_id: prusa-connect
+      client_secret: pcl-authentik-fixture-secret
+      authorization_flow: !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+      invalidation_flow: !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+      # What the provider form preselects. A provider a blueprint creates has
+      # no grant at all until one is named.
+      grant_types:
+        - authorization_code
+        - refresh_token
+      redirect_uris:
+        - matching_mode: strict
+          url: http://127.0.0.1:18097/api/v1/auth/callback
+      property_mappings:
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, openid]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, email]]
+        - !Find [authentik_providers_oauth2.scopemapping, [scope_name, profile]]
+  - model: authentik_core.application
+    identifiers:
+      slug: prusa-connect
+    attrs:
+      name: Prusa Connect
+      provider: !KeyOf pcl-provider

@@ -1,0 +1,32 @@
+# Prusa Connect profile: the PostgreSQL engine.
+#
+# `make build CONFIG_FILE=config/examples/config.postgres.yaml` reads
+# persistence.type here and links the driver in. A binary built without that
+# tag registers the engine and refuses at open, naming what to build with, so
+# the key and the build cannot disagree.
+#
+# Every key below is one this build reads. A key it does not read is refused at
+# startup, naming the key and the line it is on.
+
+persistence:
+  type: "postgres"
+  postgres:
+    # Handed to the driver unread, so both forms work: a postgres:// URL and a
+    # key=value string. The password never reaches a log line: what this server
+    # prints is this string with the password replaced.
+    dsn: "postgres://postgres:postgres@127.0.0.1:5432/prusa_connect?sslmode=disable"
+
+core:
+  api:
+    addr: ":8080"
+  log:
+    level: info
+    format: text
+
+resources:
+  storage:
+    local:
+      type: filesystem
+      enabled: true
+      config:
+        root: ./storage

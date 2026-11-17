@@ -1,0 +1,88 @@
+#!/bin/sh
+# Runs the gates below before a push, so a failure shows here and not only in
+# CI. `make install-hooks` installs it by pointing core.hooksPath at this
+# folder. CI runs the same targets for a clone that never installed the hooks.
+#
+# A gate that takes minutes on every push stays in CI only: the documentation
+# site build of `make docs-check` and the test suites of
+# `make error-codes-check`. `make ci-local` runs both before a push that needs
+# them.
+set -e
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+# RANGE is the commit range the changelog and commit message gates judge. Git
+# gives a pre-push hook one line on stdin per ref being pushed:
+# `<local ref> <local sha> <remote ref> <remote sha>`.
+#
+# With an empty RANGE both gates fall back to `@{upstream}..HEAD`. The first
+# push of a branch has no upstream, so the range has to come from stdin or that
+# push would be judged by nothing.
+RANGE=""
+# EXCLUDE_PUBLISHED=1 tells both gates to skip commits that a remote-tracking
+# ref already has.
+EXCLUDE_PUBLISHED=""
+export EXCLUDE_PUBLISHED
+ZERO=0000000000000000000000000000000000000000
+while read -r _localref localsha _remoteref remotesha; do
+	# A local sha of zeros is a deletion.
+	[ "$localsha" = "$ZERO" ] && continue
+	if [ "$remotesha" = "$ZERO" ]; then
+		# The branch is new on the remote. The range starts at the parent
+		# of the oldest commit that no remote-tracking ref has. A root
+		# commit has no parent, and then RANGE stays empty.
+		base=$(git rev-list "$localsha" --not --remotes | tail -1)
+		if [ -n "$base" ] && git rev-parse -q --verify "$base^" >/dev/null 2>&1; then
+			RANGE="$base^..$localsha"
+			EXCLUDE_PUBLISHED=1
+		fi
+	else
+		# The range starts at the merge base and not at the remote tip. For
+		# a fast-forward they are the same commit. For a force push the
+		# merge base is where the two histories parted, so the range is the
+		# commits this push adds.
+		RANGE="$(git merge-base "$remotesha" "$localsha")..$localsha"
+
+		# A fast-forward that contains a merge also spans the commits of
+		# the merged branch, which are published already. A force push
+		# keeps the whole range, because it replaces those commits.
+		if git merge-base --is-ancestor "$remotesha" "$localsha"; then
+			EXCLUDE_PUBLISHED=1
+		elif git rev-parse -q --verify origin/main >/dev/null 2>&1 &&
+			git merge-base --is-ancestor origin/main "$localsha"; then
+			# A branch rebased onto main replaces only its own commits. The
+			# commits it took from main are published there, and this push
+			# cannot rewrite them, so the range starts at main.
+			RANGE="origin/main..$localsha"
+		fi
+	fi
+	[ -n "$RANGE" ] && break
+done
+[ -n "$RANGE" ] && echo "pre-push: judging $RANGE"
+
+# First, because it checks that the hooks themselves are installed and work.
+echo "pre-push: hook gates"
+sh scripts/check-hooks.sh
+
+echo "pre-push: changelog gates"
+make changelog-check RANGE="$RANGE"
+
+# The commit-msg hook judged each message when it was written. This run adds
+# the check that needs many commits, and it covers a commit made without hooks.
+echo "pre-push: commit message gates"
+make commit-style-check RANGE="$RANGE"
+
+echo "pre-push: writing style gates"
+make style-check
+
+echo "pre-push: Makefile gates"
+make makefile-check
+
+# Works offline: it reads scripts/go-releases.tsv. CI runs the same script
+# with --refresh, which asks go.dev.
+echo "pre-push: Go toolchain gates"
+make go-version-check
+
+echo "pre-push: lint"
+make lint

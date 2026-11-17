@@ -1,0 +1,30 @@
+# Functions under internal/ or adapters/ that no path from a main or a test
+# reaches, and the reason each one stays. scripts/check-reachability.sh reads
+# this file, and it refuses both directions: a finding with no line here, and a
+# line here that describes nothing.
+#
+# Three TAB separated fields: the path, the symbol as deadcode names it, and the
+# reason. A reason is required. The failure this gate exists to catch is code
+# nobody had to argue for, and an exception with no argument is the same thing.
+#
+# Delete a line rather than editing it when the symbol gets a caller. The gate
+# fails on a stale line, so a repair cannot leave one behind.
+internal/app/resourcehost/faults.go	CodePluginMissing	One of the Code<Name>() accessors four packages publish beside every registered fault code. The code is registered and reachable; the accessor is the published way to name it and this build has no caller. The convention itself is still open.
+internal/app/resourcehost/faults.go	CodePluginChecksum	Same accessor convention as CodePluginMissing above.
+internal/app/resourcehost/faults.go	CodePluginContract	Same accessor convention as CodePluginMissing above.
+internal/app/resourcehost/faults.go	CodeManifestInvalid	Same accessor convention as CodePluginMissing above. The fault is produced when a bundle ships a module.yaml the host cannot read.
+internal/transport/http/httpfault/httpfault.go	CodeInstallNotConfigured	Same accessor convention as CodePluginMissing above. The fault is produced when a build has no module installer.
+internal/transport/http/httpfault/httpfault.go	CodeStateNotConfigured	Same accessor convention as CodePluginMissing above. The fault is produced when no record store backs the module state routes.
+internal/transport/http/httpfault/httpfault.go	CodeStateValueTooLarge	Same accessor convention as CodePluginMissing above. The fault is produced when a module settings record is over core.module_settings_bytes.
+internal/authz/errors.go	CodeDeviceKindConflict	Same accessor convention as CodePluginMissing above.
+internal/authz/errors.go	CodeDeclaredGrantRefused	Same accessor convention as CodePluginMissing above. The fault is produced by ValidateVerb and the grant parser.
+internal/transport/http/httpfault/httpfault.go	CodeTooManyStreams	Same accessor convention as CodePluginMissing above.
+internal/transport/http/httpfault/httpfault.go	CodeHistoryQueryRefused	Same accessor convention as CodePluginMissing above. The fault is produced by HistoryQueryRefused, which the history read path calls.
+internal/transport/http/httpfault/httpfault.go	CodeHistoryReaderAmbiguous	Same accessor convention as CodePluginMissing above. The fault is produced by HistoryReaderAmbiguous, which the history reader lookup calls.
+internal/extension/registry/registry.go	Declarations.Descriptors	The registry surface every sdk registry publishes, mirrored here so a reader moving between them meets one shape. The reference generator reads the sdk registries rather than this one.
+internal/extension/registry/registry.go	Descriptors	Same registry surface as Declarations.Descriptors above.
+internal/extension/registry/registry.go	Sealed	Same registry surface as Declarations.Descriptors above.
+internal/kernel/sqlstore/postgres.go	RefusePostgres	It is what a store answers in a build carrying no PostgreSQL driver. This gate reads the full tag set, where the driver is linked, so the refusal is unreachable by construction. A build without the postgres tag reaches it.
+internal/transport/http/httpfault/httpfault.go	CodeModuleNotServing	Same accessor convention as CodePluginMissing above. The fault is produced when a declared root mount has no module serving behind it.
+internal/transport/http/httpfault/httpfault.go	CodeCameraUnreachable	Same accessor convention as CodePluginMissing above. The fault is produced when a camera's upstream does not answer a snapshot, a stream or a WebRTC offer.
+internal/transport/http/httpfault/dashboards.go	CodeDashboardsFull	Same accessor convention as CodePluginMissing above. The fault is produced when a server already keeps 200 dashboards, which the store test reaches through dashboard.ErrFull.

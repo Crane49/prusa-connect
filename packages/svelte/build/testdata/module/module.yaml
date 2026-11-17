@@ -1,0 +1,11 @@
+name: spools
+kind: asset
+version: 0.1.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+ui:
+  entry: ui/index.js
+  library: '>=0.0.1 <1.0.0'
+  contributes:
+    pages:
+      - path: spools
+        title: Spools

@@ -1,0 +1,187 @@
+---
+---
+<figure class="nd-wrapper">
+  <svg
+    viewBox="0 0 1010 360"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-label="Prusa Connect network diagram: seven printers connect via xBuddy WebSocket to Prusa Connect, which contains REST API, MQTT, SSE Events, and a Web Frontend, with optional integrations to external MQTT broker, webhook receivers, and custom apps"
+  >
+    <style>
+      .nd-conn {
+        fill: none;
+        stroke: var(--sl-color-hairline, #374151);
+        stroke-width: 1.5;
+        stroke-linecap: round;
+      }
+      .nd-conn-opt {
+        fill: none;
+        stroke: var(--sl-color-hairline, #374151);
+        stroke-width: 1.5;
+        stroke-dasharray: 5 3;
+        stroke-linecap: round;
+        opacity: 0.6;
+      }
+      .nd-box-printer {
+        fill: var(--sl-color-bg-nav, #18181b);
+        stroke: var(--sl-color-hairline, #374151);
+        stroke-width: 1.5;
+      }
+      .nd-box-hub {
+        fill: var(--sl-color-bg, #0f172a);
+        stroke: var(--sl-color-accent, #818cf8);
+        stroke-width: 2;
+      }
+      .nd-box-inner {
+        fill: var(--sl-color-bg-nav, #18181b);
+        stroke: var(--sl-color-hairline, #374151);
+        stroke-width: 1.5;
+      }
+      .nd-box-ext {
+        fill: var(--sl-color-bg-nav, #18181b);
+        stroke: var(--sl-color-hairline, #374151);
+        stroke-width: 1.5;
+        stroke-dasharray: 4 3;
+      }
+      .nd-sep {
+        stroke: var(--sl-color-hairline, #374151);
+        stroke-width: 1;
+        opacity: 0.4;
+      }
+      .nd-label {
+        font-family: var(--sl-font, system-ui, sans-serif);
+        fill: var(--sl-color-text, #e2e8f0);
+      }
+      .nd-label-printer {
+        font-size: 11px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+      }
+      .nd-label-hub-title {
+        font-size: 15px;
+        font-weight: 700;
+        text-anchor: middle;
+        dominant-baseline: middle;
+      }
+      .nd-label-hub-sub {
+        font-size: 10px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: var(--sl-color-accent, #818cf8);
+        opacity: 0.85;
+      }
+      .nd-label-conn {
+        font-size: 9px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: var(--sl-color-gray-3, #6b7280);
+        font-family: var(--sl-font-mono, monospace);
+      }
+      .nd-label-inner {
+        font-size: 12px;
+        font-weight: 500;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: var(--sl-color-text, #e2e8f0);
+      }
+      .nd-label-ext {
+        font-size: 11px;
+        font-weight: 500;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: var(--sl-color-text, #e2e8f0);
+        opacity: 0.7;
+      }
+      .nd-label-opt {
+        font-size: 9px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        fill: var(--sl-color-gray-3, #6b7280);
+        font-family: var(--sl-font-mono, monospace);
+      }
+    </style>
+
+    <!-- Prusa Connect outer box: x=270, width=510, right=780 -->
+    <rect class="nd-box-hub" x="270" y="20" width="510" height="320" rx="14" />
+
+    <!-- Vertical separator -->
+    <line class="nd-sep" x1="440" y1="35" x2="440" y2="325" />
+
+    <!-- Hub title, centered in left portion (x=270–440, center=355) -->
+    <text class="nd-label nd-label-hub-title" x="355" y="170">Prusa Connect</text>
+    <text class="nd-label nd-label-hub-sub"   x="355" y="192">your own hardware</text>
+
+    <!-- Inner boxes: x=455, width=310, height=40, gap=14
+         4×40 + 3×14 = 202px, centered in h=320: start y = 20 + (320-202)/2 = 79 -->
+    <rect class="nd-box-inner" x="455" y="79"  width="310" height="40" rx="7" />
+    <rect class="nd-box-inner" x="455" y="133" width="310" height="40" rx="7" />
+    <rect class="nd-box-inner" x="455" y="187" width="310" height="40" rx="7" />
+    <rect class="nd-box-inner" x="455" y="241" width="310" height="40" rx="7" />
+
+    <text class="nd-label nd-label-inner" x="610" y="99" >REST API</text>
+    <text class="nd-label nd-label-inner" x="610" y="153">MQTT</text>
+    <text class="nd-label nd-label-inner" x="610" y="207">SSE Events</text>
+    <text class="nd-label nd-label-inner" x="610" y="261">Web Frontend</text>
+
+    <!-- Optional integration connections (dashed) from Prusa Connect right edge (x=780) -->
+    <!-- Entry points on right edge: y=126, 180, 234 — matching ext box centers -->
+    <path class="nd-conn-opt" d="M 780 126 C 820 126 820 126 845 126" />
+    <path class="nd-conn-opt" d="M 780 180 L 845 180" />
+    <path class="nd-conn-opt" d="M 780 234 C 820 234 820 234 845 234" />
+
+    <!-- "optional" label -->
+    <text class="nd-label-opt" x="895" y="38">optional</text>
+
+    <!-- External integration boxes: x=845, width=155, height=36, gap=18
+         3×36 + 2×18 = 144px, centered in h=320: start y = 20 + (320-144)/2 = 108 -->
+    <rect class="nd-box-ext" x="845" y="108" width="155" height="36" rx="7" />
+    <rect class="nd-box-ext" x="845" y="162" width="155" height="36" rx="7" />
+    <rect class="nd-box-ext" x="845" y="216" width="155" height="36" rx="7" />
+
+    <text class="nd-label nd-label-ext" x="922" y="126">External MQTT Broker</text>
+    <text class="nd-label nd-label-ext" x="922" y="180">Webhook Receiver</text>
+    <text class="nd-label nd-label-ext" x="922" y="234">Custom App</text>
+
+    <!-- Connections: each printer fans to its own entry point on hub left edge (x=270) -->
+    <path class="nd-conn" d="M 165 38 C 217 38 217 75 270 75" />
+    <path class="nd-conn" d="M 165 85 C 217 85 217 110 270 110" />
+    <path class="nd-conn" d="M 165 132 C 217 132 217 145 270 145" />
+    <path class="nd-conn" d="M 165 179 C 217 179 217 180 270 180" />
+    <path class="nd-conn" d="M 165 226 C 217 226 217 215 270 215" />
+    <path class="nd-conn" d="M 165 273 C 217 273 217 250 270 250" />
+    <path class="nd-conn" d="M 165 320 C 217 320 217 285 270 285" />
+
+    <!-- xBuddy label in the gap between printers and hub -->
+    <text class="nd-label-conn" x="217" y="11">xBuddy WebSocket</text>
+
+    <!-- Printer boxes -->
+    <rect class="nd-box-printer" x="0" y="20" width="165" height="36" rx="8" />
+    <rect class="nd-box-printer" x="0" y="67" width="165" height="36" rx="8" />
+    <rect class="nd-box-printer" x="0" y="114" width="165" height="36" rx="8" />
+    <rect class="nd-box-printer" x="0" y="161" width="165" height="36" rx="8" />
+    <rect class="nd-box-printer" x="0" y="208" width="165" height="36" rx="8" />
+    <rect class="nd-box-printer" x="0" y="255" width="165" height="36" rx="8" />
+    <rect class="nd-box-printer" x="0" y="302" width="165" height="36" rx="8" />
+
+    <text class="nd-label nd-label-printer" x="82" y="38">Prusa MINI/+</text>
+    <text class="nd-label nd-label-printer" x="82" y="85">Prusa MK4/S</text>
+    <text class="nd-label nd-label-printer" x="82" y="132">Prusa CORE One/+/(Gen 2)</text>
+    <text class="nd-label nd-label-printer" x="82" y="179">Prusa CORE One/+ INDX</text>
+    <text class="nd-label nd-label-printer" x="82" y="226">Prusa CORE One L/+</text>
+    <text class="nd-label nd-label-printer" x="82" y="273">Prusa CORE One L/+ INDX</text>
+    <text class="nd-label nd-label-printer" x="82" y="320">Prusa XL/+</text>
+  </svg>
+</figure>
+
+<style>
+  .nd-wrapper {
+    margin: 2rem 0;
+    padding: 0;
+  }
+  .nd-wrapper svg {
+    width: 100%;
+    max-width: 1010px;
+    display: block;
+    margin: 0 auto;
+  }
+</style>

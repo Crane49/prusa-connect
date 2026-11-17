@@ -1,0 +1,195 @@
+:root {
+  color-scheme: light dark;
+  --ink: #14161a;
+  --paper: #ffffff;
+  --line: #d5d9e0;
+  --muted: #5c6470;
+  --panel: #f6f7f9;
+  --field: #ffffff;
+  --ok: #157347;
+  --bad: #b02a37;
+  --warn: #9a6700;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e6e8ec;
+    --paper: #14161a;
+    --line: #2c313a;
+    --muted: #99a1ad;
+    --panel: #1b1f26;
+    --field: #10131a;
+    --ok: #4cc38a;
+    --bad: #ff6b74;
+    --warn: #e3b341;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 1rem 3rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+h1 { font-size: 15px; margin: 0; letter-spacing: 0.08em; text-transform: uppercase; }
+h2 { font-size: 13px; margin: 0 0 0.35rem; letter-spacing: 0.06em; text-transform: uppercase; }
+h3 { font-size: 12px; margin: 1rem 0 0.35rem; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* The tab strip is sticky under the header, because a console with five areas
+   is one a reader moves between while something else is still arriving on the
+   stream, and a strip that scrolls away is one they scroll back up to find. */
+nav {
+  position: sticky;
+  top: 3rem;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+}
+
+nav button { padding: 0.25rem 0.9rem; }
+nav button.selected { border-color: var(--ok); color: var(--ok); font-weight: bold; }
+
+.view {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
+  gap: 1rem;
+  padding-top: 1rem;
+  align-items: start;
+}
+
+section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+
+#panel-wire, #panel-detail, #panel-events-rows, #panel-config-resources { grid-column: 1 / -1; }
+
+.note { color: var(--muted); margin: 0 0 0.5rem; max-width: 80ch; }
+
+.pill {
+  margin: 0;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.15rem 0.6rem;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.5; cursor: default; }
+
+/* A label sits on its own line above its field, because half of these labels are
+   a whole sentence saying what the field means and a label beside a field is one
+   the field pushes off the panel. */
+label { display: block; margin: 0.5rem 0 0.15rem; color: var(--muted); }
+label input[type="checkbox"] { margin-right: 0.4rem; }
+
+input[type="text"], input[type="password"], select, textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  width: 100%;
+  max-width: 60ch;
+}
+
+textarea { resize: vertical; white-space: pre; }
+
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 1rem; }
+
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.25rem 0.6rem 0.25rem 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: normal; white-space: nowrap; }
+td { word-break: break-word; }
+tbody tr:last-child td { border-bottom: 0; }
+
+tr.selectable { cursor: pointer; }
+tr.selectable:hover td { background: var(--line); }
+tr.selected td { outline: 1px solid var(--ok); outline-offset: -1px; }
+tr.gone td { opacity: 0.55; text-decoration: line-through; }
+
+.ok { color: var(--ok); }
+.bad { color: var(--bad); }
+.warn { color: var(--warn); }
+
+/* The alarm runs the full width above every panel, because the printer it is
+   about publishes nothing: a person who has to scroll to a column to find out
+   that a machine is unreadable is reading the same silence they already had. */
+.alarm {
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--bad);
+  border-left-width: 5px;
+  border-radius: 4px;
+  color: var(--bad);
+  font-weight: bold;
+}
+
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0; padding: 0; }
+.chips li { border: 1px solid var(--line); border-radius: 4px; padding: 0.05rem 0.4rem; }
+
+pre {
+  margin: 0;
+  padding: 0.5rem;
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  max-height: 24rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#wire tbody td:last-child, #events-rows tbody td:last-child { white-space: pre-wrap; max-width: 70ch; }
+#events-rows tbody tr:first-child td { background: var(--line); }
+
+/* The request log is the point of the console rather than a debug aid, so it is
+   pinned where a reader can see the answer to what they just pressed without
+   leaving the panel they pressed it in. */
+#calls-panel {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  max-height: 14rem;
+  overflow: auto;
+}
+
+#calls tbody tr.failed td { color: var(--bad); }

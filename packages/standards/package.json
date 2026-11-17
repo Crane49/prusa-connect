@@ -1,0 +1,64 @@
+{
+  "name": "@prusa/frontend-standards",
+  "version": "0.0.1",
+  "description": "The ESLint, Prettier and TypeScript configuration every Prusa frontend lints, formats and type-checks against, and the engineering rules that go with them.",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prusa3d/prusa-connect.git",
+    "directory": "packages/standards"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    "./eslint/library": "./eslint/library.js",
+    "./eslint/application": "./eslint/application.js",
+    "./eslint/module": "./eslint/module.js",
+    "./prettier": "./prettier.js",
+    "./tsconfig.json": "./tsconfig.json"
+  },
+  "files": [
+    "eslint",
+    "prettier.js",
+    "prettier.d.ts",
+    "tsconfig.json",
+    "rules",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node --test test/*.test.js",
+    "check": "pnpm run lint && pnpm run format:check && pnpm run test"
+  },
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-svelte": "3.23.1",
+    "globals": "17.13.0",
+    "prettier-plugin-svelte": "4.1.1",
+    "prettier-plugin-tailwindcss": "0.8.1",
+    "typescript-eslint": "8.71.2"
+  },
+  "peerDependencies": {
+    "eslint": "10.12.0",
+    "prettier": "3.9.10",
+    "svelte": "5.57.2",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "svelte-eslint-parser": "1.9.0",
+    "vite": "8.3.4"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

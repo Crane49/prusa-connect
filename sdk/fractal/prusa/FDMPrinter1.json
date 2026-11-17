@@ -1,0 +1,40 @@
+{
+  "interface": "FDMPrinter1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "axisX", "type": "float", "access": "ro", "nullable": true },
+    { "name": "axisY", "type": "float", "access": "ro", "nullable": true },
+    { "name": "axisZ", "type": "float", "access": "ro", "nullable": true },
+    { "name": "tempBed", "type": "float", "access": "ro", "nullable": true },
+    { "name": "targetBed", "type": "float", "access": "rw", "nullable": true },
+    { "name": "flow", "type": "int", "access": "rw" },
+    { "name": "activeSlot", "type": "int", "access": "ro", "nullable": true }
+  ],
+  "methods": [
+    {
+      "name": "Home",
+      "params": [
+        { "name": "x", "type": "bool" },
+        { "name": "y", "type": "bool" },
+        { "name": "z", "type": "bool" }
+      ]
+    },
+    {
+      "name": "MoveRel",
+      "params": [
+        { "name": "x", "type": "float" },
+        { "name": "y", "type": "float" },
+        { "name": "z", "type": "float" },
+        { "name": "feedrate", "type": "float", "optional": true }
+      ]
+    },
+    { "name": "LevelBed" },
+    { "name": "DisableSteppers" },
+    {
+      "name": "SelectSlot",
+      "params": [
+        { "name": "slot", "type": "int" }
+      ]
+    }
+  ]
+}

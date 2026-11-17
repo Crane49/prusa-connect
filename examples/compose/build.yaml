@@ -1,0 +1,44 @@
+# The one file a build-composed binary needs (ADR-20260901-7t4 rule 5).
+#
+# Run it with:
+#
+#   make compose-build BUILD_FILE=examples/compose/build.yaml
+#
+# Every path below is read against this file's own directory, so the
+# configuration means the same thing wherever it is run from.
+#
+# The core is taken from a directory here, which is path mode: for development
+# and on-premise builds, and the mode where nothing is pinned. Version mode is
+# the release path and is written instead as:
+#
+#   core:
+#     version: v0.2.0
+core:
+  path: ../..
+
+# Every adapter this binary carries. Each is its own Go module, compiled against
+# sdk/ alone, and it is in the binary because this list names it: there is no
+# second place to enable it and no build tag to add.
+#
+# The two named here are the worked examples under examples/adapters/, and
+# they are deliberately different things. storage-memory is not a device at
+# all: it is a storage provider. moonraker is a printer dialect for machines
+# this project does not make, which is the case a third party actually has.
+#
+# A published adapter is named by version instead of by path, and that is the
+# mode where go.sum records what was pulled:
+#
+#   adapters:
+#     - module: github.com/acme/prusa-adapter-shelf
+#       version: v1.2.0
+adapters:
+  - module: example.com/prusa/storage-memory
+    path: ../adapters/storage-memory
+  - module: example.com/prusa/moonraker
+    path: ../adapters/moonraker
+
+# What make build reads as CONFIG_FILE. The tag and feature detectors read it,
+# out of the resolved core, exactly as make build runs them.
+config: ../../config/config.yaml
+variant: full
+output: ../../bin/server-composed

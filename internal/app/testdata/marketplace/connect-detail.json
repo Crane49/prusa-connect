@@ -1,0 +1,38 @@
+{
+  "extension": {
+    "id": "com.github.aux.prusa3d.parts",
+    "module": "github.com/prusa3d/parts",
+    "name": "parts",
+    "title": "Parts",
+    "summary": "Counts the parts each print made.",
+    "author": {
+      "id": "8b6a1f3e-2c4d-4e5f-9a0b-1c2d3e4f5a6b",
+      "name": "Prusa Research",
+      "trust": "official"
+    },
+    "trust": "official",
+    "page_url": "https://plugin-marketplace.prusa3d.com/connect/extensions/com.github.aux.prusa3d.parts",
+    "downloads": 42,
+    "latest": null,
+    "versions": [
+      {
+        "version": "0.3.0-beta.1",
+        "published_at": "2026-10-05T12:00:00.000Z",
+        "channel": "beta",
+        "trust": "official",
+        "core": ">=0.1.0",
+        "kind": "sink",
+        "platforms": ["linux_arm64"],
+        "permissions": ["observe", "operate"],
+        "records_mib": 0,
+        "events": {},
+        "check_absent_people": false,
+        "has_ui": false,
+        "size": 2048,
+        "sha256": "60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752",
+        "download_url": "https://plugin-marketplace.prusa3d.com/api/connect/v1/extensions/com.github.aux.prusa3d.parts/download?version=0.3.0-beta.1",
+        "changelog": ""
+      }
+    ]
+  }
+}

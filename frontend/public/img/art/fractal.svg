@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" role="img" aria-label="Three servers joined in a tree, this one filled">
+  <!-- Two links, drawn from edge to edge so nothing touches a node. -->
+  <path d="M72 42.2 44 77.8M88 42.2l28 35.6"/>
+  <!-- The two servers this one reaches. -->
+  <circle cx="36" cy="88" r="13"/>
+  <circle cx="124" cy="88" r="13"/>
+  <!-- This server: the filled node. -->
+  <circle cx="80" cy="32" r="13" fill="currentColor" stroke="none"/>
+</svg>

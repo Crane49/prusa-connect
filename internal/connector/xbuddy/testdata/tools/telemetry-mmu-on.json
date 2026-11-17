@@ -1,0 +1,10 @@
+{
+  "tools": {
+    "0": {"type": "FFF_PRINT_HEAD", "active": true, "nozzle_temp": 215.3, "nozzle_target_temp": 215, "heatbreak_fan_rpm": 6500, "print_fan_rpm": 3200, "feeder": {"mmu_progress_code": 4, "mmu_command_in_progress": "T"}},
+    "0.0": {"active": false, "type": "FFF_FEEDER_SLOT", "consumed_weight": null, "odometer_id": 0, "odometer_e": 0},
+    "0.1": {"active": true, "type": "FFF_FEEDER_SLOT", "consumed_weight": 7, "odometer_id": 5, "odometer_e": 900},
+    "0.2": {"active": false, "type": "FFF_FEEDER_SLOT", "consumed_weight": null, "odometer_id": 0, "odometer_e": 0},
+    "0.3": {"active": false, "type": "FFF_FEEDER_SLOT", "consumed_weight": null, "odometer_id": 0, "odometer_e": 0},
+    "0.4": {"active": false, "type": "FFF_FEEDER_SLOT", "consumed_weight": null, "odometer_id": 0, "odometer_e": 0}
+  }
+}

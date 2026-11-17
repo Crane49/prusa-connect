@@ -1,0 +1,6 @@
+# husky runs each of these with `sh`, and they have no .sh extension, so the
+# repository's rule for shell scripts does not reach them. A CRLF checkout fails
+# at the first line with `$'\r': command not found`.
+commit-msg text eol=lf
+pre-commit text eol=lf
+pre-push text eol=lf

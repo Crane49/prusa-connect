@@ -1,0 +1,88 @@
+package memory_test
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"strings"
+	"testing"
+
+	memory "example.com/prusa/storage-memory"
+
+	"github.com/prusa3d/prusa-connect/sdk/storageapi"
+	"github.com/prusa3d/prusa-connect/sdk/storageapi/storageapitest"
+)
+
+// The published suite every storage provider is held to. This store passing it
+// is what the package is for: a contract one implementation satisfies is a
+// description of that implementation.
+//
+// The suite travelled out of the core module with the store, because it is part
+// of sdk/ rather than part of the host. That is the point worth noticing here:
+// an adapter author outside this repository runs exactly these cases against
+// exactly this contract, with no access to the core's own test helpers, and
+// this file is what that looks like.
+func TestProviderContract(t *testing.T) {
+	storageapitest.RunProviderContract(t, func(_ *testing.T) storageapitest.Subject {
+		return storageapitest.Subject{
+			Provider: memory.Open(storageapi.ProviderSpec{
+				ID:                "memory",
+				Type:              memory.Type,
+				AllowedExtensions: storageapi.DefaultAllowedExtensions,
+			}),
+			NoFilesystemRoot: true,
+		}
+	})
+}
+
+// sample is what the digest case writes. The registry case, which lives in the
+// internal test file next door, writes the same bytes.
+const sample = "G28\nG1 X10 Y10 Z0.2 F1200\nM104 S215\n"
+
+// The digest is the caller's way of checking that the object in the store is
+// the object it sent, and it is only that if every store reading the same bytes
+// answers with the same number. So the expectation here is not "whatever this
+// store said last time": it is SHA-256 of the bytes, computed independently, in
+// the encoding the contract names. A provider hashing anything but the bytes,
+// or hashing them with a second algorithm of its own, is caught by this.
+//
+// The core module runs the mirror of this case against its disk-backed stores.
+// The two cases cannot import each other any more, and they do not need to:
+// both compare against the same fixed number rather than against each other,
+// which is what made the cross-store comparison meaningful in the first place.
+func TestTheDigestIsSHA256OfTheBytesWritten(t *testing.T) {
+	t.Parallel()
+
+	store := memory.Open(storageapi.ProviderSpec{
+		ID:                "memory",
+		Type:              memory.Type,
+		AllowedExtensions: storageapi.DefaultAllowedExtensions,
+	})
+
+	written, err := storageapi.Save(t.Context(), store, "bench.gcode", strings.NewReader(sample))
+	if err != nil {
+		t.Fatalf("save an object: %v", err)
+	}
+
+	sum := sha256.Sum256([]byte(sample))
+	if want := hex.EncodeToString(sum[:]); written.SHA256 != want {
+		t.Errorf("the digest is SHA-256 of the bytes: got %q, want %q", written.SHA256, want)
+	}
+}
+
+// Probe is the question a host asks instead of trusting Capabilities, and it is
+// only worth asking because stores answer it differently. This one serves byte
+// ranges and renames and hands out neither a file handle nor a URL, and the
+// core's disk-backed stores are the other way round. Pinning the answer here
+// keeps the optional interfaces from being quietly dropped or quietly added:
+// either would change what a host does with this store without changing a line
+// a caller reads.
+func TestProbeReportsRangesAndRenamesAndNothingElse(t *testing.T) {
+	t.Parallel()
+
+	got := storageapi.Probe(memory.Open(storageapi.ProviderSpec{ID: "memory", Type: memory.Type}))
+	want := storageapi.Caps{Browse: true, Write: true, Range: true, Rename: true}
+
+	if got != want {
+		t.Errorf("the optional abilities this store declares: got %+v, want %+v", got, want)
+	}
+}

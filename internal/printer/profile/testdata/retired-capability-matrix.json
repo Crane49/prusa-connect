@@ -1,0 +1,7081 @@
+{
+  "provenance": "The firmware capability matrix of the retired connector's command builder, extracted by asking that builder for every model and every probed firmware version. internal/printer/profile/profiles.json is generated from this file and divergence_test.go fails when the two disagree.",
+  "models": [
+    {
+      "model": "CoreOne",
+      "device_type_id": "7.1.0",
+      "firmware_device_type_id": "7.1.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_ADDON_PARAMS",
+        "SET_CHAMBER_PARAMS",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ADDON_POWER",
+          "args": [
+            {
+              "name": "addon_power",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ADDON_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_FAN_TARGET",
+          "args": [
+            {
+              "name": "chamber.fan_pwm_target",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_LED_INTENSITY",
+          "args": [
+            {
+              "name": "chamber.led_intensity",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_TARGET_TEMP",
+          "args": [
+            {
+              "name": "chamber.target_temp",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "CoreOneL",
+      "device_type_id": "8.1.0",
+      "firmware_device_type_id": "8.1.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_ADDON_PARAMS",
+        "SET_CHAMBER_PARAMS",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ADDON_POWER",
+          "args": [
+            {
+              "name": "addon_power",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ADDON_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_FAN_TARGET",
+          "args": [
+            {
+              "name": "chamber.fan_pwm_target",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_LED_INTENSITY",
+          "args": [
+            {
+              "name": "chamber.led_intensity",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_TARGET_TEMP",
+          "args": [
+            {
+              "name": "chamber.target_temp",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "CoreOneL_INDX",
+      "device_type_id": "8.10.0",
+      "firmware_device_type_id": "8.10.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_ADDON_PARAMS",
+        "SET_CHAMBER_PARAMS",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ADDON_POWER",
+          "args": [
+            {
+              "name": "addon_power",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ADDON_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_FAN_TARGET",
+          "args": [
+            {
+              "name": "chamber.fan_pwm_target",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_LED_INTENSITY",
+          "args": [
+            {
+              "name": "chamber.led_intensity",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_TARGET_TEMP",
+          "args": [
+            {
+              "name": "chamber.target_temp",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "CoreOne_INDX",
+      "device_type_id": "7.10.0",
+      "firmware_device_type_id": "7.10.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_ADDON_PARAMS",
+        "SET_CHAMBER_PARAMS",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ADDON_POWER",
+          "args": [
+            {
+              "name": "addon_power",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ADDON_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_FAN_TARGET",
+          "args": [
+            {
+              "name": "chamber.fan_pwm_target",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_LED_INTENSITY",
+          "args": [
+            {
+              "name": "chamber.led_intensity",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_TARGET_TEMP",
+          "args": [
+            {
+              "name": "chamber.target_temp",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_CHAMBER_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "IX",
+      "device_type_id": "4.1.0",
+      "firmware_device_type_id": "4.1.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_LED_INTENSITY",
+          "args": [
+            {
+              "name": "chamber.led_intensity",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "Z_POWER_MOVE",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MINI",
+      "device_type_id": "2.1.0",
+      "firmware_device_type_id": "2.1.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MK3.5",
+      "device_type_id": "1.3.5",
+      "firmware_device_type_id": "1.3.5",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MK3.5S",
+      "device_type_id": "1.3.6",
+      "firmware_device_type_id": "1.3.5",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MK3.9",
+      "device_type_id": "1.3.9",
+      "firmware_device_type_id": "1.4.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MK3.9S",
+      "device_type_id": "1.3.10",
+      "firmware_device_type_id": "1.4.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MK4",
+      "device_type_id": "1.4.0",
+      "firmware_device_type_id": "1.4.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "MK4S",
+      "device_type_id": "1.4.1",
+      "firmware_device_type_id": "1.4.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    },
+    {
+      "model": "XL",
+      "device_type_id": "3.1.0",
+      "firmware_device_type_id": "3.1.0",
+      "features": [
+        "BGCODE",
+        "DIALOGS",
+        "FILAMENT",
+        "FILES",
+        "FW_UPDATE_PATH",
+        "LAZY_FILE_PROTOCOL",
+        "OLD_JOB_INFO",
+        "QUEUE",
+        "RECURSIVE_DELETE",
+        "SET_ENCLOSURE_PARAMS",
+        "SET_HOSTNAME",
+        "SET_TOOL_PARAMS",
+        "TOOL_MAPPING"
+      ],
+      "commands": [
+        {
+          "name": "BEEP",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CANCEL_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "CREATE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FILE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DELETE_FOLDER",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DIALOG_ACTION",
+          "args": [
+            {
+              "name": "button",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dialog_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "DISABLE_STEPPERS",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "FLASH",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "HOME",
+          "args": [
+            {
+              "name": "axis",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "LOAD_FILAMENT",
+          "args": [
+            {
+              "name": "filament",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MESH_BED_LEVELING",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "x",
+              "type": "float",
+              "required": false
+            },
+            {
+              "name": "y",
+              "type": "float",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_E",
+          "args": [
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "length",
+              "type": "float",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "MOVE_Z",
+          "args": [
+            {
+              "name": "distance",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "feedrate",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "PAUSE_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESET_PRINTER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "RESUME_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_FILE_INFO",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_JOB_INFO",
+          "args": [
+            {
+              "name": "job_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_STATE_INFO",
+          "requires_features": [
+            "DIALOGS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SEND_TRANSFER_INFO",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_CHAMBER_LED_INTENSITY",
+          "args": [
+            {
+              "name": "chamber.led_intensity",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ENCLOSURE_ENABLED",
+          "args": [
+            {
+              "name": "enclosure_enabled",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ENCLOSURE_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ENCLOSURE_POSTPRINT",
+          "args": [
+            {
+              "name": "enclosure_postprint",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ENCLOSURE_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ENCLOSURE_POSTPRINT_FILTRATION_TIME",
+          "args": [
+            {
+              "name": "enclosure_postprint_filtration_time",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ENCLOSURE_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_ENCLOSURE_PRINTING_FILTRATION",
+          "args": [
+            {
+              "name": "enclosure_printing_filtration",
+              "type": "boolean",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_ENCLOSURE_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_FLOW",
+          "args": [
+            {
+              "name": "flow",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HEATBED_TEMPERATURE",
+          "args": [
+            {
+              "name": "bed_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_HOSTNAME",
+          "args": [
+            {
+              "name": "hostname",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_HOSTNAME"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_IDLE",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_NOZZLE_TEMPERATURE",
+          "args": [
+            {
+              "name": "nozzle_temperature",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_PRINTER_READY",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_SPEED",
+          "args": [
+            {
+              "name": "speed",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOKEN",
+          "args": [
+            {
+              "name": "token",
+              "type": "string",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HARDENED",
+          "args": [
+            {
+              "name": "hardened",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_HIGH_FLOW",
+          "args": [
+            {
+              "name": "high_flow",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "SET_TOOL_NOZZLE_DIAMETER",
+          "args": [
+            {
+              "name": "nozzle_diameter",
+              "type": "float",
+              "required": true
+            },
+            {
+              "name": "tool",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "requires_features": [
+            "SET_TOOL_PARAMS"
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_CONNECT_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_ENCRYPTED_DOWNLOAD",
+          "args": [
+            {
+              "name": "iv",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "key",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "port",
+              "type": "integer",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_INLINE_DOWNLOAD",
+          "args": [
+            {
+              "name": "hash",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "orig_size",
+              "type": "integer",
+              "required": true
+            },
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "team_id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "START_PRINT",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "tool_mapping",
+              "type": "object",
+              "required": false
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_PRINT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "STOP_TRANSFER",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNCANCEL_OBJECT",
+          "args": [
+            {
+              "name": "id",
+              "type": "integer",
+              "required": true
+            }
+          ],
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UNLOAD_FILAMENT",
+          "from_version": "6.4.0"
+        },
+        {
+          "name": "UPGRADE",
+          "args": [
+            {
+              "name": "path",
+              "type": "string",
+              "required": false
+            }
+          ],
+          "requires_features": [
+            "FW_UPDATE_PATH"
+          ],
+          "from_version": "6.4.0"
+        }
+      ]
+    }
+  ],
+  "supported_firmware": {
+    "0.0.0": false,
+    "5.9.9": false,
+    "6.0.0": false,
+    "6.3.9": false,
+    "6.4.0": true,
+    "6.4.0-0": true,
+    "6.4.0-RC": true,
+    "6.4.1": true,
+    "6.5.0": true,
+    "7.0.0": true
+  },
+  "features_by_firmware": {
+    "0.0.0": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "5.9.9": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.0.0": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.3.9": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.4.0": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.4.0-0": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.4.0-RC": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.4.1": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "6.5.0": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ],
+    "7.0.0": [
+      "BGCODE",
+      "DIALOGS",
+      "FILAMENT",
+      "FILES",
+      "FW_UPDATE_PATH",
+      "LAZY_FILE_PROTOCOL",
+      "OLD_JOB_INFO",
+      "QUEUE",
+      "RECURSIVE_DELETE",
+      "SET_HOSTNAME",
+      "SET_TOOL_PARAMS",
+      "TOOL_MAPPING"
+    ]
+  }
+}

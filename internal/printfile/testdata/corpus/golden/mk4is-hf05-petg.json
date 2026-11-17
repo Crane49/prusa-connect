@@ -1,0 +1,58 @@
+{
+  "estimated_seconds": 141,
+  "filament_mm": 149.44,
+  "filament_g": 0.46,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.5,
+  "material": "PETG",
+  "printer_model": "MK4IS",
+  "print_profile": "0.20mm SPEED @MK4IS HF0.5",
+  "printer_profile": "Original Prusa MK4 Input Shaper HF0.5 nozzle",
+  "filament_profile": "Prusament PETG @HF0.5",
+  "high_flow": true,
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PETG",
+      "nozzle_mm": 0.5,
+      "high_flow": true,
+      "abrasive": false,
+      "nozzle_temp_c": 255,
+      "first_layer_nozzle_temp_c": 255,
+      "bed_temp_c": 90,
+      "first_layer_bed_temp_c": 85,
+      "filament_g": 0.46,
+      "filament_mm": 149.44,
+      "colour": "#FF8000"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 120,
+    "min_y_mm": 100,
+    "max_x_mm": 130,
+    "max_y_mm": 110
+  },
+  "bed": {
+    "width_mm": 250,
+    "depth_mm": 210,
+    "height_mm": 220
+  },
+  "checks": {
+    "printer_model": "MK4",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.5,
+        "hardened": false,
+        "high_flow": true
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.5.3+12780"
+  }
+}

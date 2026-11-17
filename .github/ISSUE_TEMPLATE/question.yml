@@ -1,0 +1,21 @@
+name: Question
+description: You want to know how something works or how to set it up.
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The documentation at https://beta.prusa3d.com/connect-local/docs/ may already answer it.
+        This issue is public, and it is also copied into the Prusa beta portal.
+        Do not paste tokens, passwords, setup codes, IP addresses, host names or printer serial numbers.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: The pages you read and the settings you changed, if any.

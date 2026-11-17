@@ -1,0 +1,17 @@
+# Host port for the issuer, so a browser and the login tests on the host can
+# reach it. Reads from the root .env with a default, so two developers on
+# different ports never edit tracked yaml.
+#
+# The issuer identifier this container publishes is derived from the Host
+# header of the request that asks for it, so changing PCL_OIDC_PORT changes the
+# issuer. PCL_OIDC_ISSUER in .env has to move with it.
+#
+# The default is high for the same reason the fixture brokers are: 8092 is the
+# image's own port, so a second stack running this image publishes there too,
+# and the login suite then talks to an issuer that authenticates other people.
+# internal/platform/auth/session refuses one whose subjects are not
+# docker/mock-oidc/config/users.yaml's, whatever port it answers on.
+services:
+  mock-oidc:
+    ports:
+      - "${PCL_OIDC_PORT:-58092}:8092"

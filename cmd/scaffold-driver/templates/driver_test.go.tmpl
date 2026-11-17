@@ -1,0 +1,204 @@
+package {{.Package}}_test
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"runtime/debug"
+	"testing"
+	"time"
+
+	"github.com/prusa3d/prusa-connect/sdk/connectorapi"
+	"github.com/prusa3d/prusa-connect/sdk/connectorapi/connectorapitest"
+	"github.com/prusa3d/prusa-connect/sdk/extension"
+	"github.com/prusa3d/prusa-connect/sdk/fault"
+
+	{{.Package}} "{{.Module}}"
+)
+
+// Qualified is how an operator selects this driver when another module has
+// registered the same bare name. It is derived from the module path, so
+// renaming the module changes it.
+const Qualified = "{{.Qualified}}"
+
+// TestContract runs the published conformance suite against this driver.
+//
+// It is the same suite the drivers inside prusa-connect run, and passing
+// it is what "this driver works" means: the resolved capability set never
+// exceeds the baseline whatever the host offered, Do is really called, a verb
+// the printer does not have is refused, and Close closes the state channel.
+//
+// Connectable says the suite may dial the device below. Declaring NoLoopback
+// instead would turn off every assertion about the ceiling, Do, State and
+// Close, which is most of the suite.
+func TestContract(t *testing.T) {
+	connectorapitest.RunDriverContract(t, func(t *testing.T) connectorapitest.Subject {
+		return connectorapitest.Subject{
+			Driver:      {{.Package}}.NewDriver(0),
+			Endpoint:    connectorapi.Endpoint{Address: startFakeDevice(t)},
+			Connectable: true,
+			SafeVerb:    {{.Package}}.VerbSendStateInfo,
+		}
+	})
+}
+
+// TestTheDriverIsRegistered proves the init function ran and the descriptor was
+// accepted. A registration missing a mandatory field panics there, so a driver
+// that fails this one does not start a host either.
+func TestTheDriverIsRegistered(t *testing.T) {
+	for _, descriptor := range connectorapi.Descriptors() {
+		if descriptor.Name() == {{.Package}}.Type.String() {
+			return
+		}
+	}
+
+	t.Fatalf("%s registered nothing, so no host can build it", {{.Package}}.Type)
+}
+
+// TestTheNameAnOperatorWrites pins the string this driver answers to in a host,
+// which is not the one this test binary reports. A driver is the main module of
+// its own tests, so everything here registers under "core"; installed in a host
+// it registers under the namespace its module path renders as. That is the name
+// for the README and for an operator's configuration.
+func TestTheNameAnOperatorWrites(t *testing.T) {
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		t.Fatal("this binary carries no build info, so the module path cannot be read")
+	}
+
+	namespace, err := extension.NamespaceOf(info.Main.Path)
+	if err != nil {
+		t.Fatalf("no host can give %s a namespace: %v", info.Main.Path, err)
+	}
+
+	qualified := namespace.String() + "/" + {{.Package}}.Type.String()
+	if qualified != Qualified {
+		t.Fatalf("module %s registers as %q, and this driver documents %q. "+
+			"Update Qualified and the README", info.Main.Path, qualified, Qualified)
+	}
+}
+
+// TestTheDeclaredDefaultIsTheOneTheCodeUses holds the published settings table
+// and this code to one number. An operator reads the declared default to learn
+// what happens when they write nothing, so a declaration that names a different
+// number than the code uses is documentation that lies.
+func TestTheDeclaredDefaultIsTheOneTheCodeUses(t *testing.T) {
+	var declared *extension.Option
+
+	for index, option := range {{.Package}}.Doc().Options {
+		if option.Key == "timeout" {
+			declared = &{{.Package}}.Doc().Options[index]
+
+			break
+		}
+	}
+
+	if declared == nil {
+		t.Fatal("no timeout setting is declared, so an operator cannot find it")
+	}
+
+	if declared.Summary == "" || len(declared.Summary) > 120 {
+		t.Fatalf("the timeout summary is %d characters. Write one sentence of at most 120", len(declared.Summary))
+	}
+
+	parsed, err := time.ParseDuration(declared.Default)
+	if err != nil {
+		t.Fatalf("the declared default %q is not a duration: %v", declared.Default, err)
+	}
+
+	if parsed != {{.Package}}.DefaultTimeout {
+		t.Fatalf("the settings table declares %s and the code uses %s", parsed, {{.Package}}.DefaultTimeout)
+	}
+}
+
+// TestAConfigBlockThatCannotBeReadIsRefusedByCode is the refusal half of New.
+// A caller branches on the code, so the test reads the code and not the
+// sentence: a reworded sentence must not break a caller, and a changed code
+// must.
+func TestAConfigBlockThatCannotBeReadIsRefusedByCode(t *testing.T) {
+	_, err := {{.Package}}.New(connectorapi.Spec{Config: []byte(`{"timeout":"not a duration"}`)})
+	if err == nil {
+		t.Fatal("a timeout that is not a duration was accepted")
+	}
+
+	if !fault.HasCode(err, {{.Package}}.InvalidConfig.Code()) {
+		t.Fatalf("the refusal is %v, want %s", err, {{.Package}}.InvalidConfig.Code())
+	}
+}
+
+// TestAConfigBlockTheDriverCanReadIsAccepted is the permit half.
+func TestAConfigBlockTheDriverCanReadIsAccepted(t *testing.T) {
+	if _, err := {{.Package}}.New(connectorapi.Spec{Config: []byte(`{"timeout":"3s"}`)}); err != nil {
+		t.Fatalf("a readable config block was refused: %v", err)
+	}
+}
+
+// TestAPrinterThatDoesNotAnswerIsReportedByCode proves the other code in
+// faults.go is raised where its documentation says it is, and that it names the
+// address an operator has to check.
+func TestAPrinterThatDoesNotAnswerIsReportedByCode(t *testing.T) {
+	// A server that is started and closed leaves an address nothing listens on.
+	dead := httptest.NewServer(http.NewServeMux())
+	dead.Close()
+
+	_, err := {{.Package}}.NewDriver(time.Second).
+		Connect(t.Context(), connectorapi.Endpoint{Address: dead.URL}, connectorapi.Set{})
+	if err == nil {
+		t.Fatal("a printer that does not answer was connected to")
+	}
+
+	if !fault.HasCode(err, {{.Package}}.DeviceUnreachable.Code()) {
+		t.Fatalf("the failure is %v, want %s", err, {{.Package}}.DeviceUnreachable.Code())
+	}
+}
+
+// startFakeDevice serves the three routes this dialect speaks and returns the
+// address a host would put in configuration.
+//
+// A fake is what makes the suite meaningful without hardware. Replacing it with
+// a recorded transcript of a real device is the next step once one is in reach.
+func startFakeDevice(t *testing.T) string {
+	t.Helper()
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /identity", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, map[string]any{
+			"vendor":   "Example",
+			"model":    "Fake-1",
+			"firmware": "1.0.0",
+			"serial":   "FAKE0001",
+			"unit_uid": "fake-0001",
+			"capabilities": []connectorapi.Capability{
+				{{.Package}}.VerbSendStateInfo, {{.Package}}.VerbNozzleTarget, {{.Package}}.ArgNozzleTemperature,
+			},
+		})
+	})
+
+	mux.HandleFunc("POST /command", func(w http.ResponseWriter, _ *http.Request) {
+		writeJSON(w, map[string]any{"ok": true})
+	})
+
+	// The state stream stays open until the session closes it, which is what
+	// makes the suite's assertion about Close mean something.
+	mux.HandleFunc("GET /state", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/x-ndjson")
+		_, _ = w.Write([]byte(`{"path":"telemetry/nozzle","value":215}` + "\n"))
+
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+
+		<-r.Context().Done()
+	})
+
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	return server.URL
+}
+
+func writeJSON(w http.ResponseWriter, body any) {
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(body)
+}

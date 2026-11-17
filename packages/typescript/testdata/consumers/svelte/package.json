@@ -1,0 +1,22 @@
+{
+  "name": "prusa-connect-consumer-svelte",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A Svelte component bundled by Vite that installs @prusa/connect from a registry, lists devices and reads the stream. No SvelteKit.",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "typescript": "6.0.3",
+    "vite": "8.3.4"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

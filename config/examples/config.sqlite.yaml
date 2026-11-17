@@ -1,0 +1,26 @@
+# Prusa Connect profile: the SQLite engine, which is what the shipped
+# configuration runs on.
+#
+# Every key below is one this build reads. A key it does not read is refused at
+# startup, naming the key and the line it is on, so a profile cannot configure
+# a subsystem that is not there.
+
+persistence:
+  # One engine carries the graph, the device records and the command queue.
+  # SQLite is the default, so this block may be left out entirely.
+  type: "sqlite"
+
+core:
+  api:
+    addr: ":8080"
+  log:
+    level: info
+    format: text
+
+resources:
+  storage:
+    local:
+      type: filesystem
+      enabled: true
+      config:
+        root: ./storage

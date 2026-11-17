@@ -1,0 +1,7 @@
+{
+  "interface": "Controller1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "tempCPU", "type": "float", "access": "ro", "nullable": true }
+  ]
+}

@@ -1,0 +1,14 @@
+# The first-party extensions are maintained by Prusa Research. A change under
+# extensions/ waits for a review from the maintainers. See extensions/README.md.
+/extensions/ @prusa3d/connect-maintainers
+
+# The workflows, the release scripts they call and the upgrade signer hold the
+# release credentials or decide what a release ships. A change to any of them
+# waits for a review from the maintainers.
+/.github/ @prusa3d/connect-maintainers
+/scripts/release.sh @prusa3d/connect-maintainers
+/scripts/cut-release-changelog.sh @prusa3d/connect-maintainers
+/scripts/check-release-changelog.sh @prusa3d/connect-maintainers
+/extensions/scripts/ @prusa3d/connect-maintainers
+/cmd/sign-upgrade-checksums/ @prusa3d/connect-maintainers
+/SECURITY.md @prusa3d/connect-maintainers

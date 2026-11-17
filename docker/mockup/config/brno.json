@@ -1,0 +1,26 @@
+{
+  "node_id": "brno",
+  "data_dir": "/data/fractal",
+  "join": {
+    "address": "nats://hq:4222"
+  },
+  "accept": {
+    "advertise": "nats://brno:7422",
+    "client_listen": "0.0.0.0:4222",
+    "leaf_listen": "0.0.0.0:7422",
+    "ask_first": false
+  },
+  "shadow": {
+    "patterns": [
+      "*"
+    ]
+  },
+  "files": {
+    "base_url": "http://brno:8443",
+    "allow_cleartext_parent": true
+  },
+  "heartbeat_interval": "2s",
+  "max_heartbeat_interval": "3s",
+  "liveness_multiple": 2,
+  "poll_interval": "1s"
+}

@@ -1,0 +1,19 @@
+---
+// Starlight's head, plus the loader for the mermaid diagrams.
+//
+// The loader is a module script, so it runs after the document is parsed and
+// the query below sees the whole page. It imports the renderer only when the
+// page holds a diagram, and the renderer carries mermaid, so a page without a
+// diagram downloads neither.
+import Default from '@astrojs/starlight/components/Head.astro';
+---
+
+<Default><slot /></Default>
+
+<script>
+  if (document.querySelector('figure.mermaid-figure')) {
+    const { renderDiagrams } = await import('../scripts/render-diagrams.js');
+
+    await renderDiagrams();
+  }
+</script>

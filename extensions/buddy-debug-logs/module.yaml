@@ -1,0 +1,80 @@
+# The one manifest for both halves of this module: the Go process in main.go
+# and the browser bundle under ui/.
+#
+# This file names no namespace. The host derives the namespace from the module
+# path the operator installed, so a module cannot take the address of another
+# module.
+
+name: buddy-debug-logs
+# The two keys an extensions page prints on the card, beside the version.
+title: Prusa printer logs
+summary: Keeps the log lines and metrics your Prusa printers send, for a day, and adds them to the diagnostics bundle.
+codeowner: Prusa Research
+# The kind the one instance is declared under. It offers the service runtime,
+# which a module with a process half needs.
+kind: sink
+version: 0.1.9
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The major version of the protocol between this process and the host.
+contract_major: 1
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+
+# What this module cannot run without. Each entry is a wire method it calls.
+require:
+  core-device.list: "*"
+  core-device.command: "*"
+
+# The module reads the fleet as itself, to match a datagram to a printer by
+# the network the printer reported. It sends the setup G-code as the person
+# who asked, and never as itself, so it asks for nothing more.
+permissions:
+  - observe
+
+# The two ports a printer sends to, and a folder for what arrives. A port is
+# reachable from the network, so the operator approves the ports apart from
+# the rest, with -approve-listen (ADR-20261019-3ns). The ports are the firmware's own
+# defaults, so a printer needs no change of port.
+needs:
+  listen:
+    - name: syslog
+      udp: 13514
+      why: printer log lines
+    - name: metrics
+      udp: 8514
+      why: printer metrics
+  data: true
+
+# The settings this module reads, with the default of each.
+#
+# README.md has the same table. manifest_test.go fails when the two differ.
+options:
+  - key: retention_hours
+    type: int
+    default: "24"
+    summary: How many hours a log line or a metric point is kept.
+  - key: max_mib
+    type: int
+    default: "128"
+    summary: The disk room both streams may take together, in MiB. The log lines keep a quarter of it.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+ui:
+  # The built bundle, relative to the bundle root.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against.
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    pages:
+      - path: buddy-debug-logs
+        title: Prusa printer logs
+        icon: clipboard-list
+    device_tab:
+      - id: logs
+        title: Logs

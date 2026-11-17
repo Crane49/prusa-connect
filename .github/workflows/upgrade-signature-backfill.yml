@@ -1,0 +1,163 @@
+name: Backfill upgrade signatures
+
+# Existing releases predate automatic upgrades. This one-shot maintenance
+# workflow signs their immutable SHA256SUMS and appends the manifest and
+# signature to the matching published Beta Portal release. It never replaces a
+# binary or an existing signature.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing release version, such as 0.0.1-alpha.6
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # The signing key lives in the release environment and the portal token in
+  # the beta-portal environment, so the signature is made in one job and handed
+  # to the portal in another, and neither job holds both credentials.
+  backfill:
+    name: Sign the published checksum manifest
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Read the version
+        id: version
+        env:
+          INPUT: ${{ inputs.version }}
+        run: |
+          set -eu
+          VERSION=${INPUT#v}
+          case "$VERSION" in
+          "" | *[!0-9A-Za-z.-]*)
+            echo "::error::'$VERSION' is not a release version."
+            exit 1
+            ;;
+          esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check out the signer
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Download the published checksum manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          mkdir integrity
+          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" \
+            --dir integrity --pattern SHA256SUMS
+
+      - name: Sign the immutable manifest
+        env:
+          UPGRADE_SIGNING_KEY: ${{ secrets.UPGRADE_SIGNING_KEY }}
+          # The signer refuses a key outside the keys the builds trust.
+          UPGRADE_PUBLIC_KEYS: ${{ vars.UPGRADE_PUBLIC_KEYS }}
+        run: |
+          set -eu
+          test -n "$UPGRADE_SIGNING_KEY" || {
+            echo "::error::UPGRADE_SIGNING_KEY is not configured"
+            exit 1
+          }
+          test -n "$UPGRADE_PUBLIC_KEYS" || {
+            echo "::error::UPGRADE_PUBLIC_KEYS is not configured"
+            exit 1
+          }
+          go run ./cmd/sign-upgrade-checksums \
+            integrity/SHA256SUMS integrity/SHA256SUMS.sig
+
+      - name: Publish the detached signature on GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          if [ "$(gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq 'any(.assets[]; .name == "SHA256SUMS.sig")')" = true ]; then
+            mkdir existing
+            gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" \
+              --dir existing --pattern SHA256SUMS.sig
+            cmp integrity/SHA256SUMS.sig existing/SHA256SUMS.sig || {
+              echo "::error::The release already has another SHA256SUMS.sig."
+              exit 1
+            }
+            echo "the release already has this signature"
+          else
+            gh release upload "v$VERSION" integrity/SHA256SUMS.sig \
+              --repo "$GITHUB_REPOSITORY"
+          fi
+
+      - name: Hand the integrity files to the portal job
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: integrity
+          path: integrity/
+          retention-days: 1
+
+  portal:
+    name: Append the integrity files to the Beta Portal release
+    runs-on: ubuntu-latest
+    needs: [backfill]
+    environment: beta-portal
+
+    steps:
+      - name: Fetch the integrity files
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: integrity
+          path: integrity/
+
+      - name: Append the integrity files to the Beta Portal release
+        env:
+          PORTAL: ${{ vars.BETA_PORTAL_URL }}
+          TOKEN: ${{ secrets.BETA_PORTAL_TOKEN }}
+          VERSION: ${{ needs.backfill.outputs.version }}
+        run: |
+          set -eu
+          test -n "$PORTAL" || {
+            echo "::error::BETA_PORTAL_URL is not configured"
+            exit 1
+          }
+          test -n "$TOKEN" || {
+            echo "::error::BETA_PORTAL_TOKEN is not configured"
+            exit 1
+          }
+          P="${PORTAL%/}/api/v1/releases/$VERSION"
+          H="Authorization: Bearer $TOKEN"
+          RELEASE=$(curl -fsS "$P" -H "$H")
+          upload() {
+            LOCAL=$(sha256sum "integrity/$1" | cut -d' ' -f1)
+            REMOTE=$(jq -r --arg name "$1" \
+              '.files[] | select(.filename == $name) | .sha256' <<<"$RELEASE")
+            if [ -n "$REMOTE" ]; then
+              test "$REMOTE" = "$LOCAL" || {
+                echo "::error::The portal release already has another $1."
+                exit 1
+              }
+              echo "the portal release already has $1"
+              return
+            fi
+            U=$(curl -fsS -X POST "$P/files/any?filename=$1" -H "$H")
+            curl -fsS -T "integrity/$1" "$(jq -r .upload.url <<<"$U")" >/dev/null
+            curl -fsS -X POST "$(jq -r .finish <<<"$U")" -H "$H" >/dev/null
+            echo "appended $1"
+          }
+          upload SHA256SUMS
+          upload SHA256SUMS.sig

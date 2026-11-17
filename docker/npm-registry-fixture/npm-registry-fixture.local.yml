@@ -1,0 +1,11 @@
+# Host port for the fixture, so `make client-sdk-install-check` on the host can
+# publish to it and the consumer installs can read from it. Reads from the root
+# .env with a default, so two developers on different ports never edit tracked
+# yaml.
+#
+# High, like the other fixture ports: 4873 is Verdaccio's own port, and a
+# registry a developer already runs there would take the publish instead.
+services:
+  npm-registry-fixture:
+    ports:
+      - "${NPM_FIXTURE_PORT:-54873}:4873"

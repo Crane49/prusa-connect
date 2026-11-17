@@ -1,0 +1,110 @@
+# The Postgres a developer runs the core and a module against, each with a
+# database and a login of its own (ADR-20261021-bqc).
+#
+# It is not the fixture. docker/postgres-fixture is started and removed by a
+# test run and keeps nothing. This one keeps its data in a named volume, so a
+# the data built up on Monday is still there on Friday. `make postgres-dev-up`
+# starts it and prints the two connection strings, `make postgres-dev-down`
+# stops it and keeps the data, and `make postgres-dev-reset` is the one command
+# that deletes the data.
+#
+# config/10-databases.sh makes the databases on the first start:
+#
+#   connect  the core's, for persistence.postgres.dsn. Its role may make
+#            roles and databases, so the core can also make a module's
+#            database itself with the mode provision
+#   notes    a module's, for the mode postgres
+#
+# No host port here. It is in postgres-dev.local.yml.
+services:
+  postgres-dev:
+    image: prusa-connect-postgres-dev:local
+    build:
+      context: .
+    container_name: prusa_connect_postgres_dev
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition leaves it out and only a command that names the service
+    # starts it. It is built, and `make docker-check` brings the stack up with
+    # --no-build.
+    profiles:
+      - postgres-dev
+    # A developer database is worth having back after a reboot, which is the
+    # difference between this and the fixture.
+    restart: unless-stopped
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    # The superuser runs the start-up script and nothing else. The core and
+    # the module log in with the roles the script makes.
+    environment:
+      POSTGRES_USER: ${PGDEV_ADMIN_USER:-postgres}
+      POSTGRES_PASSWORD: ${PGDEV_ADMIN_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+      PGDEV_CORE_PASSWORD: ${PGDEV_CORE_PASSWORD:-connect}
+      PGDEV_MODULE_PASSWORD: ${PGDEV_MODULE_PASSWORD:-notes}
+
+    labels:
+      com.prusa3d.description: "The developer Postgres with a database for the core and one for a module"
+      com.prusa3d.service: "developer-tool"
+
+    # Postgres 18 wants a single mount at /var/lib/postgresql and places the
+    # cluster in a subdirectory of it. Docker fills the empty named volume from
+    # the image and copies its ownership, so the postgres user can write it.
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      # A first start initialises the cluster and runs the script, which is the
+      # longest path this container has.
+      start_period: 20s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Postgres drops from root to the postgres user at start-up and needs these
+    # to do it and to own its data directory.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - FOWNER
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+
+    networks:
+      - prusa_connect_backend
+
+volumes:
+  # Named, and labelled to keep, so `make docker-clean` leaves it alone.
+  # `make postgres-dev-reset` is the command that drops it.
+  postgres_dev_data:
+    name: prusa_connect_postgres_dev_data
+    labels:
+      com.prusa3d.keep: "the developer Postgres databases of the core and a module"
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

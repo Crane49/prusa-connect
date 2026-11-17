@@ -1,0 +1,21 @@
+{
+  // The `./build` subpath is loaded by Node, not by a browser: Vite bundles a
+  // module author's `vite.config.ts` and leaves every bare import external, so
+  // what it imports has to be JavaScript on disk. `tsc` writes that, and the
+  // declarations beside it, while `vite build` writes the browser chunks.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "rootDir": "build",
+    "outDir": "dist/build",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    // Both are refused with emit on, and neither is needed here.
+    "allowImportingTsExtensions": false,
+    "checkJs": false,
+    "types": ["node"]
+  },
+  "include": ["build"],
+  "exclude": ["build/testdata", "build/**/*.test.ts"]
+}

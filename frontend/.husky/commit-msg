@@ -1,0 +1,9 @@
+# Run the repository's commit-msg gate from under husky's hooks directory.
+#
+# The frontend's install points core.hooksPath at frontend/.husky/_, which takes
+# every hook in .githooks/ out of the run. Delegating means the order of
+# `pnpm install` and `make install-hooks` decides nothing.
+#
+# scripts/check-hooks.sh proves this file is reached: it feeds the commit-msg
+# hook git will actually run a message that has to be refused.
+exec sh "$(git rev-parse --show-toplevel)/.githooks/commit-msg" "$@"

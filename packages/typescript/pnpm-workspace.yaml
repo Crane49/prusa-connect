@@ -1,0 +1,26 @@
+# This package alone. Without the line pnpm treats every package.json beneath
+# as a workspace member, and the three consumers under testdata/ are their own
+# projects with their own lockfiles.
+packages:
+  - .
+
+# Dependencies must have been public for 3 days before pnpm resolves them,
+# the same window frontend/, docs/ and the three consumers set, and the same
+# cooldown .github/dependabot.yml carries. Change one and the other has to move.
+minimumReleaseAge: 4320
+
+# Written versions stay exact.
+savePrefix: ''
+
+# No dependency here needs a build script, so none is allowed one. pnpm 11
+# refuses every dependency script that allowBuilds does not name.
+allowBuilds: {}
+
+# Refuse to run a script when node_modules has drifted from the lockfile,
+# instead of failing later with a confusing error.
+verifyDepsBeforeRun: error
+
+# Held above the version a security advisory names. Remove once the parent
+# moves on its own.
+overrides:
+  'js-yaml@>=4.0.0 <4.3.2': '4.3.2'

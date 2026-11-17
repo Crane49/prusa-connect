@@ -1,0 +1,23 @@
+{
+  "_note": "An example of the catalogue the extensions page lists from, and nothing reads this file. The real one is index.json in the directory core.modules names, which GET /api/v1/modules/index answers from; the page reads that operation through the SDK. `make demo` writes one of these for you, with both rows and a source pointing at the archive it just packed on your own machine. The sources below are where a published release will live once the examples are released.",
+  "modules": [
+    {
+      "module": "github.com/prusa3d/prusa-connect/examples/spools",
+      "name": "Spools",
+      "description": "Tracks the filament spools on each printer, on a page of its own.",
+      "version": "1.0.0",
+      "source": "https://github.com/prusa3d/prusa-connect/releases/download/examples-v1.0.0/spools-1.0.0.tar.gz",
+      "kind": "sink",
+      "author": "Prusa Research"
+    },
+    {
+      "module": "github.com/prusa3d/prusa-connect/examples/nozzle-watch",
+      "name": "Nozzle watch",
+      "description": "Adds a nozzle temperature section to each printer's Status tab. It is a browser bundle with no server process.",
+      "version": "1.0.0",
+      "source": "https://github.com/prusa3d/prusa-connect/releases/download/examples-v1.0.0/nozzle-watch-1.0.0.tar.gz",
+      "kind": "asset",
+      "author": "Prusa Research"
+    }
+  ]
+}

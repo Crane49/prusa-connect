@@ -1,0 +1,55 @@
+{
+  "realm": "pcl",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "accessTokenLifespan": 300,
+  "clients": [
+    {
+      "clientId": "prusa-connect",
+      "name": "Prusa Connect",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "pcl-keycloak-fixture-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://127.0.0.1:18097/api/v1/auth/callback"],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://127.0.0.1:18097/*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "id": "6c1f0b2a-5d4e-4f8a-9b3c-2e1d0a9f8e71",
+      "username": "pcl-admin",
+      "email": "pcl-admin@example.com",
+      "emailVerified": true,
+      "firstName": "Ada",
+      "lastName": "Admin",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "pcl-admin-password", "temporary": false }
+      ]
+    },
+    {
+      "id": "9a2e4c6b-1f3d-4b5a-8c7e-0d9f1e2a3b4c",
+      "username": "pcl-viewer",
+      "email": "pcl-viewer@example.com",
+      "emailVerified": true,
+      "firstName": "Vera",
+      "lastName": "Viewer",
+      "enabled": true,
+      "credentials": [
+        { "type": "password", "value": "pcl-viewer-password", "temporary": false }
+      ]
+    }
+  ]
+}

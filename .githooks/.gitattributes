@@ -1,0 +1,5 @@
+# A hook has no .sh extension, so the repository's rule for shell scripts does
+# not reach it. A CRLF checkout fails at the first line with
+# `$'\r': command not found`.
+commit-msg text eol=lf
+pre-push text eol=lf

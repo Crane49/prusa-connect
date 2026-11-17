@@ -1,0 +1,182 @@
+name: Upgrade compatibility
+
+# Pull requests run only static and unit checks over this lane. The jobs below
+# need GitHub releases and run on a fixed clock, so a network outage cannot
+# make an unrelated pull request red.
+on:
+  schedule:
+    - cron: '15 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  UPGRADE_BINARY_NAME: prusa_connect_amd64
+
+jobs:
+  historical-data:
+    name: Upgrade / Published data to HEAD
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code and tags
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build HEAD for migration checks
+        run: |
+          mkdir -p bin
+          go build -tags "full diagnostics observability postgres" \
+            -ldflags="-X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped=0.0.0-upgrade-data" \
+            -o bin/upgrade-head ./cmd/prusa-connect
+
+      - name: Create data with every published binary and open it with HEAD
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_BINARY: ${{ github.workspace }}/bin/upgrade-head
+        run: bash scripts/check-upgrade-compatibility.sh historical-data
+
+      - name: Upload compatibility logs
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: historical-upgrade-logs
+          path: ${{ runner.temp }}/pcl-upgrade-compat/data/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  discover-self-upgrade:
+    name: Upgrade / Find signed source release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      available: ${{ steps.release.outputs.available }}
+      reason: ${{ steps.release.outputs.reason }}
+      tag: ${{ steps.release.outputs.tag }}
+      binary_url: ${{ steps.release.outputs.binary_url }}
+      config_url: ${{ steps.release.outputs.config_url }}
+      sums_url: ${{ steps.release.outputs.sums_url }}
+      signature_url: ${{ steps.release.outputs.signature_url }}
+
+    steps:
+      - name: Checkout the compatibility harness
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      # The harness executes the release before declaring it capable. Three
+      # signed files alone do not prove that its binary knows the upgrade
+      # protocol.
+      - name: Find the newest signed auto-upgrade-capable release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-upgrade-compatibility.sh discover
+
+  self-upgrade:
+    name: Upgrade / Signed release to HEAD or bootstrap skip
+    needs: [discover-self-upgrade]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Report that no source release exists yet
+        if: needs.discover-self-upgrade.outputs.available != 'true'
+        env:
+          REASON: ${{ needs.discover-self-upgrade.outputs.reason }}
+        run: |
+          echo "::notice::Automatic upgrade test skipped: $REASON"
+          {
+            echo "### Automatic upgrade compatibility"
+            echo
+            echo "Skipped: $REASON."
+            echo "The published-data migration job still tested every historical release."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout code
+        if: needs.discover-self-upgrade.outputs.available == 'true'
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        if: needs.discover-self-upgrade.outputs.available == 'true'
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Make an ephemeral trusted release identity
+        if: needs.discover-self-upgrade.outputs.available == 'true'
+        id: fixture
+        env:
+          SOURCE_TAG: ${{ needs.discover-self-upgrade.outputs.tag }}
+        run: |
+          set -euo pipefail
+          go run ./tools/upgradecompat key > "$RUNNER_TEMP/key.json"
+          echo "seed=$(jq -r .seed "$RUNNER_TEMP/key.json")" >> "$GITHUB_OUTPUT"
+          echo "public=$(jq -r .public "$RUNNER_TEMP/key.json")" >> "$GITHUB_OUTPUT"
+          echo "id=$(jq -r .id "$RUNNER_TEMP/key.json")" >> "$GITHUB_OUTPUT"
+          version=$(go run ./tools/upgradecompat next-version "$SOURCE_TAG" "$GITHUB_RUN_NUMBER")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build and sign the HEAD candidate
+        if: needs.discover-self-upgrade.outputs.available == 'true'
+        env:
+          CANDIDATE_VERSION: ${{ steps.fixture.outputs.version }}
+          UPGRADE_SIGNING_KEY: ${{ steps.fixture.outputs.seed }}
+          UPGRADE_PUBLIC_KEYS: ${{ steps.fixture.outputs.public }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/candidate"
+          candidate="$RUNNER_TEMP/candidate/$UPGRADE_BINARY_NAME"
+          go build -tags "full diagnostics observability postgres" \
+            -ldflags="-X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped=$CANDIDATE_VERSION" \
+            -o "$candidate" ./cmd/prusa-connect
+          chmod +x "$candidate"
+          (
+            cd "$RUNNER_TEMP/candidate"
+            sha256sum "$UPGRADE_BINARY_NAME" > SHA256SUMS
+          )
+          go run ./cmd/sign-upgrade-checksums \
+            "$RUNNER_TEMP/candidate/SHA256SUMS" \
+            "$RUNNER_TEMP/candidate/SHA256SUMS.sig"
+
+      - name: Upgrade the signed release to HEAD
+        if: needs.discover-self-upgrade.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_TAG: ${{ needs.discover-self-upgrade.outputs.tag }}
+          SOURCE_BINARY_URL: ${{ needs.discover-self-upgrade.outputs.binary_url }}
+          SOURCE_SUMS_URL: ${{ needs.discover-self-upgrade.outputs.sums_url }}
+          SOURCE_SIGNATURE_URL: ${{ needs.discover-self-upgrade.outputs.signature_url }}
+          HEAD_BINARY: ${{ runner.temp }}/candidate/${{ env.UPGRADE_BINARY_NAME }}
+          CANDIDATE_VERSION: ${{ steps.fixture.outputs.version }}
+          CANDIDATE_SUMS: ${{ runner.temp }}/candidate/SHA256SUMS
+          CANDIDATE_SIGNATURE: ${{ runner.temp }}/candidate/SHA256SUMS.sig
+          FIXTURE_PUBLIC_KEY: ${{ steps.fixture.outputs.public }}
+          FIXTURE_KEY_ID: ${{ steps.fixture.outputs.id }}
+        run: bash scripts/check-upgrade-compatibility.sh self-upgrade
+
+      - name: Upload self-upgrade logs
+        if: always() && needs.discover-self-upgrade.outputs.available == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: self-upgrade-logs
+          path: ${{ runner.temp }}/pcl-upgrade-compat/self/
+          if-no-files-found: ignore
+          retention-days: 14

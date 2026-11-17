@@ -1,0 +1,40 @@
+<!--
+  One command in the menu.
+
+  `min-h-11` puts the row on this tree's 44px floor for a control a finger has
+  to hit. Upstream's `py-1.5` alone renders a 32px row.
+
+  `variant="destructive"` paints the row in `text-destructive-text` rather than
+  `text-destructive`, which measures 4.48:1 on the popover colour in the dark
+  theme and misses WCAG AA's 4.5:1.
+
+  A disabled destructive row needs the compound
+  `data-[disabled]:data-[variant=destructive]:*` selector. Two single-attribute
+  selectors tie on specificity, and the destructive one can win, which leaves a
+  disabled row painted in the live colour.
+-->
+<script lang="ts">
+  import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
+
+  import type { DropdownMenuItemProps } from './types';
+
+  let {
+    ref = $bindable(null),
+    class: className,
+    inset = false,
+    variant = 'default',
+    ...rest
+  }: DropdownMenuItemProps = $props();
+</script>
+
+<DropdownMenuPrimitive.Item
+  bind:ref
+  data-slot="dropdown-menu-item"
+  data-inset={inset ? '' : undefined}
+  data-variant={variant}
+  class={[
+    "relative flex min-h-11 cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none focus:bg-accent focus:text-foreground data-[disabled]:pointer-events-none data-[disabled]:text-disabled-foreground data-[inset]:pl-8 data-[variant=destructive]:text-destructive-text data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive-text data-[disabled]:data-[variant=destructive]:text-disabled-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground data-[variant=destructive]:*:[svg]:text-destructive!",
+    className,
+  ]}
+  {...rest}
+/>

@@ -1,0 +1,146 @@
+{
+  "$comment": "The airlock between what an operator configures and what the build system understands. A configuration file never names a Go build tag: config is operator input and a build tag is a compiler argument, so this file is the one place the two meet. cmd/detect-build-tags reads it and nothing else maps a type or a condition onto a tag. Gated by internal/arch/airlock_test.go against docs/extensions/extensions.json.",
+  "version": 1,
+  "resources": [
+    {
+      "kind": "auth",
+      "type": "core/oidc",
+      "tag": "",
+      "note": "verifies against an issuer over net/http and crypto, so it pulls in no third-party client and is compiled unconditionally. Measured on arm64/full by removing its blank import: 65,536 bytes"
+    },
+    {
+      "kind": "camera",
+      "type": "core/generic",
+      "tag": "",
+      "note": "one camera made of the push, MJPEG and RTSP drivers: still images sent or fetched, and an optional RTSP or MJPEG stream. It links nothing those three do not, so it is compiled unconditionally"
+    },
+    {
+      "kind": "camera",
+      "type": "core/mjpeg",
+      "tag": "",
+      "note": "an HTTP snapshot fetch and a multipart relay over net/http, which every build already links, so it is compiled unconditionally. Nothing is decoded, so it pulls in no codec and no media library"
+    },
+    {
+      "kind": "camera",
+      "type": "core/push",
+      "tag": "",
+      "note": "holds the frames a camera sends to PUT /api/v1/cameras/{camera}/snapshot, for a camera nothing here can dial. It keeps one frame in memory and frames a stream of them with the boundary the contract fixes, so it links nothing beyond the standard library and is compiled unconditionally"
+    },
+    {
+      "kind": "camera",
+      "type": "core/rtsp",
+      "tag": "",
+      "note": "an RTSP client and an H.264 depacketiser on the standard library, so it pulls in no media library and is compiled unconditionally. The remux it feeds lives in internal/transport/webrtc, and that is where pion is linked"
+    },
+    {
+      "kind": "db",
+      "type": "core/sqlite",
+      "tag": "",
+      "note": "the record backend behind sdk/stateapi, on modernc.org/sqlite, which internal/authz already links into every build. Pure Go, so CGO_ENABLED=0 still links no cgo, and it is compiled unconditionally"
+    },
+    {
+      "kind": "db",
+      "type": "core/postgres",
+      "tag": "postgres",
+      "note": "links github.com/lib/pq, the same driver the history half of this adapter directory needs. ADR-20260901-rf2 rule 18: the adapter declares the tag here and no longer derives it from the core's persistence.type key"
+    },
+    {
+      "kind": "history",
+      "type": "core/sqlite",
+      "tag": "",
+      "note": "the shipped default history provider, on modernc.org/sqlite, which internal/authz already links into every build. Pure Go, so CGO_ENABLED=0 still links no cgo, and it is compiled unconditionally"
+    },
+    {
+      "kind": "history",
+      "type": "core/postgres",
+      "tag": "postgres",
+      "note": "links github.com/lib/pq. ADR-20260901-rf2 rule 18: the adapter declares the tag here, so a build that carries a PostgreSQL history instance is derived from this row and no longer from the core's persistence.type key. A build without the tag registers the type and refuses at open, naming what to build with"
+    },
+    {
+      "kind": "driver",
+      "type": "core/echo",
+      "tag": "",
+      "note": "compiled unconditionally and mounted only where core.connectors names it. This dialect authenticates nothing, so a deployment that wants device registration on it says so in configuration"
+    },
+    {
+      "kind": "driver",
+      "type": "core/xbuddy",
+      "tag": "",
+      "note": "compiled unconditionally"
+    },
+    {
+      "kind": "sink",
+      "type": "core/amqp",
+      "tag": "",
+      "note": "implements AMQP 0-9-1 publish on the standard library, so it pulls in no third-party client and is compiled unconditionally. Measured on arm64/full by removing its blank import: 65,536 bytes"
+    },
+    {
+      "kind": "sink",
+      "type": "core/kafka",
+      "tag": "",
+      "note": "implements the Kafka wire on the standard library, so it pulls in no third-party client and is compiled unconditionally. Measured on arm64/full by removing its blank import: 65,536 bytes"
+    },
+    {
+      "kind": "sink",
+      "type": "core/mqtt",
+      "tag": "",
+      "note": "implements the wire itself and pulls in no third-party client, so it is compiled unconditionally. Measured on arm64/full by removing its blank import: 131,072 bytes, the largest of the five and 6 per cent of the tightest budget row's margin"
+    },
+    {
+      "kind": "sink",
+      "type": "core/webhook",
+      "tag": "",
+      "note": "one POST per event over net/http, which every build already links, so it is compiled unconditionally. Measured on arm64/full by removing its blank import: under the linker's 64 KiB granularity"
+    },
+    {
+      "kind": "storage",
+      "type": "core/filesystem",
+      "tag": "",
+      "note": "compiled unconditionally"
+    },
+    {
+      "kind": "storage",
+      "type": "core/local",
+      "tag": "",
+      "note": "a directory on the local filesystem over the standard library, so it pulls in nothing third-party and is compiled unconditionally. internal/app/builtin/adapters.go blank-imports it and lists it in adaptedStorages"
+    },
+    {
+      "kind": "storage",
+      "type": "core/temporary",
+      "tag": "",
+      "note": "the staging directory, the same filesystem code as core/local with a different role and label, so it pulls in nothing third-party and is compiled unconditionally. internal/app/builtin/adapters.go blank-imports it and lists it in adaptedStorages"
+    }
+  ],
+  "conditions": [
+    {
+      "condition": "core.dashboards.disabled",
+      "tag": "nodashboards",
+      "minimal": true,
+      "note": "holds when core.dashboards.enabled is false, and leaves the dashboards out: the domain, the store, the routes and the events they publish. It is the one condition whose tag takes code out, so it applies in every variant, the minimal one included: a file that switched dashboards off must not get them back from a smaller build. The error codes, the event type, the resource kind and the table stay in every build, because they are vocabulary and schema"
+    },
+    {
+      "condition": "core.observability.enabled",
+      "tag": "observability",
+      "minimal": false,
+      "note": "the Prometheus client and the real registry. internal/platform/observability/prom/registry_stub.go is the untagged side, and a build without the tag answers 404 at /metrics"
+    },
+    {
+      "condition": "core.diagnostics.enabled",
+      "tag": "diagnostics",
+      "minimal": false,
+      "note": "the support bundle of ADR-20261015-mde: the builder in internal/app/diagnostics, archive/zip, the route at /api/v1/diagnostics and the log ring that feeds it. The key defaults to on, so a full build carries it unless the file switches it off. internal/app/diagnostics_nodiagnostics.go is the untagged side, and a build without the tag answers 404 there and reports diagnostics false at /api/v1/ui"
+    },
+    {
+      "condition": "persistence.sqlite",
+      "tag": "",
+      "minimal": false,
+      "note": "no tag. internal/authz links SQLite into every build untagged, because a binary that cannot open its authorization graph refuses every subscription, and adapters/db/sqlite is compiled unconditionally beside it. The condition is still read, so an operator who writes persistence.type: sqlite is answered rather than refused, and it implies no compiler argument"
+    },
+    {
+      "condition": "persistence.postgres",
+      "tag": "postgres",
+      "minimal": false,
+      "note": "links github.com/lib/pq, which is what the core opens a Postgres database with. Pure Go, so CGO_ENABLED=0 still links no cgo"
+    }
+  ]
+}

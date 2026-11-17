@@ -1,0 +1,11 @@
+{
+  "interface": "Device1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "vendor", "type": "string", "access": "ro" },
+    { "name": "type", "type": "string", "access": "ro" },
+    { "name": "model", "type": "string", "access": "ro", "nullable": true },
+    { "name": "serialNumber", "type": "string", "access": "ro", "nullable": true },
+    { "name": "uuid", "type": "string", "access": "ro", "nullable": true }
+  ]
+}

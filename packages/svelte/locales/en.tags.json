@@ -1,0 +1,14 @@
+{
+  "tags.actions": "Actions",
+  "tags.caption": "Every tag the printers carry",
+  "tags.count": "{count, plural, one {On # printer} other {On # printers}}",
+  "tags.empty.heading": "No tags yet",
+  "tags.empty.note": "A tag is added on a printer's Info tab, and every tag in use is listed here.",
+  "tags.loading": "Loading tags",
+  "tags.printers": "Printers",
+  "tags.printersOn": "Printers tagged {tag}",
+  "tags.show": "Show printers",
+  "tags.show.for": "Show the printers tagged {tag}",
+  "tags.tag": "Tag",
+  "tags.title": "Tags"
+}

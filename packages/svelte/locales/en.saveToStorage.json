@@ -1,0 +1,10 @@
+{
+  "saveToStorage.chooseFolder": "Choose folder",
+  "saveToStorage.dialog.confirm": "Save here",
+  "saveToStorage.dialog.note": "Choose the folder the file is saved in before it goes to the printer.",
+  "saveToStorage.dialog.title": "Save the file in",
+  "saveToStorage.forgetNote": "The file goes to the printer and is then deleted from this server.",
+  "saveToStorage.keptNote": "The file stays in this folder after it reaches the printer.",
+  "saveToStorage.storage": "Storage",
+  "saveToStorage.toggle": "Save to storage"
+}

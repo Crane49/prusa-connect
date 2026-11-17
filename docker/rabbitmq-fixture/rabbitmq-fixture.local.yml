@@ -1,0 +1,7 @@
+# Host port for the fixture, so the test suite on the host can reach it. Reads
+# from the root .env with a default, so two developers on different ports never
+# edit tracked yaml.
+services:
+  rabbitmq-fixture:
+    ports:
+      - "${AMQP_FIXTURE_PORT:-55672}:5672"

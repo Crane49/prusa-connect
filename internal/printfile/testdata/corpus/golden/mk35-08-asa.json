@@ -1,0 +1,57 @@
+{
+  "estimated_seconds": 150,
+  "filament_mm": 217.12,
+  "filament_g": 0.56,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.8,
+  "material": "ASA",
+  "printer_model": "MK3.5",
+  "print_profile": "0.30mm DETAIL @MK3.5 0.8",
+  "printer_profile": "Original Prusa MK3.5 \u0026 MK3.5S 0.8 nozzle",
+  "filament_profile": "Prusament ASA @0.8 nozzle",
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "ASA",
+      "nozzle_mm": 0.8,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 265,
+      "first_layer_nozzle_temp_c": 265,
+      "bed_temp_c": 110,
+      "first_layer_bed_temp_c": 105,
+      "filament_g": 0.56,
+      "filament_mm": 217.12,
+      "colour": "#FFF2EC"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 120,
+    "min_y_mm": 100,
+    "max_x_mm": 130,
+    "max_y_mm": 110
+  },
+  "bed": {
+    "width_mm": 250,
+    "depth_mm": 210,
+    "height_mm": 210
+  },
+  "checks": {
+    "printer_model": "MK3.5",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.8,
+        "hardened": false,
+        "high_flow": false
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.5.3+12780"
+  }
+}

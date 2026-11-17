@@ -1,0 +1,153 @@
+{{if not .Process -}}
+# The manifest for a module that is one browser bundle and nothing else. There
+# is no process here, so there is no contract_major, no permissions block and
+# no OpenAPI fragment.
+{{- else if not .UI -}}
+# The manifest for {{.Name}}, a module that is the Go process in main.go and
+# nothing else. There is no ui block, so it draws nothing in the app.
+{{- else -}}
+# The one manifest for both halves of {{.Name}}: the Go process in main.go and
+# the browser bundle under ui/.
+{{- end}}
+#
+{{- if .UI}}
+# `prusa-connect module add` reads it out of the release, writes one
+# declaration, and copies it into the bundle directory it installs, because
+# that is where the host reads the ui block from. The digest covers it there,
+# so the manifest the host reads is the one the install recorded.
+{{- else}}
+# `prusa-connect module add` reads it out of the release and writes one
+# declaration from it.
+{{- end}}
+#
+# The namespace is absent on purpose. The host derives it from the repository
+# address the operator installed, so no module can name another module's
+# address. For this module that is {{.Namespace}}.
+
+name: {{.Name}}
+{{if not .Process -}}
+# The one kind this module is declared under: a directory of files the host
+# verifies against a digest and serves, and never runs.
+{{- else -}}
+# The kind the one instance is declared under. It offers the service runtime,
+# which is what a module with a process needs.
+{{- if .UI}} The browser half is declared
+# beside it, as `service.assets`.
+{{- end}}
+{{- end}}
+kind: {{.Kind}}
+version: {{.Version}}
+# The licence this module is released under. The marketplace shows it and
+# refuses a release without one. An SPDX identifier is the usual form.
+license: MIT
+# What a marketplace card prints beside the name: the title a person reads,
+# one sentence about this module, and who answers for it. The install copies
+# them into the declaration, so `GET /api/v1/resources` carries them for an
+# installed module. Write your own sentence here, a title if the name alone reads badly, and your name or
+# your team's beside it.
+# title: Your module's name
+summary: One sentence saying what {{.Name}} does.
+# codeowner: your-name
+{{- if .Process}}
+# The module wire major the process half speaks.
+contract_major: 1
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+# The platforms the release ships a binary for, each a GOOS_GOARCH pair. Drop
+# the ones you do not build, and add the ones you do.
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_arm64
+  - windows_amd64
+
+# Every setting this module reads, each with its type, its default and one
+# sentence saying what it controls. The host applies every default, writes the
+# `config:` block of the instance over it key by key, and sends the result on
+# plugin.configure before the first request arrives. A key not named here is
+# refused before the process starts, and nothing in main.go reads an
+# environment variable, so this list is where an operator finds every knob.
+#
+# An operator who wants another line writes:
+#
+#   resources:
+#     {{.Kind}}:
+#       {{.Name}}:
+#         config:
+#           message: Ready.
+options:
+  - key: message
+    type: string
+    default: "{{.Title}} is serving."
+    summary: The line GET /{{.Name}} answers with.
+
+# The memory in MiB the server may budget for the process, children included.
+{{- if gt .MemoryMiB 0}}
+needs:
+  memory_mib: {{.MemoryMiB}}
+{{- else}}
+# needs:
+#   memory_mib: 256
+{{- end}}
+
+# The actions this module may take as itself are a request rather than a grant.
+# Add them here and the operator reads them before `module add -approve` writes
+# them into the declaration and grants this module what they name. There is no
+# entry below, because this module acts
+# only for the person the host authorized and does nothing of its own: no poll,
+# no sync loop, no background work. Write one line per permission saying what it
+# lets this module do.
+#
+# permissions:
+#   # read the fleet and the event stream, so the page can list devices
+#   - observe
+# events:
+#   changed: {{.Name}}.changed
+{{- end}}
+{{- if .UI}}
+
+ui:
+  # The built bundle's entry, relative to the bundle root. The host serves it
+  # at /api/v1/modules/{{.Namespace}}/ui/ui/index.js.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against. The app
+  # refuses a bundle its own version falls outside of.
+  library: "{{.Library}}"
+  contributes:
+    # The whole of what this bundle may register. A registration the block
+    # does not declare is refused at run time and the app drops this module.
+    # Every entry here has one `host.register` call behind it in
+    # ui/src/index.ts, and the generator wrote the pair from one answer.
+{{- range .Contributions}}
+    {{.Key}}:
+{{- if eq .FormName "page"}}
+      - path: {{.ID}}
+        title: {{.Title}}{{with .Icon}}
+        icon: {{.}}{{end}}
+{{- else if eq .FormName "action"}}
+      - id: {{.ID}}
+        title: {{.Title}}{{with .Icon}}
+        icon: {{.}}{{end}}
+        destructive: {{.Destructive}}
+{{- else if eq .FormName "card"}}
+      - id: {{.ID}}
+        title: {{.Title}}
+        # One sentence the card picker shows under the title.
+        description: One printer, as {{.Title}} draws it.{{with .Icon}}
+        icon: {{.}}{{end}}
+        # The size a new card starts at, and the smallest a person may make
+        # it, in cells of a 12-column grid.
+        size: {w: 4, h: 3}
+        least: {w: 2, h: 2}
+        # The fields of the card's settings. The core draws the form from
+        # them and checks every value before the card receives it.
+        settings:
+          - key: device
+            kind: printer
+            label: Printer
+{{- else}}
+      - id: {{.ID}}
+        title: {{.Title}}
+{{- end}}
+{{- end}}
+{{- end}}

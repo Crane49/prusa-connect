@@ -1,0 +1,9 @@
+# Dependencies must have been public for 3 days before pnpm resolves them,
+# the same window frontend/ sets. The SDK is excluded because the lane
+# publishes it to the registry fixture seconds before installing it.
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - '@prusa/connect'
+
+# Written versions stay exact.
+savePrefix: ''

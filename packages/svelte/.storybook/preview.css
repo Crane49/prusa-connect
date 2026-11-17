@@ -1,0 +1,7 @@
+/* The library's own theme, plus this folder in Tailwind's scan.
+
+   src/styles/index.css scans `src/` alone, so the few utilities the story
+   frame uses would have no rules generated for them. Importing the theme here
+   and adding one `@source` keeps a single theme and a single set of tokens. */
+@import '../src/styles/index.css';
+@source '.';

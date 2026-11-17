@@ -1,0 +1,6 @@
+# Run the repository's pre-push gates from under husky's hooks directory.
+#
+# The refs being pushed arrive on standard input, so the delegate has to be
+# `exec` and not a subshell that reads first. See frontend/.husky/commit-msg for
+# why the delegation exists at all.
+exec sh "$(git rev-parse --show-toplevel)/.githooks/pre-push" "$@"

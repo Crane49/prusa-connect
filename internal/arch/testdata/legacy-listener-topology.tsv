@@ -1,0 +1,39 @@
+# The sockets the retired server binds, the old backlog. Earlier research
+# records the SAN requirement and not the topology it applies to, and an earlier
+# study called this gap a blocker.
+#
+# Columns: listener, the key that gives its port, that port, the key that turns
+# TLS on, the key that names its certificate, what it answers. A cell of -
+# means the listener takes no certificate.
+#
+# Read from a run, not from the source. The binary was built with CGO_ENABLED=1
+# inside golang:1.26 and started as `prusa-connect serve` against the
+# shipped config/config.yaml on 2026-08-29. Four listening sockets appeared in
+# /proc/net/tcp: 0050, 075B, 075C and 1F90, which are 80, 1883, 1884 and 8080.
+# The two HTTP listeners were then given a certificate each and dialled with
+# `openssl s_client`.
+#
+# What the run found:
+#
+#   Two HTTP listeners, each with its own certificate and its own floor. Port
+#   8080 answered with an RSA 2048 certificate and refused TLS 1.2 outright,
+#   with alert 70. Port 80 answered with an ECDSA P-256 certificate and
+#   completed a TLS 1.2 handshake on ECDHE-ECDSA-AES256-GCM-SHA384, which is the
+#   one suite xBuddy firmware offers.
+#
+#   Firmware is configured against the printer listener and never the API one.
+#   The server says so itself: GET /api/server/info answered printer_port 80,
+#   ws_url ws://<host>:80/p/ws and register_url http://<host>:80/p/register.
+#
+#   The two MQTT sockets are the internal broker and they carry no certificate.
+#   mqtt.mode external replaces both with a dial to somebody else's broker.
+#
+#   The core binds one listener by default, core.api.addr, and printers dial it.
+#   A deployment that wants a second socket sets the connector's own
+#   listener.addr. So three of
+#   these four have no counterpart in the core, and docker/server/server.local.yml
+#   publishes one port where this server wanted three.
+api	server.port	8080	server.tls.enabled	server.tls.cert_file	the browser API, the frontend and the swagger reference
+printer	connectors.prusa-xbuddy.port	80	connectors.prusa-xbuddy.tls.enabled	connectors.prusa-xbuddy.tls.cert_file	/p/register and /p/ws, which firmware dials
+mqtt-tcp	mqtt.internal.tcp_port	1883	-	-	native MQTT clients, when mqtt.mode is internal
+mqtt-websocket	mqtt.internal.websocket_port	1884	-	-	MQTT over WebSocket for a browser

@@ -1,0 +1,19 @@
+<script lang="ts">
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The camera this section sits under, by its name. It is the only prop a camera section receives. */
+    camera: string;
+  }
+
+  let { camera }: Props = $props();
+
+  // The section is drawn under every camera of the printer, so a module that
+  // looks after only some cameras draws nothing for the others.
+  const host = heldHost();
+  const t = host.t;
+</script>
+
+<p class="text-sm text-muted-foreground">
+  {t('{{$.Name}}.cameraSection.body', { camera })}
+</p>

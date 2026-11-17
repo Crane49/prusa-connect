@@ -1,0 +1,35 @@
+<script lang="ts">
+  import { Badge } from '@prusa/connect-ui/primitives';
+  import {
+    parseFileRef,
+    printDialogContext,
+  } from '@prusa/connect-ui/slots';
+
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The file being printed, as `<storage>:<path>`. It is the only prop a print section receives. */
+    fileRef: string;
+  }
+
+  let { fileRef }: Props = $props();
+
+  const host = heldHost();
+  const t = host.t;
+
+  // The dialog this section is drawn in: the printers ticked in it, and a
+  // `close()` to call once this section has done what the person asked.
+  const dialog = printDialogContext();
+
+  const file = $derived(parseFileRef(fileRef));
+</script>
+
+{#if file === undefined}
+  <p class="text-sm text-muted-foreground">
+    {t('{{$.Name}}.printSection.absent')}
+  </p>
+{:else}
+  <Badge variant="secondary">
+    {t('{{$.Name}}.printSection.body', { count: dialog.selected.length })}
+  </Badge>
+{/if}

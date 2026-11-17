@@ -1,0 +1,36 @@
+# Prusa Connect profile: the server on a printer's own board.
+#
+# The printer's operating system installs this file together with the
+# printer binary, which `make build-printer` writes. The printer gives the
+# server 15 to 20 MB of memory. The printer binary already keeps its caches
+# small. This file sets the rest: a small database pool and a memory limit
+# for the Go runtime.
+#
+# No module is declared. Each module runs as its own process and needs about
+# 4.4 MB of memory, so a module is added here only once the printer is meant
+# to carry it.
+#
+# Every key below is one this build reads. A key it does not read is refused at
+# startup, naming the key and the line it is on.
+
+persistence:
+  type: "sqlite"
+  # Four connections at most, and two kept open while the server is idle.
+  # Each connection holds its own page cache.
+  max_open_conns: 4
+  max_idle_conns: 2
+
+core:
+  api:
+    addr: ":8080"
+  log:
+    level: info
+    format: text
+  frontend:
+    enabled: true
+  # The printer serves one printer, and its home page is that printer.
+  dashboards:
+    enabled: false
+  # 12 MiB, in bytes. Go collects garbage more often to stay under it. The
+  # server logs the limit at start.
+  memory_limit: 12582912

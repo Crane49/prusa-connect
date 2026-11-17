@@ -1,0 +1,38 @@
+# What .github/workflows/labeler.yml puts on a pull request. A label missing
+# from the repository is created on first use, grey; give it a colour once.
+
+# The kind, from the branch prefix the git discipline rules name.
+enhancement:
+  - head-branch: ['^feat/', '^feature/']
+bug:
+  - head-branch: ['^fix/']
+documentation:
+  - head-branch: ['^docs/']
+
+# The area, from the paths a change touches. One change can carry several.
+'area: backend':
+  - changed-files:
+      - any-glob-to-any-file: ['cmd/**', 'internal/**', 'adapters/**', 'tools/**', 'go.mod', 'go.sum']
+'area: ui':
+  - changed-files:
+      - any-glob-to-any-file: ['frontend/**', 'packages/svelte/**', 'packages/typescript/**', 'packages/standards/**']
+# Every bump-worthy commit adds a fragment to docs/changes/, and a release files
+# them into docs/CHANGELOG.md, so neither alone is docs work.
+'area: docs':
+  - changed-files:
+      - all-globs-to-any-file: ['docs/**', '!docs/CHANGELOG.md', '!docs/changes/**']
+'area: ci':
+  - changed-files:
+      - any-glob-to-any-file: ['.github/**', '.githooks/**', 'scripts/**', 'Makefile']
+'area: deploy':
+  - changed-files:
+      - any-glob-to-any-file: ['deploy/**', 'docker/**', 'compose/**', 'docker-compose*.yml']
+'area: modules':
+  - changed-files:
+      - any-glob-to-any-file: ['packages/graphql/**', 'examples/**', 'sdk/**']
+'area: extensions':
+  - changed-files:
+      - any-glob-to-any-file: ['extensions/**']
+'area: fractal':
+  - changed-files:
+      - any-glob-to-any-file: ['packages/fractal/**']

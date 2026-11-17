@@ -1,0 +1,6 @@
+{
+  "capabilities": [
+    "core.command.set_heatbed_temperature",
+    "core.command.set_heatbed_temperature#bed_temperature"
+  ]
+}

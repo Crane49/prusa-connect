@@ -1,0 +1,11 @@
+# The two people of the sign-in check. The passwords are pcl-admin-password
+# and pcl-viewer-password, hashed as Authelia asks.
+users:
+  pcl-admin:
+    displayname: 'Ada Admin'
+    password: '$argon2id$v=19$m=65536,t=3,p=4$pDYe4dlcoE+BwxDgaFQRDA$eSeOTquwIIsp+6viYIXpv93xZd0hgJEklGxaHD3cx+g'
+    email: 'pcl-admin@example.com'
+  pcl-viewer:
+    displayname: 'Vera Viewer'
+    password: '$argon2id$v=19$m=65536,t=3,p=4$KbX55lwTNST1Wz6c6PrTuQ$SEb5p4eMo/tl8IAe+nDtV0OQtWBfsiyyq8D8Yu4xlHU'
+    email: 'pcl-viewer@example.com'

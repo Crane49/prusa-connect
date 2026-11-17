@@ -1,0 +1,117 @@
+{
+  "estimated_seconds": 442,
+  "filament_mm": 298.12,
+  "filament_g": 0.91,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.6,
+  "material": "PLA",
+  "printer_model": "XL5IS",
+  "print_profile": "0.20mm SPEED @XLIS 0.6",
+  "printer_profile": "Original Prusa XL - 5T Input Shaper 0.6 nozzle",
+  "filament_profile": "Prusament PLA @XL 0.6",
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PLA",
+      "nozzle_mm": 0.6,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 215,
+      "first_layer_nozzle_temp_c": 230,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "filament_g": 0.37,
+      "filament_mm": 122.74,
+      "colour": "#FF8000"
+    },
+    {
+      "index": 1,
+      "used": false,
+      "material": "PETG",
+      "nozzle_mm": 0.6,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 245,
+      "first_layer_nozzle_temp_c": 250,
+      "bed_temp_c": 80,
+      "first_layer_bed_temp_c": 80,
+      "colour": "#DB5182"
+    },
+    {
+      "index": 2,
+      "used": false,
+      "material": "PLA",
+      "nozzle_mm": 0.6,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 215,
+      "first_layer_nozzle_temp_c": 230,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "colour": "#3EC0FF"
+    },
+    {
+      "index": 3,
+      "used": false,
+      "material": "PLA",
+      "nozzle_mm": 0.6,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 215,
+      "first_layer_nozzle_temp_c": 230,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "colour": "#FF4F4F"
+    },
+    {
+      "index": 4,
+      "used": true,
+      "material": "PETG",
+      "nozzle_mm": 0.6,
+      "high_flow": false,
+      "abrasive": true,
+      "nozzle_temp_c": 260,
+      "first_layer_nozzle_temp_c": 260,
+      "bed_temp_c": 80,
+      "first_layer_bed_temp_c": 80,
+      "filament_g": 0.54,
+      "filament_mm": 175.38,
+      "colour": "#FBEB7D"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 175,
+    "min_y_mm": 175,
+    "max_x_mm": 185,
+    "max_y_mm": 185
+  },
+  "bed": {
+    "width_mm": 360,
+    "depth_mm": 360,
+    "height_mm": 360
+  },
+  "checks": {
+    "printer_model": "XL",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.6,
+        "hardened": false,
+        "high_flow": false
+      },
+      {
+        "index": 4,
+        "diameter_mm": 0.6,
+        "hardened": true,
+        "high_flow": false
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.4.1+12026"
+  }
+}

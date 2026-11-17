@@ -1,0 +1,35 @@
+{
+  "extends": "@prusa/frontend-standards/tsconfig.json",
+  "compilerOptions": {
+    "types": ["svelte", "vite/client", "node"],
+    // Both packages are read from their sources, so a fresh checkout
+    // type-checks before anything builds them. Their `types` condition names
+    // a `dist/` that only `make client-sdk-check` and `make client-ui-build`
+    // write, and packages/svelte maps the SDK the same way for the same
+    // reason. At run time the dev server aliases the same files
+    // (vite/import-map.ts), and a build reads `dist/`.
+    "paths": {
+      "@prusa/connect": ["../packages/typescript/src/index.ts"],
+      "@prusa/connect-ui": ["../packages/svelte/src/index.ts"],
+      // The one subpath not at src/<name>/: the dashboard screen is a chunk
+      // of the shell tier (ADR-20261008-sww rule 25).
+      "@prusa/connect-ui/dashboard": [
+        "../packages/svelte/src/shell/dashboard/index.ts"
+      ],
+      // The first-run wizard is a chunk of the shell tier as well.
+      "@prusa/connect-ui/setup-wizard": [
+        "../packages/svelte/src/shell/setup-wizard/index.ts"
+      ],
+      "@prusa/connect-ui/*": ["../packages/svelte/src/*/index.ts"]
+    }
+  },
+  "include": [
+    "src",
+    "test",
+    "vite",
+    ".storybook/**/*",
+    "*.config.ts",
+    "*.config.js",
+    ".prettierrc.js"
+  ]
+}

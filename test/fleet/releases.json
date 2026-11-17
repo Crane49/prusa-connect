@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "source": "earlier research, the Prusa-Firmware-Buddy releases table",
+  "naming": {
+    "CORE One": "CoreOne",
+    "CORE One L": "CoreOneL",
+    "CORE One INDX": "CoreOne_INDX",
+    "CORE One L INDX": "CoreOneL_INDX",
+    "the + and Gen 2 suffixes": "board revisions inside a device type, not device types of their own",
+    "6.5.0-RC": "a release candidate, kept here because the prerelease boundary is where a real defect was found. It is below 6.5.0 by semver rule 11, so it belongs to the band and never to the fast set"
+  },
+  "models": {
+    "CoreOne": ["6.5.7", "6.8.1"],
+    "CoreOneL": ["6.5.7", "6.8.1"],
+    "CoreOne_INDX": ["6.5.7", "6.6.0", "6.6.3", "6.9.0"],
+    "CoreOneL_INDX": ["6.5.7", "6.6.0", "6.6.3", "6.9.0"],
+    "IX": [],
+    "MINI": ["6.4.2"],
+    "MK3.5": ["6.5.7"],
+    "MK3.5S": ["6.5.7"],
+    "MK3.9": ["6.5.7"],
+    "MK3.9S": ["6.5.7"],
+    "MK4": ["6.5.0-RC", "6.5.7"],
+    "MK4S": ["6.5.7"],
+    "XL": ["6.4.2"]
+  }
+}

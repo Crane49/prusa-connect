@@ -1,0 +1,11 @@
+# Production-shaped composition: no host port bindings, production log level.
+# Use docker-compose.local.yml for development.
+#
+# One file per service under docker/<service>/, pulled in here.
+#
+# The project name is fixed rather than read from the directory, so the label
+# on what this composition creates is the same one docker-compose.local.yml
+# writes and `make docker-clean` scopes itself to.
+name: prusa-connect
+include:
+  - path: docker/server/server.yml

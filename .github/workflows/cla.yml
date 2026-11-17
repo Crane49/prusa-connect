@@ -1,0 +1,75 @@
+name: CLA
+
+# Every author of a pull request signs CLA.md once, by posting the sentence
+# below as a comment. The signatures are kept in signatures/cla.json on the
+# branch cla-signatures of this repository, and the job fails until every
+# author has signed. Bots are on the allowlist.
+#
+# ci.yml and extensions.yml stop at their first step while an author has not
+# signed (scripts/check-cla-signed.sh). Once a signature comment makes this
+# check pass, the last step here starts their failed runs again.
+#
+# pull_request_target and issue_comment, so a fork pull request gets a token
+# that can comment and record a signature. That is safe only because nothing
+# here checks out or runs the pull request's code: the action reads the
+# commit authors and the comments through the API, and the last step only
+# calls the API with the pull request's number. Never add a checkout to this
+# file, or a step that runs anything from the pull request. Code from a fork
+# would then run with a token that can write to this repository.
+#
+# The branch cla-signatures has to exist before the first run. The export to
+# a new repository carries main only, so a new repository starts with no
+# signatures.
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+jobs:
+  cla:
+    name: CLA
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event.issue.pull_request &&
+       (github.event.comment.body == 'recheck' ||
+        github.event.comment.body == 'I have read the CLA Document and I hereby sign the CLA'))
+    runs-on: ubuntu-latest
+    # contents writes the signature file, pull-requests comments, statuses and
+    # actions let the action re-run the check after a signature.
+    permissions:
+      contents: write
+      pull-requests: write
+      statuses: write
+      actions: write
+    steps:
+      - uses: contributor-assistant/github-action@ca4a40a7d1004f18d9960b404b97e5f30a505a08 # v2.6.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path-to-document: ${{ github.server_url }}/${{ github.repository }}/blob/main/CLA.md
+          path-to-signatures: signatures/cla.json
+          branch: cla-signatures
+          allowlist: dependabot[bot],github-actions[bot],renovate[bot]
+          lock-pullrequest-aftermerge: true
+
+      # After a signature, the pipelines that stopped for it run again from
+      # their failed jobs, which GitHub reruns with every job that needs them.
+      - name: Start the stopped pipelines again
+        if: ${{ github.event_name == 'issue_comment' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" --jq .head.sha)
+          for workflow in ci.yml extensions.yml; do
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?head_sha=$sha&event=pull_request&per_page=1" \
+              --jq '.workflow_runs[] | select(.conclusion == "failure") | .id' |
+              while read -r run; do
+                echo "rerun $workflow run $run"
+                gh api -X POST "repos/$GITHUB_REPOSITORY/actions/runs/$run/rerun-failed-jobs"
+              done
+          done

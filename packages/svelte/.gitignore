@@ -1,0 +1,15 @@
+/node_modules/
+/dist/
+
+# The built Storybook. `pnpm run build-storybook` writes it and the gate reads
+# the exit code, so nothing is committed.
+/storybook-static/
+
+# The fixture bundle, when an author builds it by hand. The test builds it
+# into memory and writes nothing.
+/build/testdata/module/dist/
+
+# The message catalogues, emitted from locales/*.json. `pnpm run catalogues`
+# writes them, and every script that reads them runs it first.
+/src/i18n/catalogues.ts
+/src/shell/setup-wizard/catalogues.ts

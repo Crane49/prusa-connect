@@ -1,0 +1,698 @@
+{
+  "components": {
+    "schemas": {
+      "Node": {
+        "type": "object",
+        "description": "One server or printer below this one, as the copy of the state below has it.",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Its place in the tree, such as hq/brno/workshop."
+          },
+          "connected": {
+            "type": "boolean",
+            "description": "Whether the values it reported are current. It is false once the values were marked stale, which happens when the connection to it closes."
+          },
+          "interfaces": {
+            "type": "integer",
+            "description": "How many of its interfaces the copy holds."
+          },
+          "stale": {
+            "type": "integer",
+            "description": "How many of them are marked stale."
+          }
+        },
+        "required": [
+          "path",
+          "connected",
+          "interfaces",
+          "stale"
+        ]
+      },
+      "NodeList": {
+        "type": "object",
+        "description": "Every server and printer below this one.",
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "This server's own place in the tree."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Node"
+            },
+            "description": "One entry per node below."
+          },
+          "total": {
+            "type": "integer",
+            "description": "How many entries items has."
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "Whether the copy holds more nodes than items lists."
+          },
+          "next": {
+            "type": "string",
+            "description": "What to send as the after parameter to read the page that follows. It is absent on the last page."
+          }
+        },
+        "required": [
+          "node",
+          "items",
+          "total",
+          "truncated"
+        ]
+      },
+      "Interface": {
+        "type": "object",
+        "description": "One interface of one node below, with the values that node last reported.",
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "The place in the tree of the node that owns the interface."
+          },
+          "interface": {
+            "type": "string",
+            "description": "The interface name, such as Printer1."
+          },
+          "instance": {
+            "type": "string",
+            "description": "Which instance of that interface, which is the identifier the owning server gave the printer."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "EMPTY",
+              "OK",
+              "STALE"
+            ],
+            "description": "EMPTY before the first report, OK while the values are the ones the node last reported, and STALE when they may be out of date."
+          },
+          "updated_at": {
+            "type": "integer",
+            "description": "When the last report arrived, in unix milliseconds. It is zero while status is EMPTY."
+          },
+          "props": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The property values as the node reported them, keyed by property name."
+          },
+          "props_omitted": {
+            "type": "boolean",
+            "description": "Whether the property values were left out, because they alone are larger than one answer of this route may be. Read that interface on the server that owns the printer."
+          }
+        },
+        "required": [
+          "node",
+          "interface",
+          "instance",
+          "status",
+          "updated_at"
+        ]
+      },
+      "InterfaceList": {
+        "type": "object",
+        "description": "The interfaces of one node below and of the nodes below it.",
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "The node the request named."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Interface"
+            },
+            "description": "One entry per interface."
+          },
+          "total": {
+            "type": "integer",
+            "description": "How many entries items has."
+          },
+          "truncated": {
+            "type": "boolean",
+            "description": "Whether the copy holds more interfaces than items lists, because the page filled or the answer reached its size limit."
+          },
+          "next": {
+            "type": "string",
+            "description": "What to send as the after parameter to read the page that follows. It is absent on the last page."
+          }
+        },
+        "required": [
+          "node",
+          "items",
+          "total",
+          "truncated"
+        ]
+      },
+      "CallAnswer": {
+        "type": "object",
+        "description": "The answer of one method call. It carries the result or the error, never both.",
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "The node that ran the method."
+          },
+          "result": {
+            "description": "What the method returned. It is absent when the call failed."
+          },
+          "error": {
+            "$ref": "#/components/schemas/CallError"
+          }
+        },
+        "required": [
+          "node"
+        ]
+      },
+      "CallError": {
+        "type": "object",
+        "description": "A method call the node below refused or could not run.",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "The error code of the Fractal specification, refined by the table in bridge/codes.go on a server that runs this module."
+          },
+          "message": {
+            "type": "string",
+            "description": "The English sentence the node that refused the call sent."
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "One request this module refused before it reached the network, as RFC 9457 names it.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "about:blank, because this module publishes no page per code."
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status, repeated in the body."
+          },
+          "code": {
+            "type": "string",
+            "description": "This module's own code, such as com.prusa.fractal/ROUTE_CALL_INVALID."
+          },
+          "title": {
+            "type": "string",
+            "description": "What went wrong, in one phrase that never varies."
+          },
+          "detail": {
+            "type": "string",
+            "description": "What went wrong this time."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "What the code fills in."
+          },
+          "retryable": {
+            "type": "boolean",
+            "description": "Whether sending the same request again could work."
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "code",
+          "title",
+          "detail",
+          "params",
+          "retryable"
+        ]
+      },
+      "Share": {
+        "type": "object",
+        "description": "One shared folder of a storage of this server.",
+        "properties": {
+          "storage": {
+            "type": "string",
+            "description": "The storage, by the name it is declared under."
+          },
+          "path": {
+            "type": "string",
+            "description": "The folder inside that storage, relative to its root, such as jobs/benchy."
+          }
+        },
+        "required": [
+          "storage",
+          "path"
+        ]
+      },
+      "ShareList": {
+        "type": "object",
+        "description": "Every folder this server shares with the servers below.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Share"
+            },
+            "description": "One entry per shared folder, sorted by storage and path."
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "StoreListing": {
+        "type": "object",
+        "description": "One listing of a content store, decoded.",
+        "properties": {
+          "node": {
+            "type": "string",
+            "description": "The node whose content store holds the listing."
+          },
+          "instance": {
+            "type": "string",
+            "description": "The instance of ContentStore1 on that node."
+          },
+          "identity": {
+            "type": "string",
+            "description": "The identity of the listing."
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoreEntry"
+            },
+            "description": "The files and folders of the listing, sorted by name."
+          }
+        },
+        "required": [
+          "node",
+          "instance",
+          "identity",
+          "entries"
+        ]
+      },
+      "StoreEntry": {
+        "type": "object",
+        "description": "One file or folder of a listing.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the file or the folder."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "file",
+              "directory"
+            ],
+            "description": "Whether the entry is a file or a folder."
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "The length of a file, and the length of the listing of a folder."
+          },
+          "identity": {
+            "type": "string",
+            "description": "The identity of the bytes of a file, or of the listing of a folder."
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "size",
+          "identity"
+        ]
+      }
+    },
+    "responses": {
+      "Refused": {
+        "description": "The request named something this module could not read, or the link is not serving yet.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Refusal"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "fractal",
+    "version": "1.0.0",
+    "description": "The routes packages/fractal serves. Every path is relative to the mount the host put this module under, and the host serves this document rebased under that mount. The routes read the copy this server keeps of the state of the servers and printers below it, and send one method call down the tree. The host is the only door: it decides who is calling and takes view_resource on this link before a GET and operate_resource before the POST."
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/files/shares": {
+      "get": {
+        "operationId": "list-fractal-shares",
+        "summary": "List the folders this server shares",
+        "description": "Answers every folder of a storage of this server that the servers below may read and print from. A folder inside a shared one is shared too. The host takes view_resource on this link before it forwards the request.",
+        "responses": {
+          "200": {
+            "description": "The shared folders.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/files/shares/{storage}/{path}": {
+      "put": {
+        "operationId": "share-fractal-folder",
+        "summary": "Share a folder with the servers below",
+        "description": "Shares the folder and everything in it with every server below this one, including servers that join later. Sharing a folder that is already shared changes nothing. The host takes operate_resource on this link before it forwards the request, and the module then lists the folder as the person, which takes read_storage on the storage.",
+        "parameters": [
+          {
+            "name": "storage",
+            "in": "path",
+            "required": true,
+            "description": "The storage, by the name it is declared under.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "The folder inside that storage, such as jobs/benchy. It carries slashes, and it cannot be the root folder.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The folder is shared."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "unshare-fractal-folder",
+        "summary": "Stop sharing a folder",
+        "description": "Stops sharing the folder. A server below that already holds a copy of a file from it keeps the copy. A folder inside it that was shared on its own stays shared. The host takes operate_resource on this link before it forwards the request.",
+        "parameters": [
+          {
+            "name": "storage",
+            "in": "path",
+            "required": true,
+            "description": "The storage, by the name it is declared under.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "The folder inside that storage, such as jobs/benchy. It carries slashes, and it cannot be the root folder.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The folder is not shared."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/files/stores": {
+      "get": {
+        "operationId": "list-fractal-stores",
+        "summary": "List the content stores of the nodes above and below",
+        "description": "Answers one page of the ContentStore1 instances this server keeps in its copies of the state above and below it: the shared folders of the servers in its line. Each carries its node, its instance, its status, when it was last updated and its properties, among them rootHash, the identity of the root listing. A server above comes first. The page works as the one of GET /nodes/{path}. The host takes view_resource on this link before it forwards the request.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "How many interfaces to answer. The default is 100 and the largest value is 500.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The cursor of the last interface of the page before, which that page answered as next.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The content stores of the servers above and below.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterfaceList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/files/stores/{node}/{instance}/{identity}": {
+      "get": {
+        "operationId": "read-fractal-store-listing",
+        "summary": "Read one listing of a content store above or below",
+        "description": "Answers one listing of a content store, decoded: the name, the kind, the length and the identity of each entry. Start with the rootHash of GET /files/stores, and read a folder by the identity of its entry. A listing of a server above is fetched over HTTPS from the server directly above, or read from a copy this server keeps, and one of a server below is read with the List method of its ContentStore1. A node that is neither above nor below this server is refused with STORE_OUTSIDE_LINE. The host takes view_resource on this link before it forwards the request.",
+        "parameters": [
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "description": "The node's place in the tree, such as hq. It carries slashes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "description": "The instance of ContentStore1 on that node.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "identity",
+            "in": "path",
+            "required": true,
+            "description": "The identity of the listing, such as sha256:yvWz...",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The entries of the listing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreListing"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/nodes": {
+      "get": {
+        "operationId": "list-fractal-nodes",
+        "summary": "List the servers and printers below this one",
+        "description": "Answers one page of the nodes the copy of the state below holds interfaces for, with the place of each in the tree and whether the values it reported are current. It reads the copy in memory and sends nothing over the network. A page names the cursor of the page that follows as next. The host takes view_resource on this link before it forwards the request.",
+        "responses": {
+          "200": {
+            "description": "The nodes below this one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NodeList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "How many nodes to answer. The default is 100 and the largest value is 500.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The place in the tree of the last node of the page before, which that page answered as next.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/nodes/{path}": {
+      "get": {
+        "operationId": "list-fractal-interfaces",
+        "summary": "List the interfaces of one node below",
+        "description": "Answers one page of the interfaces the copy holds for the node named and for the nodes below it, each with its instance, its status, when it was last updated and the property values the node reported. A page holds limit entries at most and is never larger than one mebibyte, it says truncated when it left entries out, and it names the cursor of the page that follows as next. One interface whose values alone are larger than a page is answered without them and marked. The host takes view_resource on this link before it forwards the request.",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "The node's place in the tree, such as hq/brno/workshop. It carries slashes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "How many interfaces to answer. The default is 100 and the largest value is 500.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "description": "The cursor of the last interface of the page before, which that page answered as next.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The interfaces of that node and of the nodes below it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterfaceList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.fractal-link/nodes/{path}/interfaces/{interface}/{instance}/methods/{method}": {
+      "post": {
+        "operationId": "call-fractal-method",
+        "summary": "Send a command to a node below",
+        "description": "Sends one method call down the tree and waits for the answer. The body is the parameters as a JSON array, in the order the method declares them, and no body is a call with no parameters. The host takes operate_resource on this link before it forwards the request, so a person who may not operate this link never reaches it. The server that receives the call checks its own permissions again, for the principal node:\u003cname of the server directly above it\u003e, and answers an error code when that principal has no grant on the printer. This route waits eight seconds for the answer, which is under the time the host waits, and answers its own error when the node below is silent. A result larger than this route may answer is refused with the size, and the method still ran.",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "description": "The node's place in the tree, such as hq/brno/workshop. It carries slashes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "interface",
+            "in": "path",
+            "required": true,
+            "description": "The interface name, such as PrintJob1.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "instance",
+            "in": "path",
+            "required": true,
+            "description": "Which instance of that interface, which is the identifier the owning server gave the printer.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "method",
+            "in": "path",
+            "required": true,
+            "description": "The method name, such as pause.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {},
+                "description": "The parameters, in the order the method declares them."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The call reached the node below. Read the error member as well as the result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallAnswer"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    }
+  }
+}

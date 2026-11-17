@@ -1,0 +1,85 @@
+# The AMQP 0-9-1 broker the event sink adapter is verified against.
+#
+# A fixture, not a deployment. adapters/events/amqp writes the wire on the
+# standard library rather than pulling in a client (ADR-20260825-n55 rule 2), and a
+# hand-written protocol is the code that most needs a real peer: publisher
+# confirms in particular cannot be proved against a fake, because the point of
+# a confirm is that the broker agreed.
+#
+# No host port here. It is in rabbitmq-fixture.local.yml.
+services:
+  rabbitmq-fixture:
+    image: rabbitmq:4.3.5-alpine
+    container_name: prusa_connect_rabbitmq_fixture
+    # A fixture does not come back on its own. It holds nothing worth keeping,
+    # every suite that uses it skips cleanly when it is absent, and
+    # unless-stopped resurrects it on every reboot forever, which is how six
+    # idle containers were found running after a restart nobody asked for.
+    # Started by a test run or by `make fixtures-up`, and gone when it stops.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    environment:
+      RABBITMQ_DEFAULT_USER: ${AMQP_FIXTURE_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${AMQP_FIXTURE_PASSWORD:-guest}
+      # A fixture that is discarded has no reason to fsync, and this is most of
+      # the speed. Never copy it into a deployment.
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "+sbwt none +sbwtdcpu none +sbwtdio none"
+
+    labels:
+      com.prusa3d.description: "Throwaway AMQP broker the event sink conformance run publishes to"
+      com.prusa3d.service: "test-fixture"
+
+    # Nothing outlives the container, and it keeps a Pi's SD card out of the
+    # write path on a developer machine that has one.
+    tmpfs:
+      - /var/lib/rabbitmq
+
+    healthcheck:
+      # rabbitmq-diagnostics ships in the image. ping is the cheapest probe
+      # that proves the Erlang node is up and answering.
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      # A cold Erlang boot with an empty mnesia directory is the longest path
+      # this container has, measured at roughly 20 seconds.
+      start_period: 40s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    # The image drops to the rabbitmq user and owns its own directories.
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

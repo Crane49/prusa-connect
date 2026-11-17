@@ -1,0 +1,37 @@
+{
+  "firmware": "7.0.1+12345",
+  "printer_type": "3.0.0",
+  "sn": "SN-XL-FW7",
+  "appendix": false,
+  "fingerprint": "fw7-xl-fingerprint",
+  "nozzle_diameter": 0.40,
+  "transfer_paused": false,
+  "storages": [
+    {
+      "mountpoint": "/usb",
+      "type": "USB",
+      "read_only": false,
+      "free_space": 1048576,
+      "is_sfn": true
+    }
+  ],
+  "network_info": {
+    "lan_mac": "10:9c:70:00:00:01",
+    "lan_ipv4": "192.168.1.20",
+    "hostname": "prusa-xl"
+  },
+  "tools": {
+    "1": {
+      "nozzle_diameter": 0.40,
+      "high_flow": false,
+      "hardened": false,
+      "material": "PLA"
+    },
+    "2": {
+      "nozzle_diameter": 0.60,
+      "high_flow": true,
+      "hardened": true,
+      "material": "---"
+    }
+  }
+}

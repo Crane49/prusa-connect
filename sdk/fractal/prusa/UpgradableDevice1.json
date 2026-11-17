@@ -1,0 +1,15 @@
+{
+  "interface": "UpgradableDevice1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "firmwareVersion", "type": "string", "access": "ro" }
+  ],
+  "methods": [
+    {
+      "name": "UpgradeFromFile",
+      "params": [
+        { "name": "url", "type": "string" }
+      ]
+    }
+  ]
+}

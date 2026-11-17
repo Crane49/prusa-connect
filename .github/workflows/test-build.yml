@@ -1,0 +1,199 @@
+name: Test build
+
+# Binaries of one commit, built when the beta portal asks for them: the head
+# of a pull request with a fix, for the testers who reported the problem to
+# try before it is merged. The portal starts this workflow through the GitHub
+# API with the commit, the platforms and its own id for the build, and takes
+# the files back the way a release hands over its binaries (beta-portal.yml).
+#
+# Off until the repository variable BETA_PORTAL_URL names the portal. The
+# token is the repository secret BETA_PORTAL_TOKEN, the one beta-portal.yml
+# uses. A test build is not a release: the portal never lists or announces it.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The commit to build, a full sha
+        required: true
+        type: string
+      targets:
+        description: Comma-separated portal platforms, such as linux-amd64,linux-arm64
+        required: true
+        type: string
+      build:
+        description: The beta portal's id of this test build
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # Holds the portal token and runs no project code. It checks the inputs,
+  # since they reach a shell, and tells the portal where the run is.
+  start:
+    name: Check the request and tell the portal
+    runs-on: ubuntu-latest
+    if: vars.BETA_PORTAL_URL != ''
+    environment: beta-portal
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check the inputs
+        env:
+          REF: ${{ inputs.ref }}
+          TARGETS: ${{ inputs.targets }}
+          BUILD: ${{ inputs.build }}
+        run: |
+          set -eu
+          printf '%s' "$REF" | grep -Eq '^[0-9a-f]{40}$' || { echo "ref must be a full commit sha"; exit 1; }
+          printf '%s' "$BUILD" | grep -Eq '^[0-9a-f-]{36}$' || { echo "build must be the portal's id"; exit 1; }
+          for target in $(printf '%s' "$TARGETS" | tr ',' ' '); do
+            case "$target" in
+            linux-amd64 | linux-arm64 | linux-armv7 | linux-armhf | windows-amd64 | windows-arm64 | darwin-amd64 | darwin-arm64) ;;
+            *) echo "unknown target: $target"; exit 1 ;;
+            esac
+          done
+
+      - name: Tell the portal the build started
+        env:
+          PORTAL: ${{ vars.BETA_PORTAL_URL }}
+          TOKEN: ${{ secrets.BETA_PORTAL_TOKEN }}
+          BUILD: ${{ inputs.build }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -eu
+          jq -n --arg url "$RUN_URL" '{status: "running", runUrl: $url}' |
+            curl -fsS -X POST "${PORTAL%/}/api/v1/test-builds/$BUILD" \
+              -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' --data-binary @- >/dev/null
+
+  # The same build as release.yml's full binaries, for the platforms asked
+  # for only. pnpm install runs the dependencies' install scripts, so this
+  # job holds a read-only token and keeps no credential in the checkout.
+  build:
+    name: Build the binaries
+    needs: start
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: packages/typescript/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Build the web app into the embed directory
+        run: make embed-app
+
+      - name: Build the binaries asked for
+        env:
+          CGO_ENABLED: 0
+          REF: ${{ inputs.ref }}
+          TARGETS: ${{ inputs.targets }}
+          STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+          DOCS: -X github.com/prusa3d/prusa-connect/internal/kernel/version.docsURL=${{ vars.DOCS_URL || 'https://beta.prusa3d.com/connect-local/docs/{version}/' }}
+        run: |
+          set -eu
+          # The version names the sha it was built from and no release number.
+          VERSION="0.0.0-test.${REF%"${REF#????????????}"}"
+          mkdir -p build
+          : >build/files.txt
+          # Each line is the portal's platform, GOOS, GOARCH, GOARM and the
+          # published name, as in release.yml.
+          while read -r platform goos goarch goarm name; do
+            case ",$TARGETS," in *",$platform,"*) ;; *) continue ;; esac
+            echo "Building $name"
+            GOOS=$goos GOARCH=$goarch GOARM=${goarm#-} go build -tags "full observability postgres" -ldflags="$STAMP=$VERSION $DOCS" -o "build/$name" ./cmd/prusa-connect
+            echo "$name $platform" >>build/files.txt
+          done <<'TARGETS'
+          linux-amd64 linux amd64 - prusa_connect_amd64
+          linux-arm64 linux arm64 - prusa_connect_aarch64
+          linux-armv7 linux arm 7 prusa_connect_armv7
+          linux-armhf linux arm 6 prusa_connect_armhf
+          windows-amd64 windows amd64 - prusa_connect_windows_amd64.exe
+          windows-arm64 windows arm64 - prusa_connect_windows_arm64.exe
+          darwin-amd64 darwin amd64 - prusa_connect_macos_amd64
+          darwin-arm64 darwin arm64 - prusa_connect_macos_arm64
+          TARGETS
+          chmod +x build/prusa_connect_*
+          ls -l build
+
+      - name: Upload the binaries
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: test-build
+          path: build/*
+          retention-days: 3
+
+  # Holds the portal token and runs no project code: hands the files over,
+  # then says whether the build worked. Runs after a failed build too, so the
+  # portal does not wait for files that never come.
+  send:
+    name: Send the binaries to the portal
+    needs: [start, build]
+    if: always() && needs.start.result == 'success'
+    runs-on: ubuntu-latest
+    environment: beta-portal
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download the binaries
+        if: needs.build.result == 'success'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: test-build
+          path: ./files
+
+      - name: Send them
+        if: needs.build.result == 'success'
+        env:
+          PORTAL: ${{ vars.BETA_PORTAL_URL }}
+          TOKEN: ${{ secrets.BETA_PORTAL_TOKEN }}
+          BUILD: ${{ inputs.build }}
+          REF: ${{ inputs.ref }}
+        run: |
+          set -eu
+          P="${PORTAL%/}/api/v1/test-builds/$BUILD"
+          H="Authorization: Bearer $TOKEN"
+          # Ask where, PUT it there, finish: the steps of a release's upload.
+          while read -r name platform; do
+            U=$(curl -fsS -X POST "$P/files/$platform?filename=$name" -H "$H")
+            curl -fsS -T "files/$name" "$(jq -r .upload.url <<<"$U")" >/dev/null
+            curl -fsS -X POST "$(jq -r .finish <<<"$U")" -H "$H" >/dev/null
+            echo "sent $name as $platform"
+          done <files/files.txt
+          jq -n --arg commit "$REF" '{status: "done", commit: $commit}' |
+            curl -fsS -X POST "$P" -H "$H" -H 'Content-Type: application/json' --data-binary @- >/dev/null
+
+      - name: Tell the portal the build failed
+        if: needs.build.result != 'success'
+        env:
+          PORTAL: ${{ vars.BETA_PORTAL_URL }}
+          TOKEN: ${{ secrets.BETA_PORTAL_TOKEN }}
+          BUILD: ${{ inputs.build }}
+        run: |
+          set -eu
+          jq -n '{status: "failed", error: "The build failed. The pipeline run has the log."}' |
+            curl -fsS -X POST "${PORTAL%/}/api/v1/test-builds/$BUILD" \
+              -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' --data-binary @- >/dev/null

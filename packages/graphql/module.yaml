@@ -1,0 +1,52 @@
+# The manifest for this module. It ships one half, the Go process in main.go,
+# and draws no page of its own.
+#
+# `prusa-connect module add` reads it out of the release and writes one
+# declaration. The digest of what it installed is recorded there and never
+# here, because every rebuild moves it.
+#
+# The namespace is absent on purpose. The host derives it from the module path
+# the operator installed, so no module can name another module's address, and
+# the mount below is the operator's to name.
+
+name: graphql
+summary: Serves this server's own vocabulary in GraphQL, at /graphql.
+codeowner: Prusa Research
+# The kind the one instance is declared under. A module that sinks nothing is
+# still declared as a sink, because a module may not mint a resource kind of
+# its own and no other kind fits. The cost is a sink that receives no events,
+# which the host warns about.
+kind: sink
+version: 1.0.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The plugin wire major the process half speaks.
+contract_major: 1
+# Where the fragment describing the two routes is, inside this repository.
+openapi: openapi.json
+
+# What this module cannot run without. Each entry is a wire method a resolver
+# calls, and a host that serves none of them would start a module whose every
+# field answers a refusal.
+require:
+  core-device.list: "*"
+  core-device.get: "*"
+  core-device.jobs: "*"
+  core-device.files: "*"
+  core-device.command: "*"
+  core-device.approve: "*"
+
+# No permissions key. This module acts only for the person the host
+# authorized, and does nothing as itself: it holds no sync loop, no poll and no
+# background work. The ceiling an operator would write here is the ceiling for
+# what a module does with nobody behind it, and this module does none of that.
+# The host takes view_resource on the instance before the GET and
+# operate_resource before the POST, which openapi.json states on each
+# operation, and the authorization graph decides every fleet read for the
+# person who asked.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64

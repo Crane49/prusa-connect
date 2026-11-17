@@ -1,0 +1,10 @@
+# The @prusa scope resolves from the local registry. Every other
+# package still comes from the public registry.
+@prusa:registry=http://127.0.0.1:54874/
+# Reading needs no credential. This line is here so the same project
+# can publish to the registry too, and the value is not a secret: the
+# registry accepts an unauthenticated publish of the @prusa scope and
+# listens on the loopback address alone.
+//127.0.0.1:54874/:_authToken=local
+# This file goes away once the packages are published to npm: delete it,
+# and pnpm resolves the @prusa scope from the public registry instead.

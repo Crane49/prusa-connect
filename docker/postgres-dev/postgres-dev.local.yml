@@ -1,0 +1,12 @@
+# Host port for the developer Postgres, so a core and a module started on the
+# host reach it. Reads from the root .env with a default, so two developers on
+# different ports never edit tracked yaml.
+#
+# Bound to 127.0.0.1 and not to every interface: the passwords are development
+# defaults.
+#
+# 55433, one above the fixture's 55432, so the two can run at once.
+services:
+  postgres-dev:
+    ports:
+      - "127.0.0.1:${PGDEV_PORT:-55433}:5432"

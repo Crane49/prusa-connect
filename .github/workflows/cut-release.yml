@@ -1,0 +1,186 @@
+name: Cut a release
+
+# A release cut without a laptop. The beta portal starts it through the GitHub
+# API (or a person does, from the Actions tab) naming the branch, the stage
+# and how far the version moves. It does what a maintainer does by hand:
+# files the pending news in docs/changes/ under the new version, runs scripts/release.sh,
+# pushes the commit and the tags as the release GitHub App. The tag starts
+# release.yml, which builds, publishes and hands the release to the beta portal.
+#
+# Stage and bump mean what they mean to scripts/release.sh.
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: The branch to release from
+        required: true
+        default: main
+        type: string
+      kind:
+        description: The stage of the release
+        required: true
+        type: choice
+        options: [alpha, beta, stable]
+      bump:
+        description: How far a new cycle moves the version
+        required: true
+        default: patch
+        type: choice
+        options: [patch, minor, major]
+
+permissions:
+  contents: read
+
+# One cut at a time: two would compute the same version.
+concurrency:
+  group: cut-release
+  cancel-in-progress: false
+
+jobs:
+  # Runs the project's own scripts (release.sh regenerates the client
+  # packages with go and pnpm), so it holds a read-only token and keeps no
+  # credential in the checkout. It hands the commits and tags on as a bundle.
+  prepare:
+    name: Commit and tag the release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Check the branch name
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          set -eu
+          printf '%s' "$BRANCH" | grep -Eq '^[A-Za-z0-9._/-]+$' || { echo "not a branch name: $BRANCH"; exit 1; }
+          case "$BRANCH" in *..* | /* | */) echo "not a branch name: $BRANCH"; exit 1 ;; esac
+
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.branch }}
+          # Every tag: release.sh reads where the cycle stands off them.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: packages/typescript/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Work out the version
+        id: version
+        env:
+          KIND: ${{ inputs.kind }}
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -eu
+          VERSION=$(bash scripts/release.sh --next "$KIND" "$BUMP" | tail -n 1)
+          echo "Releasing $VERSION"
+          echo "version=$VERSION" >>"$GITHUB_OUTPUT"
+
+      - name: File the changelog under it
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898283+github-actions[bot]@users.noreply.github.com'
+          sh scripts/cut-release-changelog.sh "$VERSION"
+          # The cut writes the changelog and deletes the fragments it filed
+          # (ADR-20261021-arm), so both paths go into the one commit.
+          git add -A docs/CHANGELOG.md docs/changes
+          git commit -q -m "docs(changelog): file the pending news under $VERSION"
+
+      - name: Commit and tag it
+        env:
+          KIND: ${{ inputs.kind }}
+          BUMP: ${{ inputs.bump }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          bash scripts/release.sh "$KIND" "$BUMP"
+          git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null || { echo "release.sh did not tag v$VERSION"; exit 1; }
+          git log --oneline -3
+
+      - name: Bundle the commits and the tags
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          set -eu
+          mkdir -p bundle
+          # shellcheck disable=SC2046
+          git bundle create bundle/release.bundle "^origin/$BRANCH" HEAD $(git tag --points-at HEAD | sed 's|^|refs/tags/|')
+          git bundle list-heads bundle/release.bundle
+
+      - name: Upload the bundle
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: release-bundle
+          path: bundle/release.bundle
+          retention-days: 3
+
+  # Writes to the repository and runs no project code: it pushes what prepare
+  # made, as a fast-forward of the branch. It pushes as the release GitHub App
+  # (RELEASE_APP_ID, RELEASE_APP_PRIVATE_KEY, in the release environment),
+  # which may bypass the pull request rule on main; the workflow's own token
+  # may not. A tag pushed by the app starts release.yml by itself.
+  push:
+    name: Push the release and start the build
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+
+    steps:
+      - name: Get the release app's token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Download the bundle
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: release-bundle
+          path: ./bundle
+
+      - name: Push the commit and the tags
+        env:
+          BRANCH: ${{ inputs.branch }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -eu
+          git bundle verify bundle/release.bundle
+          git fetch -q bundle/release.bundle HEAD 'refs/tags/*:refs/tags/*'
+          # Only a fast-forward: a branch that moved since prepare read it is
+          # released again, not overwritten.
+          git merge-base --is-ancestor "origin/$BRANCH" FETCH_HEAD || { echo "$BRANCH moved while the release was prepared; cut it again"; exit 1; }
+          TAGS=$(git tag --points-at FETCH_HEAD | sed 's|^|refs/tags/|')
+          # shellcheck disable=SC2086
+          git push --atomic origin "FETCH_HEAD:refs/heads/$BRANCH" $TAGS
+          echo "pushed $VERSION to $BRANCH"

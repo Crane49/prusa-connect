@@ -1,0 +1,64 @@
+# The manifest for a module that is one browser bundle and nothing else
+# (ADR-20260911-4p6 rule 30). There is no process here, so there is no contract_major,
+# no permissions block and no OpenAPI fragment.
+#
+# `prusa-connect module add` reads it out of the release, writes one
+# declaration, and copies it into the bundle directory it installs, because
+# that is where the host reads the ui block from. The digest covers it there,
+# so the manifest the host reads is the one the install recorded.
+#
+# The namespace is absent on purpose. The host derives it from the type the
+# operator installed, so no module can name another module's address
+# (ADR-20260911-4p6 rule 15).
+
+name: nozzle-watch
+# The two keys an extensions page prints on the card, beside the version. They
+# are optional, and this example carries them because the card is what a person
+# reads before they switch a module on.
+title: Nozzle watch
+summary: Adds a nozzle line to each printer's card, a Status-tab section, a tab and an action menu item to each printer's page. It is a browser bundle with no server process.
+codeowner: Prusa Research
+# The one kind this module is declared under: a directory of files the host
+# verifies against a digest and serves, and never runs.
+kind: asset
+version: 1.0.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+
+# The spools module, whose picker the tab draws when it is installed. It is
+# a suggestion and not a requirement: the tab draws a line of its own
+# without it.
+suggest:
+  com.github.aux.acme.spools: "Draws the spool picker on the tab"
+
+ui:
+  # The built bundle, relative to the bundle root. The host serves it at
+  # /api/v1/modules/<namespace>/ui/ui/index.js.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against. The app
+  # refuses a bundle its own version falls outside of (ADR-20260911-4p6 rule 24).
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    # The ceiling, and the whole of it. The bundle registers these four and
+    # nothing past them; a fifth registration, or a page, or a settings pane,
+    # is refused at run time and this module is dropped whole (ADR-20260911-4p6 rule
+    # 21).
+    device_card:
+      - id: nozzle
+        title: Nozzle
+    device_section:
+      - id: nozzle
+        title: Nozzle temperature
+    device_tab:
+      - id: nozzle
+        title: Nozzle
+    device_action:
+      - id: mark-changed
+        title: Mark nozzle changed
+        icon: wrench
+        destructive: false
+  # The spools module's picker, drawn on the tab when that module is
+  # installed. The tab draws a line of its own when it is not
+  # (ADR-20261027-wvj rules 20 to 24).
+  imports:
+    - module: com.github.aux.acme.spools
+      name: spool-picker

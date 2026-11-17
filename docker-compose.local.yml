@@ -1,0 +1,83 @@
+# Local development composition: the base service plus its local overrides, the
+# Postgres the dual-engine tests need, and the OpenID Connect issuer the A9
+# login runs against.
+#
+#   docker compose -f docker-compose.local.yml up -d
+#
+# One stack, not two. A developer who has brought the dev environment up has
+# everything the test suite needs, and nothing has to be remembered separately.
+# Both fixtures are absent from docker-compose.yml on purpose: they are test
+# fixtures and have no place in a production-shaped composition. The issuer is
+# the sharper case of the two, since it authenticates whoever asks.
+#
+# Ports and log level come from the root .env; see .env.example.
+#
+# Four services are behind a profile and start only when a command names
+# them: the two npm registries, the documentation site and the race detector.
+# The two fixtures that carry a configuration file, mosquitto-fixture and
+# mock-oidc, are behind one too, because each builds an image and a whole-stack
+# `up --no-build` would fail on it. `make fixtures-up` names every fixture.
+#
+# The project name is fixed rather than read from the directory, so the
+# compose project label on every container, image, volume and network is the
+# one `make docker-clean` scopes itself to, whatever the checkout is called.
+name: prusa-connect
+include:
+  - path:
+      - docker/server/server.yml
+      - docker/server/server.local.yml
+  - path:
+      - docker/postgres-fixture/postgres-fixture.yml
+      - docker/postgres-fixture/postgres-fixture.local.yml
+  - path:
+      - docker/mock-oidc/mock-oidc.yml
+      - docker/mock-oidc/mock-oidc.local.yml
+  # The real OpenID Connect providers the sign-in is checked against, behind
+  # the `oidc-providers` profile. `make oidc-providers-check` starts them one
+  # at a time.
+  - path:
+      - docker/keycloak-fixture/keycloak-fixture.yml
+      - docker/keycloak-fixture/keycloak-fixture.local.yml
+  - path:
+      - docker/authentik-fixture/authentik-fixture.yml
+      - docker/authentik-fixture/authentik-fixture.local.yml
+  - path:
+      - docker/authelia-fixture/authelia-fixture.yml
+      - docker/authelia-fixture/authelia-fixture.local.yml
+  - path:
+      - docker/mosquitto-fixture/mosquitto-fixture.yml
+      - docker/mosquitto-fixture/mosquitto-fixture.local.yml
+  - path:
+      - docker/rabbitmq-fixture/rabbitmq-fixture.yml
+      - docker/rabbitmq-fixture/rabbitmq-fixture.local.yml
+  - path:
+      - docker/redpanda-fixture/redpanda-fixture.yml
+      - docker/redpanda-fixture/redpanda-fixture.local.yml
+  - path:
+      - docker/npm-registry-fixture/npm-registry-fixture.yml
+      - docker/npm-registry-fixture/npm-registry-fixture.local.yml
+  # The developer's own npm registry, behind the `registry` profile. It keeps
+  # what it holds; the fixture above it does not. `make registry-up` starts it.
+  - path:
+      - docker/npm-registry/npm-registry.yml
+      - docker/npm-registry/npm-registry.local.yml
+  # The developer Postgres, behind the `postgres-dev` profile: a database for
+  # the core and one for a module, kept in a volume. `make postgres-dev-up`
+  # starts it.
+  - path:
+      - docker/postgres-dev/postgres-dev.yml
+      - docker/postgres-dev/postgres-dev.local.yml
+  # The Fractal mockup, behind the `mockup` profile: four real cores in one
+  # tree, hq at the top and fake printers on two of them. `make mockup-up` is what
+  # starts it, and a whole-stack `up` leaves it out.
+  - path:
+      - docker/mockup/mockup.yml
+      - docker/mockup/mockup.local.yml
+  # The race detector on Linux, behind the `race` profile. `make test-race-linux`
+  # builds it from this tree and runs it against the Postgres fixture.
+  - path: docker/race/race.yml
+  # The documentation site, behind the `docs` profile. `make docs-up` is what
+  # starts it, and a whole-stack `up` leaves it out.
+  - path:
+      - docker/docs/docs.yml
+      - docker/docs/docs.local.yml

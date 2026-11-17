@@ -1,0 +1,51 @@
+# The label wire surface of the retired server, the old backlog. No section
+# of earlier research covers labels.
+#
+# Columns: case, caller, method, path, request keys, status, set-cookie,
+# response body key paths. A key path collapses an array to []. A cell of -
+# means the column does not apply, and a body of - is an empty body.
+#
+# Read from a run, not from the source, on the same binary and the same
+# 2026-08-29 session as legacy-account-surface.tsv, with one simulated CORE One
+# dialled in so the printer paths have a printer to name.
+#
+# What the walk found:
+#
+#   Two labels may carry the same name. POST /api/labels answers 201 twice for
+#   the name bench and the listing then holds both.
+#
+#   PUT /api/printers/{id}/labels replaces the whole set. Assigning an id no
+#   label has answers 204 and leaves the printer with nothing.
+#
+#   PUT /api/printers/{unknown}/labels answers 204. A printer that does not
+#   exist takes an assignment.
+#
+#   GET /api/printers answers a labels array that is empty for a printer whose
+#   own /labels path lists one. The listing does not carry the assignment.
+#
+#   DELETE /api/labels/{unknown} answers 204 and PUT /api/labels/{unknown}
+#   answers 404. The two disagree about what a missing label is.
+#
+#   An empty name is refused with the validator's own sentence in the body:
+#   "Key: 'Name' Error:Field validation for 'Name' failed on the 'required' tag".
+#
+# The store behind this is printer_labels and printer_label_assignments in
+# ./data/state.db. The schema is in earlier research.
+labels-need-a-caller	anonymous	GET	/api/labels	-	401	-	error
+an-empty-store-lists-nothing	session	GET	/api/labels	-	200	-	[]
+a-label-is-created	session	POST	/api/labels	name	201	-	id,name
+a-duplicate-name-is-accepted	session	POST	/api/labels	name	201	-	id,name
+an-empty-name-is-refused	session	POST	/api/labels	name	400	-	error
+the-listing-carries-every-label	session	GET	/api/labels	-	200	-	[].id,[].name
+a-label-is-renamed	session	PUT	/api/labels/{id}	name	200	-	id,name
+renaming-an-unknown-label	session	PUT	/api/labels/{unknown}	name	404	-	error
+a-printer-with-no-label	session	GET	/api/printers/{id}/labels	-	200	-	[]
+the-whole-set-is-replaced	session	PUT	/api/printers/{id}/labels	labelIds	204	-	-
+the-assignment-reads-back	session	GET	/api/printers/{id}/labels	-	200	-	[].id,[].name
+the-printer-listing-omits-the-assignment	session	GET	/api/printers	-	200	-	[].createdAt,[].deviceTypeId,[].firmware,[].isLocked,[].labels[],[].mode,[].state,[].uuid
+an-unknown-label-id-is-assigned-anyway	session	PUT	/api/printers/{id}/labels	labelIds	204	-	-
+the-replacement-dropped-the-real-one	session	GET	/api/printers/{id}/labels	-	200	-	[]
+an-unknown-printer-takes-an-assignment	session	PUT	/api/printers/{unknown}/labels	labelIds	204	-	-
+a-missing-field-is-refused	session	PUT	/api/printers/{id}/labels	labels	400	-	error
+a-label-is-deleted	session	DELETE	/api/labels/{id}	-	204	-	-
+deleting-an-unknown-label-succeeds	session	DELETE	/api/labels/{unknown}	-	204	-	-

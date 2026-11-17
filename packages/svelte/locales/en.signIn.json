@@ -1,0 +1,17 @@
+{
+  "signIn.expired.note": "Sign in again to pick up where you left off.",
+  "signIn.expired.title": "Your session expired",
+  "signIn.failed.expired": "The sign-in took too long. Try again.",
+  "signIn.failed.failed": "Something went wrong on this server. The server log says why.",
+  "signIn.failed.idToken": "This server could not accept what the provider sent. The server log says why, for example a signing algorithm or a client secret that does not match.",
+  "signIn.failed.provider": "The provider refused the sign-in. Try again, or ask the person who runs the provider.",
+  "signIn.failed.subject": "The provider names you in a way this server cannot accept. The server log says why.",
+  "signIn.failed.title": "The sign-in did not finish",
+  "signIn.missingPassword": "Enter the password for this account.",
+  "signIn.missingUsername": "Enter the name this account was created with.",
+  "signIn.password": "Password",
+  "signIn.redirect": "Sign in with {provider}",
+  "signIn.submit": "Sign in",
+  "signIn.title": "Sign in",
+  "signIn.username": "Username"
+}

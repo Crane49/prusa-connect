@@ -1,0 +1,75 @@
+# The one manifest for both halves of this module: the Go process in main.go
+# and the browser bundle under ui/.
+#
+# `prusa-connect module add` reads it out of the release, writes one
+# declaration, and copies it into the bundle directory it installs, because
+# that is where the host reads the ui block from.
+#
+# This file names no namespace. The host derives the namespace from the module
+# path the operator installed, so a module cannot take the address of another
+# module. For this module that is com.github.aux.prusa3d.threemf.
+
+name: threemf
+# The two keys an extensions page prints on the card, beside the version.
+title: 3MF projects
+summary: Shows a 3MF project on the page of its file, with its beds, objects and settings, and reads 3MF files for the server.
+codeowner: Prusa Research
+# The kind the one instance is declared under. It offers the service runtime,
+# which a module with a process half needs.
+kind: sink
+version: 0.1.11
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The major version of the protocol between this process and the host.
+contract_major: 1
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+
+# What this module cannot run without: the first core that reads
+# file_analysis, ui.exports and storage.fetch, and the wire methods it calls.
+# The routes stat a file and read it in large ranges, as the person the host
+# named.
+require:
+  core: ">=0.0.1-alpha.7"
+  core-storage.stat: "*"
+  core-storage.fetch: "*"
+
+# The memory the host reserves for the process. The reader holds one project
+# at a time.
+needs:
+  memory_mib: 256
+
+# The file types this module reads for the server: the picture in a listing,
+# the details on a file's page and what a printer needs. The host asks it with
+# a read handle for the one file, so this needs no permission
+# (ADR-20261027-wvj rules 1 to 12).
+file_analysis:
+  types: [.3mf]
+
+# No `permissions` key. The module reads files only for the person the host
+# authorized, and the storage takes read_storage for that person. It runs no
+# work of its own.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+ui:
+  # The built bundle, relative to the bundle root.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against.
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    # The project, drawn on the page of a .3mf file in place of the part that
+    # says what a file holds.
+    file_view:
+      - id: project
+        title: Project
+        file_types: [.3mf]
+  # The project view, for another module's page. A module that draws it names
+  # it under ui.imports with this module's namespace, and names this module
+  # under require or suggest (ADR-20261027-wvj rules 19 to 24).
+  exports:
+    - name: project-view

@@ -1,0 +1,16 @@
+<script lang="ts">
+  import { SettingsPane } from '@prusa/connect-ui/primitives';
+
+  import { heldHost } from './host';
+
+  // A settings pane takes no props. The host draws it on the Extensions
+  // screen with no heading, so the pane names itself, the way the app's own
+  // panes do. That screen's ground is the pane's own colour, so the pane is
+  // edged. Every text comes from this module's own catalogue
+  // (frontend-i18n.md rule 7).
+  const t = heldHost().t;
+</script>
+
+<SettingsPane title={t('{{.Name}}.settings.title')} edged>
+  <p class="text-sm text-muted-foreground">{t('{{.Name}}.settings.body')}</p>
+</SettingsPane>

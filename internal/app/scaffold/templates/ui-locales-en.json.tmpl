@@ -1,0 +1,56 @@
+{
+  "_meta.language": "English",
+  "_meta.note": "This module's own texts. The host reads this file from locales/en.json beside the bundle's entry and merges it under the module's namespace. Copy it to <tag>.json to translate; a key you leave out falls back to the line here."
+{{- range .Contributions}}
+{{- if eq .Slot "page"}},
+
+  "{{$.Name}}.page.title": "{{.Title}}",
+  "{{$.Name}}.page.body": "Edit ui/src/page.svelte to change this page."
+{{- else if eq .Slot "device-card"}},
+
+  "{{$.Name}}.deviceCard.absent": "This printer is not in the fleet this page read.",
+  "{{$.Name}}.deviceCard.body": "{{.Title}} is drawing on this device's card."
+{{- else if eq .Slot "settings"}},
+
+  "{{$.Name}}.settings.title": "{{.Title}}",
+  "{{$.Name}}.settings.body": "{{.Title}} is drawing in the settings screen."
+{{- else if eq .Slot "device-section"}},
+
+  "{{$.Name}}.deviceSection.absent": "This printer is not in the fleet this page read.",
+  "{{$.Name}}.deviceSection.body": "{{.Title}} is drawing at the foot of this device's Status tab."
+{{- else if eq .Slot "device-tab"}},
+
+  "{{$.Name}}.deviceTab.absent": "This printer is not in the fleet this page read.",
+  "{{$.Name}}.deviceTab.body": "{{.Title}} is drawing on this device's tab."
+{{- else if eq .Slot "dashboard-card"}},
+
+  "{{$.Name}}.dashboardCard.title": "{{.Title}}",
+  "{{$.Name}}.dashboardCard.absent": "Pick a printer in this card's settings.",
+  "{{$.Name}}.dashboardCard.body": "{{.Title}} is drawing on this dashboard."
+{{- else if eq .Slot "device-action"}},
+
+  "{{$.Name}}.deviceAction.absent": "This printer is not in the fleet this page read."
+{{- else if eq .Slot "file-action"}},
+
+  "{{$.Name}}.fileAction.absent": "This is not a file in storage."
+{{- else if eq .Slot "print-section"}},
+
+  "{{$.Name}}.printSection.absent": "This is not a file in storage.",
+  "{{$.Name}}.printSection.body": "{{.Title}} is drawing in the print dialog. {count, plural, one {1 printer is ticked.} other {# printers are ticked.}}"
+{{- else if eq .Slot "file-view"}},
+
+  "{{$.Name}}.fileView.absent": "This is not a file in storage.",
+  "{{$.Name}}.fileView.body": "{{.Title}} is drawing what {path} holds."
+{{- else if eq .Slot "file-tab"}},
+
+  "{{$.Name}}.fileTab.absent": "This is not a file in storage.",
+  "{{$.Name}}.fileTab.body": "{{.Title}} is drawing on the tab of {path}."
+{{- else if eq .Slot "camera-section"}},
+
+  "{{$.Name}}.cameraSection.body": "{{.Title}} is drawing under the camera {camera}."
+{{- else if eq .Slot "camera-view"}},
+
+  "{{$.Name}}.cameraView.body": "{{.Title}} is drawing the live view of {camera}."
+{{- end}}
+{{- end}}
+}

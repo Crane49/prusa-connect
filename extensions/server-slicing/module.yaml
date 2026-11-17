@@ -1,0 +1,149 @@
+# The one manifest for both halves of this module: the Go process in main.go
+# and the browser bundle under ui/.
+#
+# This file names no namespace. The host derives the namespace from the module
+# path the operator installed, so a module cannot take the address of another
+# module.
+
+name: server-slicing
+# The two keys an extensions page prints on the card, beside the version.
+title: Server slicing
+summary: Slices 3MF projects into G-code on this server with the PrusaSlicer command line, and writes the G-code into a storage.
+codeowner: Prusa Research
+# The kind the one instance is declared under. It offers the service runtime,
+# which a module with a process half needs.
+kind: sink
+version: 0.2.2
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The major version of the protocol between this process and the host.
+contract_major: 1
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+
+# What this module cannot run without: the first core that serves
+# storage.write, and the wire methods it calls.
+#
+# The threemf module is not here. This module compiles the reader of that
+# module in through go.mod, so it reads and rewrites projects whether or not
+# the threemf module is installed, and it calls none of its routes and draws
+# none of its components (ADR-20261027-e6k rule 7).
+# storage.write is how the G-code reaches a storage, so a server that does not
+# serve it refuses the install rather than starting a module that slices into
+# nowhere.
+require:
+  core: ">=0.0.1-alpha.7"
+  core-storage.stat: "*"
+  core-storage.read: "*"
+  core-storage.write: "*"
+  core-access.check: "*"
+
+# What the module does as itself. A worker slices a job after the person's
+# request has closed, so it reads the project and writes the G-code as the
+# module, after access.check said the person may still do both.
+#
+# The module changes nothing with configure_resource. access.check answers
+# only about the actions this list names, and the module asks it whether a
+# person may configure modules before it lets them install or remove a
+# slicer, because those routes download and run a program on the server.
+permissions:
+  - read_storage
+  - write_storage
+  - configure_resource
+
+# A folder for the installed slicers, the downloads, the jobs and their
+# scratch files, and the memory the host reserves for the process.
+#
+# 2560 MiB is one PrusaSlicer 3.x run of a 2 M triangle project plus the
+# module. Measured on macOS, PrusaSlicer 3.0.0-alpha12 peaks at 2199 MiB on
+# that project (1858 MiB with --threads 1) and about 740 MiB on a trivial one;
+# 2.9.6 peaks at 1278 to 1390 MiB.
+needs:
+  data: true
+  memory_mib: 2560
+
+# The settings this module reads, with the default of each.
+#
+# README.md has the same table. manifest_test.go fails when the two differ.
+options:
+  - key: max_jobs
+    type: int
+    default: "1"
+    summary: How many projects slice at the same time.
+  - key: max_queued
+    type: int
+    default: "16"
+    summary: How many jobs may wait. One more is refused until a job finishes.
+  - key: timeout_minutes
+    type: int
+    default: "30"
+    summary: How long one slicer run may take before it is stopped.
+  - key: threads
+    type: int
+    default: "0"
+    summary: The threads one slicer run may use. 0 lets the slicer choose.
+  - key: max_project_mib
+    type: int
+    default: "512"
+    summary: The largest project a job takes, in MiB.
+  - key: keep_jobs
+    type: int
+    default: "200"
+    summary: How many finished jobs the module remembers.
+  - key: github_releases
+    type: bool
+    default: "true"
+    summary: Offer the PrusaSlicer releases that GitHub publishes, read from its API every six hours.
+  - key: github_token
+    type: secret
+    default: ""
+    summary: A GitHub token for reading the releases, which raises the limit of 60 requests an hour.
+  - key: manifest_url
+    type: string
+    default: ""
+    summary: An https address or an absolute path of a manifest of builds you host. Empty offers none.
+  - key: local_binaries
+    type: list
+    default: "[]"
+    summary: Absolute paths of PrusaSlicer executables already on this machine.
+
+# Every connection the process makes outside Prusa Connect. The operator
+# reads them at install, and the marketplace checks them against the code.
+egress:
+  - host: api.github.com
+    why: Lists the PrusaSlicer releases every six hours, while github_releases is on.
+    sends: The request, and the github_token setting when one is set.
+  - host: github.com
+    why: Downloads the PrusaSlicer build an operator installs from the GitHub releases.
+    sends: Only the request for the file.
+  - host: "*.githubusercontent.com"
+    why: GitHub serves the release files from there after a redirect.
+    sends: Only the request for the file.
+  - option: manifest_url
+    why: Reads the operator's manifest of builds, when it is an https address.
+    sends: Only the request for the manifest.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+ui:
+  # The built bundle, relative to the bundle root.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against.
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    pages:
+      - path: slicer
+        title: Slicing
+        icon: layers
+    # A button on the page of a 3MF project. It opens the slice dialog on the
+    # Slicing page with that project.
+    file_action:
+      - id: slice
+        title: Slice
+        icon: layers
+        primary: true
+        file_types: [".3mf"]

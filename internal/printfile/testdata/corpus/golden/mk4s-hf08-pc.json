@@ -1,0 +1,58 @@
+{
+  "estimated_seconds": 143,
+  "filament_mm": 217.12,
+  "filament_g": 0.64,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.8,
+  "material": "PC",
+  "printer_model": "MK4S",
+  "print_profile": "0.30mm SPEED @MK4S HF0.8",
+  "printer_profile": "Original Prusa MK4S HF0.8 nozzle",
+  "filament_profile": "Prusament PC Blend @MK4S HF0.8",
+  "high_flow": true,
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PC",
+      "nozzle_mm": 0.8,
+      "high_flow": true,
+      "abrasive": false,
+      "nozzle_temp_c": 280,
+      "first_layer_nozzle_temp_c": 280,
+      "bed_temp_c": 115,
+      "first_layer_bed_temp_c": 110,
+      "filament_g": 0.64,
+      "filament_mm": 217.12,
+      "colour": "#DEE0E6"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 120,
+    "min_y_mm": 100,
+    "max_x_mm": 130,
+    "max_y_mm": 110
+  },
+  "bed": {
+    "width_mm": 250,
+    "depth_mm": 210,
+    "height_mm": 220
+  },
+  "checks": {
+    "printer_model": "MK4S",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.8,
+        "hardened": false,
+        "high_flow": true
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.5.3+12780"
+  }
+}

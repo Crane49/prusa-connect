@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{title}}</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      .pcl-documents {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        block-size: var(--scalar-custom-header-height);
+        padding-inline: 16px;
+        background: var(--scalar-background-1, #fff);
+        border-block-end: 1px solid var(--scalar-border-color, #e5e5e5);
+        color: var(--scalar-color-1, #1b1b1b);
+        font-family: var(--scalar-font, system-ui, sans-serif);
+        font-size: 14px;
+      }
+      .pcl-documents-label {
+        flex: none;
+        color: var(--scalar-color-2, #575757);
+        font-weight: 600;
+      }
+      .pcl-documents ul {
+        display: flex;
+        gap: 4px;
+        margin: 0;
+        padding: 0;
+        min-inline-size: 0;
+        overflow-x: auto;
+        list-style: none;
+        scrollbar-width: thin;
+      }
+      .pcl-documents a {
+        display: block;
+        padding-block: 6px;
+        padding-inline: 10px;
+        border-radius: 6px;
+        color: var(--scalar-color-2, #575757);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .pcl-documents a:hover {
+        background: var(--scalar-background-2, #f6f6f6);
+        color: var(--scalar-color-1, #1b1b1b);
+      }
+      .pcl-documents a:focus-visible {
+        outline: 2px solid var(--scalar-color-accent, #0f62fe);
+        outline-offset: -2px;
+      }
+      .pcl-documents a[aria-current="page"] {
+        background: var(--scalar-background-3, #e7e7e7);
+        color: var(--scalar-color-1, #1b1b1b);
+        font-weight: 600;
+      }
+      .pcl-missing {
+        max-inline-size: 640px;
+        margin-block: 64px;
+        margin-inline: auto;
+        padding-inline: 16px;
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+      }
+      .pcl-missing h1 {
+        font-size: 20px;
+      }
+      .pcl-missing code {
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
+      @media (prefers-color-scheme: dark) {
+        body.pcl-plain {
+          background: #0f0f0f;
+          color: #e7e7e7;
+        }
+        body.pcl-plain .pcl-documents {
+          background: #0f0f0f;
+          border-color: #2a2a2a;
+          color: #e7e7e7;
+        }
+        body.pcl-plain .pcl-documents a,
+        body.pcl-plain .pcl-documents-label {
+          color: #a8a8a8;
+        }
+        body.pcl-plain .pcl-documents a[aria-current="page"] {
+          background: #2a2a2a;
+          color: #e7e7e7;
+        }
+      }
+      @media (max-width: 600px) {
+        .pcl-documents-label {
+          display: none;
+        }
+      }
+    </style>
+    {{header}}
+  </head>
+  <body{{body-class}}>
+    {{switcher}}
+    {{content}}
+  </body>
+</html>

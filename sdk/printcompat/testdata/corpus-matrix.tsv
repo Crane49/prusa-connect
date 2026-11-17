@@ -1,0 +1,691 @@
+file	printer	level	findings	unverified
+coreone-04-petg	MINI	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK3.5	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK3.5S	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK3.9	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK3.9S	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK4	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK4S	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	MK4S MMU3	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	XL 1T	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	XL 2T	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	XL 5T	warning	printer_model:warning,material:warning@T0	-
+coreone-04-petg	CORE One	warning	material:warning@T0	-
+coreone-04-petg	CORE One MMU3	warning	material:warning@T0	-
+coreone-04-petg	CORE One L	warning	material:warning@T0	-
+coreone-04-petg	Signature Oak	warning	material:warning@T0	-
+coreone-06-pccf	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	CORE One	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	CORE One MMU3	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	CORE One L	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-06-pccf	Signature Oak	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+coreone-08-asa	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	CORE One	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	CORE One MMU3	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	CORE One L	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-08-asa	Signature Oak	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+coreone-hf04-pla	MINI	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK3.5	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK3.5S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK3.9	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK3.9S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK4	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK4S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	MK4S MMU3	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	XL 1T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	XL 2T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	XL 5T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	CORE One	warning	nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	CORE One MMU3	warning	nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	CORE One L	warning	nozzle_high_flow:warning@T0	-
+coreone-hf04-pla	Signature Oak	warning	nozzle_high_flow:warning@T0	-
+coreone-mmu3-04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+coreone-mmu3-04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	MK3.9	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	MK3.9S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	MK4	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	MK4S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	MK4S MMU3	warning	printer_model:warning,material:warning@T1	-
+coreone-mmu3-04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+coreone-mmu3-04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+coreone-mmu3-04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+coreone-mmu3-04	CORE One	refusal	mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	CORE One MMU3	warning	material:warning@T1	-
+coreone-mmu3-04	CORE One L	refusal	mmu:warning,tool_count:refusal	material@T1
+coreone-mmu3-04	Signature Oak	refusal	mmu:warning,tool_count:refusal	material@T1
+coreonel-03-pc	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	CORE One L	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-03-pc	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	CORE One L	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-05-asa	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+coreonel-hf04-pla	MINI	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK3.5	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK3.5S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK3.9	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK3.9S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK4	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK4S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	MK4S MMU3	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	XL 1T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	XL 2T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	XL 5T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	CORE One	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	CORE One MMU3	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	CORE One L	warning	nozzle_high_flow:warning@T0	-
+coreonel-hf04-pla	Signature Oak	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+coreonel-mmu3-hf04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1	material@T1
+coreonel-mmu3-hf04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	MK3.9	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	MK3.9S	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	MK4	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	MK4S	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	MK4S MMU3	warning	printer_model:warning,nozzle_not_high_flow:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_high_flow:warning@T1	-
+coreonel-mmu3-hf04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1	material@T1
+coreonel-mmu3-hf04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,nozzle_high_flow:warning@T0,material:warning@T1	-
+coreonel-mmu3-hf04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,nozzle_high_flow:warning@T0,material:warning@T1	-
+coreonel-mmu3-hf04	CORE One	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	CORE One MMU3	warning	printer_model:warning,nozzle_not_high_flow:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_high_flow:warning@T1	-
+coreonel-mmu3-hf04	CORE One L	refusal	mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+coreonel-mmu3-hf04	Signature Oak	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mini-025-asa	MINI	warning	input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK3.5	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK3.5S	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK3.9	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK3.9S	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK4	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK4S	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	MK4S MMU3	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	XL 1T	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	XL 2T	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	XL 5T	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	CORE One	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	CORE One MMU3	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	CORE One L	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-025-asa	Signature Oak	warning	printer_model:warning,input_shaper:warning,material:warning@T0	-
+mini-is-04-petgcf	MINI	warning	material:warning@T0	-
+mini-is-04-petgcf	MK3.5	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	MK3.5S	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	MK3.9	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	MK3.9S	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	MK4	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	MK4S	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	MK4S MMU3	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	XL 1T	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	XL 2T	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	XL 5T	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	CORE One	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	CORE One MMU3	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	CORE One L	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-petgcf	Signature Oak	warning	printer_model:warning,material:warning@T0	-
+mini-is-04-pla	MINI	ok	-	-
+mini-is-04-pla	MK3.5	warning	printer_model:warning	-
+mini-is-04-pla	MK3.5S	warning	printer_model:warning	-
+mini-is-04-pla	MK3.9	warning	printer_model:warning	-
+mini-is-04-pla	MK3.9S	warning	printer_model:warning	-
+mini-is-04-pla	MK4	warning	printer_model:warning	-
+mini-is-04-pla	MK4S	warning	printer_model:warning	-
+mini-is-04-pla	MK4S MMU3	warning	printer_model:warning	-
+mini-is-04-pla	XL 1T	warning	printer_model:warning	-
+mini-is-04-pla	XL 2T	warning	printer_model:warning	-
+mini-is-04-pla	XL 5T	warning	printer_model:warning	-
+mini-is-04-pla	CORE One	warning	printer_model:warning	-
+mini-is-04-pla	CORE One MMU3	warning	printer_model:warning	-
+mini-is-04-pla	CORE One L	warning	printer_model:warning	-
+mini-is-04-pla	Signature Oak	warning	printer_model:warning	-
+mini-is-06-petg	MINI	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	CORE One L	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mini-is-06-petg	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK3.5	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK3.5S	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	CORE One L	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-025-petg	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-04-pla	MINI	warning	printer_model:warning	-
+mk35-04-pla	MK3.5	ok	-	-
+mk35-04-pla	MK3.5S	ok	-	-
+mk35-04-pla	MK3.9	warning	printer_model:warning	-
+mk35-04-pla	MK3.9S	warning	printer_model:warning	-
+mk35-04-pla	MK4	warning	printer_model:warning	-
+mk35-04-pla	MK4S	warning	printer_model:warning	-
+mk35-04-pla	MK4S MMU3	warning	printer_model:warning	-
+mk35-04-pla	XL 1T	warning	printer_model:warning	-
+mk35-04-pla	XL 2T	warning	printer_model:warning	-
+mk35-04-pla	XL 5T	warning	printer_model:warning	-
+mk35-04-pla	CORE One	warning	printer_model:warning	-
+mk35-04-pla	CORE One MMU3	warning	printer_model:warning	-
+mk35-04-pla	CORE One L	warning	printer_model:warning	-
+mk35-04-pla	Signature Oak	warning	printer_model:warning	-
+mk35-08-asa	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK3.5	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK3.5S	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	CORE One L	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-08-asa	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk35-mmu3-04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk35-mmu3-04	MK3.5	refusal	mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	MK3.5S	refusal	mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	MK3.9	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	MK3.9S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	MK4	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	MK4S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	MK4S MMU3	warning	printer_model:warning,material:warning@T1	-
+mk35-mmu3-04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk35-mmu3-04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk35-mmu3-04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk35-mmu3-04	CORE One	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	CORE One MMU3	warning	printer_model:warning,material:warning@T1	-
+mk35-mmu3-04	CORE One L	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk35-mmu3-04	Signature Oak	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-04-pla	MINI	warning	printer_model:warning	-
+mk39-04-pla	MK3.5	warning	printer_model:warning	-
+mk39-04-pla	MK3.5S	warning	printer_model:warning	-
+mk39-04-pla	MK3.9	ok	-	-
+mk39-04-pla	MK3.9S	warning	compatibility_mode:warning	-
+mk39-04-pla	MK4	ok	-	-
+mk39-04-pla	MK4S	warning	compatibility_mode:warning	-
+mk39-04-pla	MK4S MMU3	warning	compatibility_mode:warning	-
+mk39-04-pla	XL 1T	warning	printer_model:warning	-
+mk39-04-pla	XL 2T	warning	printer_model:warning	-
+mk39-04-pla	XL 5T	warning	printer_model:warning	-
+mk39-04-pla	CORE One	warning	compatibility_mode:warning	-
+mk39-04-pla	CORE One MMU3	warning	compatibility_mode:warning	-
+mk39-04-pla	CORE One L	warning	compatibility_mode:warning	-
+mk39-04-pla	Signature Oak	warning	compatibility_mode:warning	-
+mk39-hf06-petg	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK3.9	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK3.9S	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK4	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK4S	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	MK4S MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-hf06-petg	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk39-mmu3-04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk39-mmu3-04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	MK3.9	refusal	mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	MK3.9S	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	MK4	refusal	mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	MK4S	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	MK4S MMU3	warning	compatibility_mode:warning,material:warning@T1	-
+mk39-mmu3-04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk39-mmu3-04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk39-mmu3-04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk39-mmu3-04	CORE One	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T1	-
+mk39-mmu3-04	CORE One L	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk39-mmu3-04	Signature Oak	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk39s-04-asa	MINI	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	MK3.5	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	MK3.5S	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	MK3.9	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	MK3.9S	warning	material:warning@T0	-
+mk39s-04-asa	MK4	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	MK4S	warning	material:warning@T0	-
+mk39s-04-asa	MK4S MMU3	warning	material:warning@T0	-
+mk39s-04-asa	XL 1T	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	XL 2T	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	XL 5T	warning	printer_model:warning,material:warning@T0	-
+mk39s-04-asa	CORE One	warning	compatibility_mode:warning,material:warning@T0	-
+mk39s-04-asa	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0	-
+mk39s-04-asa	CORE One L	warning	compatibility_mode:warning,material:warning@T0	-
+mk39s-04-asa	Signature Oak	warning	compatibility_mode:warning,material:warning@T0	-
+mk39s-hf04-pla	MINI	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK3.5	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK3.5S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK3.9	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK3.9S	warning	nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK4	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK4S	warning	nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	MK4S MMU3	warning	nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	XL 1T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	XL 2T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	XL 5T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	CORE One	warning	compatibility_mode:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	CORE One MMU3	warning	compatibility_mode:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	CORE One L	warning	compatibility_mode:warning,nozzle_high_flow:warning@T0	-
+mk39s-hf04-pla	Signature Oak	warning	compatibility_mode:warning,nozzle_high_flow:warning@T0	-
+mk39s-mmu3-hf04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1	material@T1
+mk39s-mmu3-hf04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	MK3.9	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	MK3.9S	refusal	mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	MK4	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	MK4S	refusal	mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	MK4S MMU3	warning	nozzle_not_high_flow:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_high_flow:warning@T1	-
+mk39s-mmu3-hf04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1	material@T1
+mk39s-mmu3-hf04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,nozzle_high_flow:warning@T0,material:warning@T1	-
+mk39s-mmu3-hf04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,nozzle_high_flow:warning@T0,material:warning@T1	-
+mk39s-mmu3-hf04	CORE One	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	CORE One MMU3	warning	compatibility_mode:warning,nozzle_not_high_flow:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_high_flow:warning@T1	-
+mk39s-mmu3-hf04	CORE One L	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk39s-mmu3-hf04	Signature Oak	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T1	material@T1
+mk4-04-pla	MINI	warning	printer_model:warning,input_shaper:warning	-
+mk4-04-pla	MK3.5	warning	printer_model:warning,input_shaper:warning	-
+mk4-04-pla	MK3.5S	warning	printer_model:warning,input_shaper:warning	-
+mk4-04-pla	MK3.9	warning	input_shaper:warning	-
+mk4-04-pla	MK3.9S	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-04-pla	MK4	warning	input_shaper:warning	-
+mk4-04-pla	MK4S	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-04-pla	MK4S MMU3	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-04-pla	XL 1T	warning	printer_model:warning,input_shaper:warning	-
+mk4-04-pla	XL 2T	warning	printer_model:warning,input_shaper:warning	-
+mk4-04-pla	XL 5T	warning	printer_model:warning,input_shaper:warning	-
+mk4-04-pla	CORE One	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-04-pla	CORE One MMU3	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-04-pla	CORE One L	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-04-pla	Signature Oak	warning	compatibility_mode:warning,input_shaper:warning	-
+mk4-mmu3-04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk4-mmu3-04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	MK3.9	refusal	mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	MK3.9S	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	MK4	refusal	mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	MK4S	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	MK4S MMU3	warning	compatibility_mode:warning,material:warning@T1	-
+mk4-mmu3-04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk4-mmu3-04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk4-mmu3-04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk4-mmu3-04	CORE One	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T1	-
+mk4-mmu3-04	CORE One L	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4-mmu3-04	Signature Oak	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4is-04-pla	MINI	warning	printer_model:warning	-
+mk4is-04-pla	MK3.5	warning	printer_model:warning	-
+mk4is-04-pla	MK3.5S	warning	printer_model:warning	-
+mk4is-04-pla	MK3.9	ok	-	-
+mk4is-04-pla	MK3.9S	warning	compatibility_mode:warning	-
+mk4is-04-pla	MK4	ok	-	-
+mk4is-04-pla	MK4S	warning	compatibility_mode:warning	-
+mk4is-04-pla	MK4S MMU3	warning	compatibility_mode:warning	-
+mk4is-04-pla	XL 1T	warning	printer_model:warning	-
+mk4is-04-pla	XL 2T	warning	printer_model:warning	-
+mk4is-04-pla	XL 5T	warning	printer_model:warning	-
+mk4is-04-pla	CORE One	warning	compatibility_mode:warning	-
+mk4is-04-pla	CORE One MMU3	warning	compatibility_mode:warning	-
+mk4is-04-pla	CORE One L	warning	compatibility_mode:warning	-
+mk4is-04-pla	Signature Oak	warning	compatibility_mode:warning	-
+mk4is-06-pc	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK3.9	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK3.9S	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK4	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK4S	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	MK4S MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-06-pc	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4is-hf05-petg	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK3.9	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK3.9S	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK4	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK4S	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	MK4S MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4is-hf05-petg	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-025-pla	MINI	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK3.5	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK3.5S	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK3.9	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK3.9S	warning	nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK4	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK4S	warning	nozzle_diameter:warning@T0	-
+mk4s-025-pla	MK4S MMU3	warning	nozzle_diameter:warning@T0	-
+mk4s-025-pla	XL 1T	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	XL 2T	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	XL 5T	warning	printer_model:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	CORE One	warning	compatibility_mode:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	CORE One MMU3	warning	compatibility_mode:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	CORE One L	warning	compatibility_mode:warning,nozzle_diameter:warning@T0	-
+mk4s-025-pla	Signature Oak	warning	compatibility_mode:warning,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK3.9S	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK4S	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	MK4S MMU3	warning	material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-03-petg	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0	-
+mk4s-04-pla	MINI	warning	printer_model:warning	-
+mk4s-04-pla	MK3.5	warning	printer_model:warning	-
+mk4s-04-pla	MK3.5S	warning	printer_model:warning	-
+mk4s-04-pla	MK3.9	warning	printer_model:warning	-
+mk4s-04-pla	MK3.9S	ok	-	-
+mk4s-04-pla	MK4	warning	printer_model:warning	-
+mk4s-04-pla	MK4S	ok	-	-
+mk4s-04-pla	MK4S MMU3	ok	-	-
+mk4s-04-pla	XL 1T	warning	printer_model:warning	-
+mk4s-04-pla	XL 2T	warning	printer_model:warning	-
+mk4s-04-pla	XL 5T	warning	printer_model:warning	-
+mk4s-04-pla	CORE One	warning	compatibility_mode:warning	-
+mk4s-04-pla	CORE One MMU3	warning	compatibility_mode:warning	-
+mk4s-04-pla	CORE One L	warning	compatibility_mode:warning	-
+mk4s-04-pla	Signature Oak	warning	compatibility_mode:warning	-
+mk4s-06-petgcf	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK3.9S	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK4S	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	MK4S MMU3	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-06-petgcf	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+mk4s-hf04-asa	MINI	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK3.9S	warning	material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK4	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK4S	warning	material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	MK4S MMU3	warning	material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf04-asa	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MINI	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK3.9S	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK4S	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	MK4S MMU3	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	XL 1T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	XL 2T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	XL 5T	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	CORE One	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	CORE One L	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-hf08-pc	Signature Oak	warning	compatibility_mode:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+mk4s-mmu3-04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk4s-mmu3-04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	MK3.9	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	MK3.9S	refusal	mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	MK4	refusal	printer_model:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	MK4S	refusal	mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	MK4S MMU3	warning	material:warning@T1	-
+mk4s-mmu3-04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,tool_enabled:refusal@T1	material@T1
+mk4s-mmu3-04	XL 2T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk4s-mmu3-04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,material:warning@T1	-
+mk4s-mmu3-04	CORE One	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	CORE One MMU3	warning	compatibility_mode:warning,material:warning@T1	-
+mk4s-mmu3-04	CORE One L	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-04	Signature Oak	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal	material@T1
+mk4s-mmu3-hf04	MINI	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,nozzle_high_flow:warning@T0,tool_enabled:refusal@T2	material@T2
+mk4s-mmu3-hf04	MK3.5	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	MK3.5S	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	MK3.9	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	MK3.9S	refusal	mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	MK4	refusal	printer_model:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	MK4S	refusal	mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	MK4S MMU3	warning	nozzle_not_high_flow:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T2,material:warning@T2,nozzle_high_flow:warning@T2	-
+mk4s-mmu3-hf04	XL 1T	refusal	printer_model:warning,unsupported_feature:warning,tool_count:refusal,nozzle_high_flow:warning@T0,tool_enabled:refusal@T2	material@T2
+mk4s-mmu3-hf04	XL 2T	refusal	printer_model:warning,unsupported_feature:warning,nozzle_high_flow:warning@T0,tool_enabled:refusal@T2	material@T2
+mk4s-mmu3-hf04	XL 5T	warning	printer_model:warning,unsupported_feature:warning,nozzle_high_flow:warning@T0,material:warning@T2	-
+mk4s-mmu3-hf04	CORE One	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	CORE One MMU3	warning	compatibility_mode:warning,nozzle_not_high_flow:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T2,material:warning@T2,nozzle_high_flow:warning@T2	-
+mk4s-mmu3-hf04	CORE One L	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+mk4s-mmu3-hf04	Signature Oak	refusal	compatibility_mode:warning,mmu:warning,tool_count:refusal,nozzle_high_flow:warning@T0,nozzle_high_flow:warning@T2	material@T2
+oak-hf04-pla	MINI	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK3.5	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK3.5S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK3.9	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK3.9S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK4	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK4S	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	MK4S MMU3	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	XL 1T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	XL 2T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	XL 5T	warning	printer_model:warning,nozzle_high_flow:warning@T0	-
+oak-hf04-pla	CORE One	warning	nozzle_high_flow:warning@T0	-
+oak-hf04-pla	CORE One MMU3	warning	nozzle_high_flow:warning@T0	-
+oak-hf04-pla	CORE One L	warning	nozzle_high_flow:warning@T0	-
+oak-hf04-pla	Signature Oak	warning	nozzle_high_flow:warning@T0	-
+xl-is-04-pla	MINI	refusal	printer_model:warning,build_volume:refusal	-
+xl-is-04-pla	MK3.5	warning	printer_model:warning	-
+xl-is-04-pla	MK3.5S	warning	printer_model:warning	-
+xl-is-04-pla	MK3.9	warning	printer_model:warning	-
+xl-is-04-pla	MK3.9S	warning	printer_model:warning	-
+xl-is-04-pla	MK4	warning	printer_model:warning	-
+xl-is-04-pla	MK4S	warning	printer_model:warning	-
+xl-is-04-pla	MK4S MMU3	warning	printer_model:warning	-
+xl-is-04-pla	XL 1T	ok	-	-
+xl-is-04-pla	XL 2T	ok	-	-
+xl-is-04-pla	XL 5T	ok	-	-
+xl-is-04-pla	CORE One	warning	printer_model:warning	-
+xl-is-04-pla	CORE One MMU3	warning	printer_model:warning	-
+xl-is-04-pla	CORE One L	warning	printer_model:warning	-
+xl-is-04-pla	Signature Oak	warning	printer_model:warning	-
+xl-is-06-pa11cf	MINI	refusal	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,build_volume:refusal	-
+xl-is-06-pa11cf	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	XL 1T	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	XL 2T	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	XL 5T	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	CORE One L	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-06-pa11cf	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0	-
+xl-is-hf06-pc	MINI	refusal	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,build_volume:refusal	-
+xl-is-hf06-pc	MK3.5	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	MK3.5S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	MK3.9	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	MK3.9S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	MK4	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	MK4S	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	MK4S MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	XL 1T	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	XL 2T	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	XL 5T	warning	material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	CORE One	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	CORE One MMU3	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	CORE One L	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl-is-hf06-pc	Signature Oak	warning	printer_model:warning,material:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0	-
+xl2t-04-t1	MINI	refusal	printer_model:warning,tool_enabled:refusal@T1,build_volume:refusal	material@T1,nozzle_diameter@T1
+xl2t-04-t1	MK3.5	warning	printer_model:warning	material@T1
+xl2t-04-t1	MK3.5S	warning	printer_model:warning	material@T1
+xl2t-04-t1	MK3.9	warning	printer_model:warning	material@T1
+xl2t-04-t1	MK3.9S	warning	printer_model:warning	material@T1
+xl2t-04-t1	MK4	warning	printer_model:warning	material@T1
+xl2t-04-t1	MK4S	warning	printer_model:warning	material@T1
+xl2t-04-t1	MK4S MMU3	warning	printer_model:warning,material:warning@T1	-
+xl2t-04-t1	XL 1T	refusal	tool_enabled:refusal@T1	material@T1,nozzle_diameter@T1
+xl2t-04-t1	XL 2T	warning	material:warning@T1	-
+xl2t-04-t1	XL 5T	warning	material:warning@T1	-
+xl2t-04-t1	CORE One	warning	printer_model:warning	material@T1
+xl2t-04-t1	CORE One MMU3	warning	printer_model:warning,material:warning@T1	-
+xl2t-04-t1	CORE One L	warning	printer_model:warning	material@T1
+xl2t-04-t1	Signature Oak	warning	printer_model:warning	material@T1
+xl2t-hf05-both	MINI	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1,build_volume:refusal	material@T1,nozzle_diameter@T1,nozzle_high_flow@T1
+xl2t-hf05-both	MK3.5	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	MK3.5S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	MK3.9	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	MK3.9S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	MK4	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	MK4S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	MK4S MMU3	warning	printer_model:warning,nozzle_not_high_flow:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	-
+xl2t-hf05-both	XL 1T	refusal	tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1	material@T1,nozzle_diameter@T1,nozzle_high_flow@T1
+xl2t-hf05-both	XL 2T	warning	nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	-
+xl2t-hf05-both	XL 5T	warning	nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	-
+xl2t-hf05-both	CORE One	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	CORE One MMU3	warning	printer_model:warning,nozzle_not_high_flow:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	-
+xl2t-hf05-both	CORE One L	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl2t-hf05-both	Signature Oak	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1	material@T1
+xl5t-04-3of5	MINI	refusal	printer_model:warning,tool_count:refusal,tool_enabled:refusal@T1,tool_enabled:refusal@T2,build_volume:refusal	material@T1,nozzle_diameter@T1,material@T2,nozzle_diameter@T2
+xl5t-04-3of5	MK3.5	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	MK3.5S	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	MK3.9	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	MK3.9S	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	MK4	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	MK4S	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	MK4S MMU3	warning	printer_model:warning,material:warning@T1,material:warning@T2	-
+xl5t-04-3of5	XL 1T	refusal	tool_count:refusal,tool_enabled:refusal@T1,tool_enabled:refusal@T2	material@T1,nozzle_diameter@T1,material@T2,nozzle_diameter@T2
+xl5t-04-3of5	XL 2T	refusal	tool_count:refusal,material:warning@T1,tool_enabled:refusal@T2	material@T2,nozzle_diameter@T2
+xl5t-04-3of5	XL 5T	warning	material:warning@T1,material:warning@T2	-
+xl5t-04-3of5	CORE One	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	CORE One MMU3	warning	printer_model:warning,material:warning@T1,material:warning@T2	-
+xl5t-04-3of5	CORE One L	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-3of5	Signature Oak	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2
+xl5t-04-4of5	MINI	refusal	printer_model:warning,tool_count:refusal,tool_enabled:refusal@T1,tool_enabled:refusal@T2,tool_enabled:refusal@T3,build_volume:refusal	material@T1,nozzle_diameter@T1,material@T2,nozzle_diameter@T2,material@T3,nozzle_diameter@T3
+xl5t-04-4of5	MK3.5	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	MK3.5S	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	MK3.9	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	MK3.9S	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	MK4	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	MK4S	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	MK4S MMU3	warning	printer_model:warning,material:warning@T1,material:warning@T2	-
+xl5t-04-4of5	XL 1T	refusal	tool_count:refusal,tool_enabled:refusal@T1,tool_enabled:refusal@T2,tool_enabled:refusal@T3	material@T1,nozzle_diameter@T1,material@T2,nozzle_diameter@T2,material@T3,nozzle_diameter@T3
+xl5t-04-4of5	XL 2T	refusal	tool_count:refusal,material:warning@T1,tool_enabled:refusal@T2,tool_enabled:refusal@T3	material@T2,nozzle_diameter@T2,material@T3,nozzle_diameter@T3
+xl5t-04-4of5	XL 5T	warning	material:warning@T1,material:warning@T2	-
+xl5t-04-4of5	CORE One	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	CORE One MMU3	warning	printer_model:warning,material:warning@T1,material:warning@T2	-
+xl5t-04-4of5	CORE One L	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-04-4of5	Signature Oak	refusal	printer_model:warning,tool_count:refusal	material@T1,material@T2,material@T3
+xl5t-06-cf	MINI	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,tool_enabled:refusal@T4,build_volume:refusal	material@T4,nozzle_diameter@T4,nozzle_hardened@T4
+xl5t-06-cf	MK3.5	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	MK3.5S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	MK3.9	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	MK3.9S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	MK4	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	MK4S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	MK4S MMU3	warning	printer_model:warning,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,material:warning@T4,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	-
+xl5t-06-cf	XL 1T	refusal	tool_count:refusal,nozzle_diameter:warning@T0,tool_enabled:refusal@T4	material@T4,nozzle_diameter@T4,nozzle_hardened@T4
+xl5t-06-cf	XL 2T	refusal	nozzle_diameter:warning@T0,tool_enabled:refusal@T4	material@T4,nozzle_diameter@T4,nozzle_hardened@T4
+xl5t-06-cf	XL 5T	warning	nozzle_diameter:warning@T0,material:warning@T4,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	-
+xl5t-06-cf	CORE One	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	CORE One MMU3	warning	printer_model:warning,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,material:warning@T4,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	-
+xl5t-06-cf	CORE One L	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-06-cf	Signature Oak	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_hardened:warning@T0,nozzle_diameter:warning@T4,nozzle_hardened:warning@T4	material@T4
+xl5t-hf05-5of5	MINI	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1,tool_enabled:refusal@T2,tool_enabled:refusal@T3,tool_enabled:refusal@T4,build_volume:refusal	material@T1,nozzle_diameter@T1,nozzle_high_flow@T1,material@T2,nozzle_diameter@T2,nozzle_high_flow@T2,material@T3,nozzle_diameter@T3,nozzle_high_flow@T3,material@T4,nozzle_diameter@T4,nozzle_high_flow@T4
+xl5t-hf05-5of5	MK3.5	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	MK3.5S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	MK3.9	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	MK3.9S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	MK4	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	MK4S	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	MK4S MMU3	warning	printer_model:warning,nozzle_not_high_flow:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_not_high_flow:warning@T2,material:warning@T2,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_not_high_flow:warning@T3,material:warning@T3,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_not_high_flow:warning@T4,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	-
+xl5t-hf05-5of5	XL 1T	refusal	tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,tool_enabled:refusal@T1,tool_enabled:refusal@T2,tool_enabled:refusal@T3,tool_enabled:refusal@T4	material@T1,nozzle_diameter@T1,nozzle_high_flow@T1,material@T2,nozzle_diameter@T2,nozzle_high_flow@T2,material@T3,nozzle_diameter@T3,nozzle_high_flow@T3,material@T4,nozzle_diameter@T4,nozzle_high_flow@T4
+xl5t-hf05-5of5	XL 2T	refusal	tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,tool_enabled:refusal@T2,tool_enabled:refusal@T3,tool_enabled:refusal@T4	material@T2,nozzle_diameter@T2,nozzle_high_flow@T2,material@T3,nozzle_diameter@T3,nozzle_high_flow@T3,material@T4,nozzle_diameter@T4,nozzle_high_flow@T4
+xl5t-hf05-5of5	XL 5T	warning	nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,material:warning@T2,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,material:warning@T3,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	-
+xl5t-hf05-5of5	CORE One	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	CORE One MMU3	warning	printer_model:warning,nozzle_not_high_flow:warning@T0,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_not_high_flow:warning@T1,material:warning@T1,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_not_high_flow:warning@T2,material:warning@T2,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_not_high_flow:warning@T3,material:warning@T3,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_not_high_flow:warning@T4,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	-
+xl5t-hf05-5of5	CORE One L	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4
+xl5t-hf05-5of5	Signature Oak	refusal	printer_model:warning,tool_count:refusal,nozzle_diameter:warning@T0,nozzle_high_flow:warning@T0,nozzle_diameter:warning@T1,nozzle_high_flow:warning@T1,nozzle_diameter:warning@T2,nozzle_high_flow:warning@T2,nozzle_diameter:warning@T3,nozzle_high_flow:warning@T3,nozzle_diameter:warning@T4,nozzle_high_flow:warning@T4	material@T1,material@T2,material@T3,material@T4

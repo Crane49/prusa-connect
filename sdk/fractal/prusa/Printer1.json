@@ -1,0 +1,23 @@
+{
+  "interface": "Printer1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "state", "type": "PrinterState", "access": "ro" },
+    { "name": "speed", "type": "int", "access": "rw" }
+  ],
+  "methods": [
+    { "name": "PauseJob" },
+    { "name": "ResumeJob" },
+    { "name": "CancelJob" },
+    {
+      "name": "PrintFile",
+      "params": [
+        { "name": "url", "type": "string" }
+      ]
+    },
+    { "name": "SetReady" },
+    { "name": "SetBlocked" },
+    { "name": "Reset" },
+    { "name": "Beep" }
+  ]
+}

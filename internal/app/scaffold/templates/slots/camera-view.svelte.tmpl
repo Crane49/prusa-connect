@@ -1,0 +1,19 @@
+<script lang="ts">
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The camera whose live view this draws, by its name. It is the only prop a camera view receives. */
+    camera: string;
+  }
+
+  let { camera }: Props = $props();
+
+  // Drawn over the camera's picture while a person plays it, and only for a
+  // camera of a type this module offers. It fills the picture's box.
+  const host = heldHost();
+  const t = host.t;
+</script>
+
+<p class="flex size-full items-center justify-center text-sm text-muted-foreground">
+  {t('{{$.Name}}.cameraView.body', { camera })}
+</p>

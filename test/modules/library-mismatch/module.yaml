@@ -1,0 +1,29 @@
+# A module the app must refuse. It is installable and it is not loadable: the
+# `library` range names a component library nine major versions above the one
+# this repository publishes, so the loader stops before the import (ADR-20260911-4p6
+# rule 24, ADR-20260914-244 rule 7).
+#
+# Both proof extensions under examples/ declare a range this app satisfies, so
+# nothing outside a unit test read the other branch. This fixture is the other
+# branch, end to end: it is packed, installed with `module add`, and its range
+# reaches the app through the resources listing.
+#
+# There is no build here. The bundle is one line, it never renders, and a pnpm
+# project around it would be a build nobody reads the output of.
+
+name: library-mismatch
+summary: A module the app refuses, because its component library range excludes every version this repository publishes.
+codeowner: Prusa Research
+kind: asset
+version: 1.0.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+
+ui:
+  entry: ui/index.js
+  # Nine majors above the published 0.1.0. A range the library could grow into
+  # would make this fixture pass by accident on the day it got there.
+  library: ">=9.0.0 <10.0.0"
+  contributes:
+    device_card:
+      - id: never
+        title: Never drawn

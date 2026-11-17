@@ -1,0 +1,27 @@
+---
+---
+<div class="deploy-grid"><slot /></div>
+
+<style>
+  .deploy-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .deploy-grid > :global(*) {
+    margin-top: 0 !important;
+  }
+  /* 4th card spans all three columns */
+  .deploy-grid > :global(*:nth-child(4)) {
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 50rem) {
+    .deploy-grid {
+      grid-template-columns: 1fr;
+    }
+    .deploy-grid > :global(*:nth-child(4)) {
+      grid-column: 1;
+    }
+  }
+</style>

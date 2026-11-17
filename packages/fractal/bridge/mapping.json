@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "enums": {
+    "printerState": {
+      "note": "This table converts the word a printer reports at /state into a value of the PrinterState enumeration of domain-3d-print.md. BLOCKED means a person has to act before a job can start. An IDLE printer is on and nobody has marked it ready, so it is BLOCKED. A FINISHED or STOPPED printer has a print on the bed that a person must remove, so it is BLOCKED too. A word this table does not list becomes the default. The property state may not be null, and with no value the node above would keep showing the last state.",
+      "default": "BLOCKED",
+      "values": {
+        "READY": "READY",
+        "IDLE": "BLOCKED",
+        "PRINTING": "PRINTING",
+        "PAUSED": "PAUSED",
+        "FINISHED": "BLOCKED",
+        "STOPPED": "BLOCKED",
+        "ATTENTION": "BLOCKED",
+        "BUSY": "BUSY",
+        "ERROR": "ERROR",
+        "UNKNOWN": "BLOCKED"
+      },
+      "duringJob": {
+        "note": "A printer with a dialog on its screen reports ATTENTION. Over a print that is still on the bed, such as at a filament runout, the print is held, so it reads PAUSED. A print runs while the word at /job/state is PRINTING or PAUSED. With no print, ATTENTION stays BLOCKED.",
+        "path": "/job/state",
+        "running": ["PRINTING", "PAUSED"],
+        "values": { "ATTENTION": "PAUSED" }
+      }
+    },
+    "fdmMaterial": {
+      "note": "This table converts the short name of the filament a printer reports for a head or a slot, such as PLA, into a value of the FDMMaterial enumeration. A name this table does not list becomes OTHER, the value domain-3d-print.md has for a filament it does not name. An empty name means no filament is loaded, and becomes NOTHING. A filament method sends the name under printerNames where a printer knows a value by another name. For a name it does not know, a printer asks a person on its screen which filament to load. The firmware of a Prusa printer has no preset for PVA. So a load of PVA asks on the screen, unless a person has added a filament named PVA on the printer.",
+      "default": "OTHER",
+      "values": {
+        "": "NOTHING",
+        "---": "NOTHING",
+        "NONE": "NOTHING",
+        "PLA": "PLA",
+        "PETG": "PETG",
+        "PET-G": "PETG",
+        "ASA": "ASA",
+        "ABS": "ABS",
+        "PC": "PC",
+        "PA": "PA",
+        "NYLON": "PA",
+        "TPU": "TPU",
+        "FLEX": "TPU",
+        "HIPS": "HIPS",
+        "PVA": "PVA",
+        "PVB": "OTHER"
+      },
+      "printerNames": { "TPU": "FLEX" }
+    }
+  },
+  "interfaces": [
+    {
+      "interface": "Device1",
+      "instance": "{device}",
+      "properties": [
+        { "name": "vendor", "field": "vendor" },
+        { "name": "type", "field": "kind" },
+        { "name": "model", "field": "model" },
+        { "name": "serialNumber", "field": "serial" },
+        { "name": "uuid", "field": "id", "encode": "uuid-base64url" }
+      ]
+    },
+    {
+      "interface": "UpgradableDevice1",
+      "instance": "{device}",
+      "properties": [
+        { "name": "firmwareVersion", "field": "firmware" }
+      ],
+      "methods": [
+        {
+          "name": "UpgradeFromFile",
+          "verb": "core.command.flash",
+          "args": [{ "arg": "path", "param": 0, "url": true }],
+          "note": "A printer has one UpgradableDevice1 instance, for its main board. This server reads no firmware version of a multi-material unit or a tool head, and has no command that flashes one. The flash verb names the image by the path it has on the printer's own storage. A file URL, such as file:///usb/fw.bbf, names that path. This server fetches no file, so a value with no scheme or another scheme is refused with invalid params. A path the printer cannot open is refused by the printer."
+        }
+      ]
+    },
+    {
+      "interface": "Printer1",
+      "instance": "{device}",
+      "properties": [
+        { "name": "state", "state": "/state", "enum": "printerState" },
+        {
+          "name": "speed",
+          "state": "/speed",
+          "write": { "verb": "core.command.set_speed", "arg": "speed" }
+        }
+      ],
+      "methods": [
+        { "name": "PauseJob", "verb": "core.command.pause_print", "onlyIn": ["PRINTING"] },
+        { "name": "ResumeJob", "verb": "core.command.resume_print", "onlyIn": ["PAUSED"] },
+        { "name": "CancelJob", "verb": "core.command.stop_print", "onlyIn": ["PRINTING", "PAUSED"] },
+        {
+          "name": "PrintFile",
+          "verb": "core.command.start_print",
+          "onlyIn": ["READY"],
+          "args": [{ "arg": "path", "param": 0, "url": true, "fractal": true }],
+          "note": "The start verb names the file by the path it has on the printer's own storage. A file URL, such as file:///usb/part.bgcode, names that path. A fractal URL names a file a server above shares: the module fetches it and prints it with device.print, when it runs the files extension. A value with no scheme or another scheme is refused with invalid params. A path the printer cannot open is refused by the printer."
+        },
+        {
+          "name": "SetReady",
+          "verb": "core.command.set_printer_ready",
+          "note": "A Prusa printer takes this command only while it is IDLE, READY, STOPPED or FINISHED. In ERROR, or with a dialog on its screen, it refuses, and the call gets 0x2012. Answer the dialog on the printer, or call Reset first."
+        },
+        { "name": "SetBlocked", "verb": "core.command.cancel_printer_ready", "onlyIn": ["READY"] },
+        { "name": "Reset", "verb": "core.command.reset_printer" },
+        { "name": "Beep", "verb": "core.command.beep" }
+      ]
+    },
+    {
+      "interface": "FDMPrinter1",
+      "instance": "{device}",
+      "properties": [
+        { "name": "axisX", "state": "/axis/x" },
+        { "name": "axisY", "state": "/axis/y" },
+        { "name": "axisZ", "state": "/axis/z" },
+        { "name": "tempBed", "state": "/temperature/bed" },
+        {
+          "name": "targetBed",
+          "state": "/temperature/bed_target",
+          "zeroAsNull": true,
+          "write": {
+            "verb": "core.command.set_bed_temperature",
+            "arg": "bed_temperature",
+            "nullAs": "0",
+            "round": true
+          }
+        },
+        {
+          "name": "flow",
+          "state": "/flow",
+          "write": { "verb": "core.command.set_flow", "arg": "flow" }
+        },
+        { "name": "activeSlot", "derive": "activeSlot" }
+      ],
+      "methods": [
+        {
+          "name": "Home",
+          "verb": "core.command.home",
+          "refuseIn": ["PRINTING", "PAUSED", "BUSY"],
+          "args": [
+            {
+              "arg": "axis",
+              "letters": [
+                { "param": 0, "letter": "X" },
+                { "param": 1, "letter": "Y" },
+                { "param": 2, "letter": "Z" }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LevelBed",
+          "verb": "core.command.mesh_bed_leveling",
+          "onlyIn": ["READY"],
+          "note": "The state reads BUSY only while the printer reports BUSY. After the leveling, the state reads READY only when the printer reports READY."
+        },
+        {
+          "name": "DisableSteppers",
+          "verb": "core.command.disable_steppers",
+          "refuseIn": ["PRINTING", "PAUSED", "BUSY"]
+        }
+      ]
+    },
+    {
+      "interface": "FDMPrinterHead1",
+      "instance": "{device}_{number}",
+      "per": "head",
+      "properties": [
+        { "name": "tempNozzle", "state": "/tools/{tool}/nozzle_temp" },
+        {
+          "name": "targetNozzle",
+          "state": "/tools/{tool}/nozzle_target_temp",
+          "zeroAsNull": true,
+          "write": {
+            "verb": "core.command.set_nozzle_temperature",
+            "arg": "nozzle_temperature",
+            "nullAs": "0",
+            "round": true,
+            "toolArg": "tool"
+          }
+        },
+        { "name": "fanExtruder", "state": "/tools/{tool}/heatbreak_fan_rpm" },
+        { "name": "fanPrint", "state": "/tools/{tool}/print_fan_rpm" },
+        { "name": "nozzleDiameter", "state": "/tools/{tool}/features/nozzle_diameter" },
+        { "name": "nozzleHighFlow", "state": "/tools/{tool}/features/nozzle_high_flow" },
+        { "name": "material", "derive": "headMaterial", "enum": "fdmMaterial" }
+      ],
+      "methods": [
+        {
+          "name": "LoadFilament",
+          "verb": "core.command.load_filament",
+          "refuseIn": ["PRINTING", "BUSY"],
+          "activeHeadOnly": true,
+          "args": [{ "arg": "filament", "param": 0, "refuse": ["NOTHING"], "enum": "fdmMaterial" }],
+          "note": "The state reads BUSY only while the printer reports BUSY. For OTHER, the bridge sends the same load command as for any filament, and the printer asks on its screen which filament to load. The load may heat the nozzle, which the vocabulary forbids for OTHER."
+        },
+        {
+          "name": "UnloadFilament",
+          "verb": "core.command.unload_filament",
+          "refuseIn": ["PRINTING", "BUSY"],
+          "activeHeadOnly": true,
+          "note": "The state reads BUSY only while the printer reports BUSY."
+        },
+        {
+          "name": "Extrude",
+          "verb": "core.command.move_e",
+          "refuseIn": ["PRINTING", "BUSY"],
+          "activeHeadOnly": true,
+          "needsOneOf": { "targetNozzle": [], "material": ["NOTHING", "OTHER"] },
+          "args": [
+            { "arg": "length", "param": 0 },
+            { "arg": "feedrate", "param": 1, "default": "27", "round": true }
+          ],
+          "note": "The command needs a whole feedrate in mm/min. A feedrate the call names is rounded. A call that names none gets 27 mm/min. The firmware of a Prusa printer purges a flexible filament at 27 to 30 mm/min, its slowest purge rate, so every filament takes it. The command does not heat the nozzle, which the vocabulary asks for. It only moves the filament. The state reads BUSY only while the printer reports BUSY."
+        }
+      ]
+    },
+    {
+      "interface": "PrintJob1",
+      "instance": "{device}",
+      "activeIn": ["PRINTING", "PAUSED"],
+      "properties": [
+        { "name": "currentJobID", "state": "/job/id" },
+        { "name": "progress", "state": "/job/progress" },
+        { "name": "timePrinting", "state": "/job/time_printing" },
+        { "name": "timeRemaining", "state": "/job/time_remaining" }
+      ]
+    },
+    {
+      "interface": "FDMPrintJob1",
+      "instance": "{device}",
+      "activeIn": ["PRINTING", "PAUSED"],
+      "properties": [{ "name": "filamentUsed", "state": "/job/filament_used_mm" }]
+    },
+    {
+      "interface": "FilamentSlot1",
+      "instance": "{device}_{number}",
+      "per": "slot",
+      "properties": [
+        {
+          "name": "material",
+          "state": "/tools/{tool}/material_package_instance/package/material/abbreviation",
+          "enum": "fdmMaterial"
+        }
+      ]
+    }
+  ],
+  "absent": [
+    {
+      "interface": "FilamentSlot1",
+      "property": "tempPreheater",
+      "reason": "No printer reports a temperature for a single filament slot."
+    },
+    {
+      "interface": "FilamentSlot1",
+      "property": "fanHotend",
+      "reason": "A printer reports its fan speeds for the head, and the head reports them under FDMPrinterHead1."
+    },
+    {
+      "interface": "FilamentSlot1",
+      "property": "fanPrint",
+      "reason": "A printer reports its fan speeds for the head, and the head reports them under FDMPrinterHead1."
+    },
+    {
+      "interface": "FilamentSlot1",
+      "method": "SetMaterial",
+      "reason": "This server has no command that sets the filament label of a slot."
+    },
+    {
+      "interface": "Controller1",
+      "reason": "The only property of this interface is the board temperature, and no printer reports a board temperature to this server."
+    },
+    {
+      "interface": "SLAPrinter1",
+      "reason": "This server has no driver for a resin printer, so it has no reading for any property of this interface and no command for its method."
+    },
+    {
+      "interface": "Chamber1",
+      "reason": "The telemetry a printer sends to this server has no chamber reading. This server has commands that set a chamber target, but it has no reading of the target, so it would report a value the printer did not confirm."
+    },
+    {
+      "interface": "FDMPrinter1",
+      "method": "MoveRel",
+      "reason": "This server has one command that moves the X and Y axes and another that moves Z, so MoveRel would need two commands. The second command could fail after the first one had already moved the print head. The host checks every argument of a named command against the printer's limits. It checks no value inside a G-code line, so the bridge sends no raw G-code with core.command.send_gcode."
+    },
+    {
+      "interface": "FDMPrinter1",
+      "method": "SelectSlot",
+      "reason": "This server has no named command that selects a slot of a multi-material unit. The host checks every argument of a named command against the printer's limits. It checks no value inside a G-code line, so the bridge sends no raw G-code with core.command.send_gcode."
+    },
+    {
+      "interface": "FDMPrinterHead1",
+      "property": "nozzleType",
+      "reason": "A printer reports only whether its nozzle is hardened. A nozzle that is not hardened may be brass or stainless steel, so this server could report HARDENED and nothing else."
+    },
+    {
+      "interface": "FDMPrinterHead1",
+      "method": "SetNozzle",
+      "reason": "This server sets the nozzle type, the diameter and the high-flow flag with three separate commands. SetNozzle would need all three, and the second could fail after the first had already changed the printer. The nozzle types have no value for STAINLESS either."
+    }
+  ]
+}

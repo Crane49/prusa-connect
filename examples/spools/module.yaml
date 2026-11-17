@@ -1,0 +1,80 @@
+# The one manifest for both halves of this module (ADR-20260911-4p6 rule 30): the Go
+# process in main.go and the browser bundle under ui/.
+#
+# `prusa-connect module add` reads it out of the release, writes one
+# declaration, and copies it into the bundle directory it installs, because
+# that is where the host reads the ui block from. The digest covers it there,
+# so the manifest the host reads is the one the install recorded.
+#
+# The namespace is absent on purpose. The host derives it from the module path
+# the operator installed, so no module can name another module's address
+# (ADR-20260911-4p6 rule 15).
+
+name: spools
+# The two keys an extensions page prints on the card, beside the version. They
+# are optional, and this example carries them because the card is what a person
+# reads before they switch a module on.
+title: Spools
+summary: Tracks the filament spools on each printer, on a page of its own.
+codeowner: Prusa Research
+# The kind the one instance is declared under. It offers the service runtime,
+# which is what a module with a process half needs; the browser half rides in
+# the same declaration as `service.assets`.
+kind: sink
+version: 1.0.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The plugin wire major the process half speaks.
+contract_major: 1
+# Where the fragment describing the two routes is, inside this repository.
+openapi: openapi.json
+# The platforms the release ships a binary for, each a GOOS_GOARCH pair. The
+# install reads this to know which files in the release are programs, and
+# refuses a release with no binary for the host it is running on.
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+# The settings this module reads, with the default of each. The list is this
+# module's own default configuration: the host applies every default, writes
+# the `config:` block of the instance over it key by key, and sends the result
+# on plugin.configure before any request arrives. A key not named here is
+# refused before the process starts.
+#
+# An operator who wants a bigger shelf writes one line:
+#
+#   resources:
+#     sink:
+#       spools:
+#         config:
+#           shelf_size: 2000
+options:
+  - key: shelf_size
+    type: int
+    default: "500"
+    summary: How many spools this module keeps. A write over the limit is refused.
+
+# No `permissions` key. This module acts only for the person the host
+# authorized, and takes nothing as itself. The host takes view_resource on the
+# instance before GET /spools and operate_resource before POST /spools, which
+# openapi.json states on each operation.
+
+ui:
+  # The built bundle, relative to the bundle root. The host serves it at
+  # /api/v1/modules/<namespace>/ui/ui/index.js.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against. The app
+  # refuses a bundle its own version falls outside of (ADR-20260911-4p6 rule 24).
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    pages:
+      - path: spools
+        title: Spools
+        icon: layers
+  # The components this bundle hands other modules' bundles. A module that
+  # draws one names it under ui.imports with this module's namespace
+  # (ADR-20261027-wvj rules 19 to 22).
+  exports:
+    - name: spool-picker

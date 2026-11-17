@@ -1,0 +1,30 @@
+<script lang="ts">
+  import { Badge } from '@prusa/connect-ui/primitives';
+
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The device this section is about. It is the only prop a section receives. */
+    deviceId: string;
+  }
+
+  let { deviceId }: Props = $props();
+
+  // The fleet is already on the host: the app reads it once and keeps it
+  // current from the event stream, and a module receives it read-only. So this
+  // section makes no request of its own, and it redraws when an event moves
+  // this device's row.
+  const host = heldHost();
+  const fleet = host.fleet;
+  const t = host.t;
+
+  const device = $derived(fleet.device(deviceId));
+</script>
+
+{#if device === undefined}
+  <p class="text-sm text-muted-foreground">
+    {t('{{$.Name}}.deviceSection.absent')}
+  </p>
+{:else}
+  <Badge variant="secondary">{t('{{$.Name}}.deviceSection.body')}</Badge>
+{/if}

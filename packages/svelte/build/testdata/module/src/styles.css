@@ -1,0 +1,20 @@
+/* What a module author writes, with one difference: the theme below is named
+   by a path within this package, because this fixture lives inside the library
+   it tests. A real module writes
+   `@reference '@prusa/connect-ui/tokens.css'`.
+
+   Four statements, and only the third emits anything (ADR-20260914-244 rules 11 and 12):
+
+     1. Tailwind's own theme, in scope but not emitted. Without it the build
+        stops on `--spacing`
+     2. the library's theme, its own utilities and its `dark` variant, also not
+        emitted. The variables resolve from the host page's `:root`
+     3. the utilities this module names, and nothing else. The preflight is not
+        here, because it would restyle the host page
+     4. the tree Tailwind scans for class names, which is this module's own */
+@reference 'tailwindcss';
+@reference '../../../../src/styles/tokens.css';
+@layer utilities {
+  @tailwind utilities;
+}
+@source './';

@@ -1,0 +1,6 @@
+{
+  "nearbyPrinters.add": "Add printer",
+  "nearbyPrinters.address": "{address}, port {port}",
+  "nearbyPrinters.note": "Printers on this network that have PrusaLink turned on and are not among your printers here. Being on this list gives a printer no access to this server.",
+  "nearbyPrinters.title": "Printers nearby"
+}

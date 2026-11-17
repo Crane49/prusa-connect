@@ -1,0 +1,31 @@
+<script lang="ts">
+  import { parseFileRef } from '@prusa/connect-ui/slots';
+
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The file the page is about, as `<storage>:<path>`. It is the only prop a file tab receives. */
+    fileRef: string;
+  }
+
+  let { fileRef }: Props = $props();
+
+  const host = heldHost();
+  const t = host.t;
+
+  // The tab sits after the page's own tabs, and only for the file types the
+  // manifest names under file_types.
+  const file = $derived(parseFileRef(fileRef));
+</script>
+
+<div class="flex flex-col gap-4">
+  {#if file === undefined}
+    <p class="text-sm text-muted-foreground">
+      {t('{{$.Name}}.fileTab.absent')}
+    </p>
+  {:else}
+    <p class="text-sm text-muted-foreground">
+      {t('{{$.Name}}.fileTab.body', { path: file.path })}
+    </p>
+  {/if}
+</div>

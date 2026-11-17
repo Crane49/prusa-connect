@@ -1,0 +1,554 @@
+# Source: legacy/transport/sse/asyncapi.yaml, the retired server's own document, copied below this line.
+asyncapi: 2.6.0
+channels:
+    prusa-connect.auth.expired:
+        subscribe:
+            message:
+                description: Session token expired and the stream is closing.
+                name: prusa-connect.auth.expired
+                payload:
+                    properties:
+                        data:
+                            additionalProperties: true
+                            type: object
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.auth.expired
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Session token expired and the stream is closing.
+            tags:
+                - name: auth
+    prusa-connect.file.changed:
+        subscribe:
+            message:
+                description: File system changed.
+                name: prusa-connect.file.changed
+                payload:
+                    properties:
+                        data:
+                            additionalProperties: true
+                            type: object
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.file.changed
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: File system changed.
+            tags:
+                - name: file
+    prusa-connect.job.update:
+        subscribe:
+            message:
+                description: Job lifecycle signal.
+                name: prusa-connect.job.update
+                payload:
+                    properties:
+                        data:
+                            properties:
+                                event:
+                                    type: string
+                            required:
+                                - event
+                            type: object
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.job.update
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Job lifecycle signal.
+            tags:
+                - name: job
+    prusa-connect.printer.connected:
+        subscribe:
+            message:
+                description: Printer connected.
+                name: prusa-connect.printer.connected
+                payload:
+                    properties:
+                        data:
+                            $ref: '#/components/schemas/PrinterStateResponse'
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.connected
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Printer connected.
+            tags:
+                - name: printer
+    prusa-connect.printer.disconnected:
+        subscribe:
+            message:
+                description: Printer disconnected; record retained.
+                name: prusa-connect.printer.disconnected
+                payload:
+                    properties:
+                        data:
+                            type: "null"
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.disconnected
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Printer disconnected; record retained.
+            tags:
+                - name: printer
+    prusa-connect.printer.event:
+        subscribe:
+            message:
+                description: Generic printer event.
+                name: prusa-connect.printer.event
+                payload:
+                    properties:
+                        data:
+                            properties:
+                                data:
+                                    additionalProperties: true
+                                    type: object
+                                event:
+                                    type: string
+                            required:
+                                - event
+                                - data
+                            type: object
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.event
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Generic printer event.
+            tags:
+                - name: printer
+    prusa-connect.printer.initial_state:
+        subscribe:
+            message:
+                description: Initial printer state snapshot.
+                name: prusa-connect.printer.initial_state
+                payload:
+                    properties:
+                        data:
+                            items:
+                                $ref: '#/components/schemas/PrinterStateResponse'
+                            type: array
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.initial_state
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Initial printer state snapshot.
+            tags:
+                - name: printer
+    prusa-connect.printer.removed:
+        subscribe:
+            message:
+                description: Printer deleted by operator; drop from client caches.
+                name: prusa-connect.printer.removed
+                payload:
+                    properties:
+                        data:
+                            type: "null"
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.removed
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Printer deleted by operator; drop from client caches.
+            tags:
+                - name: printer
+    prusa-connect.printer.shadow_status_changed:
+        subscribe:
+            message:
+                description: Fractal-mirrored printer's sync status (EMPTY/OK/STALE) changed.
+                name: prusa-connect.printer.shadow_status_changed
+                payload:
+                    properties:
+                        data:
+                            properties:
+                                remote_path:
+                                    type: string
+                                status:
+                                    type: string
+                            required:
+                                - remote_path
+                                - status
+                            type: object
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.shadow_status_changed
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Fractal-mirrored printer's sync status (EMPTY/OK/STALE) changed.
+            tags:
+                - name: printer
+    prusa-connect.printer.state_changed:
+        subscribe:
+            message:
+                description: Printer state transition.
+                name: prusa-connect.printer.state_changed
+                payload:
+                    properties:
+                        data:
+                            properties:
+                                new_state:
+                                    type: string
+                                old_state:
+                                    type: string
+                            required:
+                                - old_state
+                                - new_state
+                            type: object
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.printer.state_changed
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Printer state transition.
+            tags:
+                - name: printer
+                - name: state
+    prusa-connect.transfer.update:
+        subscribe:
+            message:
+                description: Transfer progress update.
+                name: prusa-connect.transfer.update
+                payload:
+                    properties:
+                        data:
+                            $ref: '#/components/schemas/TransferInfo'
+                        datacontenttype:
+                            type: string
+                        id:
+                            type: string
+                        source:
+                            type: string
+                        specversion:
+                            type: string
+                        time:
+                            format: date-time
+                            type: string
+                        type:
+                            enum:
+                                - prusa-connect.transfer.update
+                            type: string
+                    required:
+                        - specversion
+                        - id
+                        - source
+                        - type
+                        - time
+                        - datacontenttype
+                        - data
+                    type: object
+            summary: Transfer progress update.
+            tags:
+                - name: transfer
+components:
+    schemas:
+        JobInfo:
+            properties:
+                file_id:
+                    type: integer
+                filename:
+                    type: string
+                progress:
+                    type: number
+                time_printing:
+                    type: integer
+                time_remaining:
+                    type: integer
+            required:
+                - filename
+                - file_id
+                - progress
+                - time_remaining
+                - time_printing
+            type: object
+        PrinterStateResponse:
+            properties:
+                connected:
+                    type: boolean
+                connected_at:
+                    format: date-time
+                    type: string
+                current_job:
+                    anyOf:
+                        - properties:
+                            file_id:
+                                type: integer
+                            filename:
+                                type: string
+                            progress:
+                                type: number
+                            time_printing:
+                                type: integer
+                            time_remaining:
+                                type: integer
+                          required:
+                            - filename
+                            - file_id
+                            - progress
+                            - time_remaining
+                            - time_printing
+                          type: object
+                        - type: "null"
+                fingerprint:
+                    type: string
+                firmware:
+                    type: string
+                last_seen:
+                    format: date-time
+                    type: string
+                model:
+                    type: string
+                remote_path:
+                    type: string
+                shadow_status:
+                    type: string
+                state:
+                    type: string
+                telemetry:
+                    additionalProperties: true
+                    type: object
+                uuid:
+                    type: string
+            required:
+                - connected_at
+                - last_seen
+                - telemetry
+                - current_job
+                - uuid
+                - fingerprint
+                - model
+                - firmware
+                - state
+                - connected
+            type: object
+        TransferInfo:
+            properties:
+                file_id:
+                    type: integer
+                path:
+                    type: string
+                progress:
+                    type: number
+                started_at:
+                    format: date-time
+                    type: string
+                state:
+                    type: string
+                total_size:
+                    type: integer
+                transferred:
+                    type: integer
+                updated_at:
+                    format: date-time
+                    type: string
+            required:
+                - file_id
+                - path
+                - progress
+                - state
+                - started_at
+                - updated_at
+                - total_size
+                - transferred
+            type: object
+info:
+    description: 'Server-Sent Events published by the Prusa Connect server. Source of truth: legacy/printer/state/payloads.go and legacy/printer/state/broadcaster.go'
+    title: Prusa Connect SSE API
+    version: 1.0.0
+servers:
+    events:
+        description: SSE endpoint. URL is configurable via API server settings.
+        protocol: sse
+        url: http://localhost:8080/api/events

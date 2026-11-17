@@ -1,0 +1,1252 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "threemf",
+    "version": "0.1.0",
+    "description": "The routes the 3MF module serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at <mount>/openapi.json."
+  },
+  "paths": {
+    "/project": {
+      "get": {
+        "operationId": "get-project",
+        "summary": "What one 3MF project holds",
+        "description": "Reads a .3mf project file and answers who wrote it, its printer setups with their beds, its objects with every copy of them on the plate, the pictures it carries and what could not be read. Each copy carries its outline seen from above, so a page can draw every bed to scale. The module reads PrusaSlicer 2, PrusaSlicer 3 and OrcaSlicer projects in full, and only the 3MF core of a file from any other program. A file that is not a 3MF project answers 422 with threemf/NOT_A_PROJECT, and one larger than the module reads answers 422 with threemf/PROJECT_TOO_LARGE. The answer for one version of a file is kept in memory, so asking again costs no second read. The host takes view_resource on the module's instance before it calls the module, and the module reads the file as the person, so the storage takes read_storage.",
+        "parameters": [
+          {
+            "name": "storage",
+            "in": "query",
+            "required": true,
+            "description": "The name the storage is declared under.",
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "examples": [
+                "local"
+              ]
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "description": "The 3MF file, relative to the storage root.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024,
+              "examples": [
+                "projects/bracket.3mf"
+              ]
+            }
+          },
+          {
+            "name": "raw_settings",
+            "in": "query",
+            "description": "Add every setting the slicer stored to each setup, as raw_settings. They are left out by default, because a project holds hundreds of them.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The project.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/project/thumbnail": {
+      "get": {
+        "operationId": "get-project-thumbnail",
+        "summary": "One picture of a 3MF project",
+        "description": "Serves one of the pictures get-project lists, by its index, as image/png or image/jpeg. A picture of one bed is listed on that bed. An index the project has no picture for answers 404 with threemf/NO_THUMBNAIL. The host takes view_resource on the module's instance before it calls the module, and the module reads the file as the person, so the storage takes read_storage.",
+        "parameters": [
+          {
+            "name": "storage",
+            "in": "query",
+            "required": true,
+            "description": "The name the storage is declared under.",
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "examples": [
+                "local"
+              ]
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "description": "The 3MF file, relative to the storage root.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024,
+              "examples": [
+                "projects/bracket.3mf"
+              ]
+            }
+          },
+          {
+            "name": "index",
+            "in": "query",
+            "description": "The picture's index in the project's thumbnails. 0 is the best picture of the whole project.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1024
+            }
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "description": "The entity tag of the picture this client already has. A picture with the same tag answers 304 with no body.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The picture stored inside the file.",
+            "headers": {
+              "ETag": {
+                "description": "The file's size, its modification time and the picture's index. Send it back in If-None-Match.",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Cache-Control": {
+                "description": "private, no-cache: the client asks again before every use.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "The client's copy is still current. No body is sent."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/project/mesh": {
+      "get": {
+        "operationId": "get-project-mesh",
+        "summary": "One object of a 3MF project as triangles",
+        "description": "Reads the model parts of one object of a .3mf project and answers them as at most 20000 triangles, made coarser where the file has more, so a page can draw the object in 3D. The object stands as its first copy stands, centred on the origin. An object the project does not have answers 404 with threemf/NO_OBJECT, and the errors of get-project apply. The answer for one object of one version of a file is kept in memory. The host takes view_resource on the module's instance before it calls the module, and the module reads the file as the person, so the storage takes read_storage.",
+        "parameters": [
+          {
+            "name": "storage",
+            "in": "query",
+            "required": true,
+            "description": "The name the storage is declared under.",
+            "schema": {
+              "type": "string",
+              "maxLength": 128,
+              "examples": [
+                "local"
+              ]
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "description": "The 3MF file, relative to the storage root.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024,
+              "examples": [
+                "projects/bracket.3mf"
+              ]
+            }
+          },
+          {
+            "name": "object",
+            "in": "query",
+            "required": true,
+            "description": "The object's index in the objects get-project answers.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The object's mesh.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectMesh"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Project": {
+        "description": "What one 3MF project file holds: who wrote it, the printer setups with their beds, the objects with every copy of them on the plate, the pictures, and what the module could not read. Every position is in millimetres. A bed's offset is where its origin lies in the project, so a plan that draws each bed at its offset lays the beds out the way the slicer did.",
+        "additionalProperties": false,
+        "properties": {
+          "counts": {
+            "$ref": "#/components/schemas/ProjectCounts",
+            "description": "How many of each thing the project holds, counted by the module so a page does not walk the lists to say so."
+          },
+          "extruders": {
+            "description": "The extruders the project prints with, counted from 1: those of every object and those a tool change switches to. Absent for a project with no object.",
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "issues": {
+            "description": "What the module could not read in full. None of them stopped the read. Empty when the file was read whole.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectIssue"
+            },
+            "type": "array"
+          },
+          "objects": {
+            "description": "The objects, in the slicer's order, each with its instances.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectObject"
+            },
+            "type": "array"
+          },
+          "producer": {
+            "$ref": "#/components/schemas/ProjectProducer",
+            "description": "The program that wrote the file."
+          },
+          "setups": {
+            "description": "The printer setups, each with its beds. Every project has at least one. Only a PrusaSlicer 3 project has more than one.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectSetup"
+            },
+            "type": "array"
+          },
+          "thumbnails": {
+            "description": "The pictures the file carries, best first. get-project-thumbnail serves each one by its index.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectThumbnail"
+            },
+            "type": "array"
+          },
+          "title": {
+            "description": "The title the file carries in its metadata. Absent when it has none.",
+            "maxLength": 1024,
+            "type": "string"
+          }
+        },
+        "required": [
+          "producer",
+          "counts",
+          "setups",
+          "objects",
+          "thumbnails",
+          "issues"
+        ],
+        "type": "object"
+      },
+      "ProjectBed": {
+        "description": "One bed of a setup.",
+        "additionalProperties": false,
+        "properties": {
+          "gcode": {
+            "description": "The entry inside the file that holds G-code the slicer stored for this bed. Absent when there is none.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "index": {
+            "description": "The bed's position in its setup, from 0. A slicer shows it as index+1.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "instances": {
+            "description": "The instances that stand on this bed, including any that stick out of it.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectInstanceRef"
+            },
+            "type": "array"
+          },
+          "layer_changes": {
+            "description": "The changes the slicer inserts at a given height of this bed, lowest first. Absent when there are none.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectLayerChange"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "locked": {
+            "description": "The OrcaSlicer plate is locked against arranging.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The name a person gave the bed. Only an OrcaSlicer plate has one.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "offset": {
+            "$ref": "#/components/schemas/ProjectPoint",
+            "description": "Where the bed's origin lies in the project."
+          },
+          "sequential": {
+            "description": "The bed prints one object to its top before it starts the next.",
+            "type": "boolean"
+          },
+          "size": {
+            "$ref": "#/components/schemas/ProjectPoint",
+            "description": "The width and depth of the bed. Zero when the bed shape is not known."
+          },
+          "thumbnail": {
+            "description": "The index in thumbnails of the picture of this bed. Absent when the file carries none.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "index",
+          "offset",
+          "size",
+          "instances"
+        ],
+        "type": "object"
+      },
+      "ProjectBedRef": {
+        "description": "Names one bed.",
+        "additionalProperties": false,
+        "properties": {
+          "bed": {
+            "description": "The index of the bed in that setup's beds.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "setup": {
+            "description": "The index of the setup in setups.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "setup",
+          "bed"
+        ],
+        "type": "object"
+      },
+      "ProjectCounts": {
+        "description": "Says how many of each thing a project holds.",
+        "additionalProperties": false,
+        "properties": {
+          "beds": {
+            "description": "The number of beds, across every setup.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "instances": {
+            "description": "The number of instances, which is the number of copies of objects on the plate.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "non_printable": {
+            "description": "The instances the slicer leaves out of a print.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "objects": {
+            "description": "The number of objects.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "outside": {
+            "description": "The instances that stand on no bed.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "partly_outside": {
+            "description": "The instances that stick out of their bed or above the highest print.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "setups": {
+            "description": "The number of printer setups.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "setups",
+          "beds",
+          "objects",
+          "instances",
+          "non_printable",
+          "partly_outside",
+          "outside"
+        ],
+        "type": "object"
+      },
+      "ProjectFilament": {
+        "description": "One filament of a setup.",
+        "additionalProperties": false,
+        "properties": {
+          "colour": {
+            "description": "The colour the slicer shows the filament in, as #RRGGBB.",
+            "maxLength": 7,
+            "type": "string"
+          },
+          "type": {
+            "description": "The filament type, such as PLA.",
+            "maxLength": 128,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectInstance": {
+        "description": "One copy of an object on the plate.",
+        "additionalProperties": false,
+        "properties": {
+          "bed": {
+            "$ref": "#/components/schemas/ProjectBedRef",
+            "description": "The bed the instance stands on. Absent when it stands on none."
+          },
+          "index": {
+            "description": "The instance's position in its object, from 0. A slicer shows it as index+1.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "item": {
+            "description": "The position of the instance's build item in the file, from 0.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "min": {
+            "$ref": "#/components/schemas/ProjectPoint",
+            "description": "The front left corner of that box, in the coordinates of the instance's bed, or of the project for an instance on no bed."
+          },
+          "outline": {
+            "description": "The outline of the instance's model parts seen from above, counter-clockwise, in the same coordinates as min. Add the bed's offset for the project's coordinates. It has at most 64 points, rounded to a hundredth of a millimetre.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectPoint"
+            },
+            "maxItems": 64,
+            "type": "array"
+          },
+          "outline_approx": {
+            "description": "The outline and the box come from the boxes around the meshes, because the meshes were too large to keep.",
+            "type": "boolean"
+          },
+          "placement": {
+            "description": "Whether the instance is whole on its bed. Only an instance inside is sliced. unknown is the one bed of a file whose beds the module does not know.",
+            "enum": [
+              "inside",
+              "partly_outside",
+              "outside",
+              "unknown"
+            ],
+            "type": "string"
+          },
+          "printable": {
+            "description": "False for an instance the slicer leaves out of a print.",
+            "type": "boolean"
+          },
+          "size": {
+            "$ref": "#/components/schemas/ProjectSize",
+            "description": "The size of the box around the instance's model parts."
+          },
+          "transform": {
+            "description": "The build item's transform as the 3MF file writes it: m00 m01 m02 m10 m11 m12 m20 m21 m22 m30 m31 m32, in project coordinates.",
+            "items": {
+              "format": "double",
+              "type": "number"
+            },
+            "maxItems": 12,
+            "minItems": 12,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "index",
+          "item",
+          "printable",
+          "placement",
+          "size",
+          "min",
+          "outline",
+          "transform"
+        ],
+        "type": "object"
+      },
+      "ProjectInstanceRef": {
+        "description": "Names one instance.",
+        "additionalProperties": false,
+        "properties": {
+          "instance": {
+            "description": "The index of the instance in that object's instances.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "object": {
+            "description": "The index of the object in objects.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "object",
+          "instance"
+        ],
+        "type": "object"
+      },
+      "ProjectIssue": {
+        "description": "One thing the module could not read in full.",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "What kind of thing. settings_unreadable is a settings file that could not be read, outline_approx a mesh too large to keep, thumbnail_unreadable a picture that could not be read, unknown_reference a build item or a component naming an object the file does not have, unsupported_extension a 3MF extension the module does not read, unsupported_producer a file read by a dialect made for another program, and gcode_only a file that holds G-code for its beds and no object to slice.",
+            "enum": [
+              "settings_unreadable",
+              "outline_approx",
+              "thumbnail_unreadable",
+              "unknown_reference",
+              "unsupported_extension",
+              "unsupported_producer",
+              "gcode_only"
+            ],
+            "type": "string"
+          },
+          "detail": {
+            "description": "What the issue is about, such as the name of the file inside the project.",
+            "maxLength": 1024,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "ProjectLayerChange": {
+        "description": "One change a slicer inserts at a given height.",
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "description": "The colour of the new filament as #RRGGBB, for a colour change or a tool change.",
+            "maxLength": 7,
+            "type": "string"
+          },
+          "extra": {
+            "description": "The G-code of a custom change, or the message of a pause.",
+            "maxLength": 4096,
+            "type": "string"
+          },
+          "extruder": {
+            "description": "The extruder the change is for, counted from 1.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "height_mm": {
+            "description": "The top of the layer the change comes after.",
+            "format": "double",
+            "type": "number"
+          },
+          "kind": {
+            "description": "What the change does. color_change stops for a new filament, pause pauses the print, tool_change switches to another extruder, template inserts the printer's template G-code and custom inserts G-code a person wrote.",
+            "enum": [
+              "color_change",
+              "pause",
+              "tool_change",
+              "template",
+              "custom"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "height_mm",
+          "kind"
+        ],
+        "type": "object"
+      },
+      "ProjectLayerRange": {
+        "description": "A height range of an object with settings of its own.",
+        "additionalProperties": false,
+        "properties": {
+          "extruder": {
+            "description": "The extruder the range prints the outer walls with, counted from 1. Absent when the range does not change the extruder.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "max_z_mm": {
+            "description": "The top of the range.",
+            "format": "double",
+            "type": "number"
+          },
+          "min_z_mm": {
+            "description": "The bottom of the range.",
+            "format": "double",
+            "type": "number"
+          },
+          "settings": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "The settings of the range, by key, with each value as the slicer wrote it.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "min_z_mm",
+          "max_z_mm",
+          "settings"
+        ],
+        "type": "object"
+      },
+      "ProjectMesh": {
+        "description": "One object of a 3MF project as triangles, made light enough for a page to draw.",
+        "additionalProperties": false,
+        "properties": {
+          "box": {
+            "description": "A mesh was too large for the module to keep, and its part is drawn as the box around it.",
+            "type": "boolean"
+          },
+          "object": {
+            "description": "The object's index in the project's objects.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "parts": {
+            "description": "The object's model parts in the order their triangles come. Modifiers, negative volumes and support blockers or enforcers are left out.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectMeshPart"
+            },
+            "type": "array"
+          },
+          "source_triangles": {
+            "description": "How many triangles the model parts have in the file. More than the triangles sent means the mesh was made coarser.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "triangles": {
+            "description": "Indices into the vertices, three a triangle, part after part in the order of parts.",
+            "items": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "vertices": {
+            "description": "x, y and z of each vertex in millimetres, three numbers a vertex, rounded to a hundredth. The object stands as its first copy stands, turned and scaled but not moved, centred on x 0 and y 0 with its lowest point at z 0.",
+            "items": {
+              "format": "float",
+              "type": "number"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "object",
+          "vertices",
+          "triangles",
+          "parts",
+          "source_triangles"
+        ],
+        "type": "object"
+      },
+      "ProjectMeshPart": {
+        "description": "One model part of a ProjectMesh.",
+        "additionalProperties": false,
+        "properties": {
+          "extruder": {
+            "description": "The extruder of the part's outer wall, counted from 1, as the part in get-project says.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "description": "The part's name. Absent when the file gives none.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "triangles": {
+            "description": "How many triangles of the mesh belong to the part.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "triangles"
+        ],
+        "type": "object"
+      },
+      "ProjectNozzle": {
+        "description": "One nozzle of a printer profile.",
+        "additionalProperties": false,
+        "properties": {
+          "diameter_mm": {
+            "description": "The nozzle diameter.",
+            "format": "double",
+            "type": "number"
+          },
+          "high_flow": {
+            "description": "Whether it is a high-flow nozzle. Absent when the file does not say.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "diameter_mm"
+        ],
+        "type": "object"
+      },
+      "ProjectObject": {
+        "description": "One object and its copies.",
+        "additionalProperties": false,
+        "properties": {
+          "extruders": {
+            "description": "The extruders the object prints with, counted from 1: those of its parts, its painting, its layer ranges and its support.",
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "index": {
+            "description": "The object's position in objects.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "instances": {
+            "description": "The copies of the object, in build order.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectInstance"
+            },
+            "type": "array"
+          },
+          "layer_ranges": {
+            "description": "The heights where the object prints with settings of their own, lowest first. Absent when there are none.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectLayerRange"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "The object's name. Two objects may share one, and it may be absent.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "painting": {
+            "$ref": "#/components/schemas/ProjectPainting",
+            "description": "What was painted on any of the object's parts. Absent when nothing was."
+          },
+          "parts": {
+            "description": "The parts the object is built from, in the slicer's order.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectPart"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "index",
+          "parts",
+          "instances"
+        ],
+        "type": "object"
+      },
+      "ProjectPainting": {
+        "description": "Says what a person painted on a surface with the painting tools of a slicer.",
+        "additionalProperties": false,
+        "properties": {
+          "multimaterial": {
+            "description": "Areas were painted to print with other extruders.",
+            "type": "boolean"
+          },
+          "seams": {
+            "description": "Areas were painted to have the seam, or to avoid it.",
+            "type": "boolean"
+          },
+          "supports": {
+            "description": "Areas were painted to have support, or to have none.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ProjectPart": {
+        "description": "One part of an object.",
+        "additionalProperties": false,
+        "properties": {
+          "extruder": {
+            "description": "The extruder that prints the part's outer wall, counted from 1. Absent for a part that prints nothing itself, and for a modifier that does not change the extruder.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "description": "The part's name.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "painted_extruders": {
+            "description": "The extruders the multi-material painting of the part prints with, counted from 1. Absent on a printer with one extruder and for a part with no such painting.",
+            "items": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "painting": {
+            "$ref": "#/components/schemas/ProjectPainting",
+            "description": "What was painted on the part. Absent when nothing was."
+          },
+          "type": {
+            "description": "What the part does. model is printed, negative_volume is cut out of the model, modifier changes the settings inside it, and support_blocker and support_enforcer stop or add support.",
+            "enum": [
+              "model",
+              "negative_volume",
+              "modifier",
+              "support_blocker",
+              "support_enforcer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "type": "object"
+      },
+      "ProjectPoint": {
+        "description": "A position on the bed plane, in millimetres.",
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "description": "Millimetres to the right of the origin.",
+            "format": "double",
+            "type": "number"
+          },
+          "y": {
+            "description": "Millimetres behind the origin.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
+      "ProjectProducer": {
+        "description": "The program that wrote a project.",
+        "additionalProperties": false,
+        "properties": {
+          "application": {
+            "description": "The Application entry of the model as the program wrote it, such as PrusaSlicer-2.9.6.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "dialect": {
+            "description": "The reader that understood the program's own files. generic reads the 3MF core alone: one setup, one bed and no settings.",
+            "enum": [
+              "generic",
+              "prusaslicer2",
+              "prusaslicer3",
+              "orcaslicer"
+            ],
+            "type": "string"
+          },
+          "format_version": {
+            "description": "The version of the program's own file layout inside the 3MF.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "name": {
+            "description": "The program's name, such as PrusaSlicer or OrcaSlicer.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "supported": {
+            "description": "Whether the dialect was made for this program. A BambuStudio project is read by the OrcaSlicer dialect and is not supported, so what it says may be incomplete.",
+            "type": "boolean"
+          },
+          "version": {
+            "description": "The program's version, such as 2.9.6 or 3.0.0-alpha12.",
+            "maxLength": 1024,
+            "type": "string"
+          }
+        },
+        "required": [
+          "dialect",
+          "supported"
+        ],
+        "type": "object"
+      },
+      "ProjectSettings": {
+        "description": "The summary of one setup's settings. The values are normalised from the slicer's own tables, which spell them differently.",
+        "additionalProperties": false,
+        "properties": {
+          "brim_width_mm": {
+            "description": "The brim width. 0 is no brim.",
+            "format": "double",
+            "type": "number"
+          },
+          "filaments": {
+            "description": "The filaments the setup is sliced for, in tool order.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectFilament"
+            },
+            "type": "array"
+          },
+          "first_layer_height_mm": {
+            "description": "The height of the first layer.",
+            "format": "double",
+            "type": "number"
+          },
+          "infill_pattern": {
+            "description": "The slicer's name for the sparse infill pattern, such as gyroid.",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "infill_percent": {
+            "description": "The sparse infill density, from 0 to 100.",
+            "format": "double",
+            "type": "number"
+          },
+          "layer_height_mm": {
+            "description": "The layer height.",
+            "format": "double",
+            "type": "number"
+          },
+          "perimeters": {
+            "description": "The number of perimeters, which OrcaSlicer calls wall loops.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "supports": {
+            "description": "Where the slicer generates support. Absent when the file does not say.",
+            "enum": [
+              "none",
+              "everywhere",
+              "build_plate_only",
+              "enforcers_only"
+            ],
+            "type": "string"
+          },
+          "wipe_tower": {
+            "description": "Whether the slicer adds a wipe tower.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "filaments"
+        ],
+        "type": "object"
+      },
+      "ProjectSettingsGroup": {
+        "description": "One of the slicer's tables of settings.",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The table's name: config for PrusaSlicer 2, a kind of profile such as print_settings for PrusaSlicer 3, and project_settings for OrcaSlicer.",
+            "maxLength": 128,
+            "type": "string"
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Each setting by its key, with the value as the slicer wrote it.",
+            "type": "object"
+          }
+        },
+        "required": [
+          "name",
+          "values"
+        ],
+        "type": "object"
+      },
+      "ProjectSetup": {
+        "description": "One printer setup and the beds that use it.",
+        "additionalProperties": false,
+        "properties": {
+          "bed_shape": {
+            "description": "The outline of one bed in the bed's own coordinates. Empty when the file does not say.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectPoint"
+            },
+            "type": "array"
+          },
+          "beds": {
+            "description": "The beds of this setup, in the slicer's order.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectBed"
+            },
+            "type": "array"
+          },
+          "binary_gcode": {
+            "description": "Whether the profile exports binary G-code. Absent when the file does not say.",
+            "type": "boolean"
+          },
+          "index": {
+            "description": "The setup's position in setups, from 0.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "label_objects": {
+            "description": "How the slicer marks objects in G-code: firmware, octoprint or disabled. Only firmware lets a printer cancel one object.",
+            "maxLength": 64,
+            "type": "string"
+          },
+          "material_profiles": {
+            "description": "The names of the slicer's material profiles, one per filament.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "max_print_height_mm": {
+            "description": "The highest a print may reach. Absent when the file does not say.",
+            "format": "double",
+            "type": "number"
+          },
+          "nozzles": {
+            "description": "The nozzles of the printer profile, one per tool.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectNozzle"
+            },
+            "type": "array"
+          },
+          "print_profile": {
+            "description": "The name of the slicer's print profile.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "printer_model": {
+            "description": "The printer the profile is for, such as MK4S or COREONE.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "printer_profile": {
+            "description": "The name of the slicer's printer profile.",
+            "maxLength": 1024,
+            "type": "string"
+          },
+          "raw_settings": {
+            "description": "Every setting the slicer stored, one table per kind of profile, with each value as the slicer wrote it. Present only when raw_settings=true was asked for.",
+            "items": {
+              "$ref": "#/components/schemas/ProjectSettingsGroup"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "settings": {
+            "$ref": "#/components/schemas/ProjectSettings",
+            "description": "A few settings read out of the slicer's tables, for a summary. A setting the file does not hold is absent."
+          },
+          "technology": {
+            "description": "FFF or SLA.",
+            "maxLength": 64,
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "material_profiles",
+          "nozzles",
+          "bed_shape",
+          "settings",
+          "beds"
+        ],
+        "type": "object"
+      },
+      "ProjectSize": {
+        "description": "The extent of a thing, in millimetres.",
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "description": "The width.",
+            "format": "double",
+            "type": "number"
+          },
+          "y": {
+            "description": "The depth.",
+            "format": "double",
+            "type": "number"
+          },
+          "z": {
+            "description": "The height.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y",
+          "z"
+        ],
+        "type": "object"
+      },
+      "ProjectThumbnail": {
+        "description": "One picture a project carries.",
+        "additionalProperties": false,
+        "properties": {
+          "bed": {
+            "$ref": "#/components/schemas/ProjectBedRef",
+            "description": "The bed the picture shows. Absent for a picture of the whole project."
+          },
+          "height": {
+            "description": "The height in pixels.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "index": {
+            "description": "The picture's position in thumbnails. get-project-thumbnail takes it.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "media_type": {
+            "description": "image/png or image/jpeg.",
+            "enum": [
+              "image/png",
+              "image/jpeg"
+            ],
+            "type": "string"
+          },
+          "width": {
+            "description": "The width in pixels.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "index",
+          "media_type",
+          "width",
+          "height"
+        ],
+        "type": "object"
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "One refusal, as RFC 9457 names it. The client SDK reads this shape: code reaches ApiError.code and detail reaches ApiError.message.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "about:blank, because this module publishes no page per code."
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status, repeated in the body."
+          },
+          "code": {
+            "type": "string",
+            "description": "The module's own code. It is outside the core's registry, so it starts with the module's short name.",
+            "enum": [
+              "threemf/DENIED",
+              "threemf/INVALID_QUERY",
+              "threemf/NOT_A_PROJECT",
+              "threemf/NO_FILE",
+              "threemf/NO_OBJECT",
+              "threemf/NO_PRINCIPAL",
+              "threemf/NO_THUMBNAIL",
+              "threemf/PROJECT_TOO_LARGE",
+              "threemf/READ_FAILED"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "What went wrong, in one English phrase that never varies."
+          },
+          "detail": {
+            "type": "string",
+            "description": "What went wrong this time."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "What the code fills in, such as the storage and the path."
+          },
+          "retryable": {
+            "type": "boolean",
+            "description": "Whether sending the same request again could work."
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "code",
+          "title",
+          "detail",
+          "params",
+          "retryable"
+        ]
+      }
+    },
+    "responses": {
+      "Refused": {
+        "description": "The module refused the call. The code says which rule it met.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Refusal"
+            }
+          }
+        }
+      }
+    }
+  }
+}

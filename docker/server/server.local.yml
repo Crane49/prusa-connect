@@ -1,0 +1,20 @@
+# Local overrides for the server: host ports and smaller resource numbers.
+# Every port reads from the root .env with a default, so two developers running
+# different ports never edit tracked yaml.
+services:
+  prusa-connect:
+    ports:
+      # The core binds one listener, core.api.addr, and printers dial it too.
+      # A deployment that gives printers a socket of their own sets the
+      # connector's listener.addr and publishes that port here beside this one;
+      # there is no second port to publish until it does.
+      - "${PCL_API_PORT:-8080}:8080"
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 128M

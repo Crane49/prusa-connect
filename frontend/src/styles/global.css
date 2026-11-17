@@ -1,0 +1,57 @@
+/* The app's one stylesheet (frontend-structure.md): the Tailwind import, the
+   `@source` for this app's own tree, and one import per library. A library's
+   `app.css` carries its theme and the scan of its own components, so no path
+   here reaches into node_modules. */
+@import 'tailwindcss';
+@source '../';
+@import '@prusa/connect-ui/app.css';
+
+/* The library's own `@source` scans its `dist/`, built ahead of time, so a
+   class new in the library's `src/` has no rule there yet. This rule scans
+   `src/` directly, which covers a dev server reading source with no package
+   build, and, harmlessly, a build too, since Tailwind only ever adds a rule
+   for a class a scanned file actually uses. */
+@source '../../../packages/svelte/src';
+
+/* Inter, served by this application and by nothing else. The library names the
+   family in `--font-sans` and ships no file, because a package on a registry
+   cannot carry a font for every consumer; the file lives here, beside its
+   licence, under public/fonts/inter/ with its checksum in SOURCES.md.
+
+   One file for every weight. Inter's variable face carries the whole 100 to
+   900 range, so the four weights the interface uses cost one request instead
+   of four: 400 for body text, 500 for a label, 600 for a heading, and 300 is
+   there for the rare large quiet line. The italic face is not shipped: nothing
+   here is set in italics.
+
+   `swap` is what a self-hosted font wants. The page paints at once in the
+   fallback face and repaints in Inter when it arrives, which on a printer on a
+   local network is the same second. This rule is the only thing that asks for
+   the file. index.html carries no preload of it, and the comment there says
+   why.
+
+   The face is registered as `Inter` rather than `InterVariable`, so
+   `--font-sans` reads the same whether an application serves this file, serves
+   the static weights, or serves nothing at all. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter/InterVariable.woff2') format('woff2');
+}
+
+/* A reading is a number that changes where it stands: a temperature, a
+   percentage, a countdown. The component that draws one writes `tabular-nums`,
+   which asks the face for digits of one width. The face has to carry them: the
+   Inter above has the `tnum` feature, so a reading that climbs stops pushing
+   the text beside it along. A build without the font file uses a system face
+   instead, and the utility then does whatever that face can do. */
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+}

@@ -1,0 +1,26 @@
+# The operator's file for every server of the Fractal mockup. All four servers
+# read this one file, because it says nothing about a single server: it names
+# where the machine-owned records go and nothing else.
+#
+# The declaration of the Fractal module is not here. `prusa-connect
+# module add` writes it into the overlay below, with the settings of that
+# server, at the first start of each container. A declaration written here
+# would hide the installed one, and the server would log that the overlay
+# instance is shadowed and start nothing.
+#
+# Every path here is on the container's named volume, so the key of each
+# server, the servers it admitted and the commands that wait survive a restart.
+#
+# All three paths are under the demo's own directory, the one `-dir` names. The
+# demo lays its own settings over this file and puts them there whatever this
+# file says, so `module add` has to name the same paths. An overlay somewhere
+# else leaves the server with no module declared. The authz.database line makes
+# `module add` and `module remove` write and withdraw the module's grants
+# in the demo's own graph. Without it they act on another graph, and the demo
+# corrects its own graph only at its next start, to hold what the
+# installed modules recorded.
+core:
+  overlay: /data/demo/resources.json
+  modules: /data/demo/modules
+  authz:
+    database: /data/demo/config.d/authz.db

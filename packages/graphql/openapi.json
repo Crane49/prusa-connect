@@ -1,0 +1,107 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "graphql",
+    "version": "1.0.0",
+    "description": "The two routes packages/graphql serves. Both paths are relative to the mount the operator named, which is /graphql, and the host serves this document rebased under it at /graphql/openapi.json. The GraphQL schema itself is schema.graphql, generated from the core's own OpenAPI document, and it is what says which fields these two routes answer."
+  },
+  "components": {
+    "schemas": {
+      "Request": {
+        "type": "object",
+        "description": "One GraphQL request, as every client writes it.",
+        "properties": {
+          "query": {"type": "string", "description": "The query or mutation to run, in GraphQL's own syntax."},
+          "variables": {"type": "object", "additionalProperties": true, "description": "The values the query's variables take, keyed by the name each one is declared under."},
+          "operationName": {"type": "string", "description": "Which operation to run, for a document that declares more than one. Absent for a document with one."}
+        },
+        "required": ["query"]
+      },
+      "Answer": {
+        "type": "object",
+        "description": "One GraphQL answer. A query the schema could run answers 200 whatever happened to its fields: what resolved is under data, and every refusal is in errors beside it.",
+        "properties": {
+          "data": {"type": ["object", "null"], "additionalProperties": true, "description": "What the selected fields answered. A field that was refused is null here and named in errors."},
+          "errors": {"type": "array", "items": {"$ref": "#/components/schemas/Error"}, "description": "What was refused, one entry per field. Absent when nothing was."}
+        }
+      },
+      "Error": {
+        "type": "object",
+        "description": "One refusal, in GraphQL's own shape, carrying the core's fault under extensions so a client branches on the same identifier it branches on at the REST surface.",
+        "properties": {
+          "message": {"type": "string", "description": "The sentence for this occurrence."},
+          "path": {"type": "array", "items": {}, "description": "Which field was refused, from the root."},
+          "locations": {"type": "array", "items": {"type": "object", "additionalProperties": true}, "description": "Where in the query text the field was selected."},
+          "extensions": {"$ref": "#/components/schemas/Extensions"}
+        },
+        "required": ["message"]
+      },
+      "Extensions": {
+        "type": "object",
+        "description": "The core's fault beside the message.",
+        "properties": {
+          "code": {"type": "string", "description": "The core's stable identifier for this failure, as domain/REASON, such as core.printer/NOT_FOUND."},
+          "type": {"type": "string", "description": "The RFC 9457 type URI: the error reference page and this code's own section of it."},
+          "params": {"type": "object", "additionalProperties": true, "description": "What the call named, such as the device id and the verb."},
+          "retryable": {"type": "boolean", "description": "Whether sending the same request again could work."}
+        },
+        "required": ["code", "type", "params", "retryable"]
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "One refusal of a request that never became a query, as RFC 9457 names it.",
+        "properties": {
+          "type": {"type": "string", "description": "about:blank, because this module publishes no page per code."},
+          "status": {"type": "integer", "description": "The HTTP status, repeated in the body."},
+          "code": {"type": "string", "description": "The module's own code, such as graphql/REQUEST_INVALID. It is outside the core's registry, because it names a request that never reached the fleet."},
+          "title": {"type": "string", "description": "What went wrong, in one phrase that never varies."},
+          "detail": {"type": "string", "description": "What went wrong this time."},
+          "params": {"type": "object", "additionalProperties": true, "description": "What the code fills in."},
+          "retryable": {"type": "boolean", "description": "Whether sending the same request again could work."}
+        },
+        "required": ["type", "status", "code", "title", "detail", "params", "retryable"]
+      }
+    },
+    "responses": {
+      "Answered": {
+        "description": "The query ran. Read errors as well as data.",
+        "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Answer"}}}
+      },
+      "Refused": {
+        "description": "The request is not a GraphQL request.",
+        "content": {"application/problem+json": {"schema": {"$ref": "#/components/schemas/Refusal"}}}
+      }
+    }
+  },
+  "paths": {
+    "/": {
+      "post": {
+        "operationId": "run-graphql-operation",
+        "summary": "Run a query or a mutation",
+        "description": "The address every GraphQL client posts to. The host decides who is calling before this module is reached, and every fleet read the query makes is authorized as that person, so two people running one query see what each of them may see. A query answers 200 whatever happened to its fields: what resolved is under data and every refusal is in errors, each carrying the core's own code under extensions. A body that is not a GraphQL request answers 400 instead. The host takes operate_resource on the module's instance before this is called, because a mutation may change what a printer is doing.",
+        "requestBody": {
+          "required": true,
+          "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Request"}}}
+        },
+        "responses": {
+          "200": {"$ref": "#/components/responses/Answered"},
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      },
+      "get": {
+        "operationId": "run-graphql-query",
+        "summary": "Run a query written into the URL",
+        "description": "The same as the POST, with the query in the address instead of the body, which is what a link and a browser address bar can hold. Variables ride as one JSON object in the variables parameter. It is a read: the host takes view_resource on the module's instance before this is called, so a mutation sent this way is a mutation sent under the wrong permission and belongs on the POST.",
+        "parameters": [
+          {"name": "query", "in": "query", "required": true, "description": "The query to run, in GraphQL's own syntax.", "schema": {"type": "string"}},
+          {"name": "variables", "in": "query", "description": "The values the query's variables take, as one JSON object.", "schema": {"type": "string"}},
+          {"name": "operationName", "in": "query", "description": "Which operation to run, for a document that declares more than one.", "schema": {"type": "string"}}
+        ],
+        "responses": {
+          "200": {"$ref": "#/components/responses/Answered"},
+          "default": {"$ref": "#/components/responses/Refused"}
+        }
+      }
+    }
+  }
+}

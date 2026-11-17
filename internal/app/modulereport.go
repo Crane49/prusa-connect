@@ -1,0 +1,307 @@
+package app
+
+import (
+	"fmt"
+	"io"
+	"slices"
+
+	"github.com/prusa3d/prusa-connect/internal/app/resource"
+	"github.com/prusa3d/prusa-connect/internal/authz"
+	"github.com/prusa3d/prusa-connect/internal/kernel/ref"
+)
+
+// moduleReport is what one install prints: where the files landed, what the
+// module asked for, and whether it was switched on.
+type moduleReport struct {
+	instance  ref.Ref
+	typeName  string
+	namespace string
+	version   string
+	runtime   string
+	root      string
+	enabled   bool
+	checked   int
+	requests  []string
+	// requires is what the module cannot run without, one line each. It is
+	// printed whether or not the operator approved the install, because an
+	// instance that is switched on and missing one of these does not start.
+	requires []string
+	// dependencies is the modules the install added because the release
+	// requires them, as module@version.
+	dependencies []string
+	// suggests is the modules the module works better with, one line each.
+	suggests []string
+	// settings is the keys the module reads, one line each: the key, its type,
+	// its default and what it does. A key with no default is one the operator
+	// has to write before the instance starts.
+	settings []string
+	// connects is every connection the module makes outside Prusa Connect, one
+	// line each, as its manifest declares it under egress. It is printed
+	// whether or not the operator approved, so they read it before they do.
+	connects []string
+	// granted is every grant the install wrote into the authorization graph,
+	// one line each. An operator who reads the install has then read what the
+	// module may reach, and can take any of it away again.
+	granted []string
+	// withdrawn is every grant the install took back, one line each. It is the
+	// grants of the declaration this install replaced that the new one does not
+	// justify.
+	withdrawn []string
+	// apart is every permission the module asked for that the organization
+	// cannot confer on it, one action each.
+	apart []authz.Action
+	// asksAbsent is an approved install of a module that may ask about a
+	// person it is not serving. It grants no action, so no grant line says it.
+	asksAbsent bool
+	// listsPeople is an approved install of a module that may list the people
+	// this server holds.
+	listsPeople bool
+	// calls is each module the install lets this one call the routes of.
+	calls []string
+	// checks is each action the install lets this one ask about for a person
+	// without taking it as itself.
+	checks []string
+	// recordsMiB is the room an approved install granted the module's records,
+	// in mebibytes, and zero for one that kept the default.
+	recordsMiB int
+	// memory is the memory budget of an approved service module, and the zero
+	// value for any other.
+	memory resource.Budget
+	// approved is what an approved install gave the module, and withheld is
+	// each permission it asked for that no grant was written for. Both are in
+	// the words requests uses, so the answer over HTTP says what was given.
+	approved []string
+	withheld []string
+	// added is what an approved update asks for that the release it replaced
+	// did not, and that it granted, in the words requests uses.
+	added []string
+	// ports is each port the manifest asks for that the install did not
+	// grant, because the operator did not approve the ports.
+	ports []string
+	// listens is each port the install granted, as name and network/port.
+	listens []string
+	// database is where the module's own database is, as the install output
+	// names it, and empty for none.
+	database string
+	// replaced is the declaration this install replaced, and the zero value
+	// for a first install. written is the one it wrote. An update the module
+	// does not start under is rolled back to replaced.
+	replaced resource.Declaration
+	written  resource.Declaration
+	// previous is where the release this update replaced is kept, and empty
+	// when nothing was kept.
+	previous string
+	// leftBefore is the databases left behind as they were before this
+	// install, which a rollback writes back.
+	leftBefore []resource.LeftDatabase
+	// databaseLeft is the database this install gave up and left behind, as
+	// the output names it, and empty for none. databaseBack says the granted
+	// database is one an earlier install left behind, so its data is back.
+	databaseLeft string
+	databaseBack bool
+}
+
+// reportOf gathers what the install did, so the printing is one function with
+// no decisions left in it.
+func reportOf(
+	instance ref.Ref, written resource.Declaration, landed installed,
+	held release, checked int, approve bool,
+) moduleReport {
+	namespace, _ := written.ModuleNamespace()
+
+	out := moduleReport{
+		instance:  instance,
+		typeName:  written.Spec.Type,
+		namespace: namespace,
+		version:   held.manifest.Version,
+		runtime:   written.Spec.Runtime.String(),
+		root:      landed.root,
+		previous:  landed.previous,
+		enabled:   written.Spec.Enabled,
+		checked:   checked,
+	}
+
+	for _, required := range recordedRequirements(held.manifest.Requires) {
+		out.requires = append(out.requires, required.Describe())
+	}
+
+	for _, suggested := range recordedSuggests(held.manifest.Suggests) {
+		out.suggests = append(out.suggests, suggested.Module+": "+suggested.Reason)
+	}
+
+	for _, option := range held.manifest.Options {
+		out.settings = append(out.settings, describeOption(option))
+	}
+
+	for _, egress := range held.manifest.Egress {
+		out.connects = append(out.connects, egress.Line())
+	}
+
+	out.asksAbsent = approve && held.manifest.CheckAbsentPeople
+	out.listsPeople = approve && held.manifest.ListPeople
+
+	if approve {
+		out.calls = held.manifest.Calls
+		out.checks = held.manifest.Checks
+	}
+
+	if approve {
+		out.recordsMiB = held.manifest.RecordsMiB
+		out.memory, _ = resource.BudgetOf(written.Spec)
+
+		out.listens = listensGranted(held.manifest.Needs.Listen)
+
+		if written.Spec.Service != nil {
+			out.database = databaseGranted(written.Spec.Service.Database)
+		}
+
+		return out
+	}
+
+	if held.manifest.Needs.Data {
+		out.requests = append(out.requests, dataRequest)
+	}
+
+	if held.manifest.Needs.Database {
+		out.requests = append(out.requests, databaseRequest)
+	}
+
+	for _, action := range held.manifest.Permissions {
+		out.requests = append(out.requests, "permission "+action)
+	}
+
+	for _, action := range held.manifest.Checks {
+		out.requests = append(out.requests, checkRequest(action))
+	}
+
+	if held.manifest.CheckAbsentPeople {
+		out.requests = append(out.requests, "permission "+checkAbsentPeople)
+	}
+
+	if held.manifest.ListPeople {
+		out.requests = append(out.requests, "permission "+listPeople)
+	}
+
+	for _, namespace := range held.manifest.Calls {
+		out.requests = append(out.requests, callRequest(namespace))
+	}
+
+	if held.manifest.RecordsMiB > 0 {
+		out.requests = append(out.requests, recordsRequest(held.manifest.RecordsMiB))
+	}
+
+	if held.manifest.Needs.MemoryMiB > 0 {
+		out.requests = append(out.requests, memoryRequest(held.manifest.Needs.MemoryMiB))
+	}
+
+	for endpoint, name := range held.manifest.Events {
+		out.requests = append(out.requests, "event "+endpoint+" as "+namespace+"."+name)
+	}
+
+	slices.Sort(out.requests)
+
+	return out
+}
+
+// memoryGranted is what `module add -approve` prints for the module's memory
+// budget, with who set it.
+func memoryGranted(budget resource.Budget) string {
+	const bytesPerMiB = 1 << 20
+
+	if budget.Source == resource.BudgetDefault {
+		return fmt.Sprintf("%d MiB, the default (memory_mib)", budget.Bytes/bytesPerMiB)
+	}
+
+	return fmt.Sprintf("%d MiB, set by the %s (memory_mib)", budget.Bytes/bytesPerMiB, budget.Source)
+}
+
+// report prints what was installed. It says what the module asked for and was
+// not given. Without that, an operator finds a module that is switched off and
+// silent, and has no reason for it.
+func report(out io.Writer, held moduleReport) {
+	fmt.Fprintf(out, "installed %s as %s\n", held.typeName, held.instance)
+	fmt.Fprintf(out, "  files       %s\n", held.root)
+	fmt.Fprintf(out, "  namespace   %s\n", held.namespace)
+
+	if held.checked > 0 {
+		fmt.Fprintf(out, "  checksums   %d files verified against %s\n", held.checked, checksumsName)
+	}
+
+	for _, required := range held.requires {
+		fmt.Fprintf(out, "  needs       %s\n", required)
+	}
+
+	for _, added := range held.dependencies {
+		fmt.Fprintf(out, "  added       %s, which it requires\n", added)
+	}
+
+	for _, suggested := range held.suggests {
+		fmt.Fprintf(out, "  suggests    %s\n", suggested)
+	}
+
+	for _, setting := range held.settings {
+		fmt.Fprintf(out, "  setting     %s\n", setting)
+	}
+
+	for _, connection := range held.connects {
+		fmt.Fprintf(out, "  connects to %s\n", connection)
+	}
+
+	for _, grant := range held.granted {
+		fmt.Fprintf(out, "  granted     %s\n", grant)
+	}
+
+	for _, grant := range held.withdrawn {
+		fmt.Fprintf(out, "  withdrawn   %s\n", grant)
+	}
+
+	for _, action := range held.apart {
+		fmt.Fprintf(out, "  not granted %s\n", describeGrantApart(action))
+	}
+
+	for _, action := range held.checks {
+		fmt.Fprintf(out, "  may check   whether a person may %s (checks)\n", action)
+	}
+
+	if held.asksAbsent {
+		fmt.Fprintf(out, "  may ask     about people it is not serving (%s)\n", checkAbsentPeople)
+	}
+
+	if held.listsPeople {
+		fmt.Fprintf(out, "  may list    the people this server holds, with their names (%s)\n", listPeople)
+	}
+
+	for _, namespace := range held.calls {
+		fmt.Fprintf(out, "  may call    the routes of %s (calls)\n", namespace)
+	}
+
+	if held.recordsMiB > 0 {
+		fmt.Fprintf(out, "  records     %s\n", recordsGranted(held.recordsMiB))
+	}
+
+	if held.memory.Bytes > 0 {
+		fmt.Fprintf(out, "  memory      %s\n", memoryGranted(held.memory))
+	}
+
+	reportListens(out, held.listens)
+
+	reportDatabase(out, held)
+
+	for _, request := range held.added {
+		fmt.Fprintf(out, "  new         %s, which the release it replaced did not ask for\n", request)
+	}
+
+	if held.enabled {
+		fmt.Fprintln(out, "  enabled     yes")
+
+		reportPortsOpen(out, held.ports)
+
+		return
+	}
+
+	fmt.Fprintln(out, "  enabled     no. Run the same line with -approve, or switch it on through the API")
+
+	for _, request := range held.requests {
+		fmt.Fprintf(out, "  asks for    %s\n", request)
+	}
+}

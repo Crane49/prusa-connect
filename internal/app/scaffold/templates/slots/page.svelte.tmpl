@@ -1,0 +1,28 @@
+<script lang="ts">
+  import {
+    Card,
+    CardContent,
+    PageHeader,
+  } from '@prusa/connect-ui/primitives';
+
+  import { heldHost } from './host';
+
+  // A page takes no props: the route is the whole context.
+  const t = heldHost().t;
+</script>
+
+<!-- The shape of the app's own screens: the heading, then the cards. The
+     host draws no heading over a module's page, so this one is the page's. -->
+<div class="flex flex-col gap-4">
+  <PageHeader title={t('{{.Name}}.page.title')} />
+
+  <Card>
+    <CardContent>
+      <!-- Every text a page draws comes from this module's own catalogue,
+           through the `t` the host bound to this module's namespace: a
+           literal here is refused by lint. Add the key to
+           ui/src/locales/en.json and pass it here. -->
+      <p class="text-sm text-muted-foreground">{t('{{.Name}}.page.body')}</p>
+    </CardContent>
+  </Card>
+</div>

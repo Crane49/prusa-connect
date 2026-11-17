@@ -1,0 +1,11 @@
+# Go releases this repository knows about, and the day each was published.
+# Rewritten by scripts/check-go-version.sh --refresh, which needs network.
+# The published date is the golang.org/toolchain module's proxy timestamp.
+generated	2026-11-11
+hold	1.27.0	golangci-lint's prebuilt binaries are compiled with go1.26 and refuse a tree targeting 1.27. Built from source with go1.27, 2.9.0 typechecks nothing and answers 0 issues, and 2.13.1 answers 117. Adopting 1.27 means install-mode goinstall, golangci-lint 2.13.1 and those 117.
+hold	1.27.1	the same block as 1.27.0: golangci-lint's prebuilt binaries refuse a tree targeting 1.27, and adoption means lint 2.13.1 built from source and its 117 findings.
+hold	1.27.2	the same block as 1.27.0: golangci-lint's prebuilt binaries refuse a tree targeting 1.27.
+hold	1.27.3	the same block as 1.27.0: golangci-lint's prebuilt binaries refuse a tree targeting 1.27.
+hold	1.27.4	the same block as 1.27.0: golangci-lint's prebuilt binaries refuse a tree targeting 1.27.
+1.27.4	2026-11-02
+1.26.11	2026-11-02

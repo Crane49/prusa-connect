@@ -1,0 +1,58 @@
+{
+  "estimated_seconds": 180,
+  "filament_mm": 161.14,
+  "filament_g": 0.47,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.6,
+  "material": "PC",
+  "printer_model": "XLIS",
+  "print_profile": "0.20mm SPEED @XLIS HF0.6",
+  "printer_profile": "Original Prusa XL Input Shaper HF0.6 nozzle",
+  "filament_profile": "Prusament PC Blend @XL HF0.6",
+  "high_flow": true,
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PC",
+      "nozzle_mm": 0.6,
+      "high_flow": true,
+      "abrasive": false,
+      "nozzle_temp_c": 275,
+      "first_layer_nozzle_temp_c": 275,
+      "bed_temp_c": 105,
+      "first_layer_bed_temp_c": 100,
+      "filament_g": 0.47,
+      "filament_mm": 161.14,
+      "colour": "#DEE0E6"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 175,
+    "min_y_mm": 175,
+    "max_x_mm": 185,
+    "max_y_mm": 185
+  },
+  "bed": {
+    "width_mm": 360,
+    "depth_mm": 360,
+    "height_mm": 360
+  },
+  "checks": {
+    "printer_model": "XL",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.6,
+        "hardened": false,
+        "high_flow": true
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.4.1+12026"
+  }
+}

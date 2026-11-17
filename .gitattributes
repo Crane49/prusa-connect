@@ -1,0 +1,50 @@
+# Every text file is stored with LF. An editor on Windows that saves CRLF
+# would otherwise commit a diff that changes every line. This rule comes first,
+# so the rules after it can mark a file type as text without the detection.
+* text=auto eol=lf
+
+# The rules below name the file types where a CRLF checkout is a broken file
+# and not a cosmetic difference, and they say why.
+#
+# A shell script checked out with CRLF fails at the first line with
+# `$'\r': command not found`, and the container gates in scripts/ run on a Linux
+# CI runner from a working copy that may have been created on Windows.
+*.sh text eol=lf
+
+# Same reasoning: RUN lines are passed to /bin/sh inside the build container.
+Dockerfile text eol=lf
+Dockerfile.* text eol=lf
+
+# Go tooling writes LF and checks for it. A CRLF checkout makes gofmt and
+# goimports report every file as unformatted, so `make lint` fails on a fresh
+# Windows clone while CI, which runs on Linux, sees nothing. The same applies
+# to the committed OpenAPI document and the generated error-code artefacts,
+# which are compared byte for byte against what the generator emits.
+*.go text eol=lf
+go.mod text eol=lf
+go.sum text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.mdx text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Baselines are compared byte for byte by the arch gates, so autocrlf must not touch them.
+scripts/*.baseline text eol=lf
+
+# The client package's generated files are compared byte for byte by
+# `cmd/generate-client-sdk -check`, the same way as the artefacts above. The
+# same generator writes the example clients under examples/, so those files
+# need the same line endings.
+packages/typescript/**/*.ts text eol=lf
+examples/*/client/**/*.ts text eol=lf
+
+# `go run ./cmd/generate-schema` in packages/graphql writes this file
+# with LF on every run, so a CRLF checkout leaves the tree modified after the
+# generator has written the same schema back.
+packages/graphql/schema.graphql text eol=lf
+
+# The component library's build rewrites this file with LF on every run. With a
+# CRLF checkout, each build leaves the tree modified and the binary's version
+# reads `+dirty`.
+packages/svelte/src/i18n/catalogues.ts text eol=lf

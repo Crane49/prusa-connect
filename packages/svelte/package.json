@@ -1,0 +1,141 @@
+{
+  "name": "@prusa/connect-ui",
+  "version": "0.0.1",
+  "description": "The Svelte component library Prusa Connect's own pages are built from, and a module's page draws with: the theme, the primitives, the stores and the slots.",
+  "type": "module",
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prusa3d/prusa-connect.git",
+    "directory": "packages/svelte"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js",
+      "default": "./dist/esm/index.js"
+    },
+    "./app.css": "./dist/styles/app.css",
+    "./tokens.css": "./dist/styles/tokens.css",
+    "./build": {
+      "types": "./dist/build/module.d.ts",
+      "default": "./dist/build/module.js"
+    },
+    "./i18n": {
+      "types": "./dist/i18n/index.d.ts",
+      "svelte": "./dist/i18n/index.js",
+      "default": "./dist/esm/i18n.js"
+    },
+    "./domain": {
+      "types": "./dist/domain/index.d.ts",
+      "svelte": "./dist/domain/index.js",
+      "default": "./dist/esm/domain.js"
+    },
+    "./data": {
+      "types": "./dist/data/index.d.ts",
+      "svelte": "./dist/data/index.js",
+      "default": "./dist/esm/data.js"
+    },
+    "./slots": {
+      "types": "./dist/slots/index.d.ts",
+      "svelte": "./dist/slots/index.js",
+      "default": "./dist/esm/slots.js"
+    },
+    "./primitives": {
+      "types": "./dist/primitives/index.d.ts",
+      "svelte": "./dist/primitives/index.js",
+      "default": "./dist/esm/primitives.js"
+    },
+    "./router": {
+      "types": "./dist/router/index.d.ts",
+      "svelte": "./dist/router/index.js",
+      "default": "./dist/esm/router.js"
+    },
+    "./shell": {
+      "types": "./dist/shell/index.d.ts",
+      "svelte": "./dist/shell/index.js",
+      "default": "./dist/esm/shell.js"
+    },
+    "./dashboard": {
+      "types": "./dist/shell/dashboard/index.d.ts",
+      "svelte": "./dist/shell/dashboard/index.js",
+      "default": "./dist/esm/dashboard.js"
+    },
+    "./setup-wizard": {
+      "types": "./dist/shell/setup-wizard/index.d.ts",
+      "svelte": "./dist/shell/setup-wizard/index.js",
+      "default": "./dist/esm/setup-wizard.js"
+    }
+  },
+  "files": [
+    "dist",
+    "locales",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "pnpm run catalogues && node scripts/emit-package.mjs && vite build && node scripts/emit-dts.mjs && tsc -p tsconfig.helper.json",
+    "lint": "eslint . --concurrency=auto",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check:svelte": "pnpm run catalogues && svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
+    "test": "pnpm run catalogues && vitest run",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build -o storybook-static",
+    "check": "pnpm run lint && pnpm run format:check && pnpm run check:svelte && pnpm run test",
+    "catalogues": "node scripts/emit-catalogues.mjs",
+    "prepare": "pnpm run catalogues"
+  },
+  "dependencies": {
+    "@internationalized/date": "3.12.4",
+    "@lucide/svelte": "1.58.0",
+    "@tailwindcss/vite": "4.3.3",
+    "bits-ui": "2.19.5",
+    "svelte-sonner": "1.2.1"
+  },
+  "peerDependencies": {
+    "@prusa/connect": "0.0.1",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "svelte": "5.57.2",
+    "tailwindcss": "4.3.3"
+  },
+  "peerDependenciesMeta": {
+    "@sveltejs/vite-plugin-svelte": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@prusa/frontend-standards": "0.1.0",
+    "@storybook/addon-svelte-csf": "5.1.5",
+    "@storybook/svelte": "10.6.2",
+    "@storybook/svelte-vite": "10.6.2",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "@tailwindcss/node": "4.3.3",
+    "@types/node": "22.20.5",
+    "@vitest/browser-playwright": "5.0.5",
+    "axe-core": "4.14.0",
+    "eslint": "10.12.0",
+    "playwright": "1.64.1",
+    "prettier": "3.9.10",
+    "storybook": "10.6.2",
+    "svelte": "5.57.2",
+    "svelte-check": "4.7.6",
+    "svelte2tsx": "0.7.61",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.5",
+    "vitest-browser-svelte": "3.1.0"
+  },
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

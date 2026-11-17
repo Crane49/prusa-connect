@@ -1,0 +1,20 @@
+{
+  "interface": "ContentStore1",
+  "exposure": "both",
+  "properties": [
+    { "name": "rootHash", "type": "string", "access": "ro", "nullable": true },
+    { "name": "mediaPresent", "type": "bool", "access": "ro" },
+    { "name": "removable", "type": "bool", "access": "ro" },
+    { "name": "capacity", "type": "int", "access": "ro", "nullable": true },
+    { "name": "free", "type": "int", "access": "ro", "nullable": true }
+  ],
+  "methods": [
+    {
+      "name": "List",
+      "params": [
+        { "name": "identity", "type": "string" }
+      ],
+      "returns": "string"
+    }
+  ]
+}

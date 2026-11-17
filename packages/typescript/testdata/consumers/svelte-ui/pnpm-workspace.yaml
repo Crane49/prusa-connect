@@ -1,0 +1,12 @@
+# Dependencies must have been public for 3 days before pnpm resolves them,
+# the same window frontend/ sets. The three @prusa packages are excluded
+# because the lane publishes them to the registry fixture seconds before
+# installing them.
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - '@prusa/connect'
+  - '@prusa/connect-ui'
+  - '@prusa/frontend-standards'
+
+# Written versions stay exact.
+savePrefix: ''

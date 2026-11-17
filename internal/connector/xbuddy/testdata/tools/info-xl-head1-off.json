@@ -1,0 +1,66 @@
+{
+  "firmware": "8.0.0",
+  "tool_count": 5,
+  "tools": {
+    "0": {
+      "type": "FFF_PRINT_HEAD",
+      "features": {
+        "nozzle_diameter": 0.4,
+        "nozzle_hardened": false,
+        "nozzle_high_flow": false
+      },
+      "material_package_instance": {
+        "class": "FFF",
+        "uuid": "9c1d0e2f-1a2b-4c3d-8e5f-0000000000a0",
+        "batch_id": 240517,
+        "manufactured_date": 1715900000,
+        "expiration_date": 1810508000,
+        "country_of_origin": "CZ",
+        "actual_full_length": 240000,
+        "actual_netto_full_weight": 1000,
+        "package": {
+          "class": "FFF",
+          "uuid": "5f02a1b3-c4d5-46e7-88f9-0a1b2c3d4e5f",
+          "gtin": 8594265300113,
+          "filament_diameter": 1750,
+          "filament_diameter_tolerance": 20,
+          "nominal_full_length": 330000,
+          "container": {
+            "class": "FFF",
+            "uuid": "c3d4e5f6-7a8b-49c0-9d1e-f3a4b5c6d7e8",
+            "empty_weight": 201,
+            "volumetric_capacity": 1000
+          },
+          "material": {
+            "class": "FFF",
+            "uuid": "264f8a1b-2c3d-4e5f-9a0b-1c2d3e4f5a6b",
+            "type": "PLA",
+            "abbreviation": "PLA",
+            "name": "Prusament PLA Galaxy Black",
+            "primary_color": {
+              "color_rgba": "#1a1a1aff"
+            },
+            "secondary_colors": [
+              {
+                "color_rgba": "#0a0a0aff"
+              }
+            ],
+            "tags": [
+              "glitter"
+            ],
+            "properties": {
+              "density": 1.24
+            },
+            "brand": {
+              "name": "Prusa Polymers"
+            }
+          }
+        }
+      }
+    },
+    "1": null,
+    "2": null,
+    "3": null,
+    "4": null
+  }
+}

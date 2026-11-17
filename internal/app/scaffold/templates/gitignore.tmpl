@@ -1,0 +1,8 @@
+# What a build writes. It is made again from the files beside it, so it is
+# never committed.
+{{- if .UI}}
+/ui/node_modules/
+/ui/dist/
+{{- else}}
+/dist/
+{{- end}}

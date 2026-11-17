@@ -1,0 +1,149 @@
+# syntax=docker/dockerfile:1
+# Multi-arch Dockerfile for building binaries
+# `make build-cross` builds the full Linux binary for another processor with it
+
+# Go version from go.mod. `make build-cross` derives this
+# from the `go` directive and passes it as a build arg; the fallback below only
+# applies to a bare `docker build` and must be kept in step with go.mod, since
+# the golang image runs GOTOOLCHAIN=local and will not upgrade itself.
+ARG GO_VERSION=1.26.11
+
+# Build the core's own application, which the Go binary embeds and serves at /
+# (ADR-20260911-4p6 rule 33). docker/server/Dockerfile carries the same stage.
+#
+# Three projects are installed, because the app reads the component library and
+# the client SDK from this checkout rather than from a registry. Both of them
+# have to be built first. Every export in the library's package.json, the
+# `svelte` condition included, names a file under `dist/`, so until its build
+# has run the app's import-map plugin resolves nothing and `vite build` stops
+# with `@prusa/connect-ui did not resolve; is it installed in this app?`.
+# Digest-pinned like docker/server/Dockerfile, which carries the same stage.
+# Bump the tag and the digest there and here together.
+FROM node:24-alpine@sha256:06d7adf3e0ef61a13f1d28682726366f97a15aa1888c934d3ecec86c33918b53 AS app-builder
+ENV PNPM_HOME=/pnpm
+ENV PATH="$PNPM_HOME:$PATH"
+# There is no git repo in the image, so the package's `prepare` hook has nothing to install.
+ENV HUSKY=0
+ENV CI=true
+# Resolves the pnpm version from the packageManager field in frontend/package.json.
+RUN corepack enable
+WORKDIR /app
+# Manifests, lockfiles and workspace settings only, so the install layers are
+# reused until a dependency changes.
+# The library and the app take their lint and format configuration from
+# packages/standards, which their installs copy in through a file: override.
+# It has no build step, so the whole folder goes in before any install.
+COPY packages/standards ./packages/standards
+COPY packages/typescript/package.json packages/typescript/pnpm-lock.yaml      packages/typescript/pnpm-workspace.yaml ./packages/typescript/
+COPY packages/svelte/package.json packages/svelte/pnpm-lock.yaml      packages/svelte/pnpm-workspace.yaml ./packages/svelte/
+COPY frontend/package.json frontend/pnpm-lock.yaml      frontend/pnpm-workspace.yaml ./frontend/
+RUN cd packages/typescript && pnpm install --frozen-lockfile
+COPY packages/typescript ./packages/typescript
+RUN cd packages/typescript && pnpm run build
+# --ignore-scripts, because the package's `prepare` hook writes its i18n
+# catalogues from sources and from docs/errors/error-codes.json, and neither is
+# in the image yet at this layer. `pnpm run build` below writes them anyway.
+RUN cd packages/svelte && pnpm install --frozen-lockfile --ignore-scripts
+COPY packages/svelte ./packages/svelte
+# The library build writes its catalogues from the error registry, so the
+# registry rides into the stage beside the sources.
+COPY docs/errors/error-codes.json ./docs/errors/error-codes.json
+RUN cd packages/svelte && pnpm run build
+RUN cd frontend && pnpm install --frozen-lockfile
+COPY frontend ./frontend
+RUN cd frontend && pnpm run build && test -f dist/index.html
+
+# Build Go binaries for each architecture.
+# Debian-based for glibc output. Raspberry Pi OS is the primary ARM target and
+# ships glibc by default (no /lib/ld-musl-aarch64.so.1).
+#
+# The Debian variant is pinned explicitly rather than left bare, which would tie
+# it to Docker Hub's default-variant policy instead of a reviewed decision.
+# -trixie is what the bare tag already resolves to, since a golang tag and its
+# -trixie variant share a digest, so this pin records that rather than changing
+# it. The stage links no cgo, so the builder's glibc is not the released
+# binary's minimum any more.
+#
+# Digest-pinned to the same golang build docker/race/Dockerfile names. A
+# digest wins over the tag, so scripts/check-go-version.sh requires this digest
+# to equal the race image's, whose tag must name the release go.mod pins. A Go
+# bump therefore moves the digest here too, or the check fails.
+FROM golang:${GO_VERSION}-trixie@sha256:fa340cb59ebeb1d53ac1cccfc334201d938fe5f3458003cccb767096d8e032b8 AS builder
+
+# No apt step. This stage installed the SQLite headers while a cgo-only driver
+# was linked. Nothing reaches that driver now, so the build is CGO_ENABLED=0 and
+# needs none of them.
+
+WORKDIR /app
+
+# Copy go mod files
+COPY go.mod go.sum ./
+# The nested sdk module is resolved through a local replace in go.mod, so its
+# manifest has to exist before any module-graph command runs - `go mod
+# download` fails outright when a replace target directory is missing.
+#
+# There is no sdk/go.sum. The sdk imports nothing outside the standard library,
+# so it requires nothing and records no checksums, and
+# internal/arch/layout_test.go refuses the import that would give it one.
+COPY sdk/go.mod ./sdk/
+
+# Warm the module cache. Every module this build needs is public, so the step
+# takes no credential and no BuildKit secret.
+RUN go mod download
+
+# Copy source files
+COPY . .
+
+# The core's own application, into the directory //go:embed reads. It lands
+# after `COPY . .`, which brings in the host's placeholder-only directory, and
+# before `go build`, which embeds it. Without it the binary compiles and serves
+# no page at all.
+COPY --from=app-builder /app/frontend/dist ./internal/transport/http/httpapi/appdist
+
+# Each text file of the app is replaced with a gzip copy, which the server
+# sends to a browser as it is stored. This runs before GOOS and GOARCH are set,
+# so the tool is built for this machine.
+RUN go run ./cmd/compress-app ./internal/transport/http/httpapi/appdist
+
+# Build arguments for target architecture
+ARG TARGETOS=linux
+ARG TARGETARCH
+ARG TARGETVARIANT
+ARG GOARM
+
+# Set build environment based on target
+ENV GOOS=${TARGETOS}
+ENV GOARCH=${TARGETARCH}
+ENV CGO_ENABLED=0
+
+# Set GOARM for ARM architectures if provided
+RUN if [ -n "${GOARM}" ]; then \
+    export GOARM=${GOARM}; \
+    elif [ "${TARGETARCH}" = "arm" ]; then \
+    if [ "${TARGETVARIANT}" = "v6" ]; then \
+        export GOARM=6; \
+    else \
+        export GOARM=7; \
+    fi; \
+    fi
+
+# Build binary (full variant with all features). Three tag lists have to move
+# together: this one, ALL_TAGS in `make build-ci`, and the list ci.yml tests
+# with, or we ship an artifact CI never exercised. Compiling a tag in only makes
+# the feature available; each one still stays off until the config enables it.
+#
+# BUILD_VERSION is the version the binary reports. The image has no .git to
+# read it from, so the caller passes it: `make build-cross` passes what
+# scripts/build-version.sh prints. Empty stamps nothing.
+ARG BUILD_VERSION=""
+# Where the binary links its documentation: the beta portal while the project
+# is private. A public build passes --build-arg DOCS_URL=<the public site>.
+ARG DOCS_URL=https://beta.prusa3d.com/connect-local/docs/{version}/
+RUN go build -v -tags "full diagnostics observability postgres" \
+    -ldflags="-X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped=${BUILD_VERSION} -X github.com/prusa3d/prusa-connect/internal/kernel/version.docsURL=${DOCS_URL}" \
+    -o /prusa_connect ./cmd/prusa-connect
+
+# Output stage - just copy the binary
+FROM scratch AS binary
+COPY --from=builder /prusa_connect /prusa_connect
+

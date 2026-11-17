@@ -1,0 +1,9 @@
+/* The three lines the library's README gives a module author.
+
+   Tailwind's own scan skips node_modules, so the `@source` line is what makes
+   a component's utilities exist in this build. The theme comes from the
+   package's `./tokens.css` subpath, which is the `exports` map entry that has
+   no JavaScript behind it. */
+@import "tailwindcss";
+@source '../node_modules/@prusa/connect-ui/dist';
+@import "@prusa/connect-ui/tokens.css";

@@ -1,0 +1,38 @@
+{
+  "interface": "FDMPrinterHead1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "tempNozzle", "type": "float", "access": "ro", "nullable": true },
+    { "name": "targetNozzle", "type": "float", "access": "rw", "nullable": true },
+    { "name": "fanExtruder", "type": "int", "access": "ro", "nullable": true },
+    { "name": "fanPrint", "type": "int", "access": "ro", "nullable": true },
+    { "name": "nozzleType", "type": "NozzleType", "access": "ro", "nullable": true },
+    { "name": "nozzleDiameter", "type": "float", "access": "ro", "nullable": true },
+    { "name": "nozzleHighFlow", "type": "bool", "access": "ro", "nullable": true },
+    { "name": "material", "type": "FDMMaterial", "access": "ro", "nullable": true }
+  ],
+  "methods": [
+    {
+      "name": "LoadFilament",
+      "params": [
+        { "name": "material", "type": "FDMMaterial" }
+      ]
+    },
+    { "name": "UnloadFilament" },
+    {
+      "name": "Extrude",
+      "params": [
+        { "name": "length", "type": "float" },
+        { "name": "feedrate", "type": "float", "optional": true }
+      ]
+    },
+    {
+      "name": "SetNozzle",
+      "params": [
+        { "name": "nozzleType", "type": "NozzleType" },
+        { "name": "nozzleDiameter", "type": "float" },
+        { "name": "nozzleHighFlow", "type": "bool" }
+      ]
+    }
+  ]
+}

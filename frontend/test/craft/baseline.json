@@ -1,0 +1,104 @@
+{
+  "debt": 200,
+  "routes": {
+    "app": {
+      "radii": 2,
+      "sizes": 6,
+      "greys": 3,
+      "borders": 8,
+      "primaryButtons": 1,
+      "icons": 17,
+      "namelessIcons": 0,
+      "mixedPunctuation": 2,
+      "looseFigures": 0
+    },
+    "printers": {
+      "radii": 2,
+      "sizes": 4,
+      "greys": 4,
+      "borders": 8,
+      "primaryButtons": 3,
+      "icons": 37,
+      "namelessIcons": 0,
+      "mixedPunctuation": 0,
+      "looseFigures": 1
+    },
+    "jobs": {
+      "radii": 2,
+      "sizes": 4,
+      "greys": 4,
+      "borders": 6,
+      "primaryButtons": 2,
+      "icons": 63,
+      "namelessIcons": 0,
+      "mixedPunctuation": 0,
+      "looseFigures": 1
+    },
+    "job": {
+      "radii": 2,
+      "sizes": 5,
+      "greys": 3,
+      "borders": 5,
+      "primaryButtons": 2,
+      "icons": 19,
+      "namelessIcons": 0,
+      "mixedPunctuation": 0,
+      "looseFigures": 0
+    },
+    "storage": {
+      "radii": 2,
+      "sizes": 5,
+      "greys": 4,
+      "borders": 4,
+      "primaryButtons": 2,
+      "icons": 28,
+      "namelessIcons": 0,
+      "mixedPunctuation": 1,
+      "looseFigures": 4
+    },
+    "tags": {
+      "radii": 2,
+      "sizes": 6,
+      "greys": 2,
+      "borders": 1,
+      "primaryButtons": 0,
+      "icons": 10,
+      "namelessIcons": 0,
+      "mixedPunctuation": 0,
+      "looseFigures": 0
+    },
+    "account": {
+      "radii": 2,
+      "sizes": 5,
+      "greys": 4,
+      "borders": 3,
+      "primaryButtons": 1,
+      "icons": 17,
+      "namelessIcons": 0,
+      "mixedPunctuation": 2,
+      "looseFigures": 1
+    },
+    "tokens": {
+      "radii": 2,
+      "sizes": 4,
+      "greys": 4,
+      "borders": 4,
+      "primaryButtons": 3,
+      "icons": 24,
+      "namelessIcons": 0,
+      "mixedPunctuation": 1,
+      "looseFigures": 1
+    },
+    "people": {
+      "radii": 2,
+      "sizes": 4,
+      "greys": 5,
+      "borders": 5,
+      "primaryButtons": 3,
+      "icons": 23,
+      "namelessIcons": 0,
+      "mixedPunctuation": 0,
+      "looseFigures": 1
+    }
+  }
+}

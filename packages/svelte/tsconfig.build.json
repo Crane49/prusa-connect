@@ -1,0 +1,22 @@
+{
+  // What scripts/emit-dts.mjs reads: the shipped sources and nothing else, so
+  // no test lands in dist as a declaration file.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  // `src/**/test` as well as `src/test`: a component folder may keep the host
+  // its own test renders, and scripts/emit-package.mjs already keeps every
+  // `test` directory out of dist.
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.stories.svelte",
+    "src/test",
+    "src/**/test"
+  ]
+}

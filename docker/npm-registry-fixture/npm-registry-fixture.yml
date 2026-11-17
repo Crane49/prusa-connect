@@ -1,0 +1,101 @@
+# The npm registry the client SDK is published to and installed back from
+# before any release publishes it for real.
+#
+# A fixture, not a deployment. `make client-sdk-install-check` packs
+# packages/typescript, publishes the tarball here, and installs it into three
+# consumer projects the way a person would, so the `exports` map, the shipped
+# `.d.ts` files and the `files` list are proved on an install rather than on
+# the tree. ADR-20260909-c7x rule 11 gives publication to the release workflow alone,
+# and a registry that accepts an unauthenticated publish of the `@prusa` scope
+# has no place anywhere but the local composition.
+#
+# It proxies nothing. config/config.yaml declares no uplink, so a package that
+# was not published here is a 404 and an install that needed anything else
+# fails in the open.
+#
+# The configuration is baked into the image by the Dockerfile beside this file
+# rather than mounted; the Dockerfile says why. Nothing else in this service
+# touches a host path, so the lane runs on a host whose Docker refuses bind
+# mounts: the publish and the installs reach the container over its port.
+#
+# No host port here. It is in npm-registry-fixture.local.yml.
+services:
+  npm-registry-fixture:
+    # Built from the Dockerfile beside this file, whose FROM is pinned by
+    # digest. The tag is what compose names the built image.
+    image: prusa-connect-npm-registry-fixture:local
+    build:
+      context: .
+    container_name: prusa_connect_npm_registry_fixture
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition leaves it out and only a command that names the service
+    # starts it, which activates the profile on its own. The Docker job and
+    # `make docker-check` bring the stack up with --no-build against images
+    # already built, and this is the one service in the composition that has
+    # to be built.
+    profiles:
+      - client-sdk-install
+    # A fixture does not come back on its own. It holds nothing worth keeping
+    # and is started by the lane or by `make fixtures-up`, and gone when it
+    # stops.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    labels:
+      com.prusa3d.description: "Throwaway npm registry the client SDK install check publishes to and installs from"
+      com.prusa3d.service: "test-fixture"
+
+    # The image runs as uid 10001 and writes packages, the htpasswd file and
+    # its own metadata under /verdaccio/storage. A tmpfs owned by that uid is
+    # the whole store, so `fixtures-down` removes every published version
+    # with the container and the next run publishes into an empty registry.
+    user: "10001:65533"
+    read_only: true
+    tmpfs:
+      - /verdaccio/storage:uid=10001,gid=65533
+      - /tmp
+
+    healthcheck:
+      # wget ships in the image, so this needs no curl and no extra layer.
+      # /-/ping is the registry's own liveness route. The loopback address is
+      # written out because `localhost` resolves to ::1 in this image and the
+      # server listens on IPv4.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:4873/-/ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      # A cold start is Node loading the server and binding a port, measured
+      # under three seconds. Rounded up.
+      start_period: 10s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 256M
+        reservations:
+          cpus: "0.05"
+          memory: 64M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

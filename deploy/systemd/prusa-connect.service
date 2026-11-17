@@ -1,0 +1,78 @@
+# Runs Prusa Connect as a service on Linux, a Raspberry Pi included.
+# The page "Install from a release" walks through installing it.
+#
+# It expects the binary at /var/lib/prusa-connect/bin/prusa-connect, the
+# configuration file at /etc/prusa-connect/config.yaml, and a system
+# user named prusa-connect. Relative paths in the configuration file
+# resolve from WorkingDirectory, so the accounts, the printers and the
+# uploaded files are written under /var/lib/prusa-connect.
+
+[Unit]
+Description=Prusa Connect, a local server for 3D printers
+Wants=network-online.target
+After=network-online.target
+# A configuration the server refuses stops it at once. Five failed starts in
+# five minutes stop the restarts, and `systemctl status` then shows the reason.
+StartLimitIntervalSec=5min
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=prusa-connect
+Group=prusa-connect
+
+# systemd creates this directory, owned by the user above, before the start.
+# The database in it holds the password hashes, so no other user may read it.
+StateDirectory=prusa-connect
+StateDirectoryMode=0750
+UMask=0077
+WorkingDirectory=/var/lib/prusa-connect
+
+ExecStart=/var/lib/prusa-connect/bin/prusa-connect -config /etc/prusa-connect/config.yaml
+Restart=on-failure
+RestartSec=5s
+
+# The server drains its listeners for core.shutdown_timeout, 15s by default,
+# so systemd waits longer than that before it kills the process.
+TimeoutStopSec=30s
+
+# The server needs one right: CAP_NET_BIND_SERVICE, to open UDP port 123 for
+# the time server once a person switches it on. Port 8080 is above 1024. The
+# server keeps the right from every module it starts (ADR-20261112-4ds), and
+# the process writes only under its state directory.
+NoNewPrivileges=true
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+ProtectSystem=strict
+# The setup wizard writes setup.yaml, certs/ and its history into config.d
+# beside the configuration file, which ProtectSystem=strict mounts read-only.
+# The leading - lets the unit start when the folder was never made.
+ReadWritePaths=-/etc/prusa-connect/config.d
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+ProtectKernelLogs=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+ProcSubset=pid
+RemoveIPC=true
+RestrictNamespaces=true
+RestrictRealtime=true
+MemoryDenyWriteExecute=true
+# The server and the printers speak TCP. AF_UNIX stays for the system's own
+# local sockets, such as name resolution. AF_NETLINK is how the server lists
+# the machine's network addresses. Without it mDNS announces on no address,
+# and the first-run page offers no address for a certificate.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+
+[Install]
+WantedBy=multi-user.target

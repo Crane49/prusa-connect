@@ -1,0 +1,14 @@
+{
+  "interface": "Chamber1",
+  "exposure": "upward",
+  "properties": [
+    { "name": "tempChamber", "type": "float", "access": "ro", "nullable": true },
+    { "name": "targetChamber", "type": "float", "access": "rw", "nullable": true },
+    { "name": "fan1RPM", "type": "int", "access": "ro", "nullable": true },
+    { "name": "fan2RPM", "type": "int", "access": "ro", "nullable": true },
+    { "name": "targetFan1Speed", "type": "int", "access": "rw", "nullable": true },
+    { "name": "targetFan2Speed", "type": "int", "access": "rw", "nullable": true },
+    { "name": "ledIntensity", "type": "int", "access": "rw" },
+    { "name": "coverClosed", "type": "bool", "access": "ro", "nullable": true }
+  ]
+}

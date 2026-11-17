@@ -1,0 +1,27 @@
+# Commits whose Changelog: trailer cannot be made to agree with
+# docs/CHANGELOG.md, because a trailer is frozen in history and the file is
+# not. Read by scripts/check-changelog.sh.
+#
+# Format: <full sha> <kind> <reason>
+#
+#   no-trailer      the commit carries no Changelog: trailer and its entry was
+#                   staged by a neighbouring commit
+#   trailer-wrong   the commit carries a trailer that no longer describes what
+#                   ships, so writing it into the file would publish something
+#                   untrue
+#
+# Each line is checked against the commit it names. A no-trailer line fails
+# once that commit has a trailer; a trailer-wrong line fails once no trailer is
+# there, or once the trailer does appear in the file. So a line cannot outlive
+# what it excuses.
+#
+# A line here is not a way past the gate. The commit-msg hook refuses a
+# bump-worthy commit with no trailer, so no commit written under that hook can
+# need a no-trailer line. Write the entry instead.
+
+82321262ba726fda4b009b04d60515ad192a6e38 no-trailer entry staged by fdee2d1, "A frame a printer sends that the server cannot read now costs that frame"
+c99c4046695af97394c136b361e3eafc3ebdcc4b no-trailer entry staged by fdee2d1, "A grant change can no longer lock the caller out of an object"
+d014261fcc717e0faf0059359804045869f1fd33 no-trailer the message carries "Changelog: A printer whose session ends now stays on `GET /api/v1/print" followed by a Co-Authored-By paragraph, and git reads only the last paragraph as trailers
+9fbee4b55ac9d9b163c30750d85c53bc7c7396ee no-trailer the message carries "Changelog: none" followed by a Co-Authored-By paragraph, and git reads only the last paragraph as trailers
+530829061b0ca57eec19535676021b075f326892 no-trailer the message carries "Changelog: A sink instance can now be a short expression instead of a c" followed by a Co-Authored-By paragraph, and git reads only the last paragraph as trailers
+1f44877b760494e6632f617ddf6e818b4f8e51c2 no-trailer the make docs-up entry was staged by eee19e71, which committed the changelog whole while the entry sat in the working tree

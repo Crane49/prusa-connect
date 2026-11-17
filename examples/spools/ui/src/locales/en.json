@@ -1,0 +1,21 @@
+{
+  "_meta.language": "English",
+  "_meta.note": "This module's own texts. The host reads this file from locales/en.json beside the bundle's entry and merges it under the module's namespace. Copy it to <tag>.json to translate; a key you leave out falls back to the line here.",
+
+  "spools.add": "Add a spool",
+  "spools.colour": "Colour",
+  "spools.device": "Device",
+  "spools.empty": "No spool is on the shelf yet.",
+  "spools.grams": "Grams",
+  "spools.material": "Material",
+  "spools.name": "Name",
+  "spools.on": "on {device}",
+  "spools.picker.label": "Spools on the shelf",
+  "spools.principal": "Signed in as {who}. The shelf is read from this module's own route, with the session this page already holds.",
+  "spools.reading": "Reading the shelf",
+  "spools.refresh": "Refresh",
+  "spools.shelf": "On the shelf",
+  "spools.submit": "Add spool",
+  "spools.title": "Spools",
+  "spools.weight": "{grams} g"
+}

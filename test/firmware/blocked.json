@@ -1,0 +1,22 @@
+[
+  {
+    "scenario": "TestFirmwareRegistersOverTheCodeFlow",
+    "probe": "registration-code-flow-admits-a-tokenless-printer",
+    "reason": "Firmware with no Connect token may wait for somebody to open the Connect page on the LCD before it posts to /p/register, and this lane has no input device. Whether a headless printer registers on its own is what the probe finds out."
+  },
+  {
+    "scenario": "TestQueuedCommandDrainsOnReboot",
+    "probe": "queued-command-drains-on-reboot",
+    "reason": "The command endpoint is synchronous and the API server's write timeout (internal/transport/http/httpapi/server.go) cuts the connection at sixty seconds, so a command queued for a printer that is away answers EOF minutes before a rebooted MK4 returns. The device plane's half held on the first live run: the rebooted machine reattached under the same printer id. Draining needs a command surface whose wait can outlive the write timeout, or a deadline the command route may exceed."
+  },
+  {
+    "scenario": "TestAPrintOnRealFirmwareKeepsTheJobStateWithTheMachine",
+    "probe": "a-print-keeps-the-job-state-with-the-machine",
+    "reason": "No file can be printed on this emulator, because no file lands on its stick. MINI404 gives the guest a USB mass-storage device backed by QEMU's own FAT emulation (-drive format=raw,file=fat:rw:<dir>), which serves reads and writes into existing files and does not implement the directory operations the firmware's landing sequence needs: Transfer::cleanup_finalize renames the payload out of its staging directory, removes that directory and renames the payload into place (src/transfers/transfer.cpp:556-583). Measured on 2026-09-04 against the pinned MK4 image: every transfer relayed all 1212 bytes and the printer reported it finished, and the readback then found the name listed read-only at full size (found: staging) or found nothing, so the transfer settles failed rather than done and there is nothing on the stick to start a print from. Unblocking it needs a stick the guest can complete a rename on -- a raw FAT image on a virtual block device rather than QEMU's fat: driver -- not a change to this repository."
+  },
+  {
+    "scenario": "TestAShortNameCollisionIsNotReportedDoneOnRealFirmware",
+    "probe": "short-name-collision-is-not-reported-done",
+    "reason": "The collision cannot be produced on this emulator, for the same reason the print scenario is blocked: with QEMU's fat: stick behind it the firmware's landing sequence never completes, so the first transfer already fails or lands nowhere and a second name that shortens alike has nothing to collide with. Two further readings taken on 2026-09-04 stand behind this entry. SEND_FILE_INFO for usb answers in under a second before any transfer (an empty listing) and does not answer at all after one, which is the branch of the fix that keeps done and carries the warning. And an unanswered SEND_FILE_INFO wedges the driver's command pump: Session.awaitAnswer waits for the answer, the connection or the session and has no case for a caller that has given up (internal/connector/xbuddy/session.go), so the readback's own listing -- abandoned by its caller after five seconds -- holds the one-command-at-a-time pump for the rest of the run, and every command after it, this scenario's included, times out having never reached the printer. That last one is a host defect this lane found and it is not the emulator's; it wants a bug of its own."
+  }
+]

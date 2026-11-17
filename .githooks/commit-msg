@@ -1,0 +1,98 @@
+#!/bin/sh
+# Checks the commit message being written. It refuses:
+#
+#   1. a message that breaks the rules of .agents/rules/git-discipline.md,
+#      which scripts/check-commit-style.sh reads
+#   2. a `docs:` commit that stages code, which
+#      scripts/check-docs-commit-scope.sh reads
+#   3. a `Changelog:` line that git does not parse as a trailer
+#   4. a feat, fix, perf, schema or infra commit with no `Changelog:` trailer
+#
+# The trailer is asked for at commit time because the author knows then what a
+# user will notice. This hook checks only that the trailer exists. The pre-push
+# hook checks that a fragment in docs/changes/ has the entry, because one entry
+# may cover several commits.
+set -e
+
+MSG_FILE="$1"
+
+# Called through `sh` because a clone on Windows may lack the executable bit.
+sh "${0%/*}/../scripts/check-commit-style.sh" --message "$MSG_FILE"
+
+# The subject is the first line that is neither blank nor a comment, which is
+# the line git keeps. `head -1` would read an empty subject from a message
+# that starts with a blank line, and an empty subject matches no case below.
+COMMENT_CHAR=$(git config --get core.commentchar 2>/dev/null || true)
+[ -n "$COMMENT_CHAR" ] && [ "$COMMENT_CHAR" != auto ] || COMMENT_CHAR='#'
+SUBJECT=$(awk -v c="$COMMENT_CHAR" '
+	substr($0, 1, length(c)) == c { next }
+	/^[[:space:]]*$/ { next }
+	{ print; exit }' "$MSG_FILE")
+
+# A merge or a fixup takes the trailer of the commit it resolves to.
+case "$SUBJECT" in
+Merge* | fixup!* | squash!* | Revert*)
+	exit 0
+	;;
+esac
+
+# Reads the staged diff, so it runs here and not in check-commit-style.sh,
+# which reads only the message.
+sh "${0%/*}/../scripts/check-docs-commit-scope.sh" "$SUBJECT"
+
+# `git interpret-trailers` and not a grep for the line: a trailer counts only
+# in the last paragraph of the message. The pre-push gate and CI read trailers
+# the same way.
+if git interpret-trailers --parse <"$MSG_FILE" |
+	grep -qiE '^Changelog:[[:space:]]*[^[:space:]]'; then
+	PARSED=yes
+else
+	PARSED=no
+fi
+
+# Check 3 runs for every prefix. An author who writes a `Changelog:` line on a
+# `docs:` commit still means it to be read.
+if [ "$PARSED" = no ] && grep -qiE '^Changelog:[[:space:]]*[^[:space:]]' "$MSG_FILE"; then
+	cat >&2 <<'EOF'
+✗ this commit's Changelog: line is not in the trailer block
+
+A trailer is a line in the message's last paragraph. Something follows this
+one after a blank line, so git reads it as body prose and the push gate and CI
+find no trailer at all.
+
+Move the Changelog: line to the end, with nothing but other trailers beside it.
+If what follows is a Co-Authored-By: line, delete it: this repository does not
+carry them. See .agents/rules/git-discipline.md
+
+EOF
+	exit 1
+fi
+
+# Only these prefixes need a trailer.
+case "$SUBJECT" in
+feat:* | feat\(*\):* | fix:* | fix\(*\):* | perf:* | perf\(*\):* | schema:* | schema\(*\):* | infra:* | infra\(*\):*) ;;
+*)
+	exit 0
+	;;
+esac
+
+[ "$PARSED" = no ] || exit 0
+
+cat >&2 <<'EOF'
+✗ this commit needs a Changelog: trailer
+
+Its prefix says a user may observe the change, so the entry has to be decided
+now, while you still know why it mattered. Add one of:
+
+    Changelog: <the first sentence of the entry in your fragment in docs/changes/>
+    Changelog: none
+
+`none` is a real answer, and the right one whenever nothing outside this
+repository can observe the change: a CI fix, a test, a refactor with no
+exported surface. It is not an escape hatch, it is the null value that keeps
+the trailer mandatory and therefore checkable.
+
+See .agents/rules/changelog-discipline.md
+EOF
+
+exit 1

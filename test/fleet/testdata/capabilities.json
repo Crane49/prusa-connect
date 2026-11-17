@@ -1,0 +1,209 @@
+{
+  "comment": "The capability set each cell of the full matrix resolves to. Regenerate with `go test ./test/fleet -run TestTheCapabilityGoldensAreCurrent -update`. A diff here is a change to what a supported printer is believed to support and needs a reason in the pull request.",
+  "cells": {
+    "CoreOne@6.4.0-0": {
+      "digest": "2ea1abfd729dbc2c600e62819074f3a2785cf10cb2ad97692a2064e5cba3c186",
+      "capabilities": 88,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne@6.5.7": {
+      "digest": "2ea1abfd729dbc2c600e62819074f3a2785cf10cb2ad97692a2064e5cba3c186",
+      "capabilities": 88,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne@6.8.1": {
+      "digest": "2ea1abfd729dbc2c600e62819074f3a2785cf10cb2ad97692a2064e5cba3c186",
+      "capabilities": 88,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL@6.4.0-0": {
+      "digest": "2ea1abfd729dbc2c600e62819074f3a2785cf10cb2ad97692a2064e5cba3c186",
+      "capabilities": 88,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL@6.5.7": {
+      "digest": "2ea1abfd729dbc2c600e62819074f3a2785cf10cb2ad97692a2064e5cba3c186",
+      "capabilities": 88,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL@6.8.1": {
+      "digest": "2ea1abfd729dbc2c600e62819074f3a2785cf10cb2ad97692a2064e5cba3c186",
+      "capabilities": 88,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL_INDX@6.4.0-0": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL_INDX@6.5.7": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL_INDX@6.6.0": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL_INDX@6.6.3": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOneL_INDX@6.9.0": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne_INDX@6.4.0-0": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne_INDX@6.5.7": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne_INDX@6.6.0": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne_INDX@6.6.3": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "CoreOne_INDX@6.9.0": {
+      "digest": "91acea8c13b5a3f4d1f60d0d99310ac738799983eafd8018763103a8aad71985",
+      "capabilities": 89,
+      "verbs": 48,
+      "profile_matched": true
+    },
+    "IX@6.4.0-0": {
+      "digest": "1fba7c18fa2fca16813d12ce953361f4d68e655982031a32e081f8fd9b7e4bb5",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MINI@6.4.0-0": {
+      "digest": "a7b1c5af97a87147c37bba3f24fab14cd6fc641c62ba137ced51811e81804410",
+      "capabilities": 76,
+      "verbs": 42,
+      "profile_matched": true
+    },
+    "MINI@6.4.2": {
+      "digest": "a7b1c5af97a87147c37bba3f24fab14cd6fc641c62ba137ced51811e81804410",
+      "capabilities": 76,
+      "verbs": 42,
+      "profile_matched": true
+    },
+    "MK3.5@6.4.0-0": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.5@6.5.7": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.5S@6.4.0-0": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.5S@6.5.7": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.9@6.4.0-0": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.9@6.5.7": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.9S@6.4.0-0": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK3.9S@6.5.7": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK4@6.4.0-0": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK4@6.5.0-RC": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK4@6.5.7": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK4S@6.4.0-0": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "MK4S@6.5.7": {
+      "digest": "e8290c342ad6d029d3a5223218674541896a3dd39e56adcb486f48e008374dee",
+      "capabilities": 80,
+      "verbs": 44,
+      "profile_matched": true
+    },
+    "XL@6.4.0-0": {
+      "digest": "c99746fa3f52bedd136dcd1145f92874c29e526e13f75de80996a6f6049ac655",
+      "capabilities": 91,
+      "verbs": 49,
+      "profile_matched": true
+    },
+    "XL@6.4.2": {
+      "digest": "c99746fa3f52bedd136dcd1145f92874c29e526e13f75de80996a6f6049ac655",
+      "capabilities": 91,
+      "verbs": 49,
+      "profile_matched": true
+    }
+  }
+}

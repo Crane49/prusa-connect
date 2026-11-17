@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1" stroke-opacity=".28" role="img" aria-label="The grid of a printer bed">
+  <!-- One square of the bed. The page tiles it, so the grid stays the same
+       weight whatever size the camera box is. -->
+  <path d="M0 .5h40M.5 0v40"/>
+</svg>

@@ -1,0 +1,1177 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "buddy-debug-logs",
+    "version": "0.1.4",
+    "description": "The routes the Prusa printer logs module serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at <mount>/openapi.json."
+  },
+  "paths": {
+    "/status": {
+      "get": {
+        "operationId": "read-status",
+        "summary": "The ports, what arrived and the room taken",
+        "description": "Whether each granted port is open, how many datagrams arrived and were kept, and how much room each stream takes. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/sources": {
+      "get": {
+        "operationId": "list-sources",
+        "summary": "Every MAC address that sent something",
+        "description": "Each MAC address a datagram came from, the printer it is matched to, and its counts. Only the sources matched to a printer the caller may see are listed. A MAC matched to no printer is listed only to a person who may see every printer. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The sources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The sources.",
+                  "properties": {
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Source"
+                      },
+                      "description": "Every source, by MAC."
+                    }
+                  },
+                  "required": [
+                    "sources"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/sources/{mac}": {
+      "put": {
+        "operationId": "assign-source",
+        "summary": "Match a MAC address to a printer by hand",
+        "description": "Matches one MAC address to a printer, which no refresh undoes. An empty device_id takes the match away, and the module matches the MAC again by itself. The caller must see the source and the printer. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "mac",
+            "in": "path",
+            "required": true,
+            "description": "The MAC address, such as 10:9c:70:2a:bb:cd.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "The printer.",
+                "properties": {
+                  "device_id": {
+                    "type": "string",
+                    "description": "The printer's device id, or empty to take the match away."
+                  }
+                },
+                "required": [
+                  "device_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The source as it is now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The source.",
+                  "properties": {
+                    "source": {
+                      "$ref": "#/components/schemas/Source"
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/logs": {
+      "get": {
+        "operationId": "list-logs",
+        "summary": "One page of log lines, newest first",
+        "description": "The log lines the printers sent, newest first, narrowed by the filters. Pass older back as before for the next page, or newest as after to ask for the lines that came later. Only the records of the printers the caller may see are answered. The records of a MAC matched to no printer go only to a person who may see every printer. The host takes view_resource on the module's instance before this is called. A cursor written before a purge or a restart of the module is refused with buddy-debug-logs/CURSOR_STALE, and the caller reads the newest page again.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "description": "A printer's device id. Lines kept under a MAC matched to it count too.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mac",
+            "in": "query",
+            "required": false,
+            "description": "One MAC address, for a source matched to no printer.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "description": "The least severe level shown: warning shows warnings, errors and worse.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "emergency",
+                "alert",
+                "critical",
+                "error",
+                "warning",
+                "notice",
+                "info",
+                "debug"
+              ]
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "description": "The firmware's log component, such as Connect.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "A piece of the line, in any case. At most 256 bytes.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "The earliest arrival to include, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "The arrival to stop before, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "description": "A cursor. The page holds the lines before it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "description": "A cursor. The page holds the lines after it.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "How many lines, 1 to 1000. 200 when absent.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/metrics/names": {
+      "get": {
+        "operationId": "list-metric-names",
+        "summary": "The metrics a printer sent",
+        "description": "Each metric that arrived in the window, with its fields and their newest values. Without since the window is the last hour. Only the records of the printers the caller may see are answered. The records of a MAC matched to no printer go only to a person who may see every printer. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "description": "A printer's device id. Lines kept under a MAC matched to it count too.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "The earliest arrival to include, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "The arrival to stop before, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The names.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The names.",
+                  "properties": {
+                    "names": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MetricName"
+                      },
+                      "description": "The metrics, by name."
+                    },
+                    "truncated": {
+                      "type": "boolean",
+                      "description": "Whether some names or fields were left out, because there were more than 512 names or more than 32 fields of one name."
+                    }
+                  },
+                  "required": [
+                    "names",
+                    "truncated"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/metrics/series": {
+      "get": {
+        "operationId": "read-metric-series",
+        "summary": "One metric as points for a chart",
+        "description": "One numeric field of one metric, averaged into buckets of equal time. An event counts as 1 and a text value, such as the nan of a failed sensor, is left out. Without since the window is the last hour. Only the records of the printers the caller may see are answered. The records of a MAC matched to no printer go only to a person who may see every printer. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "description": "A printer's device id. Lines kept under a MAC matched to it count too.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mac",
+            "in": "query",
+            "required": false,
+            "description": "One MAC address, for a source matched to no printer.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "The metric, such as temp_bed.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "description": "The field, v when absent.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "The earliest arrival to include, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "The arrival to stop before, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "max_points",
+            "in": "query",
+            "required": false,
+            "description": "How many points at most, 1 to 2000. 300 when absent.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The series.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The series.",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "The metric."
+                    },
+                    "field": {
+                      "type": "string",
+                      "description": "The field."
+                    },
+                    "points": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SeriesPoint"
+                      },
+                      "description": "The points, oldest first."
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "field",
+                    "points"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/export": {
+      "get": {
+        "operationId": "export-records",
+        "summary": "One page of a download as text",
+        "description": "One stream as lines of text, oldest first, at most 512 KiB a page. A browser asks again with next until there is none and saves the pages as one file. Only the records of the printers the caller may see are answered. The records of a MAC matched to no printer go only to a person who may see every printer. The host takes view_resource on the module's instance before this is called. A cursor written before a purge or a restart of the module is refused with buddy-debug-logs/CURSOR_STALE, and the caller reads the newest page again.",
+        "parameters": [
+          {
+            "name": "stream",
+            "in": "query",
+            "required": true,
+            "description": "syslog or metrics.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "syslog",
+                "metrics"
+              ]
+            }
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "required": false,
+            "description": "A printer's device id. Lines kept under a MAC matched to it count too.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "The earliest arrival to include, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "The arrival to stop before, as RFC 3339.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "The next of the page before.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportPage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/devices/{device_id}/setup": {
+      "post": {
+        "operationId": "set-up-printer",
+        "summary": "Ask a printer to send its log lines and metrics",
+        "description": "Sends the printer M334 with the host and the ports, as the person who called. A stream that is off is sent port 0, which switches it off, and both off sends a bare M334. The printer then shows G-CODE METRICS CONFIG CHANGE and changes nothing until a person presses Yes on its display. This module never answers that question. Sending raw G-code takes a grant of its own on the printer. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "device_id",
+            "in": "path",
+            "required": true,
+            "description": "The printer's device id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The printer took the line and asks a person to confirm it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupAccepted"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/data/purge": {
+      "post": {
+        "operationId": "purge-records",
+        "summary": "Remove kept log lines and metrics",
+        "description": "Removes every record, or those that arrived more than older_than_hours ago, from the streams named. Which printer each MAC is matched to stays. A segment wholly older is removed, and the one that holds the cut is written again with the newer records. It removes the records of every printer, so only a person who may see every printer may call it. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PurgeRequest"
+              },
+              "example": {
+                "older_than_hours": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What was removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurgeResult"
+                },
+                "example": {
+                  "purged": {
+                    "syslog": {
+                      "records": 1204,
+                      "bytes": 245760,
+                      "segments": 3
+                    },
+                    "metrics": {
+                      "records": 88210,
+                      "bytes": 11534336,
+                      "segments": 5
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Listener": {
+        "type": "object",
+        "description": "One UDP port this module listens on.",
+        "properties": {
+          "granted": {
+            "type": "boolean",
+            "description": "Whether the operator granted the port. Without the port approval the module runs without it."
+          },
+          "network": {
+            "type": "string",
+            "description": "The transport, udp."
+          },
+          "port": {
+            "type": "integer",
+            "description": "The port granted."
+          },
+          "listening": {
+            "type": "boolean",
+            "description": "Whether the socket is open now."
+          },
+          "error": {
+            "type": "string",
+            "description": "Why the socket is not open, such as a port another program holds."
+          }
+        },
+        "required": [
+          "granted",
+          "listening"
+        ]
+      },
+      "Counts": {
+        "type": "object",
+        "description": "What arrived on one port since the module started.",
+        "properties": {
+          "received": {
+            "type": "integer",
+            "description": "Every datagram that arrived."
+          },
+          "unreadable": {
+            "type": "integer",
+            "description": "Datagrams in neither format, kept raw."
+          },
+          "records": {
+            "type": "integer",
+            "description": "Log lines and metric points written."
+          },
+          "dropped": {
+            "type": "integer",
+            "description": "Records the disk refused, such as on a full disk."
+          }
+        },
+        "required": [
+          "received",
+          "unreadable",
+          "records",
+          "dropped"
+        ]
+      },
+      "StreamStatus": {
+        "type": "object",
+        "description": "One stream: its port, what arrived and the room it takes.",
+        "properties": {
+          "stream": {
+            "type": "string",
+            "description": "syslog or metrics.",
+            "enum": [
+              "syslog",
+              "metrics"
+            ]
+          },
+          "listener": {
+            "$ref": "#/components/schemas/Listener"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "last_drop": {
+            "type": "string",
+            "description": "Why the newest dropped record was dropped."
+          },
+          "bytes": {
+            "type": "integer",
+            "description": "What the stream holds on disk."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "The room the stream may take, in bytes."
+          },
+          "segments": {
+            "type": "integer",
+            "description": "How many files the stream holds."
+          },
+          "oldest": {
+            "type": "string",
+            "description": "The start of the hour of the oldest record kept.",
+            "format": "date-time"
+          },
+          "last_received": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the newest datagram arrived since the module started. Absent before the first one. A port that listens and received nothing for minutes has a printer that stopped sending, or one that has nothing to log."
+          }
+        },
+        "required": [
+          "stream",
+          "listener",
+          "counts",
+          "bytes",
+          "limit",
+          "segments"
+        ]
+      },
+      "Status": {
+        "type": "object",
+        "description": "The module's ports, what arrived and the room taken.",
+        "properties": {
+          "streams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StreamStatus"
+            },
+            "description": "The log stream, then the metrics stream."
+          },
+          "retention_hours": {
+            "type": "integer",
+            "description": "How long a record is kept."
+          },
+          "max_mib": {
+            "type": "integer",
+            "description": "The room both streams may take together, in MiB. The log lines keep a quarter of it."
+          },
+          "storing": {
+            "type": "boolean",
+            "description": "Whether the module keeps what arrives. It is false without a data directory."
+          },
+          "problem": {
+            "type": "string",
+            "description": "Why the module keeps nothing, when it keeps nothing."
+          },
+          "sources_problem": {
+            "type": "string",
+            "description": "Why the matched printers could not be written to disk, when the last write failed."
+          }
+        },
+        "required": [
+          "streams",
+          "retention_hours",
+          "max_mib",
+          "storing"
+        ]
+      },
+      "Source": {
+        "type": "object",
+        "description": "One MAC address that sent something, and the printer it is matched to.",
+        "properties": {
+          "mac": {
+            "type": "string",
+            "description": "The MAC address the printer names itself by, in lower case."
+          },
+          "device_id": {
+            "type": "string",
+            "description": "The printer it is matched to. Absent while it is matched to none."
+          },
+          "device_name": {
+            "type": "string",
+            "description": "That printer's name."
+          },
+          "manual": {
+            "type": "boolean",
+            "description": "Whether a person matched it by hand, which no refresh undoes."
+          },
+          "last_seen": {
+            "type": "string",
+            "description": "When the newest datagram arrived.",
+            "format": "date-time"
+          },
+          "last_ip": {
+            "type": "string",
+            "description": "The address the newest datagram came from."
+          },
+          "syslog": {
+            "type": "integer",
+            "description": "Log datagrams received since the module started."
+          },
+          "metrics": {
+            "type": "integer",
+            "description": "Metrics datagrams received since the module started."
+          }
+        },
+        "required": [
+          "mac",
+          "manual",
+          "last_seen",
+          "syslog",
+          "metrics"
+        ]
+      },
+      "LogLine": {
+        "type": "object",
+        "description": "One log line a printer sent.",
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "description": "Where the line is. Pass it as before or after."
+          },
+          "at": {
+            "type": "string",
+            "description": "When the line arrived. The printer has no clock it can trust.",
+            "format": "date-time"
+          },
+          "device_id": {
+            "type": "string",
+            "description": "The printer it is matched to."
+          },
+          "mac": {
+            "type": "string",
+            "description": "The MAC address it came from."
+          },
+          "ip": {
+            "type": "string",
+            "description": "The address it came from. UDP carries no proof of the sender, so anybody on the network can send a line from any MAC."
+          },
+          "severity": {
+            "type": "string",
+            "description": "The level, such as error.",
+            "enum": [
+              "emergency",
+              "alert",
+              "critical",
+              "error",
+              "warning",
+              "notice",
+              "info",
+              "debug",
+              "unknown"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "description": "The firmware's log component, such as Connect."
+          },
+          "text": {
+            "type": "string",
+            "description": "The line."
+          },
+          "seq": {
+            "type": "integer",
+            "description": "The printer's message counter. A gap means lost lines, a small number a restart."
+          },
+          "unreadable": {
+            "type": "boolean",
+            "description": "Whether the datagram was in neither format. text then holds it as it came."
+          }
+        },
+        "required": [
+          "cursor",
+          "at",
+          "severity",
+          "text"
+        ]
+      },
+      "LogPage": {
+        "type": "object",
+        "description": "One page of log lines, newest first.",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LogLine"
+            },
+            "description": "The lines, newest first."
+          },
+          "older": {
+            "type": "string",
+            "description": "The cursor to pass as before for the next page back. Absent when there is none."
+          },
+          "newest": {
+            "type": "string",
+            "description": "The cursor to pass as after to ask for lines that came later. It is left out when no line matched, and the caller then asks for the newest page again."
+          }
+        },
+        "required": [
+          "lines"
+        ]
+      },
+      "MetricName": {
+        "type": "object",
+        "description": "One metric a printer sent.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The metric's name, such as temp_bed."
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Every field it carried, such as v."
+          },
+          "last": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The newest value of each field."
+          },
+          "last_at": {
+            "type": "string",
+            "description": "When the newest value arrived.",
+            "format": "date-time"
+          },
+          "count": {
+            "type": "integer",
+            "description": "How many points arrived in the window."
+          }
+        },
+        "required": [
+          "name",
+          "fields",
+          "last",
+          "last_at",
+          "count"
+        ]
+      },
+      "SeriesPoint": {
+        "type": "object",
+        "description": "One point of a series, the average of its bucket.",
+        "properties": {
+          "at": {
+            "type": "string",
+            "description": "The middle of the bucket.",
+            "format": "date-time"
+          },
+          "value": {
+            "type": "number",
+            "description": "The average of the bucket."
+          },
+          "min": {
+            "type": "number",
+            "description": "The least value in the bucket."
+          },
+          "max": {
+            "type": "number",
+            "description": "The greatest value in the bucket."
+          }
+        },
+        "required": [
+          "at",
+          "value",
+          "min",
+          "max"
+        ]
+      },
+      "ExportPage": {
+        "type": "object",
+        "description": "One page of a download, as text.",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Lines of text, oldest first: the time, the printer, then the line."
+          },
+          "next": {
+            "type": "string",
+            "description": "The cursor of the next page. Absent on the last page."
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "SetupRequest": {
+        "type": "object",
+        "description": "What to ask a printer to send.",
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "The address the printer sends to: this server's address as the printer reaches it. At most 20 characters, which is what the printer takes.",
+            "maxLength": 20
+          },
+          "syslog": {
+            "type": "boolean",
+            "description": "Send the log lines."
+          },
+          "metrics": {
+            "type": "boolean",
+            "description": "Send the metrics."
+          },
+          "syslog_port": {
+            "type": "integer",
+            "description": "The port the printer sends the log lines to. Absent sends them to the port this module was granted.",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "metrics_port": {
+            "type": "integer",
+            "description": "The port the printer sends the metrics to. Absent sends them to the port this module was granted.",
+            "minimum": 1,
+            "maximum": 65535
+          }
+        },
+        "required": [
+          "syslog",
+          "metrics"
+        ]
+      },
+      "SetupAccepted": {
+        "type": "object",
+        "description": "The line the printer was sent.",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "The printer."
+          },
+          "gcode": {
+            "type": "string",
+            "description": "The M334 line the printer was sent."
+          },
+          "confirm": {
+            "type": "string",
+            "description": "What the person does next on the printer."
+          }
+        },
+        "required": [
+          "device_id",
+          "gcode",
+          "confirm"
+        ]
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "One refusal, as RFC 9457 names it. The client SDK reads this shape: code reaches ApiError.code and detail reaches ApiError.message.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "about:blank, because this module publishes no page per code."
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status, repeated in the body."
+          },
+          "code": {
+            "type": "string",
+            "description": "The module's own code. It is outside the core's registry, so it starts with the module's short name.",
+            "enum": [
+              "buddy-debug-logs/BODY_TOO_LARGE",
+              "buddy-debug-logs/CURSOR_STALE",
+              "buddy-debug-logs/DEVICE_NOT_FOUND",
+              "buddy-debug-logs/FLEET_UNAVAILABLE",
+              "buddy-debug-logs/GCODE_NOT_ALLOWED",
+              "buddy-debug-logs/INVALID",
+              "buddy-debug-logs/INVALID_QUERY",
+              "buddy-debug-logs/NOT_LISTENING",
+              "buddy-debug-logs/NOT_READY",
+              "buddy-debug-logs/NO_PRINCIPAL",
+              "buddy-debug-logs/NO_STORAGE",
+              "buddy-debug-logs/PRINTER_REFUSED",
+              "buddy-debug-logs/PRINTER_UNAVAILABLE",
+              "buddy-debug-logs/PURGE_FAILED",
+              "buddy-debug-logs/PURGE_NOT_ALLOWED",
+              "buddy-debug-logs/SOURCE_NOT_FOUND",
+              "buddy-debug-logs/STORE_FAILED"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "What went wrong, in one English phrase that never varies."
+          },
+          "detail": {
+            "type": "string",
+            "description": "What went wrong this time."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "What the code fills in."
+          },
+          "retryable": {
+            "type": "boolean",
+            "description": "Whether sending the same request again could work."
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "code",
+          "title",
+          "detail",
+          "params",
+          "retryable"
+        ]
+      },
+      "PurgeRequest": {
+        "type": "object",
+        "description": "Which records to remove.",
+        "properties": {
+          "older_than_hours": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8784,
+            "description": "Keep the records of this many newest hours and remove the older ones. Absent removes every record."
+          },
+          "streams": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "syslog",
+                "metrics"
+              ]
+            },
+            "description": "The streams to purge. Absent purges both."
+          }
+        }
+      },
+      "Purged": {
+        "type": "object",
+        "description": "What a purge took from one stream.",
+        "properties": {
+          "records": {
+            "type": "integer",
+            "description": "Log lines or metric points removed."
+          },
+          "bytes": {
+            "type": "integer",
+            "description": "Bytes freed on disk."
+          },
+          "segments": {
+            "type": "integer",
+            "description": "Files removed whole."
+          }
+        },
+        "required": [
+          "records",
+          "bytes",
+          "segments"
+        ]
+      },
+      "PurgeResult": {
+        "type": "object",
+        "description": "What a purge removed, by stream.",
+        "properties": {
+          "purged": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Purged"
+            },
+            "description": "Each stream purged, syslog or metrics."
+          }
+        },
+        "required": [
+          "purged"
+        ]
+      }
+    },
+    "responses": {
+      "Refused": {
+        "description": "The module refused the call. The code says which rule it met.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Refusal"
+            }
+          }
+        }
+      }
+    }
+  }
+}

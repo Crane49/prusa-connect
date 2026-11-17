@@ -1,0 +1,35 @@
+# Prusa Printer Settings - Example configuration for custom backend
+#
+# Place this file on USB flash drive as: prusa_printer_settings.ini
+# Then load it on printer: Settings > Network > Prusa Connect > Load Settings
+
+[service::connect]
+# Backend server hostname or IP address
+# Examples:
+#   hostname = 192.168.1.100          # IP address
+#   hostname = prusa-backend.local     # Hostname
+#   hostname = backend.example.com    # FQDN
+hostname = 192.168.1.100
+
+# Backend server port: the server's API port, 8080 by default, unless the
+# printer connector has a listener of its own.
+# The firmware uses 443 for TLS and 80 for non-TLS when the line is missing.
+port = 8080
+
+# Use TLS/WSS (true) or plain WS (false). The server answers plain HTTP
+# until it is given a certificate. For production, use tls = true.
+tls = false
+
+# No token line. The printer stores the token the server issues when you
+# choose Settings > Network > Prusa Connect > Add Printer to Connect and the
+# code is approved. Loading a file without a token clears the token the
+# printer held.
+
+# Optional: HTTP proxy support
+# proxy_hostname = proxy.example.com
+# proxy_port = 8080
+
+# Optional: Custom TLS certificate
+# If custom_cert = true, place certificate at /usb/connect.der
+# custom_cert = false
+

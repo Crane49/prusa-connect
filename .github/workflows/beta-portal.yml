@@ -1,0 +1,201 @@
+name: Beta portal
+
+# Hands a published GitHub release to the beta portal: its notes, its full
+# binaries, their signed checksums, the systemd unit and config.yaml, its
+# documentation, then publish.
+# Each file is the one the release carries, downloaded from it. The unit and
+# config.yaml, SHA256SUMS and SHA256SUMS.sig go to the platform `any`, which
+# the downloads page lists under "Files for every platform". The source
+# archive, the minimal builds and the printer binary stay on GitHub. Portal
+# downloads preserve the signed release bytes exactly.
+#
+# Three ways in:
+#   - release.yml calls it for every release it publishes
+#   - a tag beta-portal/vX.Y.Z sends a release that is already out again:
+#     git tag beta-portal/v0.0.4 v0.0.4 && git push origin beta-portal/v0.0.4
+#   - by hand, from the Actions tab, naming the version
+#
+# Off until the repository variable BETA_PORTAL_URL names the portal. The token
+# is the repository secret BETA_PORTAL_TOKEN, issued on the product's Pipeline
+# settings in the portal. Whether testers hear about the build at once is the
+# portal's setting for the product; otherwise publish answers 202 and the build
+# waits there for a look.
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: The release to send, with or without its leading v
+        required: true
+        type: string
+  push:
+    tags:
+      - 'beta-portal/v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The release to send, such as 0.0.1-alpha.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  # The documentation, built under the portal's path, and this version's
+  # changelog section. A job of its own because the build runs the docs'
+  # dependencies, and the job that holds the portal token runs no project code.
+  prepare:
+    name: Build the documentation and cut the notes
+    runs-on: ubuntu-latest
+    if: vars.BETA_PORTAL_URL != ''
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Read the version
+        id: version
+        env:
+          INPUT: ${{ inputs.version }}
+        run: |
+          set -eu
+          VERSION=${INPUT:-${GITHUB_REF_NAME#beta-portal/}}
+          VERSION=${VERSION#v}
+          case "$VERSION" in
+          "" | *[!0-9A-Za-z.-]*)
+            echo "::error::'$VERSION' is not a version this workflow can send."
+            exit 1
+            ;;
+          esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "sending $VERSION"
+
+      - name: Checkout the release
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: v${{ steps.version.outputs.version }}
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: docs/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      # The read-only steps of build:static. `pnpm run build` would fire the
+      # prebuild hook as well, which is the same page generation done here.
+      # The site is built under this version's own path. The portal keeps
+      # each release's documentation apart, so a build links to the pages
+      # written for it even after a later release moves or removes one.
+      - name: Build the site under the portal's path and zip it
+        working-directory: docs
+        env:
+          DOCS_BASE: /${{ vars.BETA_PORTAL_PRODUCT || 'connect-local' }}/docs/${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          pnpm install --frozen-lockfile
+          pnpm run generate:protocol-reference-pages
+          pnpm run build:swagger
+          pnpm exec astro build
+          # Links a page spells out as /docs/... follow the site to its path
+          find dist -name '*.html' -exec sed -i "s#=\"/docs/#=\"$DOCS_BASE/#g" {} +
+          mkdir -p "$GITHUB_WORKSPACE/beta-portal"
+          (cd dist && zip -qr "$GITHUB_WORKSPACE/beta-portal/docs-bundle.zip" .)
+          ls -l "$GITHUB_WORKSPACE/beta-portal/docs-bundle.zip"
+
+      - name: Cut this version's changelog section
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          awk -v v="$VERSION" '/^## / { if (found) exit; if ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next } } found' docs/CHANGELOG.md > beta-portal/changes.md
+          wc -l beta-portal/changes.md
+
+      - name: Upload what the portal gets
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: beta-portal
+          path: beta-portal/
+          retention-days: 7
+
+  # Checks out nothing and runs no project code: it reads the release and what
+  # `prepare` uploaded, and holds the token only here.
+  send:
+    name: Send the release to the beta portal
+    needs: [prepare]
+    runs-on: ubuntu-latest
+    environment: beta-portal
+    permissions:
+      contents: read
+
+    steps:
+      - name: Download the documentation and the notes
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: beta-portal
+          path: ./beta-portal
+
+      - name: Download the signed binaries and supporting files from the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          gh release download "v$VERSION" --repo "$GITHUB_REPOSITORY" --dir files \
+            --pattern 'prusa_connect_*' --pattern SHA256SUMS --pattern SHA256SUMS.sig \
+            --pattern prusa-connect.service --pattern config.yaml
+
+      - name: Send it
+        env:
+          PORTAL: ${{ vars.BETA_PORTAL_URL }}
+          TOKEN: ${{ secrets.BETA_PORTAL_TOKEN }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        run: |
+          set -eu
+          P="${PORTAL%/}/api/v1/releases/$VERSION"
+          H="Authorization: Bearer $TOKEN"
+          case "$VERSION" in
+          *-alpha*) CHANNEL=alpha ;;
+          *-beta*) CHANNEL=beta ;;
+          *) CHANNEL=stable ;;
+          esac
+
+          jq -n --rawfile c beta-portal/changes.md --arg ch "$CHANNEL" '{changelog: $c, channel: $ch}' |
+            curl -fsS -X PUT "$P" -H "$H" -H 'Content-Type: application/json' --data-binary @- >/dev/null
+          echo "release $VERSION on the $CHANNEL channel"
+
+          # Ask where, PUT it there, finish. The platform is named here rather
+          # than read off the file name: the minimal builds share the names'
+          # processors and are not handed to testers. `any` is a file that goes
+          # with every build, and a second upload of a name replaces the first.
+          upload() {
+            U=$(curl -fsS -X POST "$P/files/$2?filename=$1" -H "$H")
+            curl -fsS -T "files/$1" "$(jq -r .upload.url <<<"$U")" >/dev/null
+            curl -fsS -X POST "$(jq -r .finish <<<"$U")" -H "$H" >/dev/null
+            echo "sent $1 as $2"
+          }
+          while read -r name platform; do
+            upload "$name" "$platform"
+          done <<'FILES'
+          prusa_connect_amd64 linux-amd64
+          prusa_connect_aarch64 linux-arm64
+          prusa_connect_armv7 linux-armv7
+          prusa_connect_armhf linux-armhf
+          prusa_connect_windows_amd64.exe windows-amd64
+          prusa_connect_windows_arm64.exe windows-arm64
+          prusa_connect_macos_amd64 darwin-amd64
+          prusa_connect_macos_arm64 darwin-arm64
+          prusa-connect.service any
+          config.yaml any
+          SHA256SUMS any
+          SHA256SUMS.sig any
+          FILES
+
+          curl -fsS -X PUT "${PORTAL%/}/api/v1/docs?version=$VERSION" -H "$H" \
+            --data-binary @beta-portal/docs-bundle.zip >/dev/null
+          echo "sent the documentation"
+
+          curl -fsS -X POST "$P/publish" -H "$H" -w 'publish answered %{http_code}\n' -o /dev/null

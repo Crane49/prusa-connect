@@ -1,0 +1,47 @@
+file	family	model	variant	nozzle_mm	high_flow	materials	abrasive	tools	tools_used	nozzle_checks	printer_profile	print_profile	filament_profiles	overlay	text	model_id
+mini-is-04-pla	MINI	MINI/MINI+ IS	0.4	0.4	0	PLA	-	1	0	1	Original Prusa MINI & MINI+ Input Shaper	0.20mm SPEED @MINIIS 0.4	Prusament PLA @MINIIS	-	1	MINI
+mini-is-06-petg	MINI	MINI/MINI+ IS	0.6	0.6	0	PETG	-	1	0	1	Original Prusa MINI & MINI+ Input Shaper 0.6 nozzle	0.20mm SPEED @MINIIS 0.6	Prusament PETG @0.6 nozzle MINI	-	0	MINI
+mini-is-04-petgcf	MINI	MINI/MINI+ IS	0.4	0.4	0	PETG	-	1	0	1	Original Prusa MINI & MINI+ Input Shaper	0.20mm SPEED @MINIIS 0.4	Prusament PETG Carbon Fiber @MINI	-	0	MINI
+mini-025-asa	MINI	MINI/MINI+ (no IS)	0.25	0.25	0	ASA	-	1	0	0	Original Prusa MINI & MINI+ 0.25 nozzle	0.15mm QUALITY @0.25 nozzle MINI	Prusament ASA @MINI	-	0	MINI
+mk35-04-pla	MK3.5	MK3.5/MK3.5S	0.4	0.4	0	PLA	-	1	0	1	Original Prusa MK3.5 & MK3.5S 0.4 nozzle	0.20mm SPEED @MK3.5 0.4	Prusament PLA @MK3.5	-	1	MK3.5
+mk35-025-petg	MK3.5	MK3.5/MK3.5S	0.25	0.25	0	PETG	-	1	0	1	Original Prusa MK3.5 & MK3.5S 0.25 nozzle	0.15mm SPEED @MK3.5 0.25	Prusament PETG	-	0	MK3.5
+mk35-08-asa	MK3.5	MK3.5/MK3.5S	0.8	0.8	0	ASA	-	1	0	1	Original Prusa MK3.5 & MK3.5S 0.8 nozzle	0.30mm DETAIL @MK3.5 0.8	Prusament ASA @0.8 nozzle	-	0	MK3.5
+mk35-mmu3-04	MK3.5	MK3.5/MK3.5S MMU3	0.4	0.4	0	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Original Prusa MK3.5 & MK3.5S MMU3 0.4 nozzle	0.20mm SPEED @MK3.5MMU 0.4	Prusament PLA @MMU;Prusament PETG @MMU;Prusament PLA @MMU;Prusament PLA @MMU;Prusament PLA @MMU	mmu	0	MK3.5
+mk39-04-pla	MK3.9	MK3.9	0.4	0.4	0	PLA	-	1	0	1	Original Prusa MK3.9 0.4 nozzle	0.20mm SPEED @MK4IS 0.4	Prusament PLA @PGIS	-	1	MK3.9
+mk39-hf06-petg	MK3.9	MK3.9	HF0.6	0.6	1	PETG	-	1	0	1	Original Prusa MK3.9 HF0.6 nozzle	0.20mm SPEED @MK4IS HF0.6	Prusament PETG @HF0.6	-	0	MK3.9
+mk39-mmu3-04	MK3.9	MK3.9 MMU3	0.4	0.4	0	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Original Prusa MK3.9 MMU3 0.4 nozzle	0.20mm SPEED @MK4IS 0.4	Prusament PLA @PGIS;Prusament PETG @PGIS;Prusament PLA @PGIS;Prusament PLA @PGIS;Prusament PLA @PGIS	mmu	0	MK3.9
+mk39s-04-asa	MK3.9	MK3.9S	0.4	0.4	0	ASA	-	1	0	1	Original Prusa MK3.9S 0.4 nozzle	0.20mm SPEED @MK4S 0.4	Prusament ASA @MK4S	-	0	MK3.9S
+mk39s-hf04-pla	MK3.9	MK3.9S	HF0.4	0.4	1	PLA	-	1	0	1	Original Prusa MK3.9S HF0.4 nozzle	0.20mm SPEED @MK4S HF0.4	Prusament PLA @MK4S HF0.4	-	0	MK3.9S
+mk39s-mmu3-hf04	MK3.9	MK3.9S MMU3	HF0.4	0.4	1	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Original Prusa MK3.9S MMU3 HF0.4 nozzle	0.20mm SPEED @MK4S HF0.4	Prusament PLA @MK4S HF0.4;Prusament PETG @MK4S HF0.4;Prusament PLA @MK4S HF0.4;Prusament PLA @MK4S HF0.4;Prusament PLA @MK4S HF0.4	mmu	0	MK3.9S
+mk4-04-pla	MK4	MK4 (no IS)	0.4	0.4	0	PLA	-	1	0	1	Original Prusa MK4 0.4 nozzle	0.20mm SPEED @MK4 0.4	Prusament PLA @PG	-	0	MK4
+mk4is-04-pla	MK4	MK4 IS	0.4	0.4	0	PLA	-	1	0	1	Original Prusa MK4 Input Shaper 0.4 nozzle	0.20mm SPEED @MK4IS 0.4	Prusament PLA @PGIS	-	1	MK4
+mk4is-hf05-petg	MK4	MK4 IS	HF0.5	0.5	1	PETG	-	1	0	1	Original Prusa MK4 Input Shaper HF0.5 nozzle	0.20mm SPEED @MK4IS HF0.5	Prusament PETG @HF0.5	-	0	MK4
+mk4is-06-pc	MK4	MK4 IS	0.6	0.6	0	PC	-	1	0	1	Original Prusa MK4 Input Shaper 0.6 nozzle	0.20mm SPEED @MK4IS 0.6	Prusament PC Blend @MK4 0.6	-	0	MK4
+mk4-mmu3-04	MK4	MK4 MMU3	0.4	0.4	0	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Original Prusa MK4 MMU3 0.4 nozzle	0.20mm SPEED @MK4IS 0.4	Prusament PLA @PGIS;Prusament PETG @PGIS;Prusament PLA @PGIS;Prusament PLA @PGIS;Prusament PLA @PGIS	mmu	0	MK4
+mk4s-04-pla	MK4S	MK4S	0.4	0.4	0	PLA	-	1	0	1	Original Prusa MK4S 0.4 nozzle	0.20mm SPEED @MK4S 0.4	Prusament PLA @MK4S	-	1	MK4S
+mk4s-025-pla	MK4S	MK4S	0.25	0.25	0	PLA	-	1	0	1	Original Prusa MK4S 0.25 nozzle	0.15mm SPEED @MK4S 0.25	Prusament PLA @MK4S	-	0	MK4S
+mk4s-03-petg	MK4S	MK4S	0.3	0.3	0	PETG	-	1	0	1	Original Prusa MK4S 0.3 nozzle	0.20mm SPEED @MK4S 0.3	Prusament PETG @MK4S	-	0	MK4S
+mk4s-hf04-asa	MK4S	MK4S	HF0.4	0.4	1	ASA	-	1	0	1	Original Prusa MK4S HF0.4 nozzle	0.20mm SPEED @MK4S HF0.4	Prusament ASA @MK4S HF0.4	-	0	MK4S
+mk4s-06-petgcf	MK4S	MK4S	0.6	0.6	0	PETG	0	1	0	1	Original Prusa MK4S 0.6 nozzle	0.20mm SPEED @MK4S 0.6	Prusament PETG Carbon Fiber @MK4S 0.6	-	0	MK4S
+mk4s-hf08-pc	MK4S	MK4S	HF0.8	0.8	1	PC	-	1	0	1	Original Prusa MK4S HF0.8 nozzle	0.30mm SPEED @MK4S HF0.8	Prusament PC Blend @MK4S HF0.8	-	0	MK4S
+mk4s-mmu3-04	MK4S	MK4S MMU3	0.4	0.4	0	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Original Prusa MK4S MMU3 0.4 nozzle	0.20mm SPEED @MK4S 0.4	Prusament PLA @MK4S;Prusament PETG @MK4S;Prusament PLA @MK4S;Prusament PLA @MK4S;Prusament PLA @MK4S	mmu	1	MK4S
+mk4s-mmu3-hf04	MK4S	MK4S MMU3	HF0.4	0.4	1	PLA;PLA;PETG;PLA;PLA	-	5	0,2	1	Original Prusa MK4S MMU3 HF0.4 nozzle	0.20mm SPEED @MK4S HF0.4	Prusament PLA @MK4S HF0.4;Prusament PLA @MK4S HF0.4;Prusament PETG @MK4S HF0.4;Prusament PLA @MK4S HF0.4;Prusament PLA @MK4S HF0.4	mmu-t2	0	MK4S
+xl-is-04-pla	XL	XL 1T	0.4	0.4	0	PLA	-	1	0	1	Original Prusa XL Input Shaper 0.4 nozzle	0.20mm SPEED @XLIS 0.4	Prusament PLA @XLIS	-	1	XL
+xl-is-hf06-pc	XL	XL 1T	HF0.6	0.6	1	PC	-	1	0	1	Original Prusa XL Input Shaper HF0.6 nozzle	0.20mm SPEED @XLIS HF0.6	Prusament PC Blend @XL HF0.6	-	0	XL
+xl-is-06-pa11cf	XL	XL 1T	0.6	0.6	0	PA	0	1	0	1	Original Prusa XL Input Shaper 0.6 nozzle	0.20mm SPEED @XLIS 0.6	Prusament PA11 Carbon Fiber @XL 0.6	-	0	XL
+xl2t-04-t1	XL	XL 2T	0.4	0.4	0	PLA;PETG	-	2	1	1	Original Prusa XL - 2T Input Shaper 0.4 nozzle	0.20mm SPEED @XLIS 0.4	Prusament PLA @XLIS;Prusament PETG @XL	xl-t1	0	XL
+xl2t-hf05-both	XL	XL 2T	HF0.5	0.5	1	PLA;ASA	-	2	0,1	2	Original Prusa XL - 2T Input Shaper HF0.5 nozzle	0.20mm SPEED @XLIS HF0.5	Prusament PLA @XL HF0.5;Prusament ASA @XL HF0.5	xl-2of2	0	XL
+xl5t-04-3of5	XL	XL 5T	0.4	0.4	0	PLA;PETG;ASA;PLA;PETG	-	5	0,1,2	3	Original Prusa XL - 5T Input Shaper 0.4 nozzle	0.20mm SPEED @XLIS 0.4	Prusament PLA @XLIS;Prusament PETG @XL;Prusament ASA @XL;Prusament PLA @XLIS;Prusament PETG @XL	xl-3of5	1	XL
+xl5t-04-4of5	XL	XL 5T	0.4	0.4	0	PLA;PETG;ASA;PLA;PETG	-	5	0,1,2,3	4	Original Prusa XL - 5T Input Shaper 0.4 nozzle	0.20mm SPEED @XLIS 0.4	Prusament PLA @XLIS;Prusament PETG @XL;Prusament ASA @XL;Prusament PLA @XLIS;Prusament PETG @XL	xl-4of5	0	XL
+xl5t-hf05-5of5	XL	XL 5T	HF0.5	0.5	1	PLA;PETG;ASA;PC;PLA	-	5	0,1,2,3,4	5	Original Prusa XL - 5T Input Shaper HF0.5 nozzle	0.20mm SPEED @XLIS HF0.5	Prusament PLA @XL HF0.5;Prusament PETG @XL HF0.5;Prusament ASA @XL HF0.5;Prusament PC Blend @XL HF0.5;Prusament PLA @XL HF0.5	xl-5of5	0	XL
+xl5t-06-cf	XL	XL 5T	0.6	0.6	0	PLA;PETG;PLA;PLA;PETG	4	5	0,4	2	Original Prusa XL - 5T Input Shaper 0.6 nozzle	0.20mm SPEED @XLIS 0.6	Prusament PLA @XL 0.6;Prusament PETG @XL 0.6;Prusament PLA @XL 0.6;Prusament PLA @XL 0.6;Prusament PETG Carbon Fiber @XL 0.6	xl-t0t4	0	XL
+coreone-hf04-pla	CORE One	CORE One/CORE One+	HF0.4	0.4	1	PLA	-	1	0	1	Prusa CORE One HF0.4 nozzle	0.20mm SPEED @COREONE HF0.4	Prusament PLA @COREONE HF0.4	-	1	COREONE
+coreone-04-petg	CORE One	CORE One/CORE One+	0.4	0.4	0	PETG	-	1	0	1	Prusa CORE One 0.4 nozzle	0.20mm SPEED @COREONE 0.4	Prusament PETG @COREONE	-	0	COREONE
+coreone-06-pccf	CORE One	CORE One/CORE One+	0.6	0.6	0	PC	0	1	0	1	Prusa CORE One 0.6 nozzle	0.20mm SPEED @COREONE 0.6	Prusament PC Blend Carbon Fiber @COREONE 0.6	-	0	COREONE
+coreone-08-asa	CORE One	CORE One/CORE One+	0.8	0.8	0	ASA	-	1	0	1	Prusa CORE One 0.8 nozzle	0.30mm DETAIL @COREONE 0.8	Prusament ASA @COREONE 0.8	-	0	COREONE
+coreone-mmu3-04	CORE One	CORE One MMU3	0.4	0.4	0	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Prusa CORE One MMU3 0.4 nozzle	0.20mm SPEED @COREONE 0.4	Prusament PLA @COREONE;Prusament PETG @COREONE;Prusament PLA @COREONE;Prusament PLA @COREONE;Prusament PLA @COREONE	mmu	0	COREONE
+coreonel-hf04-pla	CORE One L	CORE One L	HF0.4	0.4	1	PLA	-	1	0	1	Prusa CORE One L HF0.4 nozzle	0.20mm SPEED @COREONEL HF0.4	Prusament PLA @COREONE HF0.4	-	1	COREONEL
+coreonel-05-asa	CORE One L	CORE One L	0.5	0.5	0	ASA	-	1	0	1	Prusa CORE One L 0.5 nozzle	0.20mm SPEED @COREONEL 0.5	Prusament ASA @COREONE	-	0	COREONEL
+coreonel-03-pc	CORE One L	CORE One L	0.3	0.3	0	PC	-	1	0	1	Prusa CORE One L 0.3 nozzle	0.20mm SPEED @COREONEL 0.3	Prusament PC Blend @COREONE	-	0	COREONEL
+coreonel-mmu3-hf04	CORE One L	CORE One L MMU3	HF0.4	0.4	1	PLA;PETG;PLA;PLA;PLA	-	5	0,1	1	Prusa CORE One L MMU3 HF0.4 nozzle	0.20mm SPEED @COREONEL HF0.4	Prusament PLA @COREONE HF0.4;Prusament PETG @COREONE HF0.4;Prusament PLA @COREONE HF0.4;Prusament PLA @COREONE HF0.4;Prusament PLA @COREONE HF0.4	mmu	0	COREONEL
+oak-hf04-pla	CORE One	Signature Oak	HF0.4	0.4	1	PLA	-	1	0	1	Prusa Signature Oak HF0.4 nozzle	0.20mm SPEED @COREONE HF0.4	Prusament PLA @COREONE HF0.4	-	0	COREONEOAK

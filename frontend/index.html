@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Prusa Connect</title>
+    <!-- What a browser needs to install the app: a phone or a handheld
+         scanner then opens it full screen, with its own icon. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="theme-color" content="#fa6831" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Prusa Connect" />
+    <!-- The interface is set in Inter. src/styles/global.css declares the face
+         that carries every weight of it, and that rule is the only thing that
+         asks for the file. There is no font preload here: this document holds
+         no text, so the file is wanted once the application has drawn a
+         screen, and a browser reports a preload it has not matched by then as
+         unused. `font-display: swap` paints the page in the fallback face
+         until the file arrives, which on a local network is the same second. -->
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

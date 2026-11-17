@@ -1,0 +1,48 @@
+# The secret scan of `make secrets-check`. It adds to gitleaks' default rules
+# and allows only the exact fixture values below, so the same value anywhere
+# else, or any new value, still fails.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "values a test or a story makes up"
+regexes = [
+  # internal/app/diagnostics/scrub_test.go
+  '''^Hd7sKm2pQx9a$''',
+  # internal/app/principalchange_test.go
+  '''^oidc-wyj7c7bxbvgxunmhhus7ehtwaoxuz7r3$''',
+  # internal/platform/auth/session/bearer_test.go
+  '''^eyJhbGciOiJSUzI1NiJ9\.eyJzdWIiOiJ4In0\.c2ln$''',
+  # test/firmware/harness_test.go, tools/mini404/eeprom_test.go
+  '''^0123456789abcdefghij$''',
+  # packages/svelte/src/shell/settings-credentials/
+  '''^pcl_9f3b21c7ae4d05e8b6f14a72c3d09e5b$''',
+  # the authentik container scripts/check-oidc-providers.sh starts
+  '''^pcl-authentik-fixture-token$''',
+]
+
+[[allowlists]]
+description = "examples a protocol or the API reference prints"
+regexes = [
+  # the sample Sec-WebSocket-Key values of RFC 6455
+  '''^dGhlIHNhbXBsZSBub25jZQ==$''',
+  '''^x3JJHMbDL1EzLkh9GBhXDw==$''',
+  # the placeholder printer token of prusa-xbuddy-websocket-protocol.md
+  '''^1234567890abcdef1234567890abcdef12345678$''',
+  # the idempotency key of the OpenAPI example, copied into every generated file
+  '''^01K4C9YF2PS9V4YQF1N5KGH8ZB$''',
+]
+
+[[allowlists]]
+description = "output the guides quote from a throwaway demo server"
+regexes = [
+  # getting-started.md
+  '''^qpyjqby73wcwpnakt7ia$''',
+  # using-the-api-from-a-page.md, writing-your-first-module.md
+  '''^qsjphyacz2gosnkva22a$''',
+  '''^pcl_iIpkmSntIjKIoJ4Kct46fC_qmIpcdQgE58XKgp6QyJkDqzDqVfZ3WdSbLlx7Gm3Xlv1W8Aix$''',
+  '''^pcl_STTmTqUm4tEFVfJORGKSkY_abEW4e9a6ft2HJGriETLQPM4M3HAq7wiZUmQIdFH4xL2tCY7j$''',
+  # bench-preflight.md, a registration token of a run against the emulator
+  '''^RV7U7FV4ZY7TR5LFMLFG$''',
+]

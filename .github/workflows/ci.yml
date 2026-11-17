@@ -1,0 +1,2383 @@
+name: CI Pipeline
+
+on:
+  # Every pull request, whatever its base, so a pull request stacked on another
+  # one is checked as GitHub's merge into that base. A side branch is not
+  # pushed under `push`, so its pull request is the only thing that runs CI
+  # over it.
+  pull_request:
+  # The push event covers a merge: without it a broken main would only be found
+  # by whoever opened the next pull request.
+  push:
+    branches: [ main ]
+  # The race detector lane, every night at 03:00 UTC. The `Backend / Race`
+  # shards and `Web / Sign-in at <provider>` are the only gates this trigger
+  # starts: every other gate job skips on `schedule`, so a nightly run is the
+  # detector, the sign-in at the three providers, the paths job they read, and
+  # `CI OK` reporting on them. The detector is too slow to sit on the pull
+  # request path, and a nightly run is what keeps it on a fixed clock rather
+  # than on whoever remembers it.
+  schedule:
+    - cron: '0 3 * * *'
+  # A person starts a run from the Actions page, on any branch. Every job but the race shards
+  # runs, the sign-in at the providers included.
+  workflow_dispatch:
+
+# A pull request groups by its ref, so a new commit supersedes the run over the
+# one before it and only the tip is ever checked. That is the behaviour the
+# push trigger above must not inherit: grouping a push by ref puts every merge
+# to an integration branch in one group, where the run in progress is cancelled
+# and a run merely queued is dropped for the next one. Either way the commit is
+# never verified, which is the hole the push trigger was added to close.
+#
+# So a push, the nightly and a run a person starts group by commit instead.
+# Each gets a group nothing else lands in, and runs to its end. The event is in the key because a
+# schedule and a push can name one commit, and they are different runs over it.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+# The tests that open the real mDNS socket skip unless this is 1. Every runner
+# here is Linux, where joining the multicast group asks nobody anything, so CI
+# runs them. A developer on Windows leaves it unset, because the firewall there
+# asks about every new test binary that joins the group.
+env:
+  PCL_NETWORK_TESTS: "1"
+
+# On a pull request a job runs only when the change touches an area the job
+# reads. `CI / What the change touches` names the areas, from the rules in
+# scripts/ci-areas.sh. The condition is that no gate gets weaker: anything a
+# change can affect is still checked.
+# ADR-20260923-xcq rule 1 holds the rules that keep that true:
+#
+# - a path no rule names runs everything, and so does a change to this file,
+#   the area script, the Makefile, the shared scripts, a toolchain pin, a
+#   dependency manifest or lockfile, or a fixture
+# - an area holds every file outside it that its code reads.
+#   internal/arch/ci_areas_test.go refuses a read the script does not follow
+# - the commit, text, workflow and architecture gates run on every change
+# - a push to main, the nightly run and a run a person starts check every area
+#
+# The skip is silent, so CI OK accepts it only where the paths job answered
+# that none of the job's areas changed. internal/arch/changefilter_test.go and
+# internal/arch/ci_ok_test.go refuse a job that skips for any other reason.
+jobs:
+  # ---------------------------------------------------------------------------
+  # Which areas of the tree a pull request changes, and so which jobs below
+  # run. scripts/ci-areas.sh answers from `git diff` against the base. Any
+  # other event checks every area, so there the script names them all.
+  # ADR-20260923-xcq rule 1 says which jobs may skip and why, and CI OK reads the same
+  # answer to tell a skip from a failure.
+  #
+  # It runs on every event, the nightly one included, because the sign-in at
+  # the providers reads it there too.
+  # ---------------------------------------------------------------------------
+  changes:
+    name: CI / What the change touches
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # pull-requests reads the commits of a pull request for the CLA step.
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      all: ${{ steps.areas.outputs.all }}
+      go: ${{ steps.areas.outputs.go }}
+      web: ${{ steps.areas.outputs.web }}
+      docs: ${{ steps.areas.outputs.docs }}
+      changes: ${{ steps.areas.outputs.changes }}
+      removed: ${{ steps.areas.outputs.removed }}
+      sign_in: ${{ steps.areas.outputs.sign_in }}
+
+    steps:
+    # A pull request checks out its merge commit. Its first parent is the
+    # base, so two commits of history hold the whole change.
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        fetch-depth: 2
+
+    # Every other job waits for this one, so a pull request whose authors have
+    # not all signed CLA.md stops here and runs nothing else. cla.yml starts
+    # the run again once they have.
+    - name: Check every author signed the contributor licence agreement
+      if: ${{ github.event_name == 'pull_request' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR: ${{ github.event.pull_request.number }}
+      run: bash scripts/check-cla-signed.sh "$GITHUB_REPOSITORY" "$PR"
+
+    # The log names the areas of every changed path, so a run says why each
+    # job ran or skipped.
+    - name: List the areas the change touches
+      id: areas
+      env:
+        EVENT: ${{ github.event_name }}
+      run: |
+        set -euo pipefail
+        if [ "$EVENT" != pull_request ]; then
+          echo "A $EVENT run checks every area."
+          bash scripts/ci-areas.sh --all | tee -a "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if ! git rev-parse -q --verify HEAD^2 >/dev/null; then
+          echo "::error::HEAD is not the merge commit of a pull request, so the change cannot be told apart from its base"
+          exit 1
+        fi
+        bash scripts/ci-areas.sh HEAD^1 HEAD | tee -a "$GITHUB_OUTPUT"
+
+  # ---------------------------------------------------------------------------
+  # The gates that read the commits or the whole tree, so they run on every
+  # change whatever it touches: the commit messages, the changelog, the
+  # writing style, the Makefile, the document numbers, the workflows and the
+  # architecture tests. A change to any file can break one of them, and each
+  # one takes seconds.
+  # ---------------------------------------------------------------------------
+  repo-gates:
+    name: Repository / Commit, text and workflow gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # A nightly run is the race lane and nothing else, so this job stays on the
+    # pull request and push events. It waits for the paths job, which stops a
+    # pull request whose authors have not signed CLA.md.
+    needs: [ changes ]
+    if: github.event_name != 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    # A gate that only exists in a local hook is
+    # not a gate, because a clone that never ran `make install-hooks` pushes
+    # with no hook at all.
+    #
+    # The range is what this event added, which is what the pre-push hook
+    # judges. Judging the whole branch instead judged 260 commits on every push
+    # and failed on all of them: most predate the rule, and a changelog entry
+    # that was later reworded no longer matches the trailer of the commit that
+    # wrote it. A commit is judged once, when it arrives.
+    # Resolved once, and read by both gates below. They judge the same set, and
+    # a range written out twice is a range that can drift.
+    #
+    # The last branch resolves a base of its own rather than naming a branch.
+    # `origin/main..HEAD` is the whole branch the paragraph above refuses, and
+    # on `restructure` it holds 831 commits, 768 of them past the floor, with
+    # 13 failures among those. Nine fail on a subject or a body written before
+    # the gate existed. Four fail on a changelog entry reworded after the commit
+    # whose trailer quotes it, because a range that wide reads the net diff and
+    # the wording the trailer quotes is not in it. Whoever pushes has written
+    # none of the 13. Three events arrive with no `before` to read: a branch's
+    # first push, a force-push, and a re-run whose `before` the checkout cannot
+    # reach.
+    #
+    # A created branch derives its base the way `.githooks/pre-push` does. The
+    # commits a push carries are the ones no other branch on the remote holds,
+    # so the oldest of those names the base. The checkout above fetches every
+    # branch, which is what makes them readable here. This branch's own ref is
+    # skipped, because the push has already moved it to HEAD. The hook is
+    # spared that step by running before the push lands.
+    #
+    # Anything else with no reachable base is a rewrite of a branch that
+    # already existed, and what it added cannot be reconstructed: `before` is
+    # the only record of where the branch stood, and it is gone. That fails the
+    # step by name. Judging a range nobody meant is what this replaces, so
+    # inventing a second one is not the answer.
+    #
+    # A pull request is checked out as GitHub's merge of its head into the
+    # current target: HEAD^1 is the target and HEAD^2 the head. The event's
+    # `pull_request.base.sha` is not the current target. It stays where the
+    # target stood when the head was last pushed, so once main moves, a range
+    # from it to the merge holds main's new commits too, and every open pull
+    # request failed on the subject of a commit it did not carry. The range is
+    # what the head adds over the target, from their merge base to the head,
+    # which leaves out main's commits and the merge GitHub wrote.
+    - name: Resolve the range this event added
+      id: range
+      if: ${{ !cancelled() }}
+      env:
+        BEFORE: ${{ github.event.before }}
+        PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        CREATED: ${{ github.event.created }}
+      run: |
+        STYLE_BASE=
+        if [ -n "$PR_HEAD" ]; then
+          if [ "$(git rev-parse -q --verify HEAD^2 || true)" != "$PR_HEAD" ]; then
+            echo "::error::HEAD is not the merge of the pull request head $PR_HEAD into its target, so the commits the pull request adds cannot be told from the target's"
+            exit 1
+          fi
+          RANGE="$(git merge-base HEAD^1 HEAD^2)..HEAD^2"
+          STYLE_BASE=$(git rev-parse HEAD^1)
+        elif [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+          RANGE="$BEFORE..HEAD"
+        elif [ "$CREATED" != "true" ]; then
+          echo "::error::$GITHUB_REF_NAME already existed and this event's base commit $BEFORE is not in this clone, so what the push added cannot be reconstructed. Push the branch again, or open a pull request, either of which resolves a base."
+          exit 1
+        else
+          echo "$GITHUB_REF_NAME was created by this push, so its base is the oldest commit no other branch holds"
+          # Unquoted on purpose below: this is a list of refs, one per line, and
+          # git has to read them as separate arguments.
+          OTHERS=$(git for-each-ref --format='%(refname)' refs/remotes/origin |
+            grep -Fvx "refs/remotes/origin/$GITHUB_REF_NAME" |
+            grep -Fvx refs/remotes/origin/HEAD || true)
+          # shellcheck disable=SC2086
+          NEW=$(git rev-list HEAD --not $OTHERS)
+          OLDEST=$(printf '%s\n' "$NEW" | tail -1)
+          if [ -z "$NEW" ]; then
+            echo "another branch on the remote already holds every commit here, so this push added none"
+            RANGE="HEAD..HEAD"
+          elif git rev-parse -q --verify "$OLDEST^" >/dev/null 2>&1; then
+            RANGE="$OLDEST^..HEAD"
+          else
+            echo "::error::this push reaches the root commit and no other branch holds any of it, so it has no base"
+            exit 1
+          fi
+        fi
+        echo "range: $RANGE"
+        echo "RANGE=$RANGE" >> "$GITHUB_ENV"
+        # The same base, for checks 12 to 14 of the writing style gates. They
+        # default to `@{upstream}`, and actions/checkout leaves a pull request
+        # on a detached HEAD, which has none. The script then takes its "no base
+        # resolved" branch and counts, prints and refuses nothing, so the
+        # ratchet enforced nothing on any pull request run. Verified by
+        # reproducing both checkouts locally: after `checkout -B <branch>
+        # origin/<branch>` the upstream resolves, and on a detached HEAD it
+        # resolves to nothing. fetch-depth is not the cause, and 0 does not
+        # fix it. On a pull request the base is the target, HEAD^1, because
+        # those checks read the working tree, which is the merge, and its
+        # difference from the target is what the pull request changes.
+        echo "WRITING_STYLE_BASE=${STYLE_BASE:-${RANGE%%..*}}" >> "$GITHUB_ENV"
+
+    - name: Run the changelog gates
+      if: ${{ !cancelled() && steps.range.outcome == 'success' }}
+      run: make changelog-check RANGE="$RANGE"
+
+    # The commit-message gates of .agents/rules/git-discipline.md. Same reason
+    # the changelog gates are here: a hook is not a gate for a clone that never
+    # installed it. It reads the range resolved above, so a commit is judged
+    # once, when it arrives, and check 4 reads the window ending at its tip.
+    - name: Run the commit message gates
+      if: ${{ !cancelled() && steps.range.outcome == 'success' }}
+      run: make commit-style-check RANGE="$RANGE"
+
+    # WRITING_STYLE_BASE is set by the range step above and reaches the script
+    # through the environment. Its own line in the output says which base it
+    # took, so a run states whether checks 12 to 14 refused anything.
+    - name: Run the writing style gates
+      if: ${{ !cancelled() && steps.range.outcome == 'success' }}
+      run: make style-check
+
+    # ADR-20260826-gtv. Here as well as in the hook for the reason the two gates above
+    # are: a clone that never ran `make install-hooks` pushes with no hook, and
+    # this runner is also the only GNU make 4.x the rules are ever measured
+    # against. Every number behind ADR-20260826-gtv is Windows plus GNU Make 3.81.
+    - name: Run the Makefile gates
+      if: ${{ !cancelled() }}
+      run: make makefile-check
+
+    # GitHub refuses a workflow it cannot parse and then runs no job at all,
+    # so this is the one place a broken workflow other than this one is
+    # reported before it is needed.
+    - name: Run the workflow gates
+      if: ${{ !cancelled() }}
+      run: make workflows-check
+
+    # A credential can land in any file, so this step skips for no path.
+    - name: Run the secret scan
+      if: ${{ !cancelled() }}
+      run: make secrets-check
+
+    # The tests under internal/arch read the documents, the workflows, the
+    # Makefile and the code. The internal shard of the unit tests runs them
+    # too, and skips on a change that touches no Go. This step does not.
+    - name: Run the architecture tests
+      if: ${{ !cancelled() }}
+      run: make arch-check
+
+  # ---------------------------------------------------------------------------
+  # Backend (Go): split into 6 parallel jobs so wall-time is gated by the
+  # slowest single check (unit tests) instead of the sum of all checks.
+  # Each job sets up its own Go toolchain; the setup-go cache key is keyed on
+  # go.sum so module/build caches are shared across jobs.
+  # ---------------------------------------------------------------------------
+
+  backend-lint:
+    name: Backend / Lint
+    runs-on: ubuntu-latest
+    # The root module is linted twice, for Linux and for Windows, then the sdk.
+    timeout-minutes: 30
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    # The root module took 313 s to lint on 2026-09-08 with 0 issues and was
+    # refused by the linter's own 5 minute limit. The limit is the runner's
+    # speed and not a finding, so it carries headroom over that measurement.
+    - name: Run golangci-lint
+      uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+      with:
+        version: v2.14.0
+        args: --timeout=15m
+
+    # CI runs on Linux, so nothing else here compiles the _windows.go files.
+    # Linting with GOOS=windows catches build errors and findings in them.
+    - name: Run golangci-lint (as Windows)
+      if: ${{ !cancelled() }}
+      uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+      env:
+        GOOS: windows
+      with:
+        version: v2.14.0
+        args: --timeout=15m
+
+    # The sdk is a separate module (ADR-20260824-gfr); a run rooted at the repository
+    # root does not see its packages.
+    - name: Run golangci-lint (sdk module)
+      if: ${{ !cancelled() }}
+      uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+      with:
+        version: v2.14.0
+        args: --timeout=5m
+        working-directory: sdk
+
+  backend-security:
+    name: Backend / Security scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    # go-version-file does not reach setup-go here. The action passes its own
+    # go-version default of "stable" alongside whatever this block sets, and
+    # setup-go takes go-version when it is given both, so the scan runs on
+    # whatever Go is current rather than on the toolchain go.mod pins.
+    # go-version-input is the input that becomes setup-go's go-version.
+    - name: Read the Go version go.mod pins
+      id: go_version
+      run: echo "go_version=$(grep '^go ' go.mod | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+    - name: Run security scan (govulncheck)
+      uses: golang/govulncheck-action@032d45514ae346b1db93c04b0c90b841c370344f # v1.1.0
+      with:
+        go-version-input: ${{ steps.go_version.outputs.go_version }}
+        # The action checks the repository out again and restores a Go cache of
+        # its own by default. The job already did both, and a second copy beside
+        # the shared build cache ran the runner out of disk.
+        cache: false
+        repo-checkout: false
+
+  backend-verify:
+    name: Backend / Verify generated code
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `docs`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.docs == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    # The same script `make go-version-check` runs, plus the half that needs
+    # network. Offline it answers "is the pin the latest" from
+    # scripts/go-releases.tsv, which is what an air-gapped builder has. Here
+    # `--refresh` asks go.dev first, so the answer cannot be older than this run
+    # and a release that appeared since the last commit still fails the job.
+    - name: Verify the Go toolchain pin
+      run: bash scripts/check-go-version.sh --refresh
+
+    # The retired server's Swagger documents are frozen captures now
+    # (internal/arch/testdata/retired-openapi3.json), so nothing regenerates
+    # them here.
+
+    # TestEveryRegisteredExtensionIsDocumented links and runs the whole tree
+    # once per shipping tag set, so it costs a full build each time. The unit
+    # job runs -short and skips it, because under -race that job's build cache
+    # holds instrumented objects the child build cannot reuse and the test runs
+    # past the 11 minute per-package timeout. It belongs here: this job is the
+    # one that asks whether a committed artefact matches what the code declares,
+    # and it runs without the race detector, which observes nothing in a test
+    # whose work happens in a child process.
+    #
+    # The whole target rather than that one test. This step ran step 2 of four
+    # and nothing ran steps 3 and 4, so a committed catalogue could go stale in
+    # a push and the job that exists to ask reported green.
+    - name: Run the extension registry gates
+      if: ${{ !cancelled() }}
+      run: make extensions-check
+
+    # The five vocabulary targets, the SDK reference and the compatibility
+    # mapping, on the model of `make error-codes-check` in the job below. Each
+    # ends in `go run ./cmd/generate-<name> -check`, which is the step no test
+    # performs: the tests beside each generator prove the mechanism refuses a
+    # stale artefact, and this asks whether the committed one is stale today.
+    #
+    # One target per line, so a failure names the vocabulary that drifted. The
+    # step's shell runs with -e, so the first red one ends the step.
+    - name: Run the vocabulary gates
+      if: ${{ !cancelled() }}
+      run: |
+        make capabilities-check
+        make resource-kinds-check
+        make authz-vocabulary-check
+        make event-types-check
+        make slots-check
+        make device-issues-check
+        make device-models-check
+        make sdk-reference-check
+        make config-reference-check
+
+    # The committed OpenAPI document against the operations this build
+    # registers. `make api-check` in the model and firmware matrix job reads
+    # the same document for compatibility; this reads it for freshness.
+    - name: Run the OpenAPI document gates
+      if: ${{ !cancelled() }}
+      run: make openapi-check
+
+    # There is no SSE or MQTT drift step here. Both AsyncAPI documents are
+    # frozen captures of what the retired server published, so nothing
+    # regenerates them. The
+    # MQTT one is held against the rewrite by
+    # TestTheTopicTableMatchesTheShippingAsyncAPIDocument; the SSE one has no
+    # gate, which is a known open item rather than a silence.
+
+  backend-error-codes:
+    name: Backend / Error codes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    # The same target the pre-push hook runs: a returned code
+    # the registry does not document, a code that vanished since the committed
+    # registry file, and a generated artefact that differs from the committed
+    # one. Each fails the job.
+    - name: Run the error code gates
+      run: make error-codes-check
+
+    # Whole-program analysis over the full tag set, so it is the slowest gate in
+    # this job at about half a minute. It runs here and not in the pre-push hook
+    # for that reason: a function nothing reaches costs nothing until it is
+    # merged, and the hook already carries eight gates.
+    - name: Run the reachability gates
+      if: ${{ !cancelled() }}
+      run: make deadcode-check
+
+    # ADR-20260824-gfr rule 7 resolves the sdk with a replace, so nothing else in this
+    # workflow ever consumes the module the way a community author does.
+    - name: Run the sdk consumer gates
+      if: ${{ !cancelled() }}
+      run: make sdk-check
+
+    # The joint gate ADR-20260901-b2z rule 1 and ADR-20260901-7t4 owe. It composes a binary
+    # from test/compose/, a module this repository does not compile, and reads
+    # the adapter back out of the running server's type table. It builds the
+    # core from a scratch module, so it runs here and not in the short lane.
+    - name: Run the composition gates
+      if: ${{ !cancelled() }}
+      run: make compose-check
+
+    # ADR-20260827-7jn rule 13. Three of these four gates are Go tests and run in the
+    # backend suite whether or not this step exists. The fourth is the
+    # JavaScript implementation written from the published page, and it runs
+    # nowhere else. A specification whose only implementation is the one it was
+    # written from has never been checked as implementable. The step below
+    # gives that gate the node it needs, the version .nvmrc names.
+    - name: Set up Node.js
+      if: ${{ !cancelled() }}
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+
+    - name: Run the plugin wire protocol gates
+      if: ${{ !cancelled() }}
+      run: make wire-check
+
+  backend-matrix:
+    name: Backend / Model and firmware matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    # The full set, not the fast one. It is 33 cells against 13 for the fast
+    # set and costs about three seconds either way, so there is no reason to
+    # gate on a subset: PCL_MATRIX=fast is for a laptop, and what it misses is
+    # a change that breaks only an older firmware of a model whose newest still
+    # passes.
+    - name: Run the model and firmware matrix
+      run: make test-matrix-full
+
+    # Real sockets and the built binary, so it cannot be in a synctest bubble
+    # and cannot be in the matrix job.
+    - name: Run the end-to-end scenarios
+      if: ${{ !cancelled() }}
+      run: make test-e2e
+
+    # ADR-20260825-zkq. An unknown difference refuses whatever the policy says, and a
+    # breaking one refuses once the version is frozen.
+    - name: Run the API compatibility gate
+      if: ${{ !cancelled() }}
+      run: make api-check
+
+    # ADR-20260827-qvk. A published set that moved without moving its version is
+    # refused, which is the shape fa8f5cc3 shipped past every other gate.
+    - name: Run the vocabulary version gate
+      if: ${{ !cancelled() }}
+      run: make vocab-check
+
+  # ---------------------------------------------------------------------------
+  # The unit suite, as parallel shards.
+  #
+  # One job ran the whole suite under the race detector. It took about twenty
+  # minutes, it finished last on every run, and every push waited for it.
+  #
+  # Three packages hold most of that, measured on a runner under the detector:
+  # internal/app 975 s, internal/transport/http/httpapi 477 s and
+  # internal/authz 458 s. Each of those is a shard, the other packages under
+  # internal/ are one more, every package outside internal/ is the last, and
+  # the demo cases in internal/app are a shard of their own. The app shard
+  # runs in three parts, its test names dealt out in turn (PART in the
+  # Makefile): whole, it took 210 s without the detector. The sdk module and
+  # the minimal build are jobs of their own below.
+  #
+  # The detector is not on this path. It costs four to eight times a plain run,
+  # so none of those shards stays inside five minutes with it. The
+  # `Backend / Race` jobs run the same shards under it instead, on a push to
+  # main and every night.
+  # The sdk shard keeps it, because that suite is far inside the budget either
+  # way.
+  #
+  # `make test-shard SHARD=<name>` is what runs, so a shard runs here exactly
+  # as scripts/ci-local.sh runs it.
+  #
+  # These four shards read AUTHZ_TEST_POSTGRES_DSN, so this job carries the
+  # Postgres service. internal/app and internal/authz run the dual-engine
+  # suite, and so do internal/platform/auth/dbstore, in the internal shard, and
+  # adapters/db, in the rest shard.
+  # ---------------------------------------------------------------------------
+  backend-unit:
+    name: Backend / Unit tests (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    strategy:
+      # One red shard says one thing and the other two say whether the fault is
+      # wider than that package. Cancelling them costs that answer.
+      fail-fast: false
+      matrix:
+        include:
+          - shard: app
+            part: 1/3
+            name: internal/app 1/3
+          - shard: app
+            part: 2/3
+            name: internal/app 2/3
+          - shard: app
+            part: 3/3
+            name: internal/app 3/3
+          - shard: authz
+            name: authz
+          - shard: internal
+            name: internal
+          - shard: rest
+            name: rest
+
+    services:
+      # internal/authz runs its whole suite against SQLite and Postgres both.
+      # The glibc image, not alpine: its en_US.UTF-8 collation is what catches
+      # an ORDER BY whose result depends on how the database was created.
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: authz
+          POSTGRES_PASSWORD: authz
+          POSTGRES_DB: authz
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U authz"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    - name: Verify dependencies
+      run: go mod verify && cd sdk && go mod verify
+
+    - name: Run the shard
+      env:
+        AUTHZ_TEST_POSTGRES_DSN: postgres://authz:authz@localhost:5432/authz?sslmode=disable
+        # Without this a missing engine skips, and a run where every
+        # behavioural test skipped still reports ok. The authorization graph is
+        # the one place that has to fail instead.
+        AUTHZ_REQUIRED_ENGINES: sqlite,postgres
+      run: make test-shard SHARD=${{ matrix.shard }} PART=${{ matrix.part }}
+
+  # ---------------------------------------------------------------------------
+  # The two shards that reach no database.
+  #
+  # They are a second matrix rather than two more cells above, because a
+  # service container cannot be declared for part of a matrix. Starting
+  # Postgres for a shard that never dials it costs the image pull and the
+  # health wait on the two shortest jobs here.
+  #
+  # The demo cases start a whole core with simulated printers and wait for it,
+  # so they run apart from the rest of internal/app. One pattern in the
+  # Makefile drives both: the app shard skips it and this shard selects it, so
+  # no case runs twice and none is dropped.
+  # ---------------------------------------------------------------------------
+  backend-unit-nodb:
+    name: Backend / Unit tests (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: demo
+            name: internal/app demo
+          - shard: httpapi
+            name: httpapi
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    - name: Verify dependencies
+      run: go mod verify && cd sdk && go mod verify
+
+    - name: Run the shard
+      run: make test-shard SHARD=${{ matrix.shard }}
+
+  # ---------------------------------------------------------------------------
+  # The sdk module, which is a module of its own (ADR-20260824-gfr) and invisible to a
+  # run started at the repository root.
+  #
+  # It keeps the race detector. The suite is none of the slow packages above,
+  # so it stays far inside five minutes with the detector on, and the Fractal
+  # suite lives here.
+  #
+  # Two cells, because the two halves have nothing to share but the checkout:
+  # the sdk module, and the modules under packages/, whose NATS binding is
+  # most of a minute and a half on a runner. One after the other they made
+  # this the longest backend job.
+  # ---------------------------------------------------------------------------
+  backend-unit-sdk:
+    name: Backend / Unit tests (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    strategy:
+      # One red cell says nothing about the other.
+      fail-fast: false
+      matrix:
+        include:
+          - part: sdk
+            name: sdk
+          - part: packages
+            name: modules under packages/
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    - name: Verify dependencies
+      run: go mod verify && cd sdk && go mod verify
+
+    - name: Run unit tests (sdk module)
+      if: matrix.part == 'sdk'
+      run: go test -short -race -count=1 ./...
+      working-directory: sdk
+
+    # The step above passes -short, and the streaming conformance case skips
+    # under it. Every other lane that reaches sdk/ passes -short too, so the one
+    # case that holds a storage provider to a memory bound ran nowhere: half a
+    # gigabyte through a provider had never been exercised by a gate.
+    #
+    # It is a second step rather than a flag on the first because the rest of
+    # the sdk suite has no reason to run long, and because a step that skipped
+    # everything would report the same ok. Measured at 1.2 s: the transfer is
+    # generated and discarded, so the size costs time and not disk.
+    - name: Run the sdk streaming conformance case (not -short)
+      if: ${{ !cancelled() && matrix.part == 'sdk' }}
+      run: go test -count=1 -run 'TestStreaming' ./storageapi/storageapitest/
+      working-directory: sdk
+
+    # Every module under packages/ carries its own go.mod, so no pattern from
+    # the root and none from sdk/ reaches its tests. `make side-modules-check`
+    # builds and vets those folders and runs no test, so this step is the one
+    # place CI runs the suites of packages/fractal and packages/graphql.
+    # The loop finds the folders instead of naming them, so the module added
+    # next is covered without an edit here.
+    - name: Run unit tests (modules under packages/)
+      if: matrix.part == 'packages'
+      run: |
+        for mod in packages/*/go.mod; do
+          dir="${mod%/go.mod}"
+          echo "-> $dir"
+          (cd "$dir" && go test -short -race -count=1 ./...)
+        done
+
+  # ---------------------------------------------------------------------------
+  # The minimal build, which is the whole tree again with no optional tag. What
+  # it asks is whether the tree still compiles and passes without them, so it
+  # cannot be one of the shards above.
+  #
+  # It runs the same shards and parts with BUILD=minimal, so it reads the same
+  # package lists, the short ones beside a part of internal/app. As one job
+  # over the tree it took 6.8 min and finished last. A cell runs every shard
+  # it holds and fails if any failed, so one red shard does not hide the next.
+  # ---------------------------------------------------------------------------
+  backend-unit-minimal:
+    name: Backend / Unit tests (minimal build, ${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # shard, or shard:part
+          - shards: app:1/3 demo
+            name: internal/app 1/3
+          - shards: app:2/3 httpapi authz
+            name: internal/app 2/3
+          - shards: app:3/3
+            name: internal/app 3/3
+          - shards: internal
+            name: internal
+          - shards: rest
+            name: rest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    - name: Verify dependencies
+      run: go mod verify && cd sdk && go mod verify
+
+    - name: Run the shards (minimal build, no optional tags)
+      run: |
+        failed=""
+        for cell in ${{ matrix.shards }}; do
+          shard="${cell%%:*}"
+          part=""
+          case "$cell" in *:*) part="${cell#*:}" ;; esac
+          make test-shard SHARD="$shard" PART="$part" BUILD=minimal || failed="$failed $cell"
+        done
+        if [ -n "$failed" ]; then
+          echo "FAIL  minimal build shards:$failed"
+          exit 1
+        fi
+
+  # The printer build compiles with tags no other job passes: the printer
+  # defaults, and the tags that leave the reference page, the developer tools
+  # and the other models out. This job runs the tests those tags change.
+  backend-unit-printer:
+    name: Backend / Unit tests (printer build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run unit tests (printer build tags)
+      run: make test-printer
+
+  # ---------------------------------------------------------------------------
+  # The unit shards again, under the race detector.
+  #
+  # The same six shards as the unit jobs, each cell running
+  # `make test-shard SHARD=<name> RACE=1`, so a shard has one package list for
+  # both lanes. Under the detector the internal/app shard takes about fifteen
+  # minutes and the whole tree in one job took over twenty. A matrix finishes
+  # when its slowest shard does, and a red cell names the shard.
+  #
+  # The sdk module and the modules under packages/ are the job after these
+  # two. The unit job for them skips on the nightly run, so without that job
+  # the fixed clock would never read them.
+  #
+  # A push to main and a nightly run, never a pull request: the detector reads
+  # main after every merge and reads it again on a fixed clock.
+  # ---------------------------------------------------------------------------
+  backend-race:
+    name: Backend / Race (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: app
+            part: 1/3
+            name: internal/app 1/3
+          - shard: app
+            part: 2/3
+            name: internal/app 2/3
+          - shard: app
+            part: 3/3
+            name: internal/app 3/3
+          - shard: authz
+            name: authz
+          - shard: internal
+            name: internal
+          - shard: rest
+            name: rest
+
+    services:
+      # The same service the unit shards carry, for the same reason: with no
+      # DSN the Postgres half of the dual-engine suite skips and the run still
+      # prints ok.
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: authz
+          POSTGRES_PASSWORD: authz
+          POSTGRES_DB: authz
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U authz"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    - name: Verify dependencies
+      run: go mod verify && cd sdk && go mod verify
+
+    - name: Run the shard under the race detector
+      env:
+        AUTHZ_TEST_POSTGRES_DSN: postgres://authz:authz@localhost:5432/authz?sslmode=disable
+        # Without this a missing engine skips, and a run where every
+        # behavioural test skipped still reports ok. The authorization graph is
+        # the one place that has to fail instead.
+        AUTHZ_REQUIRED_ENGINES: sqlite,postgres
+      run: make test-shard SHARD=${{ matrix.shard }} PART=${{ matrix.part }} RACE=1
+
+  # The two shards that reach no database, apart for the reason the unit jobs
+  # keep them apart: a service container cannot be declared for part of a
+  # matrix.
+  backend-race-nodb:
+    name: Backend / Race (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: demo
+            name: internal/app demo
+          - shard: httpapi
+            name: httpapi
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download && cd sdk && go mod download
+
+    - name: Verify dependencies
+      run: go mod verify && cd sdk && go mod verify
+
+    - name: Run the shard under the race detector
+      run: make test-shard SHARD=${{ matrix.shard }} RACE=1
+
+  # The modules beside the root, which no pattern from the root reaches. Each
+  # module under packages/ carries its own go.mod, so the loop finds them.
+  backend-race-modules:
+    name: Backend / Race (sdk and packages)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Run the sdk module under the race detector
+      run: go test -short -race -count=1 ./...
+      working-directory: sdk
+
+    - name: Run the modules under packages/ under the race detector
+      if: ${{ !cancelled() }}
+      run: |
+        for mod in packages/*/go.mod; do
+          dir="${mod%/go.mod}"
+          echo "-> $dir"
+          (cd "$dir" && go test -short -race -count=1 ./...)
+        done
+
+  # ---------------------------------------------------------------------------
+  # The event sink adapters, against the brokers they publish to.
+  #
+  # `make test-adapters` existed and no workflow called it. The unit job does
+  # reach adapters/..., and with no broker at the address every case there skips
+  # and the package still prints ok, so what the suites assert had never run in
+  # CI. That is the class of a gate that runs, reports green, and
+  # reads nothing.
+  #
+  # It is a job of its own because it starts containers, and a broker that
+  # fails to come up should name itself rather than fail the unit tests. It
+  # reads the whole `go` area and not only adapters/: an adapter breaks on a
+  # change to the event envelope it publishes, which is not under adapters/.
+  #
+  # Measured locally at about 90 seconds, brokers included.
+  # ---------------------------------------------------------------------------
+  backend-adapters:
+    name: Backend / Event sink adapters
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    # Starts the MQTT, AMQP and Kafka fixtures, waits for each to report
+    # healthy, runs the suites and removes them again.
+    - name: Run the adapter suites against real brokers
+      run: make test-adapters
+
+  # ---------------------------------------------------------------------------
+  # Both client packages through a registry: docker/npm-registry-fixture.
+  #
+  # The target packs packages/typescript and packages/svelte, publishes both
+  # there, installs them into the four consumer projects under
+  # packages/typescript/testdata/consumers and runs the Node one against
+  # cmd/demo. pnpm is set up from the SDK's own manifest, and every lockfile the
+  # lane reads is cached beside it.
+  #
+  # It ran after the broker suites in Backend / Event sink adapters, because
+  # that was the other lane that starts a container. The two share nothing but
+  # Docker, and one after the other they took 4.7 minutes on a two-core runner,
+  # about two each. As jobs of their own they run side by side.
+  # ---------------------------------------------------------------------------
+  backend-client-install:
+    name: Backend / Client packages through a registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+          packages/typescript/testdata/consumers/*/pnpm-lock.yaml
+
+    # The fourth consumer holds its page in a real Chromium, the way the
+    # component library's own tests do (svelte-testing.md), and the browser is
+    # the same pinned Playwright build. `Web / Component library tests` runs
+    # the same step before `make client-ui-test`.
+    - name: Fetch the Chromium the fourth consumer's test runs in
+      working-directory: packages/svelte
+      run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+
+    - name: Install both packages and run them through a registry
+      run: make client-sdk-install-check
+
+  backend-build:
+    name: Backend / Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `go`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    # setup-go's own cache is one entry per go.sum, saved by whichever Go job
+    # of the first run with that go.sum finished first, so it seldom holds the
+    # arm, arm64 and printer packages this job compiles. Every run compiled
+    # seven binaries from nothing: 4.3 minutes of the job on a two-core
+    # runner, and about 35 seconds with their packages already built.
+    #
+    # So the job keeps a cache of its own, one entry a day, written by a push
+    # to main and read by every run. A pull request reads it and writes
+    # nothing: an entry is about half a gigabyte and the repository has ten for
+    # every cache it keeps. Go rebuilds what changed since the entry was
+    # written, so a day-old one still saves most of the work.
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    - name: Name today's build cache
+      id: gocache
+      run: |
+        echo "day=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+        echo "build=$(go env GOCACHE)" >> "$GITHUB_OUTPUT"
+        echo "mod=$(go env GOMODCACHE)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the build cache
+      id: gocache-restore
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ${{ steps.gocache.outputs.build }}
+          ${{ steps.gocache.outputs.mod }}
+        key: go-binaries-${{ runner.os }}-${{ hashFiles('go.mod', 'go.sum') }}-${{ steps.gocache.outputs.day }}
+        restore-keys: |
+          go-binaries-${{ runner.os }}-${{ hashFiles('go.mod', 'go.sum') }}-
+          go-binaries-${{ runner.os }}-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Build server binary
+      # Same compile step as `make build-full`, minus the frontend/docs
+      # sub-builds and swagger regen: those are produced by parallel jobs
+      # and packaged as separate artifacts.
+      run: make build-ci
+
+    # CI otherwise builds only the host architecture, so a break on arm64, the
+    # architecture the product's own promise names, would reach a release first.
+    - name: Cross-compile every shipping target and check the size budget
+      if: ${{ !cancelled() }}
+      run: make binary-check
+
+    - name: Save the build cache
+      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.gocache-restore.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ${{ steps.gocache.outputs.build }}
+          ${{ steps.gocache.outputs.mod }}
+        key: ${{ steps.gocache-restore.outputs.cache-primary-key }}
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: server-binary
+        path: bin/server
+        retention-days: 7
+
+  docker-image:
+    name: Docker / Hardened image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+    - name: Extract Go version from go.mod
+      id: go_version
+      run: echo "go_version=$(grep '^go ' go.mod | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+    - name: Build runtime image
+      id: image
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+      with:
+        context: .
+        file: docker/server/Dockerfile
+        load: true
+        tags: prusa-connect:ci
+        build-args: |
+          GO_VERSION=${{ steps.go_version.outputs.go_version }}
+        # Every run reads the layer cache, and a push to main alone writes it.
+        # Writing it took 55 seconds of every pull request on a two-core
+        # runner, for layers no other run reads again: `mode=max` exports the
+        # builder stage too, which holds the whole source tree. And the
+        # repository keeps ten gigabytes of cache for every job, so each write
+        # pushed out an entry another run would have read.
+        cache-from: type=gha
+        cache-to: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') && 'type=gha,mode=max' || '' }}
+
+    # Static + runtime proof that the image does not run as uid 0 and that the
+    # uid it does run as can write every directory the server writes to.
+    - name: Check the image runs as non-root
+      run: bash scripts/check-container-nonroot.sh prusa-connect:ci
+
+    # This script's own header named this job as one of its two callers, and
+    # this job never ran it. So checks 2 to 7 in it ran only when a person typed
+    # `make docker-check`: the /openapi.json, /docs and /api/v1/readiness
+    # probes, the binary's own probe inside the container, and the SIGTERM
+    # budget. A missing CMD line is the whole difference between a container
+    # serving the core and one answering 404 everywhere while reporting itself
+    # healthy, and nothing in CI asked.
+    - name: Probe the image the way a deployment does
+      if: ${{ !cancelled() && steps.image.outcome == 'success' }}
+      run: bash scripts/check-container-probes.sh prusa-connect:ci
+
+    # The compose stack is where the hardening is actually applied, and the
+    # static check cannot see whether the server still runs under it: read-only
+    # root filesystem, empty capability set, no-new-privileges and a non-root uid
+    # all have to hold at once. Bringing the stack up and waiting for the
+    # healthcheck is what catches a regression in any of them.
+    - name: Start the hardened compose stack and wait for healthy
+      if: ${{ !cancelled() && steps.image.outcome == 'success' }}
+      env:
+        PRUSA_CONNECT_TAG: ci
+      run: |
+        docker compose -f docker-compose.local.yml up -d --no-build
+        for i in $(seq 1 30); do
+          STATUS="$(docker inspect --format '{{.State.Health.Status}}' prusa_connect 2>/dev/null || echo missing)"
+          echo "attempt $i: $STATUS"
+          case "$STATUS" in
+            healthy) echo "✓ container reached healthy"; exit 0 ;;
+            unhealthy) break ;;
+          esac
+          sleep 5
+        done
+        echo "::error::container did not reach healthy"
+        docker compose -f docker-compose.local.yml ps
+        docker compose -f docker-compose.local.yml logs --no-color --tail=100
+        exit 1
+
+    # :80 is below the traditional privileged boundary and the process is uid
+    # 10001 with no capabilities, so this fails the moment a runtime stops
+    # defaulting net.ipv4.ip_unprivileged_port_start to 0.
+    #
+    # It runs the image directly rather than curling the compose stack. The
+    # stack publishes 8080 alone: no connector asks for a listener by default, so
+    # printers dial the API listener and nothing in the composition binds a
+    # privileged port. Curling :80 against it asked a question the deployment
+    # had stopped answering, and failed with exit 7 for days while the property
+    # it was named after went unexercised.
+    - name: Confirm a privileged port is served by a non-root process
+      if: ${{ !cancelled() && steps.image.outcome == 'success' }}
+      run: bash scripts/check-container-privileged-port.sh prusa-connect:ci
+
+    - name: Dump logs on failure
+      if: failure()
+      run: docker compose -f docker-compose.local.yml logs --no-color
+
+    - name: Tear down
+      if: always()
+      run: docker compose -f docker-compose.local.yml down -v
+
+  # ---------------------------------------------------------------------------
+  # The web half, as eight parallel jobs with no order between them.
+  #
+  # Each job sets up the same pnpm, Node.js and Go, so a red one names the part
+  # of the web tree that broke and never stops another part from being read.
+  # A job that opens a browser fetches Chromium through the Playwright build
+  # the component library pins. Playwright keeps one browser per version for
+  # the whole machine, and the application pins the version the library pins.
+  # ---------------------------------------------------------------------------
+  web-client:
+    name: Web / Client SDK and library
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    # The client package under packages/typescript, generated from
+    # internal/transport/http/httpapi/openapi.json and the registries
+    # (ADR-20260909-c7x rule 5). That document is the type sync between the backend
+    # and the frontend: it is committed, TestCommittedSpecMatchesTheCode in the
+    # unit test job refuses one that is not what the build serves, and this job
+    # refuses a package that is not what the document describes. The Go half of
+    # the target runs cmd/generate-client-sdk, so the job needs a Go toolchain.
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Run the client SDK gates
+      run: make client-sdk-check
+
+    # The component library under packages/svelte, on the same pnpm: its
+    # types, and its Storybook, so a story that no longer compiles fails this
+    # job. Its lint and its tests are the two jobs below: one after the other
+    # in this job they took five of its seven minutes on a two-core runner.
+    - name: Type-check the component library
+      if: ${{ !cancelled() }}
+      run: make client-ui-svelte-check
+
+    - name: Build the component library's Storybook
+      if: ${{ !cancelled() }}
+      run: make client-ui-storybook
+
+  # The component library's lint, type-aware: 2.8 minutes on its own, with no
+  # cache, because a cached result for a file says nothing about the types it
+  # reads from another one that changed.
+  web-client-lint:
+    name: Web / Component library lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    - name: Lint the component library and check its formatting
+      run: make client-ui-lint
+
+  # The component library's tests, under Node and in a real Chromium
+  # (svelte-testing.md). They read the client SDK from its source, so this job
+  # builds nothing first.
+  web-client-test:
+    name: Web / Component library tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    # Playwright fetches the browser here with the system libraries it needs.
+    - name: Fetch the Chromium the browser tests run in
+      working-directory: packages/svelte
+      run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+
+    - name: Run the component library's tests
+      run: make client-ui-test
+
+  web-app:
+    name: Web / Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Skips on the nightly run, and on a pull request that
+    # does not touch the area `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+
+    - name: Fetch the Chromium the browser tests run in
+      working-directory: packages/svelte
+      run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+
+    # The Svelte application under frontend/. The target runs all five of its
+    # steps and names every one that failed.
+    - name: Run the Svelte application gates
+      run: make frontend-check
+
+    # The Storybook that shows the app's screens beside the library's parts,
+    # so a story that no longer compiles fails this job.
+    - name: Build the web app's Storybook
+      if: ${{ !cancelled() }}
+      run: make frontend-storybook
+
+  web-embedded:
+    name: Web / Embedded binary
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    # The application inside the binary (ADR-20260911-4p6 rule 33). No other job here
+    # builds it: `make build-ci` says in its own comment that it is
+    # `build-full` minus the frontend sub-build, so a binary that embeds
+    # nothing would pass every other job. Commit 037eb6f5 is that defect
+    # reaching a person rather than a runner. It reads the page with curl and
+    # opens no browser, so this job fetches no Chromium.
+    - name: Build the binary with the application in it and read it at /
+      run: make embedded-app-check
+
+    # The release builds the printer binary with this target, once a tag, so a
+    # break here would reach a release first. MK4S stands in for the printer's
+    # model, the same way the binary budget does.
+    - name: Build the printer binary the release publishes
+      if: ${{ !cancelled() }}
+      run: make build-printer PRINTER_MODEL=MK4S
+
+  web-examples:
+    name: Web / Example modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Fetch the Chromium the browser tests run in
+      working-directory: packages/svelte
+      run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+
+    # The first proof extension, examples/spools: a module with a Go half and a
+    # browser half, built and tested on the same pnpm and the same Chromium.
+    - name: Run the spools example gates
+      run: make example-spools-check
+
+  web-journey:
+    name: Web / Journey
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go` and `web`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.web == 'true') }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Fetch the Chromium the browser tests run in
+      working-directory: packages/svelte
+      run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+
+    # The customer journey, frontend/test/journey: a person signs in, uploads a
+    # print file, presses Print, picks a printer and watches the job. It is the
+    # one lane where the application talks to a core that is really running, so
+    # a route the page asks for and the server does not serve fails here and
+    # nowhere else.
+    - name: Run the customer journey gates
+      run: make journey-check
+
+  web-oidc-providers:
+    name: Web / Sign-in at ${{ matrix.provider }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # It starts three identity providers in containers, so on a pull request
+    # it runs only when `CI / What the change touches` found a path that
+    # reaches the sign-in. The nightly run, a push to main and a run a person
+    # starts always run it, so a path the list misses is still found within a
+    # day. CI OK reads the same answer to tell a skip from a failure.
+    needs: [ changes ]
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.changes.outputs.sign_in == 'true') }}
+    # One job per provider, side by side. Each one starts its provider in a
+    # container, so one after the other they would add their start-up times.
+    strategy:
+      fail-fast: false
+      matrix:
+        provider: [keycloak, authentik, authelia]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          frontend/pnpm-lock.yaml
+
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Fetch the Chromium the browser tests run in
+      working-directory: packages/svelte
+      run: pnpm install --frozen-lockfile && pnpm exec playwright install chromium
+
+    # frontend/test/oidc: the first-run wizard chooses the sign-in at the
+    # provider, the server restarts on it, the administrator signs in and out,
+    # and a second person signs in without the administrator's rights. The
+    # matrix names each provider, so CI runs all three.
+    - name: Run the sign-in against the provider
+      run: make oidc-providers-check OIDC_PROVIDERS=${{ matrix.provider }}
+
+  docs:
+    name: Documentation (Starlight)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Skips on the nightly run, and on a pull request that
+    # touches none of the areas `go`, `docs`, `changes` and `removed`.
+    # ADR-20260923-xcq rule 1 says why.
+    needs: [ changes ]
+    if: ${{ !cancelled() && github.event_name != 'schedule' && (github.event_name != 'pull_request' || needs.changes.outputs.go == 'true' || needs.changes.outputs.docs == 'true' || needs.changes.outputs.changes == 'true' || needs.changes.outputs.removed == 'true') }}
+
+    defaults:
+      run:
+        working-directory: ./docs
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    # `pnpm run build` below triggers docs/package.json's prebuild, which
+    # renders the two AsyncAPI reference pages from the committed captures. No
+    # Go runs there, so the token is wired up defensively but not required: this
+    # job must keep working on fork PRs, which GitHub never gives repository
+    # secrets to.
+    - name: Set up Go
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    # The packages `Backend / Go build cache` compiled, today's or the newest
+    # before it. Go rebuilds only what changed since.
+    - name: Restore the Go build cache
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ github.run_id }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: docs/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: docs/pnpm-lock.yaml
+
+    - name: Install docs dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Build documentation
+      id: build
+      run: pnpm run build
+
+    # The documentation gates, run as the gates and not as their parts.
+    #
+    # Calling docs/scripts/check-links.mjs and check-table-regions.mjs from here
+    # is a second implementation of this target, and it leaves the three shell
+    # gates running in no job. Two of their refusals are why that matters.
+    # check-docs-site.sh deletes docs/dist before it builds, because a route
+    # deleted from the content tree keeps its index.html and a link to it still
+    # resolves. Both scripts refuse a missing toolchain rather than degrading to
+    # a warning.
+    #
+    # .githooks/pre-push states the principle: a clone that never ran
+    # `make install-hooks` pushes with no hook, which is why CI runs the same
+    # target. internal/arch's TestEveryGateScriptRunsInACIJob keeps it wired.
+    - name: Run the documentation gates
+      if: ${{ !cancelled() }}
+      working-directory: .
+      run: make docs-check
+
+    # prebuild regenerates the AsyncAPI reference pages. Without this check a
+    # generator change and the committed pages drift apart silently, which is
+    # the hole the error code gates close for their own artefacts.
+    - name: Verify the generated reference pages are up to date
+      if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      run: |
+        if ! git diff --exit-code -- src/content/docs/mqtt-asyncapi.mdx src/content/docs/sse-asyncapi.mdx; then
+          echo "The AsyncAPI reference pages differ from what the generator emits."
+          echo "Run 'pnpm run generate:protocol-reference-pages' in docs/ and commit the result."
+          exit 1
+        fi
+
+    - name: Upload docs artifact
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: docs-dist
+        path: docs/dist
+        retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # The compiled packages every other Go job starts from.
+  #
+  # On a runner's two processors compiling is most of a Go job: the three
+  # parts of internal/app each test for about a minute in a job of over three.
+  # setup-go keeps one cache entry per go.sum, written by whichever job of the
+  # first run with that go.sum finished first, so it held the dependencies and
+  # little of this module. This job compiles what the Go jobs compile
+  # (`make go-cache-warm`) and a push to main writes the result once a day.
+  # Every Go job restores the newest entry and rebuilds what changed since.
+  # The job runs on every event, as CI OK reads it, and its steps on a push to
+  # main alone: on a pull request it would compile what nobody saves, on one
+  # of the twenty runners the organisation may hold at once.
+  # ---------------------------------------------------------------------------
+  backend-go-cache:
+    name: Backend / Go build cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [ changes ]
+    if: github.event_name != 'schedule'
+
+    steps:
+    - name: Checkout code
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up Go
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      id: setup-go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    - name: Name today's entry
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      id: day
+      run: echo "day=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the Go build cache
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      id: restore
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-${{ steps.day.outputs.day }}
+        restore-keys: go-shared-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-
+
+    - name: Compile what the Go jobs compile
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      run: make go-cache-warm
+
+    - name: Save the Go build cache
+      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.restore.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ steps.restore.outputs.cache-primary-key }}
+
+  # ---------------------------------------------------------------------------
+  # The one result for the whole run.
+  #
+  # It runs under always(), because a skipped result job reads as a pass. It
+  # waits for every job above and fails when the run was cancelled, or when
+  # any of them failed or was cancelled. A skipped job fails it too, unless the
+  # event or `CI / What the change touches` explains the skip.
+  # internal/arch/ci_ok_test.go holds each job's `if` to the condition the
+  # script below reads for it, and refuses a job that is missing from `needs`.
+  # ---------------------------------------------------------------------------
+  ci-ok:
+    name: CI OK
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: always()
+    needs:
+      - changes
+      - repo-gates
+      - backend-lint
+      - backend-go-cache
+      - backend-security
+      - backend-verify
+      - backend-error-codes
+      - backend-matrix
+      - backend-unit
+      - backend-unit-nodb
+      - backend-unit-sdk
+      - backend-unit-minimal
+      - backend-unit-printer
+      - backend-race
+      - backend-race-nodb
+      - backend-race-modules
+      - backend-adapters
+      - backend-client-install
+      - backend-build
+      - docker-image
+      - web-client
+      - web-client-lint
+      - web-client-test
+      - web-app
+      - web-embedded
+      - web-examples
+      - web-journey
+      - web-oidc-providers
+      - docs
+
+    steps:
+    - name: Print the result of every job
+      env:
+        NEEDS: ${{ toJSON(needs) }}
+      run: printf '%s\n' "$NEEDS"
+
+    # GitHub allows cancelled() only in an if, so a cancelled run is failed by
+    # a step of its own.
+    - name: Fail when the run was cancelled
+      if: cancelled()
+      run: |
+        echo "::error::the run was cancelled, so it did not check this commit"
+        exit 1
+
+    # A race job runs on the nightly schedule and on a push to main.
+    # `CI / What the change touches` runs on every event. A job that skips for
+    # the paths runs on every event but the nightly one, and on a pull request
+    # only when one of its areas changed. The sign-in at the providers runs on
+    # the nightly event too. Every other job runs on every event except the
+    # nightly one. Any result but success fails, and so does a skip the event
+    # and the areas do not explain. An area the paths job did not answer
+    # counts as changed.
+    # internal/arch/ci_ok_script_test.go runs this script, and
+    # internal/arch/ci_ok_test.go holds each case to the job's condition.
+    - name: Fail when a job failed, was cancelled or skipped without reason
+      env:
+        NEEDS: ${{ toJSON(needs) }}
+        EVENT: ${{ github.event_name }}
+        REF: ${{ github.ref }}
+      run: |
+        set -euo pipefail
+        pull_request=false
+        race_runs=false
+        others_run=true
+        case "$EVENT" in
+          pull_request) pull_request=true ;;
+          schedule) race_runs=true; others_run=false ;;
+        esac
+        if [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ]; then
+          race_runs=true
+        fi
+        # touched AREA... succeeds unless the paths job answered false for
+        # every area it names.
+        touched() {
+          local area
+          for area in "$@"; do
+            if [ "$(jq -r --arg area "$area" '.changes.outputs[$area] // ""' <<<"$NEEDS")" != false ]; then
+              return 0
+            fi
+          done
+          return 1
+        }
+        # gated AREA... prints whether a job that skips for the paths had to
+        # run. gated_with_nightly is the same for a job the nightly run starts.
+        gated() {
+          if [ "$pull_request" = true ] && ! touched "$@"; then
+            echo false
+          else
+            echo "$others_run"
+          fi
+        }
+        gated_with_nightly() {
+          if [ "$pull_request" = true ] && ! touched "$@"; then
+            echo false
+          else
+            echo true
+          fi
+        }
+        jobs=$(jq -r 'keys[]' <<<"$NEEDS")
+        failed=0
+        for job in $jobs; do
+          result=$(jq -r --arg job "$job" '.[$job].result' <<<"$NEEDS")
+          case "$job" in
+            backend-race*) expected=$race_runs ;;
+            changes) expected=true ;;
+            web-oidc-providers) expected=$(gated_with_nightly sign_in) ;;
+            backend-lint|backend-security|backend-error-codes|backend-matrix|backend-build) expected=$(gated go) ;;
+            backend-unit|backend-unit-nodb|backend-unit-sdk|backend-unit-minimal|backend-unit-printer) expected=$(gated go) ;;
+            backend-adapters) expected=$(gated go) ;;
+            backend-verify) expected=$(gated go docs) ;;
+            backend-client-install|docker-image|web-client) expected=$(gated go web) ;;
+            web-embedded|web-examples|web-journey) expected=$(gated go web) ;;
+            web-client-lint|web-client-test|web-app) expected=$(gated web) ;;
+            docs) expected=$(gated go docs changes removed) ;;
+            *) expected=$others_run ;;
+          esac
+          if [ "$result" = success ]; then
+            continue
+          fi
+          if [ "$result" = skipped ] && [ "$expected" = false ]; then
+            continue
+          fi
+          echo "::error::$job ended as $result"
+          failed=1
+        done
+        exit "$failed"

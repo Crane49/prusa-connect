@@ -1,0 +1,3935 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "contact": {},
+        "title": "",
+        "version": ""
+    },
+    "paths": {
+        "/api/account": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get account",
+                "responses": {
+                    "200": {
+                        "description": "Account",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.AuthUserResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Update account",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.UpdateAccountRequest"
+                            }
+                        }
+                    },
+                    "description": "Account profile",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated account",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.AuthUserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email already registered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/account/mqtt-token": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get MQTT token",
+                "responses": {
+                    "200": {
+                        "description": "MQTT credential",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.MQTTTokenResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/account/password": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Change password",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.ChangePasswordRequest"
+                            }
+                        }
+                    },
+                    "description": "Passwords",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Changed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Wrong current password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "List users",
+                "responses": {
+                    "200": {
+                        "description": "Users",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.AdminUsersResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Create user",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.CreateUserRequest"
+                            }
+                        }
+                    },
+                    "description": "User",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.AdminUserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email taken",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users/{id}": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Delete user",
+                "parameters": [
+                    {
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Not allowed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users/{id}/password": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Reset user password",
+                "parameters": [
+                    {
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.SetPasswordRequest"
+                            }
+                        }
+                    },
+                    "description": "New password",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reset",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users/{id}/roles": {
+            "put": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Set user roles",
+                "parameters": [
+                    {
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.SetRolesRequest"
+                            }
+                        }
+                    },
+                    "description": "Roles",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Not allowed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events": {
+            "get": {
+                "description": "Opens a Server-Sent Events connection for real-time updates",
+                "tags": [
+                    "events"
+                ],
+                "summary": "Subscribe to real-time events",
+                "parameters": [
+                    {
+                        "description": "Comma-separated list of event types to filter (e.g., 'prusa-connect.printer.state_changed,prusa-connect.job.update')",
+                        "name": "types",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Comma-separated list of printer UUIDs to filter",
+                        "name": "printers",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Stream of CloudEvents",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/state.CloudEvent"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/stats": {
+            "get": {
+                "description": "Returns the number of active SSE subscribers",
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get SSE statistics",
+                "responses": {
+                    "200": {
+                        "description": "SSE statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/labels": {
+            "get": {
+                "description": "Returns all printer labels",
+                "tags": [
+                    "labels"
+                ],
+                "summary": "List labels",
+                "responses": {
+                    "200": {
+                        "description": "List of labels",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/httpapi.LabelResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new printer label",
+                "tags": [
+                    "labels"
+                ],
+                "summary": "Create label",
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Request"
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created label",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.LabelResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/labels/{id}": {
+            "put": {
+                "description": "Renames an existing printer label",
+                "tags": [
+                    "labels"
+                ],
+                "summary": "Update label",
+                "parameters": [
+                    {
+                        "description": "Label UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "$ref": "#/components/requestBodies/Request"
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated label",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.LabelResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Label not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a printer label and removes all its printer assignments",
+                "tags": [
+                    "labels"
+                ],
+                "summary": "Delete label",
+                "parameters": [
+                    {
+                        "description": "Label UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Label deleted"
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers": {
+            "get": {
+                "description": "Returns list of all registered printers with their current state",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Get all printers",
+                "responses": {
+                    "200": {
+                        "description": "List of printers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/httpapi.PrinterResponse"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/preauthorize": {
+            "post": {
+                "description": "Generates a token for offline provisioning (e.g. via USB flashdrive)",
+                "tags": [
+                    "registrations"
+                ],
+                "summary": "Pre-authorize a printer token",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.PreAuthorizeRequest"
+                            }
+                        }
+                    },
+                    "description": "Pre-authorization payload",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PreAuthorizationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/preauthorized": {
+            "get": {
+                "tags": [
+                    "registrations"
+                ],
+                "summary": "List active pre-authorizations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PreAuthorizationsResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/preauthorized/{token}": {
+            "delete": {
+                "tags": [
+                    "registrations"
+                ],
+                "summary": "Revoke a pre-authorization",
+                "parameters": [
+                    {
+                        "description": "Pre-authorization token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}": {
+            "get": {
+                "description": "Returns detailed information about a specific printer, including assigned labels",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Get printer by ID",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Printer details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PrinterResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Closes the connection (if any) and removes the printer from every cache and durable store.",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Delete a printer",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/command": {
+            "post": {
+                "description": "Creates a new command for a printer with validation. Command is added to queue and will be sent when printer is online. Validates command existence, printer type, firmware version, and arguments. Does NOT validate printer state - command can be added even when printer is offline.",
+                "tags": [
+                    "commands"
+                ],
+                "summary": "Create command with validation",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.CreateCommandRequest"
+                            }
+                        }
+                    },
+                    "description": "Command request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Command queued successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/queue.Command"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Command dispatched to the shadow's owning instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.RemoteCommandResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (invalid command, validation failed, duplicate command)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Remote dispatch to the shadow's owning instance failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/commands": {
+            "get": {
+                "description": "Returns list of commands for a specific printer, optionally filtered by status",
+                "tags": [
+                    "commands"
+                ],
+                "summary": "Get printer commands",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Filter by status (pending, sent, completed, failed)",
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of commands",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/queue.Command"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Command queue not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/commands/{command_id}": {
+            "get": {
+                "description": "Returns details of a specific command from the queue",
+                "tags": [
+                    "commands"
+                ],
+                "summary": "Get command by ID",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Command ID",
+                        "name": "command_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Command details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/queue.Command"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid command ID",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Command not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Command queue not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/files": {
+            "get": {
+                "description": "Returns list of files available on the printer's storage",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Get printer files",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Files list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.FilesResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/files/load": {
+            "post": {
+                "description": "Requests file information from printer (SEND_FILE_INFO for every reported storage and its folders)",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Load all files from printer",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/files/upload": {
+            "post": {
+                "description": "Uploads a file from a URL to the printer using START_INLINE_DOWNLOAD command. The file is streamed directly from the URL to the printer without storing it on the server.",
+                "tags": [
+                    "files"
+                ],
+                "summary": "Upload file from URL",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.UploadFileRequest"
+                            }
+                        }
+                    },
+                    "description": "Upload request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Command queued successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/queue.Command"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found or not connected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/files/upload-file": {
+            "post": {
+                "description": "Uploads a file via multipart form data and transfers it to the printer",
+                "tags": [
+                    "files"
+                ],
+                "summary": "Upload file to printer",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "description": "File to upload",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "path": {
+                                        "description": "Destination path on printer, storage-prefixed (e.g., usb/file.gcode)",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "file",
+                                    "path"
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "File upload started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/queue.Command"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found or not connected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/jobs": {
+            "get": {
+                "description": "Returns all jobs for a printer from the persistence store",
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Get printer jobs",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of jobs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/httpapi.JobResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/jobs/current": {
+            "get": {
+                "description": "Returns the currently active print job for a printer (live state or persisted)",
+                "tags": [
+                    "jobs"
+                ],
+                "summary": "Get current job",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current job",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.JobResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No active job",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/labels": {
+            "get": {
+                "description": "Returns all labels assigned to a printer",
+                "tags": [
+                    "labels"
+                ],
+                "summary": "Get printer labels",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of labels",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/httpapi.LabelResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Replaces the full set of labels assigned to a printer",
+                "tags": [
+                    "labels"
+                ],
+                "summary": "Assign labels to printer",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Label IDs",
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "Labels assigned"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Store not available",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/pause": {
+            "post": {
+                "description": "Pauses the currently running print job on the specified printer",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Pause print job",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Print paused",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PrintResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Command dispatched to the shadow's owning instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.RemoteCommandResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The shadow's mirrored state or the catalog refuses this command",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not connected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/print": {
+            "post": {
+                "description": "Starts printing a file on the specified printer",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Start print job",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Print request",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Print started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PrintResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Command dispatched to the shadow's owning instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.RemoteCommandResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not connected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/resume": {
+            "post": {
+                "description": "Resumes a paused print job on the specified printer",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Resume print job",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Print resumed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PrintResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Command dispatched to the shadow's owning instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.RemoteCommandResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The shadow's mirrored state or the catalog refuses this command",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not connected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/state": {
+            "get": {
+                "description": "Returns current state, telemetry and job information for a specific printer",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Get printer state",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Printer state",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PrinterStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/stop": {
+            "post": {
+                "description": "Stops the currently running print job on the specified printer",
+                "tags": [
+                    "printers"
+                ],
+                "summary": "Stop print job",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Print stopped",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PrintResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Command dispatched to the shadow's owning instance",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.RemoteCommandResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The shadow's mirrored state or the catalog refuses this command",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not connected",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/supported-commands": {
+            "get": {
+                "description": "Returns list of all commands that can be sent to the specified printer. This includes command metadata - names, arguments, descriptions, supported states, etc. This is NOT a list of commands in the queue, but definitions of available commands.",
+                "tags": [
+                    "commands"
+                ],
+                "summary": "Get supported commands",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of supported commands",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.SupportedCommandsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/printers/{id}/transfers": {
+            "get": {
+                "description": "Returns list of active file transfers for the printer",
+                "tags": [
+                    "files"
+                ],
+                "summary": "Get active transfers",
+                "parameters": [
+                    {
+                        "description": "Printer UUID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Active transfers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "$ref": "#/components/schemas/state.TransferInfo"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/registrations/pending": {
+            "get": {
+                "description": "Returns printers awaiting manual approval (only relevant when auto_register is false)",
+                "tags": [
+                    "registrations"
+                ],
+                "summary": "List pending printer registrations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PendingRegistrationsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/registrations/{code}": {
+            "delete": {
+                "tags": [
+                    "registrations"
+                ],
+                "summary": "Reject a pending printer registration",
+                "parameters": [
+                    {
+                        "description": "Registration code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/registrations/{code}/approve": {
+            "post": {
+                "description": "Approves the registration so the next /p/register poll returns a token",
+                "tags": [
+                    "registrations"
+                ],
+                "summary": "Approve a pending printer registration",
+                "parameters": [
+                    {
+                        "description": "Registration code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.ApproveRegistrationRequest"
+                            }
+                        }
+                    },
+                    "description": "Approval metadata",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.PendingRegistrationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/server/info": {
+            "get": {
+                "description": "Returns the printer-facing WebSocket URL and auth configuration",
+                "tags": [
+                    "server"
+                ],
+                "summary": "Server connection info",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ServerInfoResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/delete": {
+            "post": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Delete multiple storage entries",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Paths",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/download": {
+            "get": {
+                "description": "Streams a server-side storage file to an authenticated browser client.",
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Download stored file",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "File path relative to storage root",
+                        "name": "path",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File contents",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File or storage not found",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Storage not enabled",
+                        "content": {
+                            "application/octet-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/files": {
+            "get": {
+                "description": "Lists files and folders inside a server-side storage directory",
+                "tags": [
+                    "storage"
+                ],
+                "summary": "List storage folder",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Folder path relative to storage root; empty means root",
+                        "name": "path",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Entries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Storage not enabled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Delete storage entry",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Path relative to storage root",
+                        "name": "path",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Rename storage entry",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Rename",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Renamed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/folders": {
+            "post": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Create storage folder",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Folder",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/print": {
+            "post": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Print a stored file on a printer",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Print",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Command queued",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/queue.Command"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Printer or file not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Transfer already in progress",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/providers": {
+            "get": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "List storage providers",
+                "responses": {
+                    "200": {
+                        "description": "Providers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Storage not enabled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/storage/upload": {
+            "post": {
+                "tags": [
+                    "storage"
+                ],
+                "summary": "Upload file to storage",
+                "parameters": [
+                    {
+                        "description": "Storage id; empty means the default storage",
+                        "name": "storage",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "file": {
+                                        "description": "File",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "path": {
+                                        "description": "Destination folder relative to storage root",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "file"
+                                ]
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Stored",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request / disallowed extension",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tokens": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "List API tokens",
+                "responses": {
+                    "200": {
+                        "description": "Tokens",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.APITokensResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Create API token",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.CreateTokenRequest"
+                            }
+                        }
+                    },
+                    "description": "Token spec",
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created (token shown once)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.CreatedTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/tokens/{id}": {
+            "delete": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Revoke API token",
+                "parameters": [
+                    {
+                        "description": "Token ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Revoked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.StatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/info": {
+            "get": {
+                "description": "Reports whether human auth is enabled, the mode, setup state, provider capabilities, and the authenticated user (if any).",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Auth info",
+                "responses": {
+                    "200": {
+                        "description": "Auth state",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.AuthInfoResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log in",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.LoginRequest"
+                            }
+                        }
+                    },
+                    "description": "Credentials",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log out",
+                "responses": {
+                    "200": {
+                        "description": "Logged out",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.StatusResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sso/begin": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Begin SSO login",
+                "responses": {
+                    "302": {
+                        "description": "Redirect to provider",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Redirect login unavailable",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/sso/callback": {
+            "get": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "SSO callback",
+                "responses": {
+                    "302": {
+                        "description": "Redirect to app",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid state",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Login failed",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/p/auth": {
+            "get": {
+                "description": "Authenticates an xBuddy printer using fingerprint and token, returns UUID",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Authenticate printer",
+                "parameters": [
+                    {
+                        "description": "Printer fingerprint",
+                        "name": "Fingerprint",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Authentication token",
+                        "name": "Token",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Printer model",
+                        "name": "User-Agent-Printer",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "description": "Firmware version",
+                        "name": "User-Agent-Version",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing required headers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Authentication failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/p/register": {
+            "get": {
+                "description": "Completes the xBuddy registration flow and returns a token in the `Token` response header",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Poll printer registration",
+                "parameters": [
+                    {
+                        "description": "Registration code returned by POST /p/register",
+                        "name": "Code",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Registration token in Token header",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "Registration pending manual approval",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing Code header",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unknown registration code",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Starts the xBuddy registration flow and returns a registration code in the `Code` response header",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Start printer registration",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "Printer registration payload",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registration code in Code header",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid registration request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Registration disabled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/setup": {
+            "post": {
+                "tags": [
+                    "auth"
+                ],
+                "summary": "First-run setup",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/httpapi.SetupRequest"
+                            }
+                        }
+                    },
+                    "description": "First admin",
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Admin created and signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Missing fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Setup not available",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Could not create admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/httpapi.ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "requestBodies": {
+            "Request": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "description": "Label data",
+                "required": true
+            }
+        },
+        "schemas": {
+            "httpapi.APITokenResponse": {
+                "type": "object",
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "expires_at": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "kind": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "last_used": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.APITokensResponse": {
+                "type": "object",
+                "properties": {
+                    "tokens": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.APITokenResponse"
+                        }
+                    }
+                }
+            },
+            "httpapi.AdminUserResponse": {
+                "type": "object",
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "httpapi.AdminUsersResponse": {
+                "type": "object",
+                "properties": {
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.AdminUserResponse"
+                        }
+                    }
+                }
+            },
+            "httpapi.ApproveRegistrationRequest": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "example": "Floor 2"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Office MK4"
+                    }
+                }
+            },
+            "httpapi.ArgumentDefinition": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "example": "Path to the file to print"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "path"
+                    },
+                    "required": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "string"
+                    }
+                }
+            },
+            "httpapi.AuthCapabilities": {
+                "type": "object",
+                "properties": {
+                    "credentials": {
+                        "type": "boolean"
+                    },
+                    "redirect": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "httpapi.AuthInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "authenticated": {
+                        "type": "boolean"
+                    },
+                    "capabilities": {
+                        "$ref": "#/components/schemas/httpapi.AuthCapabilities"
+                    },
+                    "enabled": {
+                        "type": "boolean"
+                    },
+                    "mode": {
+                        "type": "string"
+                    },
+                    "needs_setup": {
+                        "type": "boolean"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/httpapi.AuthUserResponse"
+                    }
+                }
+            },
+            "httpapi.AuthUserResponse": {
+                "type": "object",
+                "properties": {
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "httpapi.ChangePasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "current": {
+                        "type": "string"
+                    },
+                    "new": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.CommandDefinitionResponse": {
+                "type": "object",
+                "properties": {
+                    "args": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.ArgumentDefinition"
+                        }
+                    },
+                    "command": {
+                        "type": "string",
+                        "example": "START_PRINT"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "Starts printing the selected file"
+                    },
+                    "duplicates_allowed": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "executable_from_state": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "IDLE",
+                            "READY",
+                            "FINISHED",
+                            "STOPPED"
+                        ]
+                    },
+                    "requires_features": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "TOOL_MAPPING"
+                        ]
+                    }
+                }
+            },
+            "httpapi.CreateCommandRequest": {
+                "type": "object",
+                "required": [
+                    "command"
+                ],
+                "properties": {
+                    "command": {
+                        "type": "string",
+                        "example": "START_PRINT"
+                    },
+                    "kwargs": {
+                        "type": "object"
+                    }
+                }
+            },
+            "httpapi.CreateTokenRequest": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "ttl_seconds": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "httpapi.CreateUserRequest": {
+                "type": "object",
+                "properties": {
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "httpapi.CreatedTokenResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "token": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "example": "Printer not found"
+                    }
+                }
+            },
+            "httpapi.FilesResponse": {
+                "type": "object",
+                "properties": {
+                    "files": {},
+                    "has_files": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "updated_at": {}
+                }
+            },
+            "httpapi.JobResponse": {
+                "type": "object",
+                "properties": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "fileName": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "progress": {
+                        "type": "number"
+                    },
+                    "state": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.LabelResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.LoginRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.LoginResponse": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "$ref": "#/components/schemas/httpapi.AuthUserResponse"
+                    }
+                }
+            },
+            "httpapi.MQTTTokenResponse": {
+                "type": "object",
+                "properties": {
+                    "expires_in": {
+                        "type": "integer"
+                    },
+                    "token": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.MaterialPackageInstanceResponse": {
+                "type": "object",
+                "properties": {
+                    "package": {
+                        "$ref": "#/components/schemas/httpapi.MaterialPackageResponse"
+                    }
+                }
+            },
+            "httpapi.MaterialPackageResponse": {
+                "type": "object",
+                "properties": {
+                    "material": {
+                        "$ref": "#/components/schemas/httpapi.MaterialResponse"
+                    }
+                }
+            },
+            "httpapi.MaterialResponse": {
+                "type": "object",
+                "properties": {
+                    "abbreviation": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.PendingRegistrationResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "example": "ABCDEFGH"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "fingerprint": {
+                        "type": "string"
+                    },
+                    "firmware": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "printer_type": {
+                        "type": "string"
+                    },
+                    "sn": {
+                        "type": "string"
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                }
+            },
+            "httpapi.PendingRegistrationsResponse": {
+                "type": "object",
+                "properties": {
+                    "registrations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.PendingRegistrationResponse"
+                        }
+                    }
+                }
+            },
+            "httpapi.PreAuthorizationResponse": {
+                "type": "object",
+                "properties": {
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "token": {
+                        "type": "string",
+                        "example": "ABCDEF1234567890"
+                    }
+                }
+            },
+            "httpapi.PreAuthorizationsResponse": {
+                "type": "object",
+                "properties": {
+                    "preauthorizations": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.PreAuthorizationResponse"
+                        }
+                    }
+                }
+            },
+            "httpapi.PreAuthorizeRequest": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "example": "Floor 2"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Office MK4"
+                    }
+                }
+            },
+            "httpapi.PrintResponse": {
+                "type": "object",
+                "properties": {
+                    "command_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "file": {
+                        "type": "string",
+                        "example": "usb/test.gcode"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "queued"
+                    }
+                }
+            },
+            "httpapi.PrinterResponse": {
+                "type": "object",
+                "properties": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "deviceTypeId": {
+                        "type": "string"
+                    },
+                    "firmware": {
+                        "type": "string"
+                    },
+                    "fractalNodeStatus": {
+                        "description": "FractalNodeStatus is the mirror image of ShadowStatus: it describes this\nprinter's own Fractal node, so it is set only for a printer this instance\nowns and bridges, and omitted for a shadow (whose freshness ShadowStatus\nalready reports) and for any printer nothing bridges. Nothing bridges when\nFractal is off, or when a uuid is absent from fractal.owned_device_ids.\nOK means the node is up and an\nancestor mirroring this printer is being told so; STALE means it is not.\n\nPer-printer on purpose. /api/server/info's fractal_enabled answers the same\nquestion for the instance, which is not enough to make a claim about one\nprinter: a printer can be connected to an instance running Fractal and\nstill be bridged nowhere, because its uuid was never configured.",
+                        "type": "string"
+                    },
+                    "isLocked": {
+                        "type": "boolean"
+                    },
+                    "labels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.LabelResponse"
+                        }
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "lockedAt": {
+                        "type": "string"
+                    },
+                    "mode": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "remotePath": {
+                        "description": "RemotePath and ShadowStatus are set only for a printer mirrored from\nanother prusa-connect instance via the Fractal protocol (both omitted\nfor a locally-connected printer). ShadowStatus is the Fractal sync\nstatus (EMPTY/OK/STALE).",
+                        "type": "string"
+                    },
+                    "shadowStatus": {
+                        "type": "string"
+                    },
+                    "state": {
+                        "type": "string"
+                    },
+                    "tools": {
+                        "description": "Tools is the per-slot tool inventory keyed by 0-based slot id (\"0\",\n\"0.0\" for an MMU feeder). Omitted for a printer that has reported none.",
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/httpapi.ToolResponse"
+                        }
+                    },
+                    "uuid": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.PrinterStateResponse": {
+                "type": "object",
+                "properties": {
+                    "job": {
+                        "$ref": "#/components/schemas/state.JobInfo"
+                    },
+                    "state": {
+                        "type": "string",
+                        "example": "IDLE"
+                    },
+                    "telemetry": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    }
+                }
+            },
+            "httpapi.RemoteCommandResponse": {
+                "type": "object",
+                "properties": {
+                    "remote": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "accepted"
+                    }
+                }
+            },
+            "httpapi.ServerInfoResponse": {
+                "type": "object",
+                "properties": {
+                    "auth_mode": {
+                        "type": "string",
+                        "example": "none"
+                    },
+                    "auto_register": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "fractal_enabled": {
+                        "description": "FractalEnabled reports whether this instance is running with Fractal at\nall (config-enabled, built with the \"fractal\" tag, and past a successful\nInitialize). It is false in every build or config where no Fractal node\nexists. An instance-level capability: whether any one printer is actually\nbridged is a different question, answered per printer by\nPrinterResponse.FractalNodeStatus, since a printer can be attached to an\ninstance where this is true and still be bridged nowhere.",
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "printer_host": {
+                        "type": "string",
+                        "example": "192.168.1.10"
+                    },
+                    "printer_port": {
+                        "type": "integer",
+                        "example": 80
+                    },
+                    "printer_tls": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "register_url": {
+                        "type": "string",
+                        "example": "http://192.168.1.10:80/p/register"
+                    },
+                    "ws_url": {
+                        "type": "string",
+                        "example": "ws://192.168.1.10:80/p/ws"
+                    }
+                }
+            },
+            "httpapi.SetPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.SetRolesRequest": {
+                "type": "object",
+                "properties": {
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "httpapi.SetupRequest": {
+                "type": "object",
+                "properties": {
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.StatusResponse": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.SupportedCommandsResponse": {
+                "type": "object",
+                "properties": {
+                    "commands": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/httpapi.CommandDefinitionResponse"
+                        }
+                    }
+                }
+            },
+            "httpapi.ToolResponse": {
+                "type": "object",
+                "properties": {
+                    "class": {
+                        "type": "string"
+                    },
+                    "materialPackageInstance": {
+                        "description": "MaterialPackageInstance carries the firmware-reported abbreviation; it is\nset only when MaterialState is PRESENT. The json tag documents the field\nfor Swagger. The absent, null and present encoding is done in MarshalJSON.",
+                        "allOf": [
+                            {
+                                "$ref": "#/components/schemas/httpapi.MaterialPackageInstanceResponse"
+                            }
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.UpdateAccountRequest": {
+                "type": "object",
+                "properties": {
+                    "display_name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    }
+                }
+            },
+            "httpapi.UploadFileRequest": {
+                "type": "object",
+                "required": [
+                    "path",
+                    "url"
+                ],
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "example": "usb/file.gcode"
+                    },
+                    "url": {
+                        "type": "string",
+                        "example": "https://example.com/file.gcode"
+                    }
+                }
+            },
+            "queue.Command": {
+                "type": "object",
+                "properties": {
+                    "completed_at": {
+                        "type": "string"
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "string"
+                    },
+                    "error": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "printer_id": {
+                        "type": "string"
+                    },
+                    "sent_at": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "$ref": "#/components/schemas/queue.CommandStatus"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            },
+            "queue.CommandStatus": {
+                "type": "string",
+                "enum": [
+                    "pending",
+                    "sent",
+                    "completed",
+                    "failed",
+                    "timeout"
+                ],
+                "x-enum-varnames": [
+                    "CommandStatusPending",
+                    "CommandStatusSent",
+                    "CommandStatusCompleted",
+                    "CommandStatusFailed",
+                    "CommandStatusTimeout"
+                ]
+            },
+            "state.CloudEvent": {
+                "type": "object",
+                "properties": {
+                    "data": {},
+                    "datacontenttype": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "source": {
+                        "type": "string"
+                    },
+                    "specversion": {
+                        "type": "string"
+                    },
+                    "time": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "$ref": "#/components/schemas/state.EventType"
+                    }
+                }
+            },
+            "state.EventType": {
+                "type": "string",
+                "enum": [
+                    "prusa-connect.printer.connected",
+                    "prusa-connect.printer.disconnected",
+                    "prusa-connect.printer.removed",
+                    "prusa-connect.printer.state_changed",
+                    "prusa-connect.transfer.update",
+                    "prusa-connect.job.update",
+                    "prusa-connect.file.changed",
+                    "prusa-connect.printer.event",
+                    "prusa-connect.printer.initial_state",
+                    "prusa-connect.auth.expired",
+                    "prusa-connect.printer.shadow_status_changed"
+                ],
+                "x-enum-varnames": [
+                    "EventTypePrinterConnected",
+                    "EventTypePrinterDisconnected",
+                    "EventTypePrinterRemoved",
+                    "EventTypePrinterStateChanged",
+                    "EventTypeTransferUpdate",
+                    "EventTypeJobUpdate",
+                    "EventTypeFileChanged",
+                    "EventTypePrinterEvent",
+                    "EventTypeInitialState",
+                    "EventTypeAuthExpired",
+                    "EventTypeShadowStatusChanged"
+                ]
+            },
+            "state.JobInfo": {
+                "type": "object",
+                "properties": {
+                    "file_id": {
+                        "type": "integer"
+                    },
+                    "filename": {
+                        "type": "string"
+                    },
+                    "progress": {
+                        "description": "0-100 (percentage)",
+                        "type": "number"
+                    },
+                    "time_printing": {
+                        "description": "seconds",
+                        "type": "integer"
+                    },
+                    "time_remaining": {
+                        "description": "seconds, 0 if invalid/unknown",
+                        "type": "integer"
+                    }
+                }
+            },
+            "state.TransferInfo": {
+                "type": "object",
+                "properties": {
+                    "file_id": {
+                        "type": "integer"
+                    },
+                    "path": {
+                        "type": "string"
+                    },
+                    "progress": {
+                        "description": "0.0 to 1.0",
+                        "type": "number"
+                    },
+                    "started_at": {
+                        "type": "string"
+                    },
+                    "state": {
+                        "description": "\"IDLE\", \"DOWNLOADING\", \"FINISHED\", \"FAILED\"",
+                        "type": "string"
+                    },
+                    "total_size": {
+                        "type": "integer"
+                    },
+                    "transferred": {
+                        "type": "integer"
+                    },
+                    "updated_at": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

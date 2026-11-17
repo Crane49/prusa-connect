@@ -1,0 +1,90 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "example-database",
+    "version": "1.0.0",
+    "description": "The routes examples/database-module serves. Every path is relative to the mount the host assigns."
+  },
+  "components": {
+    "schemas": {
+      "Note": {
+        "type": "object",
+        "description": "One note the module keeps in its own database.",
+        "properties": {
+          "id": {"type": "integer", "description": "The note's number in the module's database."},
+          "text": {"type": "string", "description": "What the note says."},
+          "words": {"type": "integer", "description": "How many words the note holds. A migration step counted it for the notes kept before the column existed."}
+        },
+        "required": ["id", "text", "words"]
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "What a route answers when the module refused the call.",
+        "properties": {
+          "error": {"type": "string", "description": "Why the call was refused."}
+        },
+        "required": ["error"]
+      }
+    }
+  },
+  "paths": {
+    "/notes": {
+      "get": {
+        "operationId": "listNotes",
+        "summary": "List the notes",
+        "description": "Every note the module keeps, oldest first.",
+        "responses": {
+          "200": {
+            "description": "The notes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "notes": {"type": "array", "items": {"$ref": "#/components/schemas/Note"}}
+                  },
+                  "required": ["notes"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "The module's database did not answer.",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Refusal"}}}
+          }
+        }
+      },
+      "post": {
+        "operationId": "addNote",
+        "summary": "Add a note",
+        "description": "Keeps one note in the module's own database and answers it with its number.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {"text": {"type": "string", "description": "What the note says.", "minLength": 1}},
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The note as it was kept.",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Note"}}}
+          },
+          "400": {
+            "description": "The body carries no text.",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Refusal"}}}
+          },
+          "500": {
+            "description": "The module's database did not answer.",
+            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Refusal"}}}
+          }
+        }
+      }
+    }
+  }
+}

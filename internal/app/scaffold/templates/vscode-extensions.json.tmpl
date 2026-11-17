@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+{{- if .UI}}
+    "svelte.svelte-vscode"{{if .Process}},{{end}}
+{{- end}}
+{{- if .Process}}
+    "golang.go"
+{{- end}}
+  ]
+}

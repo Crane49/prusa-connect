@@ -1,0 +1,57 @@
+{
+  "estimated_seconds": 155,
+  "filament_mm": 132.16,
+  "filament_g": 0.39,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.4,
+  "material": "PLA",
+  "printer_model": "MINIIS",
+  "print_profile": "0.20mm SPEED @MINIIS 0.4",
+  "printer_profile": "Original Prusa MINI \u0026 MINI+ Input Shaper",
+  "filament_profile": "Prusament PLA @MINIIS",
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PLA",
+      "nozzle_mm": 0.4,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 220,
+      "first_layer_nozzle_temp_c": 230,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "filament_g": 0.39,
+      "filament_mm": 132.16,
+      "colour": "#FF8000"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 85,
+    "min_y_mm": 85,
+    "max_x_mm": 95,
+    "max_y_mm": 95
+  },
+  "bed": {
+    "width_mm": 180,
+    "depth_mm": 180,
+    "height_mm": 180
+  },
+  "checks": {
+    "printer_model": "MINI",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.4,
+        "hardened": false,
+        "high_flow": false
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper"
+    ],
+    "firmware": "6.4.0+11974"
+  }
+}

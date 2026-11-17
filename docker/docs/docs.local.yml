@@ -1,0 +1,10 @@
+# Host port for the documentation site, so a browser on the host opens it.
+# Reads from the root .env with a default, so two developers on different
+# ports never edit tracked yaml.
+#
+# High, like the fixture ports: 4322 is the port `pnpm run dev` in docs/ takes,
+# and a dev server already running there would be what the browser reached.
+services:
+  docs:
+    ports:
+      - "${DOCS_PORT:-54322}:8080"

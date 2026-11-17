@@ -1,0 +1,9 @@
+{
+  "tools": {
+    "0": {"type": "FFF_PRINT_HEAD", "active": true, "nozzle_temp": 215.3, "nozzle_target_temp": 215, "heatbreak_fan_rpm": 6500, "print_fan_rpm": 3200, "consumed_weight": 12, "odometer_id": 3, "odometer_e": 4120},
+    "1": {"type": "FFF_PRINT_HEAD", "active": false, "nozzle_temp": 30.1, "nozzle_target_temp": null, "heatbreak_fan_rpm": 0, "print_fan_rpm": 0, "consumed_weight": null, "odometer_id": 0, "odometer_e": 0},
+    "2": null,
+    "3": null,
+    "4": null
+  }
+}

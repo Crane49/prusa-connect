@@ -1,0 +1,4 @@
+cd frontend || exit 1
+# Serial, so eslint --fix reads what prettier wrote instead of racing it over
+# the same file.
+pnpm exec lint-staged --concurrent false

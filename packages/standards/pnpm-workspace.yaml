@@ -1,0 +1,28 @@
+# This package alone, on packages/typescript's model. Every JavaScript
+# package in this tree is its own pnpm project.
+packages:
+  - .
+
+# Dependencies must have been public for 3 days before pnpm resolves them,
+# the same window packages/typescript, packages/svelte, frontend/ and docs/
+# set, and the same cooldown .github/dependabot.yml carries. Change one and
+# the other has to move.
+minimumReleaseAge: 4320
+
+# Written versions stay exact.
+savePrefix: ''
+
+# No dependency here needs a build script, so none is allowed one. pnpm 11
+# refuses every dependency script that allowBuilds does not name.
+allowBuilds: {}
+
+# Refuse to run a script when node_modules has drifted from the lockfile,
+# instead of failing later with a confusing error.
+verifyDepsBeforeRun: error
+
+# Packages a security advisory names, held above the fixed version whatever
+# their parent asks for. Remove a line once the parent moves on its own.
+# svelte is a peer here, and pnpm update leaves a peer's own dependencies
+# where they are.
+overrides:
+  'devalue@<5.9.3': '5.9.3'

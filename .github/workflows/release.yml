@@ -1,0 +1,952 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on tags like v1.0.0, v1.2.3, etc.
+  # cut-release.yml pushes its tags as the release GitHub App, so the push
+  # starts this. By hand: run it on a tag only.
+  workflow_dispatch:
+
+# Every job reads the repository and nothing more. Only create-release, which
+# runs no project code, may write to it.
+permissions:
+  contents: read
+
+jobs:
+  build-minimal-binaries:
+    name: Build minimal binaries (no CGO)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        arch:
+          - name: amd64
+            goos: linux
+            goarch: amd64
+          - name: armv7
+            goos: linux
+            goarch: arm
+            goarm: "7"
+          - name: armhf
+            goos: linux
+            goarch: arm
+            goarm: "6"
+          - name: aarch64
+            goos: linux
+            goarch: arm64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # `-tags minimal` does not import the SDK, so this build resolves without a
+      # credential today. It is wired up anyway so the release stops being one new
+      # unconditional import away from breaking: but not as a hard requirement,
+      # so a missing secret cannot block the minimal artifacts.
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          # A published binary is built without a cache another run could have
+          # written.
+          cache: false
+
+      - name: Build minimal binary for ${{ matrix.arch.name }}
+        env:
+          GOOS: ${{ matrix.arch.goos }}
+          GOARCH: ${{ matrix.arch.goarch }}
+          GOARM: ${{ matrix.arch.goarm }}
+          CGO_ENABLED: 0
+          STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+          KEYS: -X github.com/prusa3d/prusa-connect/internal/upgrade.officialPublicKeys=${{ vars.UPGRADE_PUBLIC_KEYS }}
+          # Where the binary links its documentation. The beta portal while
+          # the project is private; the repository variable DOCS_URL names the
+          # public site once there is one (ADR-20261015-ejz rule 34).
+          DOCS: -X github.com/prusa3d/prusa-connect/internal/kernel/version.docsURL=${{ vars.DOCS_URL || 'https://beta.prusa3d.com/connect-local/docs/{version}/' }}
+        run: |
+          mkdir -p build
+          VERSION=${GITHUB_REF_NAME#v}
+          go build -tags minimal -ldflags="-s -w $STAMP=$VERSION $DOCS $KEYS" -o build/prusa_connect_minimal_${{ matrix.arch.name }} ./cmd/prusa-connect
+          chmod +x build/prusa_connect_minimal_${{ matrix.arch.name }}
+
+      - name: Upload minimal binary artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: binary-minimal-${{ matrix.arch.name }}
+          path: build/prusa_connect_minimal_${{ matrix.arch.name }}
+          retention-days: 7
+
+  # The web app every full binary carries, built once and handed to the eight
+  # build jobs. pnpm install runs the dependencies' install scripts, so this
+  # job holds a read-only token and keeps no credential in the checkout.
+  build-web-app:
+    name: Build the web app
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      # A published binary is built without a cache another run could have
+      # written, so none of the setup steps restores one. Go compresses the
+      # app (cmd/compress-app).
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: packages/typescript/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Build the web app into the embed directory
+        run: make embed-app
+
+      - name: Upload the web app
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: web-app
+          path: internal/transport/http/httpapi/appdist/
+          include-hidden-files: true
+          retention-days: 1
+
+  # Every full binary: Linux for the four processors, Windows and macOS for two
+  # each, all with the web app inside. Each is a job of its own, so the eight
+  # build side by side; Go cross-compiles each on its runner with cgo off. No
+  # emulator, no BuildKit image and no build cache takes part, so nothing
+  # another run wrote reaches a published file. The Windows and macOS binaries
+  # are not signed, and the install page says what a person sees because of
+  # that.
+  #
+  # The tag list is the full build's: `make build-ci` and the list ci.yml tests
+  # with carry the same parts, so every full binary of a release carries them.
+  build-full-binaries:
+    name: Build the full binary (${{ matrix.target.file }})
+    needs: [build-web-app]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        target:
+          - { goos: linux, goarch: amd64, goarm: "", file: prusa_connect_amd64 }
+          - { goos: linux, goarch: arm64, goarm: "", file: prusa_connect_aarch64 }
+          - { goos: linux, goarch: arm, goarm: "7", file: prusa_connect_armv7 }
+          - { goos: linux, goarch: arm, goarm: "6", file: prusa_connect_armhf }
+          - { goos: windows, goarch: amd64, goarm: "", file: prusa_connect_windows_amd64.exe }
+          - { goos: windows, goarch: arm64, goarm: "", file: prusa_connect_windows_arm64.exe }
+          - { goos: darwin, goarch: amd64, goarm: "", file: prusa_connect_macos_amd64 }
+          - { goos: darwin, goarch: arm64, goarm: "", file: prusa_connect_macos_arm64 }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Put the web app in the embed directory
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: web-app
+          path: internal/transport/http/httpapi/appdist/
+
+      - name: Build ${{ matrix.target.file }}
+        env:
+          GOOS: ${{ matrix.target.goos }}
+          GOARCH: ${{ matrix.target.goarch }}
+          GOARM: ${{ matrix.target.goarm }}
+          FILE: ${{ matrix.target.file }}
+          CGO_ENABLED: 0
+          STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+          KEYS: -X github.com/prusa3d/prusa-connect/internal/upgrade.officialPublicKeys=${{ vars.UPGRADE_PUBLIC_KEYS }}
+          # Where the binary links its documentation. The beta portal while
+          # the project is private; the repository variable DOCS_URL names the
+          # public site once there is one (ADR-20261015-ejz rule 34).
+          DOCS: -X github.com/prusa3d/prusa-connect/internal/kernel/version.docsURL=${{ vars.DOCS_URL || 'https://beta.prusa3d.com/connect-local/docs/{version}/' }}
+        run: |
+          set -eu
+          # A binary without the app would still build, so check that it came.
+          test -f internal/transport/http/httpapi/appdist/index.html || { echo "::error::the web app artifact holds no index.html"; exit 1; }
+          VERSION=${GITHUB_REF_NAME#v}
+          mkdir -p build
+          go build -tags "full diagnostics observability postgres" -ldflags="$STAMP=$VERSION $DOCS $KEYS" -o "build/$FILE" ./cmd/prusa-connect
+          chmod +x "build/$FILE"
+          ls -l build
+
+      - name: Upload ${{ matrix.target.file }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: binary-full-${{ matrix.target.file }}
+          path: build/${{ matrix.target.file }}
+          retention-days: 7
+
+  # The files a person needs beside a binary: the configuration to start from
+  # and the systemd unit. The source archive is attached too, because GitHub's
+  # own archive of a private repository reaches nobody without access to the
+  # repository, and the image is built from source. And the changelog section
+  # of this version, for the release notes: a tester reads what changed there,
+  # and not in the source tree. Runs no project code.
+  gather-release-files:
+    name: Gather the files beside the binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Add the configuration, the systemd unit and the source archive
+        run: |
+          set -eu
+          VERSION=${GITHUB_REF_NAME#v}
+          mkdir -p build
+          cp config/config.yaml build/config.yaml
+          cp deploy/systemd/prusa-connect.service build/prusa-connect.service
+          git archive --format=tar.gz --prefix="prusa-connect-$VERSION/" -o "build/prusa-connect-$VERSION-source.tar.gz" HEAD
+
+      - name: Upload the files beside the binaries
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: binary-extras
+          path: build/*
+          retention-days: 7
+
+      - name: Cut this version's changelog section
+        run: |
+          set -eu
+          VERSION=${GITHUB_REF_NAME#v}
+          mkdir -p release-changes
+          awk -v v="$VERSION" '/^## / { if (found) exit; if ($0 == "## " v || index($0, "## " v " ") == 1) { found = 1; next } } found' docs/CHANGELOG.md > release-changes/changes.md
+          wc -l release-changes/changes.md
+
+      - name: Upload the changelog section
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: release-changes
+          path: release-changes/changes.md
+          retention-days: 7
+
+  # The binary for a printer that ships with Prusa Connect, built the way
+  # `make build-printer` builds it. The printer's model stays out of this file
+  # until the printer is public. The repository variable PRINTER_MODEL names it,
+  # and it has no default. Without it this job builds nothing and says so in a
+  # notice, and the release goes out with every other binary. The job Web /
+  # Embedded binary in ci.yml runs the same make target on every pull request.
+  #
+  # pnpm install runs the dependencies' install scripts, so this job holds a
+  # read-only token and keeps no credential in the checkout.
+  build-printer-binary:
+    name: Build the printer binary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check for a printer model
+        id: model
+        env:
+          PRINTER_MODEL: ${{ vars.PRINTER_MODEL }}
+        run: |
+          if [ -z "$PRINTER_MODEL" ]; then
+            echo "::notice::The repository variable PRINTER_MODEL is not set, so this release has no printer binary. Every other binary is published. To build one, set it to the model as internal/printer/profile/profiles.json names it."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout code
+        if: steps.model.outputs.build == 'true'
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      # A published binary is built without a cache another run could have
+      # written, so neither setup step restores one.
+      - name: Set up Go
+        if: steps.model.outputs.build == 'true'
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      # The printer binary embeds the web app, so the build needs pnpm and
+      # Node to build it. Both versions come from the same files ci.yml reads.
+      - name: Set up pnpm
+        if: steps.model.outputs.build == 'true'
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: packages/typescript/package.json
+
+      - name: Set up Node.js
+        if: steps.model.outputs.build == 'true'
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - name: Build the printer binary
+        if: steps.model.outputs.build == 'true'
+        env:
+          PRINTER_MODEL: ${{ vars.PRINTER_MODEL }}
+          DOCS_URL: ${{ vars.DOCS_URL || 'https://beta.prusa3d.com/connect-local/docs/{version}/' }}
+        run: |
+          make build-printer PRINTER_MODEL="$PRINTER_MODEL" BUILD_VERSION="${GITHUB_REF_NAME#v}" DOCS_URL="$DOCS_URL" UPGRADE_PUBLIC_KEYS="${{ vars.UPGRADE_PUBLIC_KEYS }}"
+          mkdir -p build
+          mv bin/server-printer build/prusa_connect_printer_aarch64
+          chmod +x build/prusa_connect_printer_aarch64
+
+      - name: Upload the printer binary artifact
+        if: steps.model.outputs.build == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: binary-printer-aarch64
+          path: build/prusa_connect_printer_aarch64
+          retention-days: 7
+
+  # The two macOS binaries, signed with the Developer ID certificate and
+  # notarized by Apple, so Gatekeeper opens a downloaded file instead of
+  # refusing it. A file a browser downloads carries a quarantine flag, and
+  # Gatekeeper lets such a file run only when it is signed by an identified
+  # developer and Apple has checked it; Go's own ad-hoc signature is not that.
+  #
+  # Runs on macOS because codesign and notarytool exist only there. It checks
+  # out nothing and runs no project code: it reads the binaries the build job
+  # uploaded. Without the signing secrets (a fork, or before they are set) it
+  # signs nothing and says so, and the release goes out as before.
+  #
+  # Secrets, in the release environment: MACOS_CERTIFICATE_P12 (base64 of the
+  # .p12 with the Developer ID Application certificate and its key),
+  # MACOS_CERTIFICATE_PASSWORD, and the App Store Connect API key notarytool
+  # signs in with: MACOS_NOTARY_KEY_P8, MACOS_NOTARY_KEY_ID,
+  # MACOS_NOTARY_ISSUER_ID.
+  sign-macos-binaries:
+    name: Sign and notarize the macOS binaries
+    needs: [build-full-binaries]
+    runs-on: macos-latest
+    environment: release
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check for the signing secrets
+        id: secrets
+        env:
+          P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          KEY: ${{ secrets.MACOS_NOTARY_KEY_P8 }}
+        run: |
+          if [ -z "$P12" ] || [ -z "$KEY" ]; then
+            echo "::notice::The macOS signing secrets are not set, so the macOS binaries go out unsigned. See the comment on this job in release.yml."
+            echo "sign=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "sign=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download the macOS binaries
+        if: steps.secrets.outputs.sign == 'true'
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: binary-full-prusa_connect_macos_*
+          merge-multiple: true
+          path: ./binaries
+
+      # A keychain of its own, deleted at the end, so the key never lands in
+      # the runner's login keychain.
+      - name: Import the Developer ID certificate
+        if: steps.secrets.outputs.sign == 'true'
+        id: keychain
+        env:
+          P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          set -eu
+          KEYCHAIN="$RUNNER_TEMP/signing.keychain-db"
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 24)
+          printf '%s' "$P12" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm -f "$RUNNER_TEMP/certificate.p12"
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | awk -F'"' '/Developer ID Application/ { print $2; exit }')
+          if [ -z "$IDENTITY" ]; then
+            echo "::error::The certificate in MACOS_CERTIFICATE_P12 holds no Developer ID Application identity."
+            exit 1
+          fi
+          echo "identity=$IDENTITY" >> "$GITHUB_OUTPUT"
+          echo "keychain=$KEYCHAIN" >> "$GITHUB_OUTPUT"
+          echo "signing as $IDENTITY"
+
+      # Hardened runtime and a secure timestamp are what notarization asks of
+      # a binary. The server needs no entitlement beyond the defaults.
+      - name: Sign the binaries
+        if: steps.secrets.outputs.sign == 'true'
+        env:
+          IDENTITY: ${{ steps.keychain.outputs.identity }}
+          KEYCHAIN: ${{ steps.keychain.outputs.keychain }}
+        run: |
+          set -eu
+          mkdir signed
+          for name in prusa_connect_macos_amd64 prusa_connect_macos_arm64; do
+            cp "binaries/$name" "signed/$name"
+            chmod +x "signed/$name"
+            codesign --force --options runtime --timestamp --keychain "$KEYCHAIN" \
+              --identifier "com.prusa3d.prusa-connect" --sign "$IDENTITY" "signed/$name"
+            codesign --verify --strict --verbose=2 "signed/$name"
+          done
+
+      # notarytool takes a zip of the binary and waits for Apple's verdict. A
+      # bare executable cannot have the ticket stapled to it, so Gatekeeper
+      # fetches it online the first time the file is opened.
+      - name: Notarize the binaries
+        if: steps.secrets.outputs.sign == 'true'
+        env:
+          KEY_P8: ${{ secrets.MACOS_NOTARY_KEY_P8 }}
+          KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: |
+          set -eu
+          KEY_FILE="$RUNNER_TEMP/AuthKey.p8"
+          printf '%s\n' "$KEY_P8" > "$KEY_FILE"
+          for name in prusa_connect_macos_amd64 prusa_connect_macos_arm64; do
+            ditto -c -k --keepParent "signed/$name" "$RUNNER_TEMP/$name.zip"
+            RESULT=$(xcrun notarytool submit "$RUNNER_TEMP/$name.zip" \
+              --key "$KEY_FILE" --key-id "$KEY_ID" --issuer "$ISSUER_ID" \
+              --wait --timeout 30m --output-format json)
+            echo "$RESULT"
+            STATUS=$(printf '%s' "$RESULT" | plutil -extract status raw -o - -- -)
+            if [ "$STATUS" != "Accepted" ]; then
+              ID=$(printf '%s' "$RESULT" | plutil -extract id raw -o - -- -)
+              xcrun notarytool log "$ID" --key "$KEY_FILE" --key-id "$KEY_ID" --issuer "$ISSUER_ID" || true
+              echo "::error::Apple did not accept $name for notarization: $STATUS"
+              exit 1
+            fi
+          done
+          rm -f "$KEY_FILE"
+
+      - name: Remove the signing keychain
+        if: always() && steps.keychain.outputs.keychain != ''
+        env:
+          KEYCHAIN: ${{ steps.keychain.outputs.keychain }}
+        run: security delete-keychain "$KEYCHAIN" || true
+
+      - name: Upload the signed macOS binaries
+        if: steps.secrets.outputs.sign == 'true'
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: signed-macos
+          path: signed/*
+          retention-days: 7
+
+  # This expensive process-level proof stays off pull requests, but a release
+  # must not publish unless a real candidate can commit and a broken one can
+  # restore its binary, SQLite data and extensions.
+  upgrade-process-e2e:
+    name: Verify automatic upgrade and rollback
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          # Every tag: one journey upgrades the release before this one.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run the automatic upgrade process journeys
+        run: make upgrade-process-e2e
+
+  # Collects every file a release publishes, writes SHA256SUMS over them and
+  # signs it for automatic upgrades. The signer refuses a key that is not one
+  # of UPGRADE_PUBLIC_KEYS, the keys the builds trust, and reads the signature
+  # back through the verifier a server runs. A signing secret that drifted
+  # from the published key stops the release here, and no server sees it.
+  # It runs project code, so it holds no write permission.
+  sign-release-files:
+    name: Sign SHA256SUMS for automatic upgrades
+    needs: [build-minimal-binaries, build-full-binaries, gather-release-files, build-printer-binary, sign-macos-binaries]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    environment: release
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Download all binaries
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          path: ./release-binaries
+
+      # One directory holds every published file, so SHA256SUMS names each
+      # file by the name a person downloads.
+      - name: Gather the files and write SHA256SUMS
+        run: |
+          set -eu
+          mkdir release-files
+          mv release-binaries/binary-*/* release-files/
+          # The signed and notarized macOS binaries replace the unsigned ones
+          # when sign-macos-binaries had the secrets to make them.
+          if [ -d release-binaries/signed-macos ]; then
+            cp -f release-binaries/signed-macos/* release-files/
+          fi
+          cd release-files
+          chmod +x prusa_connect_*
+          sha256sum -- * > "$RUNNER_TEMP/SHA256SUMS"
+          mv "$RUNNER_TEMP/SHA256SUMS" SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Sign SHA256SUMS and check the signature against the published keys
+        env:
+          UPGRADE_SIGNING_KEY: ${{ secrets.UPGRADE_SIGNING_KEY }}
+          UPGRADE_PUBLIC_KEYS: ${{ vars.UPGRADE_PUBLIC_KEYS }}
+        run: |
+          set -eu
+          test -n "$UPGRADE_SIGNING_KEY" || { echo "::error::UPGRADE_SIGNING_KEY is not configured"; exit 1; }
+          test -n "$UPGRADE_PUBLIC_KEYS" || { echo "::error::UPGRADE_PUBLIC_KEYS is not configured"; exit 1; }
+          go run ./cmd/sign-upgrade-checksums release-files/SHA256SUMS release-files/SHA256SUMS.sig
+          cat release-files/SHA256SUMS.sig
+
+      - name: Upload the signed release files
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: release-files
+          path: release-files/*
+          retention-days: 7
+
+  # The one job that writes to the repository. It checks out nothing and runs no
+  # project code: it only reads the files the jobs before it uploaded.
+  create-release:
+    name: Create GitHub Release
+    needs: [build-minimal-binaries, build-full-binaries, gather-release-files, build-printer-binary, sign-macos-binaries, sign-release-files, upgrade-process-e2e]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Download all binaries
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          path: ./release-binaries
+
+      # sign-release-files gathered and signed these. Every file is checked
+      # against SHA256SUMS again, so what is published is what was signed.
+      - name: Take the signed files
+        run: |
+          set -eu
+          mv release-binaries/release-files release-files
+          chmod +x release-files/prusa_connect_*
+          (cd release-files && sha256sum --check --strict SHA256SUMS)
+          test -s release-files/SHA256SUMS.sig
+          if [ -d release-binaries/signed-macos ]; then
+            touch "$RUNNER_TEMP/macos-signed"
+            echo "the macOS binaries are signed and notarized"
+          fi
+
+      # A provenance attestation says which workflow run built each binary. A
+      # person checks one with `gh attestation verify <file> --repo <owner/repo>`.
+      # GitHub offers attestations to a private repository only on the
+      # Enterprise Cloud plan, so the step runs once the repository is public.
+      - name: Attest the build provenance of every binary
+        if: ${{ !github.event.repository.private }}
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-checksums: release-files/SHA256SUMS
+
+      # The notes are written by a script, so they name the printer binary
+      # only when this release carries one. They say what the binaries do and
+      # nothing they do not.
+      - name: Write the release notes
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          {
+            echo "## Prusa Connect $VERSION"
+            cat <<'NOTES'
+
+          Prusa Connect is a server you run on your own network. Your printers connect to it, and you use them from its web app and its API. Nothing goes through a cloud service.
+
+          ### Which file to download
+
+          | your machine | file |
+          |---|---|
+          | a Linux PC or NAS, 64-bit Intel or AMD | `prusa_connect_amd64` |
+          | a Raspberry Pi Zero 2 W, 3, 4 or 5 with a 64-bit system, or another 64-bit ARM Linux machine | `prusa_connect_aarch64` |
+          | a Raspberry Pi 2, Zero 2 W, 3, 4 or 5 with a 32-bit system | `prusa_connect_armv7` |
+          | a Raspberry Pi Zero, Zero W or 1 | `prusa_connect_armhf` |
+          | Windows on Intel or AMD | `prusa_connect_windows_amd64.exe` |
+          | Windows on ARM | `prusa_connect_windows_arm64.exe` |
+          | a Mac with an Intel processor | `prusa_connect_macos_amd64` |
+          | a Mac with Apple silicon (M1 and later) | `prusa_connect_macos_arm64` |
+
+          These are the full build. Each one carries the web app, the HTTP API, the live event stream, MQTT, SQLite and PostgreSQL storage, and Prometheus metrics. MQTT, the metrics and PostgreSQL stay off until the configuration file turns them on.
+
+          The `prusa_connect_minimal_*` files are a smaller Linux build for the same four processors. It has the API and the printer connection, and it has no web app, no MQTT, no metrics and no PostgreSQL.
+          NOTES
+
+            echo
+            echo "### What changed"
+            echo
+            if [ -s release-binaries/release-changes/changes.md ]; then
+              sed 's/^### /#### /' release-binaries/release-changes/changes.md
+            else
+              echo "The changelog has no section for $VERSION."
+            fi
+
+            if [ -f release-files/prusa_connect_printer_aarch64 ]; then
+              cat <<'NOTES'
+
+          `prusa_connect_printer_aarch64` is the build for a printer that ships with Prusa Connect. It runs on the printer's own ARM64 board, with `config/examples/config.printer.yaml` from this release's source.
+          NOTES
+            fi
+
+            cat <<'NOTES'
+
+          ### Check the download
+
+          `SHA256SUMS` holds the checksum of every file. Download it beside the binary.
+
+          On Linux, in the folder that holds both files:
+
+          ```bash
+          sha256sum --ignore-missing -c SHA256SUMS
+          ```
+
+          It prints the file name and `OK`. On a Mac, compare the output of `shasum -a 256 <file>` with the line for that file in `SHA256SUMS`. On Windows, compare the output of `Get-FileHash .\<file> -Algorithm SHA256` in PowerShell. PowerShell prints the checksum in capital letters, and the comparison ignores case.
+
+          ### Start it
+
+          `config.yaml` is the configuration to start from. The server reads `config/config.yaml` in the folder it starts in, so make a folder named `config` beside the binary and move the file into it:
+
+          ```text
+          prusa-connect/
+            prusa_connect_<your file>
+            config/config.yaml
+          ```
+
+          The server then writes its database under `config/config.d` and the uploaded files under `storage`, in the same folder. A `config.yaml` left beside the binary is not read, and the log says where it looked.
+
+          On Linux and macOS:
+
+          ```bash
+          chmod +x prusa_connect_<your file>
+          ./prusa_connect_<your file>
+          ```
+
+          `prusa-connect.service` runs it as a systemd service on Linux. The page "Install from a release" says how to install it.
+
+          `prusa-connect-<version>-source.tar.gz` is the source code of this release. Docker, a NAS image and Kubernetes build the image from it.
+
+          Then open `http://<this machine>:8080/` in a browser. The first page asks how people sign in and how printers join.
+
+          NOTES
+
+            if [ -f "$RUNNER_TEMP/macos-signed" ]; then
+              cat <<'NOTES'
+
+          ### Signing
+
+          The macOS binaries are signed with a Developer ID and notarized by Apple, so macOS opens them without a warning. The Windows binaries are not signed yet: Windows SmartScreen may say that it protected your PC. Choose "More info", then "Run anyway". The documentation page "Install from a release" shows the step and how to check the file first.
+          NOTES
+            else
+              cat <<'NOTES'
+
+          ### These binaries are not signed
+
+          Windows SmartScreen may say that it protected your PC. Choose "More info", then "Run anyway". macOS may say that it cannot check the file for malicious software. Open System Settings, then Privacy & Security, and choose "Open Anyway". The documentation page "Install from a release" shows both steps and how to check the file first.
+          NOTES
+            fi
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.version }}
+          body_path: release-notes.md
+          # Every file the gather step collected, so a release without the
+          # printer binary publishes the others and SHA256SUMS lists exactly
+          # what is attached.
+          files: release-files/*
+          fail_on_unmatched_files: true
+          draft: false
+          # A tag with a hyphen, such as v0.1.0-beta.1, is a prerelease.
+          prerelease: ${{ contains(github.ref_name, '-') }}
+
+  # Every release goes to the beta portal as well, from the release this run
+  # just published. Whether testers hear of it at once is the portal's
+  # setting for the product; otherwise it waits there as a draft.
+  beta-portal:
+    name: Hand the release to the beta portal
+    needs: [create-release]
+    if: vars.BETA_PORTAL_URL != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/beta-portal.yml
+    with:
+      version: ${{ github.ref_name }}
+    secrets: inherit
+
+  # The two npm packages, published at the core's VERSION, after the Go
+  # artefacts are on the release. ADR-20260909-c7x rules 1, 6 and 11 for
+  # @prusa/connect, ADR-20260911-4p6 rule 7 for @prusa/connect-ui.
+  #
+  # The order and the checks here are the ones scripts/check-client-sdk-install.sh
+  # already proves on every push, against a local registry: build, pack,
+  # publint, the types check, then the SDK and the library in that order. The
+  # library peers the SDK at an exact version, so an install resolves the peer
+  # against a version the registry already holds.
+  publish-npm:
+    name: Publish the client packages to npm
+    needs: [create-release]
+    runs-on: ubuntu-latest
+
+    # Off until the repository opens. Nothing is published to npm while the
+    # repository is private, and local development uses the registry that
+    # `make registry-up` starts. Setting the repository variable PUBLISH_NPM
+    # to `true` on the day the repository opens makes this job run again with
+    # nothing else changed.
+    if: vars.PUBLISH_NPM == 'true'
+
+    # No token, ADR-20260909-c7x rule 11. npmjs holds a Trusted Publisher for each
+    # package naming this repository, this workflow file and this job, and
+    # npm exchanges the job's OIDC token for a short-lived publish credential.
+    # The same token signs the provenance attestation. Nothing here to rotate.
+    # The Trusted Publisher also names the environment `release`, which only
+    # main and the v* tags may enter, so a run from any other ref cannot publish.
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # pnpm's version comes from the SDK's packageManager field, and Node's
+      # from .nvmrc, the same two sources every job in ci.yml reads.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+        with:
+          package_json_file: packages/typescript/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@prusa'
+          cache: 'pnpm'
+          cache-dependency-path: |
+            packages/typescript/pnpm-lock.yaml
+            packages/svelte/pnpm-lock.yaml
+
+      # One release cuts one version. The tag has to carry the core's VERSION,
+      # so a tag pushed against a tree whose VERSION says something else
+      # publishes nothing. A prerelease identifier after the hyphen is allowed
+      # and goes out under the `next` dist-tag, where `pnpm add @prusa/...`
+      # does not reach it.
+      - name: Read the version from the tag and choose the dist-tag
+        id: version
+        run: |
+          set -eu
+          CORE=$(tr -d '[:space:]' < VERSION)
+          TAG=${GITHUB_REF#refs/tags/v}
+
+          case "$TAG" in
+          *+*)
+            echo "::error::the tag v$TAG carries build metadata, and npm has no version for it."
+            exit 1
+            ;;
+          esac
+
+          BASE=${TAG%%-*}
+          if [ "$BASE" != "$CORE" ]; then
+            echo "::error::the tag v$TAG does not carry the core's VERSION ($CORE). Nothing is published to npm."
+            exit 1
+          fi
+
+          if [ "$BASE" = "$TAG" ]; then
+            DIST_TAG=latest
+          else
+            PRERELEASE=${TAG#*-}
+            case "$PRERELEASE" in
+            "" | .* | *. | *[!0-9A-Za-z.-]*)
+              echo "::error::v$TAG is neither $CORE nor $CORE with a prerelease identifier after the hyphen."
+              exit 1
+              ;;
+            esac
+            DIST_TAG=next
+          fi
+
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "publishing $TAG under the $DIST_TAG dist-tag"
+
+      - name: Build the SDK
+        working-directory: packages/typescript
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      - name: Build the component library
+        working-directory: packages/svelte
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      # The install runs first, because --frozen-lockfile reads the manifest
+      # this step rewrites. On a plain release the three values are already
+      # what they are set to here: `cmd/generate-client-sdk` stamps the SDK's
+      # version from VERSION and the unit lane holds it. A prerelease tag is
+      # the case that needs writing, and the library's peer moves with it so
+      # the two packages still resolve to one copy of the client.
+      - name: Stamp the release version into both manifests
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          (cd packages/typescript && npm pkg set version="$VERSION")
+          cd packages/svelte
+          npm pkg set version="$VERSION"
+          npm pkg set "peerDependencies.@prusa/connect=$VERSION"
+
+      # publint reads the manifest of a tarball, and @arethetypeswrong/cli
+      # reads how its types resolve. Both are devDependencies of the SDK, and
+      # the library's tarball is read by publint alone: its declarations name
+      # the Svelte shims, which no Node resolver finds.
+      - name: Pack both packages and read the tarballs
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          TARBALLS="$RUNNER_TEMP/tarballs"
+          mkdir -p "$TARBALLS"
+          (cd packages/typescript && pnpm pack --pack-destination "$TARBALLS")
+          (cd packages/svelte && pnpm pack --pack-destination "$TARBALLS")
+
+          SDK="$TARBALLS/prusa-connect-$VERSION.tgz"
+          UI="$TARBALLS/prusa-connect-ui-$VERSION.tgz"
+          test -f "$SDK"
+          test -f "$UI"
+
+          cd packages/typescript
+          pnpm exec publint --strict "$SDK"
+          pnpm exec attw --profile esm-only "$SDK"
+          pnpm exec publint --strict "$UI"
+
+      # A rerun of a release that already published reaches the registry and
+      # fails there, on a message about an immutable version. This says which
+      # package and which version instead, before anything is sent.
+      - name: Refuse a version the registry already holds
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -eu
+          for package in @prusa/connect @prusa/connect-ui; do
+            if OUTPUT=$(npm view "$package@$VERSION" version 2>&1); then
+              # A package that exists and lacks this version answers 0 with
+              # nothing, so the output is what says the version is there.
+              if [ -n "$OUTPUT" ]; then
+                echo "::error::$package@$VERSION is already on npm. A published version cannot be replaced: cut a new version."
+                exit 1
+              fi
+            else
+              # A name nobody has published answers 404, which is the state
+              # this job expects. Anything else is a registry this job could
+              # not ask, and a guard that cannot ask is not a guard.
+              case "$OUTPUT" in
+              *E404*) ;;
+              *)
+                echo "::error::npm could not be asked whether $package@$VERSION exists: $OUTPUT"
+                exit 1
+                ;;
+              esac
+            fi
+            echo "$package@$VERSION is free"
+          done
+
+      # What each publish would send, printed in full, before either one sends
+      # anything. A `files` list that dropped a directory shows up here as a
+      # tarball missing it.
+      - name: Dry run of both publishes
+        env:
+          DIST_TAG: ${{ steps.version.outputs.dist_tag }}
+        run: |
+          set -eu
+          (cd packages/typescript && pnpm publish --dry-run --no-git-checks --access public --tag "$DIST_TAG")
+          (cd packages/svelte && pnpm publish --dry-run --no-git-checks --access public --tag "$DIST_TAG")
+
+      - name: Publish @prusa/connect
+        working-directory: packages/typescript
+        env:
+          DIST_TAG: ${{ steps.version.outputs.dist_tag }}
+          # pnpm hands the upload to `npm publish`, and npm reads this. The
+          # flag below says the same thing; whichever of the two the pnpm
+          # version on the runner honours, the publish is attested.
+          NPM_CONFIG_PROVENANCE: true
+        run: pnpm publish --provenance --access public --no-git-checks --tag "$DIST_TAG"
+
+      # After the SDK, because the peer names the version the line above just
+      # published and an install resolves it against the registry.
+      - name: Publish @prusa/connect-ui
+        working-directory: packages/svelte
+        env:
+          DIST_TAG: ${{ steps.version.outputs.dist_tag }}
+          # pnpm hands the upload to `npm publish`, and npm reads this. The
+          # flag below says the same thing; whichever of the two the pnpm
+          # version on the runner honours, the publish is attested.
+          NPM_CONFIG_PROVENANCE: true
+        run: pnpm publish --provenance --access public --no-git-checks --tag "$DIST_TAG"

@@ -1,0 +1,28 @@
+# Host node_modules must never reach the image: pnpm's store is a symlink farm
+# that COPY would dereference, and the native binaries are built for the host.
+**/node_modules
+
+# Build output — regenerated inside the image.
+frontend/dist
+docs/dist
+docs/out
+docs/.astro
+bin/
+extensions/*/ui/dist
+# The Svelte app the core's binary embeds: the app-builder stage builds it and
+# a COPY --from puts it in place, so anything a host build left beside it is not
+# sent to the daemon.
+internal/transport/http/httpapi/appdist/*
+!internal/transport/http/httpapi/appdist/.gitkeep
+
+.git
+.github
+data/
+files/
+storage/
+*.log
+*.db
+*.db-shm
+*.db-wal
+.venv/
+**/__pycache__

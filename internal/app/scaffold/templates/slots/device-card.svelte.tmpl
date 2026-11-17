@@ -1,0 +1,32 @@
+<script lang="ts">
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The device this line is about. It is the only prop a listing item receives. */
+    deviceId: string;
+  }
+
+  let { deviceId }: Props = $props();
+
+  // The fleet is already on the host: the app reads it once and keeps it
+  // current from the event stream, and a module receives it read-only. So
+  // this line makes no request of its own, and it redraws when an event moves
+  // this device's row.
+  const host = heldHost();
+  const fleet = host.fleet;
+  const t = host.t;
+
+  const device = $derived(fleet.device(deviceId));
+</script>
+
+<!-- The host cuts this to one line on the printer's card in the listing, so
+     it holds one short fact and nothing that wraps or grows. -->
+{#if device === undefined}
+  <span class="text-sm text-muted-foreground"
+    >{t('{{$.Name}}.deviceCard.absent')}</span
+  >
+{:else}
+  <span class="text-sm text-muted-foreground"
+    >{t('{{$.Name}}.deviceCard.body')}</span
+  >
+{/if}

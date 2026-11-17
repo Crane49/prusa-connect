@@ -1,0 +1,123 @@
+bin/
+# Anchored: an unanchored `server` matches ANY directory named server at any
+# depth, which silently excluded docker/server/*.yml from commits.
+/server
+/server-test
+*.log
+*.crt
+*.key
+*.der
+*.csr
+*.srl
+/files/
+data/
+*-data/
+# The component library's `./data` subpath is source and not a runtime data
+# directory (ADR-20260911-4p6 rule 3). Without this line `data/` above swallows it and
+# the fleet store never reaches a commit.
+!packages/svelte/src/data/
+coverage*.out
+coverage*.html
+coverage.out
+coverage.html
+*.db
+*.db-shm
+*.db-wal
+.venv/
+
+__pycache__/
+*.pyc
+.server.pid
+server.log
+test_config.yaml
+
+prusa_printer_settings.ini
+
+# The Svelte application's dependencies and build output
+frontend/node_modules/
+frontend/dist/
+# The Svelte app the core's binary embeds. The .gitkeep is committed so
+# //go:embed compiles before `make embed-app` has ever run.
+internal/transport/http/httpapi/appdist/*
+!internal/transport/http/httpapi/appdist/.gitkeep
+# The profile of the one printer model the printer build embeds, which
+# `make build-printer` writes. The .gitkeep is committed for the same reason.
+internal/printer/profile/printermodel/*
+!internal/printer/profile/printermodel/.gitkeep
+
+
+# Docs build output
+docs/node_modules/
+docs/dist/
+docs/.astro/
+
+# The client SDK's dependencies and build output. Its src/generated/ is
+# committed and gated by `make client-sdk-check`.
+packages/typescript/node_modules/
+packages/typescript/dist/
+# The consumer projects `make client-sdk-install-check` copies to scratch. An
+# install run in place, for a look, leaves these.
+packages/typescript/testdata/consumers/*/node_modules/
+packages/typescript/testdata/consumers/*/dist/
+
+# Golang related stuff
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+profile.cov
+go.work
+go.work.sum
+.env
+/storage/
+
+# Local IDE config (not shared). Ignoring .claude/ is deliberately left out —
+# it is covered by the dedicated .claude-spec change, which re-includes the
+# shared parts (skills/, agents/, commands/, settings.json). Do not add it here.
+.idea/
+
+# Process artifacts from planning workflows — working notes, not deliverables
+docs/superpowers/
+
+# Stray build output: `go build` in the repo root produced a binary named
+# `main` that was committed once as a licence duplicate.
+/main
+
+# Obsidian vault config, for reading the docs locally. The notes themselves
+# are the tracked markdown; this is per-machine workspace state.
+.obsidian/
+.trash/
+
+# Obsidian Bases, a per-machine view file
+*.base
+
+# The machine-owned overlay a core run writes beside the operator's file. The
+# authorization graph is covered by *.db above; the overlay is not, so a normal
+# run left a tracked-looking resources.json under config/ that git add . sweeps
+# in. Decision G2 is that this file is the server's and the operator's is not.
+/config/config.d/
+
+# A docker build drops third-party Go source here. It is not ours, nothing
+# references it, and a gate run that overlaps a build reads 40+ vendored files.
+.dockercache/
+
+# Obsidian Excalidraw plugin scratch folder. Drawings that belong to the vault
+# live under docs/ with a name of their own.
+/Excalidraw/
+
+# A local variant of .env holds secrets as well. Only the example is shared.
+.env.*
+!.env.example
+
+# Local build output, scratch trees and worktrees
+/build/
+/frontend-restructure/
+/frontend-restructure-svelte/
+/frontend/docs/
+/frontend/.astro/
+/.worktrees/
+
+# Playwright output
+playwright-report/
+test-results/

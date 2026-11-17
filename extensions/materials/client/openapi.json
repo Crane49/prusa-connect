@@ -1,0 +1,2726 @@
+{
+  "components": {
+    "schemas": {
+      "Refusal": {
+        "type": "object",
+        "description": "One refusal, as RFC 9457 names it. The client SDK reads this shape: code reaches ApiError.code and detail reaches ApiError.message.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "about:blank, because this module publishes no page per code."
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status, repeated in the body."
+          },
+          "code": {
+            "type": "string",
+            "description": "The module's own code. It is outside the core's registry, so it starts with the module's short name.",
+            "enum": [
+              "materials/ACCESS_UNKNOWN",
+              "materials/BUSY",
+              "materials/IMPORT_RUNNING",
+              "materials/INVALID_QUERY",
+              "materials/LOCATIONS_FULL",
+              "materials/LOCATION_INVALID",
+              "materials/LOCATION_TAKEN",
+              "materials/MATERIAL_INVALID",
+              "materials/MATERIAL_IN_USE",
+              "materials/MERGE_REFUSED",
+              "materials/NOT_FOUND",
+              "materials/NOT_OPERATOR",
+              "materials/NOT_REPORTED",
+              "materials/NO_PRINCIPAL",
+              "materials/SHELF_FULL",
+              "materials/SPOOL_ARCHIVED",
+              "materials/SPOOL_ASSIGNED",
+              "materials/SPOOL_INVALID",
+              "materials/SPOOL_ON_ANOTHER_TOOL",
+              "materials/STORE_FAILED",
+              "materials/TOOL_REFUSED"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "What went wrong, in one English phrase that never varies."
+          },
+          "detail": {
+            "type": "string",
+            "description": "What went wrong this time."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "What the code fills in."
+          },
+          "retryable": {
+            "type": "boolean",
+            "description": "Whether sending the same request again could work."
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "code",
+          "title",
+          "detail",
+          "params",
+          "retryable"
+        ]
+      },
+      "ImportStatus": {
+        "type": "object",
+        "description": "The last or current import.",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "idle",
+              "running",
+              "failed"
+            ],
+            "description": "idle when none runs, running, or failed when the last one did."
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "download",
+              "catalogue",
+              "store"
+            ],
+            "description": "The step the last import failed at: download when the ZIP could not be fetched, catalogue when it is not a catalogue this module reads, store when the database could not take it. The error itself is in the module's log."
+          },
+          "started": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the last import started."
+          },
+          "finished": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the last import finished."
+          },
+          "unchanged": {
+            "type": "boolean",
+            "description": "Whether the last import found the catalogue already loaded."
+          }
+        },
+        "required": [
+          "phase"
+        ]
+      },
+      "CatalogueMeta": {
+        "type": "object",
+        "description": "The catalogue the database holds.",
+        "properties": {
+          "data_hash": {
+            "type": "string",
+            "description": "The OpenPrintTag data hash."
+          },
+          "last_modified": {
+            "type": "string",
+            "description": "When OpenPrintTag last changed it."
+          },
+          "brands": {
+            "type": "integer",
+            "description": "Brands loaded."
+          },
+          "materials": {
+            "type": "integer",
+            "description": "Materials loaded."
+          },
+          "packages": {
+            "type": "integer",
+            "description": "Packages loaded."
+          },
+          "containers": {
+            "type": "integer",
+            "description": "Containers loaded."
+          },
+          "skipped": {
+            "type": "integer",
+            "description": "Entries left out: a YAML file that does not parse, one without a uuid, or a duplicate."
+          },
+          "imported_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When it was imported."
+          }
+        },
+        "required": [
+          "data_hash",
+          "last_modified",
+          "brands",
+          "materials",
+          "packages",
+          "containers",
+          "skipped",
+          "imported_at"
+        ]
+      },
+      "Catalogue": {
+        "type": "object",
+        "description": "What the database holds and what the importer is doing.",
+        "properties": {
+          "loaded": {
+            "type": "boolean",
+            "description": "Whether any catalogue is loaded."
+          },
+          "meta": {
+            "$ref": "#/components/schemas/CatalogueMeta"
+          },
+          "import": {
+            "$ref": "#/components/schemas/ImportStatus"
+          }
+        },
+        "required": [
+          "loaded",
+          "import"
+        ]
+      },
+      "Brand": {
+        "type": "object",
+        "description": "One catalogue brand.",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "The brand's uuid."
+          },
+          "slug": {
+            "type": "string",
+            "description": "The slug the brand filter takes."
+          },
+          "name": {
+            "type": "string",
+            "description": "The brand's name."
+          }
+        },
+        "required": [
+          "uuid",
+          "slug",
+          "name"
+        ]
+      },
+      "Row": {
+        "type": "object",
+        "description": "One material of the list, wherever it comes from.",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "The material's uuid."
+          },
+          "name": {
+            "type": "string",
+            "description": "The material's name."
+          },
+          "brand_name": {
+            "type": "string",
+            "description": "The brand's name."
+          },
+          "class": {
+            "type": "string",
+            "description": "FFF or SLA."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa, or empty."
+          },
+          "is_favourite": {
+            "type": "boolean",
+            "description": "Whether the caller starred it."
+          },
+          "is_custom": {
+            "type": "boolean",
+            "description": "Whether it is the caller's custom material."
+          },
+          "spools": {
+            "type": "integer",
+            "description": "How many spools in stock are of it, archived ones left out."
+          },
+          "assigned_spools": {
+            "type": "integer",
+            "description": "How many of those spools are on a printer tool."
+          },
+          "remaining_g": {
+            "type": "number",
+            "description": "The grams left on those spools."
+          },
+          "capacity_g": {
+            "type": "number",
+            "description": "The filament those spools held when full, their full weight less the empty spool, in grams. Left out when one of them has no full weight recorded."
+          }
+        },
+        "required": [
+          "uuid",
+          "name",
+          "brand_name",
+          "class",
+          "type",
+          "color_rgba",
+          "is_favourite",
+          "is_custom",
+          "spools",
+          "assigned_spools",
+          "remaining_g"
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "description": "One page of the list.",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Row"
+            },
+            "description": "At most 100 rows."
+          },
+          "total": {
+            "type": "integer",
+            "description": "Rows the whole filtered list holds."
+          },
+          "next": {
+            "type": "integer",
+            "description": "The offset of the next page, absent on the last."
+          },
+          "stock_g": {
+            "type": "number",
+            "description": "Grams on every spool in stock, archived ones left out."
+          },
+          "stock_spools": {
+            "type": "integer",
+            "description": "Every spool in stock, archived ones left out."
+          }
+        },
+        "required": [
+          "rows",
+          "total",
+          "stock_g",
+          "stock_spools"
+        ]
+      },
+      "CatalogueMaterial": {
+        "type": "object",
+        "description": "A material of the catalogue.",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "The material's uuid."
+          },
+          "slug": {
+            "type": "string",
+            "description": "The catalogue's slug."
+          },
+          "brand_slug": {
+            "type": "string",
+            "description": "The brand's slug."
+          },
+          "name": {
+            "type": "string",
+            "description": "The material's name."
+          },
+          "class": {
+            "type": "string",
+            "description": "FFF or SLA."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type, such as PLA."
+          },
+          "abbreviation": {
+            "type": "string",
+            "description": "A short name."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa, or empty."
+          },
+          "density": {
+            "type": "number",
+            "description": "Density, g/cm³."
+          },
+          "hardness_shore_d": {
+            "type": "number",
+            "description": "Hardness, Shore D."
+          },
+          "transmission_distance": {
+            "type": "number",
+            "description": "Transmission distance."
+          },
+          "min_chamber_temp": {
+            "type": "integer",
+            "description": "Lowest chamber temperature, °C."
+          },
+          "max_chamber_temp": {
+            "type": "integer",
+            "description": "Highest chamber temperature, °C."
+          },
+          "min_print_temp": {
+            "type": "integer",
+            "description": "Lowest nozzle temperature, °C."
+          },
+          "max_print_temp": {
+            "type": "integer",
+            "description": "Highest nozzle temperature, °C."
+          },
+          "preheat_temp": {
+            "type": "integer",
+            "description": "Preheat temperature, °C."
+          },
+          "min_bed_temp": {
+            "type": "integer",
+            "description": "Lowest bed temperature, °C."
+          },
+          "max_bed_temp": {
+            "type": "integer",
+            "description": "Highest bed temperature, °C."
+          },
+          "chamber_temp": {
+            "type": "integer",
+            "description": "Chamber temperature, °C."
+          },
+          "drying_temp": {
+            "type": "integer",
+            "description": "Drying temperature, °C."
+          },
+          "drying_time_min": {
+            "type": "integer",
+            "description": "Drying time, minutes."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The catalogue's own tags, such as abrasive or contains_carbon_fiber, in its order. Absent when it gives none."
+          }
+        },
+        "required": [
+          "uuid",
+          "slug",
+          "brand_slug",
+          "name",
+          "class",
+          "type",
+          "abbreviation",
+          "color_rgba"
+        ]
+      },
+      "Package": {
+        "type": "object",
+        "description": "A catalogue package of a material, with its container.",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "description": "The package's uuid."
+          },
+          "slug": {
+            "type": "string",
+            "description": "The catalogue's slug."
+          },
+          "class": {
+            "type": "string",
+            "description": "FFF or SLA."
+          },
+          "material_slug": {
+            "type": "string",
+            "description": "The material's slug."
+          },
+          "container_slug": {
+            "type": "string",
+            "description": "The container's slug, or empty."
+          },
+          "gtin": {
+            "type": "string",
+            "description": "The GTIN, or empty."
+          },
+          "net_weight_g": {
+            "type": "number",
+            "description": "Net weight, grams."
+          },
+          "diameter_um": {
+            "type": "integer",
+            "description": "Filament diameter, micrometres."
+          },
+          "length_mm": {
+            "type": "integer",
+            "description": "Filament length, millimetres."
+          },
+          "container_name": {
+            "type": "string",
+            "description": "The container's name, or empty."
+          },
+          "empty_weight_g": {
+            "type": "number",
+            "description": "The empty container's weight, grams."
+          }
+        },
+        "required": [
+          "uuid",
+          "slug",
+          "class",
+          "material_slug",
+          "container_slug",
+          "gtin",
+          "container_name"
+        ]
+      },
+      "MaterialFields": {
+        "type": "object",
+        "description": "Every field of a custom material. A change sends all of them: a field left out is cleared.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The material's name. At most 200 bytes."
+          },
+          "brand_name": {
+            "type": "string",
+            "description": "The brand, as the owner wrote it. At most 200 bytes."
+          },
+          "class": {
+            "type": "string",
+            "enum": [
+              "FFF",
+              "SLA"
+            ],
+            "description": "FFF for filament, SLA for resin."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type, such as PLA. At most 200 bytes."
+          },
+          "abbreviation": {
+            "type": "string",
+            "description": "A short name. At most 200 bytes."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa, or empty. At most 200 bytes."
+          },
+          "diameter_um": {
+            "type": "integer",
+            "description": "Filament diameter, micrometres."
+          },
+          "density": {
+            "type": "number",
+            "description": "Density, g/cm³."
+          },
+          "min_print_temp": {
+            "type": "integer",
+            "description": "Lowest nozzle temperature, °C."
+          },
+          "max_print_temp": {
+            "type": "integer",
+            "description": "Highest nozzle temperature, °C."
+          },
+          "preheat_temp": {
+            "type": "integer",
+            "description": "Preheat temperature, °C."
+          },
+          "min_bed_temp": {
+            "type": "integer",
+            "description": "Lowest bed temperature, °C."
+          },
+          "max_bed_temp": {
+            "type": "integer",
+            "description": "Highest bed temperature, °C."
+          },
+          "chamber_temp": {
+            "type": "integer",
+            "description": "Chamber temperature, °C."
+          },
+          "drying_temp": {
+            "type": "integer",
+            "description": "Drying temperature, °C."
+          },
+          "drying_time_min": {
+            "type": "integer",
+            "description": "Drying time, minutes."
+          },
+          "min_chamber_temp": {
+            "type": "integer",
+            "description": "Lowest chamber temperature, °C."
+          },
+          "max_chamber_temp": {
+            "type": "integer",
+            "description": "Highest chamber temperature, °C."
+          },
+          "min_nozzle_diameter": {
+            "type": "number",
+            "description": "Smallest nozzle it prints through, mm."
+          },
+          "transmission_distance": {
+            "type": "number",
+            "description": "Transmission distance (TD), mm."
+          },
+          "hardness_shore_a": {
+            "type": "number",
+            "description": "Hardness, Shore A."
+          },
+          "hardness_shore_d": {
+            "type": "number",
+            "description": "Hardness, Shore D."
+          },
+          "ral_code": {
+            "type": "string",
+            "description": "RAL colour code, or empty."
+          },
+          "secondary_colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Up to five more colours, each #rrggbb or #rrggbbaa. Left out is none."
+          },
+          "certifications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "OpenPrintTag certification identifiers, such as ul_94_v0. Left out is none."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "OpenPrintTag tag identifiers, such as abrasive. Left out is none."
+          }
+        },
+        "required": [
+          "name",
+          "class"
+        ]
+      },
+      "CustomMaterial": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/MaterialFields"
+          },
+          {
+            "type": "object",
+            "description": "A custom material only its owner sees.",
+            "properties": {
+              "uuid": {
+                "type": "string",
+                "description": "The material's uuid."
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When it was made."
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "When it last changed."
+              }
+            },
+            "required": [
+              "uuid",
+              "created_at",
+              "updated_at",
+              "name",
+              "brand_name",
+              "class",
+              "type",
+              "abbreviation",
+              "color_rgba"
+            ]
+          }
+        ]
+      },
+      "Detail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Row"
+          },
+          {
+            "type": "object",
+            "description": "One material: the catalogue's with its packages, or the caller's custom one. Both are absent for a material only spools still know.",
+            "properties": {
+              "material": {
+                "$ref": "#/components/schemas/CatalogueMaterial"
+              },
+              "custom": {
+                "$ref": "#/components/schemas/CustomMaterial"
+              },
+              "packages": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Package"
+                },
+                "description": "The catalogue packages, empty for any other material."
+              }
+            },
+            "required": [
+              "packages"
+            ]
+          }
+        ]
+      },
+      "Spool": {
+        "type": "object",
+        "description": "One spool in stock, with the material's fields copied at the time it was added.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The spool's id."
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The spool's own identity. A spool a printer reports carries the uuid of its tag."
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "printer"
+            ],
+            "description": "Whether a person added the spool or a printer reported it."
+          },
+          "material_uuid": {
+            "type": "string",
+            "description": "The material's uuid."
+          },
+          "material_source": {
+            "type": "string",
+            "enum": [
+              "catalogue",
+              "custom"
+            ],
+            "description": "Where the material came from."
+          },
+          "material_name": {
+            "type": "string",
+            "description": "The material's name when the spool was added."
+          },
+          "brand_name": {
+            "type": "string",
+            "description": "The brand's name when the spool was added."
+          },
+          "class": {
+            "type": "string",
+            "description": "FFF or SLA."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa, or empty."
+          },
+          "density": {
+            "type": "number",
+            "description": "Density, g/cm³."
+          },
+          "diameter_um": {
+            "type": "integer",
+            "description": "Filament diameter, micrometres."
+          },
+          "package_uuid": {
+            "type": "string",
+            "description": "The catalogue package, when one was chosen."
+          },
+          "full_weight_g": {
+            "type": "number",
+            "description": "Weight of a full spool, grams."
+          },
+          "empty_weight_g": {
+            "type": "number",
+            "description": "Weight of the empty spool, grams."
+          },
+          "length_mm": {
+            "type": "integer",
+            "description": "Filament length, millimetres."
+          },
+          "remaining_weight_g": {
+            "type": "number",
+            "description": "Filament left, grams."
+          },
+          "location_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The location the spool is kept at, absent for none."
+          },
+          "location": {
+            "type": "string",
+            "description": "The name of the location the spool is kept at, empty for none."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free text."
+          },
+          "created_by": {
+            "type": "string",
+            "description": "Who added it."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When it was added."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When it last changed."
+          },
+          "archived_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "When the spool was archived, null for one in stock. An archived spool is left out of the stock totals and the spool limit, and cannot go on a printer tool."
+          },
+          "archive_reason": {
+            "type": "string",
+            "enum": [
+              "consumed",
+              "defective",
+              "lost",
+              "expired",
+              "damaged",
+              "other"
+            ],
+            "description": "Why it was archived, absent for none or a spool in stock."
+          },
+          "archive_reason_note": {
+            "type": "string",
+            "description": "Free text about why it was archived, absent for none or a spool in stock."
+          },
+          "tool": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ToolRef"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The printer tool the spool is on, null for none. A spool on a tool cannot be changed or deleted until it is unassigned."
+          }
+        },
+        "required": [
+          "id",
+          "uuid",
+          "source",
+          "material_uuid",
+          "material_source",
+          "material_name",
+          "brand_name",
+          "class",
+          "type",
+          "color_rgba",
+          "remaining_weight_g",
+          "location",
+          "notes",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "archived_at",
+          "tool"
+        ]
+      },
+      "SpoolsDraft": {
+        "type": "object",
+        "description": "One spool as the person typed it, and how many of it to add.",
+        "properties": {
+          "material_uuid": {
+            "type": "string",
+            "description": "The material's uuid."
+          },
+          "package_uuid": {
+            "type": "string",
+            "description": "The catalogue package, when one was chosen."
+          },
+          "full_weight_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "description": "Weight of a full spool, grams, 0 to 100 000."
+          },
+          "empty_weight_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "description": "Weight of the empty spool, grams, 0 to 100 000."
+          },
+          "length_mm": {
+            "type": "integer",
+            "description": "Filament length, millimetres."
+          },
+          "remaining_weight_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "description": "Filament left, grams, 0 to 100 000."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free text, at most 2000 bytes."
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "How many identical spools to add, 1 to 100."
+          },
+          "location_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The location the spools are kept at; left out for none."
+          }
+        },
+        "required": [
+          "material_uuid",
+          "remaining_weight_g",
+          "quantity"
+        ]
+      },
+      "SpoolPatch": {
+        "type": "object",
+        "description": "The fields of a spool to change. A field left out stays.",
+        "properties": {
+          "remaining_weight_g": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100000,
+            "description": "Filament left, grams, 0 to 100 000."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free text, at most 2000 bytes."
+          },
+          "location_id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Moves the spool to this location; 0 takes it out of any."
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "true archives the spool; archiving an archived spool keeps when it was. false brings it back to stock and clears the reason and the note."
+          },
+          "archive_reason": {
+            "type": "string",
+            "enum": [
+              "consumed",
+              "defective",
+              "lost",
+              "expired",
+              "damaged",
+              "other",
+              ""
+            ],
+            "description": "Why the spool is archived; empty clears it. Only an archived spool has one, so on a spool in stock it is materials/SPOOL_INVALID."
+          },
+          "archive_reason_note": {
+            "type": "string",
+            "description": "Free text about why the spool is archived, at most 1000 characters; empty clears it. Only an archived spool has one."
+          }
+        },
+        "required": []
+      },
+      "Spools": {
+        "type": "object",
+        "description": "One page of a material's live spools.",
+        "properties": {
+          "spools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Spool"
+            },
+            "description": "At most 100, oldest first."
+          },
+          "total": {
+            "type": "integer",
+            "description": "Live spools the material has."
+          },
+          "next": {
+            "type": "integer",
+            "description": "The offset of the next page, absent on the last."
+          }
+        },
+        "required": [
+          "spools",
+          "total"
+        ]
+      },
+      "SpoolsAdded": {
+        "type": "object",
+        "description": "The spools one add made.",
+        "properties": {
+          "added": {
+            "type": "integer",
+            "description": "How many spools were added."
+          },
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Their ids, in the order they were made."
+          }
+        },
+        "required": [
+          "added",
+          "ids"
+        ]
+      },
+      "Location": {
+        "type": "object",
+        "description": "One place spools are kept, shared by everyone.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The location's id."
+          },
+          "name": {
+            "type": "string",
+            "description": "Its name, at most 200 bytes and unique in any case."
+          },
+          "spools": {
+            "type": "integer",
+            "description": "How many spools in stock are kept there, archived ones left out."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "spools"
+        ]
+      },
+      "LocationName": {
+        "type": "object",
+        "description": "The name a location is made or renamed with.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "One line, 1 to 200 bytes after trimming."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "SpoolIDs": {
+        "type": "object",
+        "description": "The spools a batch delete takes out of stock.",
+        "properties": {
+          "ids": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Their ids, each once."
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
+      "ToolRef": {
+        "type": "object",
+        "description": "One printer tool.",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "The printer's device id, empty for a printer the caller may not observe."
+          },
+          "tool_id": {
+            "type": "string",
+            "description": "The tool's id."
+          },
+          "gone": {
+            "type": "boolean",
+            "description": "True when the printer no longer has the tool. An unassign clears such a tool."
+          }
+        },
+        "required": [
+          "device_id",
+          "tool_id",
+          "gone"
+        ]
+      },
+      "Reason": {
+        "type": "string",
+        "description": "Why the change is refused, empty when it is allowed: printing, busy (which also covers a state the rules do not trust, such as ATTENTION), reported-loaded, reported-empty and nfc.",
+        "enum": [
+          "",
+          "printing",
+          "busy",
+          "reported-loaded",
+          "reported-empty",
+          "nfc"
+        ]
+      },
+      "Printer": {
+        "type": "object",
+        "description": "One printer, for the picker.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The printer's device id."
+          },
+          "name": {
+            "type": "string",
+            "description": "The printer's name."
+          },
+          "model": {
+            "type": "string",
+            "description": "The model the printer names itself, such as MK4S, empty when unknown."
+          },
+          "connected": {
+            "type": "boolean",
+            "description": "Whether the printer is connected now."
+          },
+          "state": {
+            "type": "string",
+            "description": "The printer's state, such as IDLE or PRINTING, and empty when unknown."
+          },
+          "may_operate": {
+            "type": "boolean",
+            "description": "Whether the caller may operate the printer, and so change the material on its tools."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "model",
+          "connected",
+          "state",
+          "may_operate"
+        ]
+      },
+      "Assignment": {
+        "type": "object",
+        "description": "What is on one tool: a material, and a spool of it when one was picked. The material fields are copied. A printer's assignment without a spool may have no name, so a page labels it by its abbreviation or type.",
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "The printer's device id."
+          },
+          "tool_id": {
+            "type": "string",
+            "description": "The tool's id."
+          },
+          "material_uuid": {
+            "type": "string",
+            "description": "The material's uuid, empty when the printer reported none."
+          },
+          "material_source": {
+            "type": "string",
+            "description": "catalogue or custom for a material a person picked, empty for one a printer reported."
+          },
+          "material_name": {
+            "type": "string",
+            "description": "The material's name, empty when the printer reported none."
+          },
+          "brand_name": {
+            "type": "string",
+            "description": "The brand's name."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type."
+          },
+          "abbreviation": {
+            "type": "string",
+            "description": "The material's abbreviation."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa, or empty."
+          },
+          "spool_id": {
+            "type": "integer",
+            "description": "The spool on the tool, absent for a bare material.",
+            "format": "int64"
+          },
+          "by": {
+            "type": "string",
+            "description": "Who set it.",
+            "enum": [
+              "person",
+              "printer"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "When it last changed.",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "device_id",
+          "tool_id",
+          "material_uuid",
+          "material_source",
+          "material_name",
+          "brand_name",
+          "type",
+          "abbreviation",
+          "color_rgba",
+          "by",
+          "updated_at"
+        ]
+      },
+      "Reported": {
+        "type": "object",
+        "description": "What the printer reports of the material on a tool.",
+        "properties": {
+          "abbreviation": {
+            "type": "string",
+            "description": "The material the printer reports, empty for a tool with nothing loaded."
+          },
+          "instance_uuid": {
+            "type": "string",
+            "description": "The uuid of the spool's NFC tag, empty when the spool carries none."
+          },
+          "package_uuid": {
+            "type": "string",
+            "description": "The package's uuid, or empty."
+          },
+          "material_uuid": {
+            "type": "string",
+            "description": "The material's uuid, or empty."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type, or empty."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa, or empty."
+          },
+          "full_weight_g": {
+            "type": "number",
+            "description": "The weight of the full spool in grams, absent when not reported."
+          }
+        },
+        "required": [
+          "abbreviation",
+          "instance_uuid",
+          "package_uuid",
+          "material_uuid",
+          "type",
+          "color_rgba"
+        ]
+      },
+      "Tool": {
+        "type": "object",
+        "description": "One tool, with what is on it and what the caller may do there.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The tool's id."
+          },
+          "assignment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Assignment"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What is on the tool, null for nothing."
+          },
+          "reported": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Reported"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What the printer reports, null for a printer that reports no material."
+          },
+          "from_nfc": {
+            "type": "boolean",
+            "description": "Whether the printer read the spool off its NFC tag."
+          },
+          "assign": {
+            "$ref": "#/components/schemas/Reason",
+            "description": "Why an assign is refused. A material the report does not match is refused with reported-loaded when it is picked."
+          },
+          "unassign": {
+            "$ref": "#/components/schemas/Reason",
+            "description": "Why an unassign is refused."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "head",
+              "slot"
+            ],
+            "description": "head for a print head, slot for a slot of a feeder such as an MMU."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the printer prints with the tool now, as it reports it."
+          },
+          "nozzle": {
+            "$ref": "#/components/schemas/Nozzle",
+            "description": "The nozzle the tool prints through; a slot's is its head's."
+          },
+          "feeder": {
+            "type": "string",
+            "description": "The model of the feeder a slot sits in, such as MMU3S; absent for a head or an unknown model."
+          }
+        },
+        "required": [
+          "id",
+          "assignment",
+          "reported",
+          "from_nfc",
+          "assign",
+          "unassign",
+          "kind",
+          "active",
+          "nozzle"
+        ]
+      },
+      "Nozzle": {
+        "type": "object",
+        "description": "What the printer reports of a nozzle. A feature it does not report is left out.",
+        "properties": {
+          "diameter_mm": {
+            "type": "number",
+            "description": "The nozzle diameter, in millimetres."
+          },
+          "high_flow": {
+            "type": "boolean",
+            "description": "Whether it is a high-flow nozzle."
+          },
+          "hardened": {
+            "type": "boolean",
+            "description": "Whether it is hardened against abrasive filament."
+          },
+          "high_temp": {
+            "type": "boolean",
+            "description": "Whether it is made for high temperatures."
+          }
+        }
+      },
+      "AssignRequest": {
+        "type": "object",
+        "description": "A material or a spool to put on a tool, one of the two.",
+        "properties": {
+          "material_uuid": {
+            "type": "string",
+            "description": "A catalogue material, or a custom material of the caller's."
+          },
+          "spool_id": {
+            "type": "integer",
+            "description": "A spool in stock that is on no other tool.",
+            "format": "int64",
+            "minimum": 1
+          }
+        }
+      },
+      "MergeRequest": {
+        "type": "object",
+        "description": "The spool a printer reported that a spool added by hand is.",
+        "properties": {
+          "into": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "description": "The id of the printer spool."
+          }
+        },
+        "required": [
+          "into"
+        ]
+      },
+      "ToolRow": {
+        "type": "object",
+        "description": "One printer tool as another module reads it.",
+        "required": [
+          "device_id",
+          "tool_id",
+          "from_nfc"
+        ],
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "description": "The printer's device id."
+          },
+          "tool_id": {
+            "type": "string",
+            "description": "The tool, or MMU slot, such as 0 or 0.1."
+          },
+          "material_uuid": {
+            "type": "string",
+            "description": "The material on the tool, absent when none is known."
+          },
+          "material_name": {
+            "type": "string",
+            "description": "The material's name, as copied when it was assigned."
+          },
+          "brand_name": {
+            "type": "string",
+            "description": "The material's brand, as copied when it was assigned."
+          },
+          "type": {
+            "type": "string",
+            "description": "The material type, such as PLA."
+          },
+          "abbreviation": {
+            "type": "string",
+            "description": "The abbreviation the printer reports."
+          },
+          "color_rgba": {
+            "type": "string",
+            "description": "The colour as #rrggbbaa."
+          },
+          "color_family": {
+            "type": "string",
+            "enum": [
+              "black",
+              "white",
+              "grey",
+              "red",
+              "orange",
+              "yellow",
+              "green",
+              "blue",
+              "purple",
+              "pink",
+              "brown",
+              "natural"
+            ],
+            "description": "The colour's family. Absent when the colour is not known."
+          },
+          "by": {
+            "type": "string",
+            "enum": [
+              "person",
+              "printer"
+            ],
+            "description": "Who set what is on the tool."
+          },
+          "from_nfc": {
+            "type": "boolean",
+            "description": "Whether the printer read the spool off its NFC tag."
+          },
+          "spool_id": {
+            "type": "integer",
+            "description": "The spool on the tool, absent for none."
+          },
+          "spool_uuid": {
+            "type": "string",
+            "description": "The spool's uuid."
+          },
+          "remaining_weight_g": {
+            "type": "number",
+            "description": "The filament left on the spool, in grams."
+          },
+          "full_weight_g": {
+            "type": "number",
+            "description": "The spool's filament when full, in grams, absent when not recorded."
+          }
+        }
+      },
+      "ToolRows": {
+        "type": "object",
+        "description": "The tools of one page of printers.",
+        "required": [
+          "tools",
+          "total"
+        ],
+        "properties": {
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ToolRow"
+            },
+            "description": "One row per tool that holds a material, by printer id."
+          },
+          "total": {
+            "type": "integer",
+            "description": "How many printers the caller may observe."
+          },
+          "next": {
+            "type": "integer",
+            "description": "The offset of the next page, absent on the last."
+          }
+        }
+      }
+    },
+    "responses": {
+      "Refused": {
+        "description": "The module refused the call. The code says which rule it met.",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Refusal"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "materials",
+    "version": "0.2.5",
+    "description": "The routes materials serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at \u003cmount\u003e/openapi.json. Every answer is JSON with snake_case fields and RFC 3339 times; a refusal is application/problem+json."
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/modules/com.github.aux.prusa3d.materials/catalogue": {
+      "get": {
+        "operationId": "read-catalogue",
+        "summary": "The catalogue and its import",
+        "description": "Whether a catalogue is loaded, what it holds, and the state of the last or current import. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The catalogue.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalogue"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/catalogue/brands": {
+      "get": {
+        "operationId": "list-brands",
+        "summary": "The catalogue brands",
+        "description": "Every brand of the catalogue by name, for the brand filter. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The brands.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The brands.",
+                  "properties": {
+                    "brands": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Brand"
+                      },
+                      "description": "By name."
+                    }
+                  },
+                  "required": [
+                    "brands"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/catalogue/download": {
+      "post": {
+        "operationId": "download-catalogue",
+        "summary": "Download the catalogue",
+        "description": "Starts downloading the OpenPrintTag database and importing it in the background, and answers at once. A second call while one runs is refused with materials/IMPORT_RUNNING. The host takes operate_resource on the module's instance before this is called.",
+        "responses": {
+          "202": {
+            "description": "The import started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Catalogue"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/custom-materials": {
+      "post": {
+        "operationId": "create-custom-material",
+        "summary": "Make a custom material",
+        "description": "Keeps a material only the caller sees. A material without a name, with a class other than FFF or SLA, or with a text over its bound is refused with materials/MATERIAL_INVALID. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaterialFields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The material.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomMaterial"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/custom-materials/{uuid}": {
+      "patch": {
+        "operationId": "update-custom-material",
+        "summary": "Replace a custom material",
+        "description": "Replaces every field of the caller's custom material with the body: a field left out is cleared. Spools already added keep the fields they were added with. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The material's uuid.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaterialFields"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The material as it is now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomMaterial"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-custom-material",
+        "summary": "Delete a custom material",
+        "description": "Deletes the caller's custom material and its stars. One a live spool is of is refused with materials/MATERIAL_IN_USE. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The material's uuid.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/favourites/{uuid}": {
+      "put": {
+        "operationId": "star-material",
+        "summary": "Star a material",
+        "description": "Marks a catalogue material or the caller's custom material as the caller's favourite. Starring one twice changes nothing. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The material's uuid.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Starred."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "unstar-material",
+        "summary": "Unstar a material",
+        "description": "Takes the material out of the caller's favourites. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The material's uuid.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Unstarred."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/list-filters": {
+      "get": {
+        "operationId": "get-list-filters",
+        "summary": "The caller's list filters",
+        "description": "The filters and order the caller last gave the materials list, or an empty object. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The kept filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The kept filters.",
+                  "properties": {
+                    "filters": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "description": "The filters and order the page keeps: the query fields of GET /materials it narrows and sorts by. The module keeps the object as it is, up to 2048 bytes."
+                    }
+                  },
+                  "required": [
+                    "filters"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "put": {
+        "operationId": "keep-list-filters",
+        "summary": "Keep the caller's list filters",
+        "description": "Keeps the caller's list filters in place of the last ones. Anything but a JSON object of at most 2048 bytes is refused with materials/INVALID_QUERY. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "The filters and order the page keeps: the query fields of GET /materials it narrows and sorts by. The module keeps the object as it is, up to 2048 bytes."
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Kept."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/locations": {
+      "get": {
+        "operationId": "list-locations",
+        "summary": "The locations",
+        "description": "Every location by name, with how many spools in stock are kept at each, archived ones left out. Locations are shared by everyone, and the module keeps at most 100. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The locations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The locations.",
+                  "properties": {
+                    "locations": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Location"
+                      },
+                      "description": "By name."
+                    }
+                  },
+                  "required": [
+                    "locations"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "post": {
+        "operationId": "create-location",
+        "summary": "Make a location",
+        "description": "Makes a location, or answers the one that already has the name in any case. An empty or too long name is refused with materials/LOCATION_INVALID. A new location past the 100 the module keeps is refused with materials/LOCATIONS_FULL. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationName"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The location.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/locations/{id}": {
+      "patch": {
+        "operationId": "rename-location",
+        "summary": "Rename a location",
+        "description": "Renames a location for every spool kept there. A name another location has in any case is refused with materials/LOCATION_TAKEN, an empty or too long one with materials/LOCATION_INVALID. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The location's id.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationName"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The renamed location.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Location"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-location",
+        "summary": "Delete a location",
+        "description": "Deletes a location; every spool kept there is left with no location. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The location's id.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/materials": {
+      "get": {
+        "operationId": "list-materials",
+        "summary": "One page of materials",
+        "description": "The catalogue, the caller's custom materials and materials only spools still know, merged: the caller's favourites first, then their custom materials, then the rest, unless order names a key. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Text the name, brand, type or abbreviation contains.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "description": "A brand slug from /catalogue/brands.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "The material type.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "class",
+            "in": "query",
+            "required": false,
+            "description": "FFF or SLA.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "color",
+            "in": "query",
+            "required": false,
+            "description": "A colour family: black, white, grey, red, orange, yellow, green, blue, purple, pink, brown or natural.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "favourites",
+            "in": "query",
+            "required": false,
+            "description": "Only the caller's favourites.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "custom",
+            "in": "query",
+            "required": false,
+            "description": "Only the caller's custom materials.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "in_stock",
+            "in": "query",
+            "required": false,
+            "description": "Only materials with a live spool.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "assigned",
+            "in": "query",
+            "required": false,
+            "description": "Only materials a printer tool holds, with or without a spool.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "location",
+            "in": "query",
+            "required": false,
+            "description": "Only materials with a live spool at this location, and only those spools counted.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "The sort key; empty keeps the favourites-first order.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "brand",
+                "type",
+                "spools",
+                "weight"
+              ]
+            }
+          },
+          {
+            "name": "desc",
+            "in": "query",
+            "required": false,
+            "description": "Sort the key descending.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Rows to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Rows to answer, 25 when absent, at most 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/materials/{uuid}": {
+      "get": {
+        "operationId": "get-material",
+        "summary": "One material",
+        "description": "One material as the caller sees it in the list, with the catalogue's fields and packages or the caller's custom fields. Another person's custom material is not found unless a spool still holds it. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The material's uuid.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The material.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Detail"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/materials/{uuid}/spools": {
+      "get": {
+        "operationId": "list-material-spools",
+        "summary": "The spools of a material",
+        "description": "One page of the live spools of one material, archived ones with them, oldest first. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "description": "The material's uuid.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Spools to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Spools to answer, 100 when absent, at most 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of the spools.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Spools"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/printers": {
+      "get": {
+        "operationId": "list-printers",
+        "summary": "The printers",
+        "description": "The printers the module follows that the caller may observe, by name, with whether the caller may operate it. The printers come from the host's device listing for the caller. Whether the caller may operate is asked of the page's rows only, and each answer is kept for 30 seconds per person, action and printer. A listing the host could not answer is materials/ACCESS_UNKNOWN, to be tried again. The host takes view_resource on the module's instance before this is called. With limit the answer is one page.",
+        "responses": {
+          "200": {
+            "description": "The printers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The printers.",
+                  "properties": {
+                    "printers": {
+                      "type": "array",
+                      "description": "By name.",
+                      "items": {
+                        "$ref": "#/components/schemas/Printer"
+                      }
+                    },
+                    "next": {
+                      "type": "integer",
+                      "description": "The offset of the next page, absent on the last."
+                    }
+                  },
+                  "required": [
+                    "printers"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "description": "Only the printers whose name, model or id holds this text, in any case.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "description": "Only the printers with these ids, separated by commas.",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Where the page starts: 0, or the next of the page before.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Printers to answer, at most 100. Absent, every printer is answered.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/printers/tools": {
+      "get": {
+        "operationId": "list-printer-tools",
+        "summary": "Every printer tool",
+        "description": "The tools of one page of the printers the caller may observe, with the material and the spool on each and what is left of it. Another module reads it through routes.call, as itself or for a person. An MMU head is left out: its slots hold the material. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Printers to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Printers to answer the tools of, 100 when absent, at most 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tools of one page of printers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ToolRows"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/printers/{device}/tools": {
+      "get": {
+        "operationId": "list-tools",
+        "summary": "A printer's tools",
+        "description": "The printer's tools, with what is on each, what the printer reports, and why an assign or an unassign would be refused. A printer the module does not follow, or one the caller may not observe, is materials/NOT_FOUND. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "path",
+            "required": true,
+            "description": "The printer's device id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The printer and its tools.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/Printer"
+                    },
+                    {
+                      "type": "object",
+                      "description": "Its tools.",
+                      "properties": {
+                        "tools": {
+                          "type": "array",
+                          "description": "By id, without a tool the printer switched off.",
+                          "items": {
+                            "$ref": "#/components/schemas/Tool"
+                          }
+                        }
+                      },
+                      "required": [
+                        "tools"
+                      ]
+                    }
+                  ],
+                  "description": "One printer and its tools."
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/printers/{device}/tools/{tool}": {
+      "put": {
+        "operationId": "assign-tool",
+        "summary": "Assign a material or a spool",
+        "description": "Puts a material, or a spool and its material, on the tool in place of what was there. The rules decide whether it may: a refusal is materials/TOOL_REFUSED with params.reason and params.state. A spool on another tool is materials/SPOOL_ON_ANOTHER_TOOL, and an archived one materials/SPOOL_ARCHIVED. A printer the caller may not observe is materials/NOT_FOUND, and one they observe and may not operate is materials/NOT_OPERATOR. The host takes operate_resource on the module's instance before this is called, and the module asks the host whether the caller may operate the printer.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "path",
+            "required": true,
+            "description": "The printer's device id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "description": "The tool's id, counted from 0, with an MMU slot after a dot, such as 0.3.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "What is on the tool now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Assignment"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "unassign-tool",
+        "summary": "Unassign a tool",
+        "description": "Takes the person's assignment off the tool. A tool that reports a material keeps what the printer reports, set by printer, with the spool its NFC tag names. Only a tool that reports nothing is left empty. Refused with materials/TOOL_REFUSED while the printer prints or is busy. The host takes operate_resource on the module's instance before this is called, and the module asks the host whether the caller may operate the printer. A tool the printer no longer has is cleared without the rules, and still takes operate on the printer. A printer the host no longer lists is not found, and the module clears the tools of one that was removed.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "path",
+            "required": true,
+            "description": "The printer's device id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "description": "The tool's id, counted from 0, with an MMU slot after a dot, such as 0.3.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Unassigned."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/printers/{device}/tools/{tool}/spool": {
+      "post": {
+        "operationId": "add-reported-spool",
+        "summary": "Add the spool a printer read",
+        "description": "Adds the spool the printer read off its NFC tag to stock, with the uuid of the tag and the source printer, and puts it on the tool. The material is the catalogue's when it holds the reported uuid, and else what the printer reports. The full weight is the reported one. The remaining weight is the full weight less what the tool reports it consumed, and the full weight when it reports none. A tag a spool already carries answers that spool, so a second call adds nothing, and brings it back to stock when it was archived or deleted. A tool with no tagged spool is materials/NOT_REPORTED. The host takes operate_resource on the module's instance before this is called, and the module asks the host whether the caller may operate the printer.",
+        "parameters": [
+          {
+            "name": "device",
+            "in": "path",
+            "required": true,
+            "description": "The printer's device id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tool",
+            "in": "path",
+            "required": true,
+            "description": "The tool's id, counted from 0, with an MMU slot after a dot, such as 0.3.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The spool, on the tool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Spool"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/spools": {
+      "get": {
+        "operationId": "list-spools",
+        "summary": "Every spool in stock",
+        "description": "One page of every live spool, archived ones with them, oldest first, or of one material's with material. Another module reads the stock with it through routes.call. A spool on a tool names the printer only to a caller who may observe it. The host takes view_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "material",
+            "in": "query",
+            "required": false,
+            "description": "Only the spools of this material.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Spools to skip.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Spools to answer, 100 when absent, at most 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of the spools.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Spools"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "post": {
+        "operationId": "add-spools",
+        "summary": "Add spools",
+        "description": "Adds quantity identical spools of a catalogue material or the caller's custom material, copying its fields. It answers the new spools' ids, not the spools, so 100 of them fit an answer. An add that would pass max_spools is refused with materials/SHELF_FULL. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpoolsDraft"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "How many spools were added, and their ids.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SpoolsAdded"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/spools/delete": {
+      "post": {
+        "operationId": "delete-spools",
+        "summary": "Delete spools",
+        "description": "Takes 1 to 100 spools out of stock in one transaction, all or none: an id that is no spool in stock refuses the whole call with materials/NOT_FOUND. A spool on a printer tool is refused with materials/SPOOL_ASSIGNED until it is unassigned. The host takes operate_resource on the module's instance before this is called.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpoolIDs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/spools/{id}": {
+      "patch": {
+        "operationId": "update-spool",
+        "summary": "Change a spool",
+        "description": "Changes the fields the body carries. A spool on a printer tool takes notes and a location; a change of its weight or its archive is refused with materials/SPOOL_ASSIGNED until it is unassigned. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The spool's id.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SpoolPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The spool as it is now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Spool"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "delete-spool",
+        "summary": "Delete a spool",
+        "description": "Takes a spool out of stock. A spool on a printer tool is refused with materials/SPOOL_ASSIGNED until it is unassigned. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The spool's id.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/spools/{id}/merge": {
+      "post": {
+        "operationId": "merge-spool",
+        "summary": "Merge a spool into the one a printer read",
+        "description": "Says that a spool added by hand and a spool a printer read off its NFC tag are one spool. The printer spool keeps its uuid, its source and its values, and takes the location and the notes of the other where it has none. The spool added by hand leaves stock. Anything but a manual spool into a printer spool of the same material is materials/MERGE_REFUSED, and a manual spool on a tool is materials/SPOOL_ASSIGNED. Either spool archived is materials/SPOOL_ARCHIVED. The host takes operate_resource on the module's instance before this is called.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The spool's id.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The printer spool as it is now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Spool"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.materials/types": {
+      "get": {
+        "operationId": "list-types",
+        "summary": "The material types",
+        "description": "Every material type of the catalogue and the caller's custom materials by name, for the type filter. The host takes view_resource on the module's instance before this is called.",
+        "responses": {
+          "200": {
+            "description": "The types.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The types.",
+                  "properties": {
+                    "types": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "By name."
+                    }
+                  },
+                  "required": [
+                    "types"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/Refused"
+          }
+        }
+      }
+    }
+  }
+}

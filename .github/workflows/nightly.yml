@@ -1,0 +1,128 @@
+name: Nightly
+
+# What this adds over ci.yml, which already runs the regular matrix and
+# end-to-end lane on every change.
+#
+# 1. It runs with no push. A break that arrives from outside the tree, a base
+#    image, an action, an upstream module, shows up within a day instead of
+#    waiting for whoever pushes next.
+# 2. It repeats. Every flake this branch has lost a run to was a race that a
+#    single pass wins: the stray block request at 58bc7f8e, the ping ticker in
+#    timeouts_test.go, the port race in the Fractal node suite. One pass says
+#    nothing about any of them, and a red pull request that goes green on a
+#    retry is how they stayed open. A count says which test, on which run, out
+#    of how many.
+# 3. It pins GOMAXPROCS to 2. Those races were all caught at two cores and all
+#    pass on a workstation. The GitHub runner is the machine they appear on, and
+#    this makes the nightly ask that question on purpose rather than by luck.
+#
+# A `schedule:` trigger only fires for the copy of this file on the repository's
+# default branch, which is `main`. A copy on any other branch runs when somebody
+# dispatches it and on no schedule at all. That is stated here because a
+# scheduled workflow that never fires is the same nothing as no workflow.
+on:
+  schedule:
+    # 03:00 UTC, off the working day in Prague either side of daylight saving.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+# A nightly that overran is not cancelled by the next one: the run in flight is
+# the evidence, and cancelling it is how a flake hunt reports nothing.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+# The tests that open the real mDNS socket skip unless this is 1, and the
+# runner is Linux. ci.yml sets it for the same reason.
+env:
+  PCL_NETWORK_TESTS: "1"
+
+jobs:
+  flake-hunt:
+    name: Nightly / Flake hunt
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: true
+
+    - name: Download dependencies
+      run: go mod download
+
+    # The suites that drive real sockets, real timers and the simulator. These
+    # are where every flake on this branch has come from. -shuffle=on so an
+    # order dependence is a failure rather than a lucky pass, and -count so one
+    # win is not the answer.
+    #
+    # Twenty passes under the race detector at two cores outgrew go test's
+    # default ten minutes a package: test/e2e was stopped at 600 seconds with no
+    # test failing. The limit below is for twenty rounds, not for one test, so a
+    # real hang still fails the night.
+    - name: Hunt races in the connector, printer and scenario suites
+      env:
+        GOMAXPROCS: 2
+      run: |
+        go test -count=20 -race -shuffle=on -timeout=60m \
+          ./internal/connector/... \
+          ./internal/printer/... \
+          ./test/...
+
+  full-suite:
+    name: Nightly / Full matrix and scenarios
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # a check that compares against a base needs the history to find one.
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: true
+
+    - name: Download dependencies
+      run: go mod download
+
+    # ci.yml runs both of these on every change already. They run here too so
+    # that the release claim is checked on a day nobody pushed, which is the
+    # whole point of a nightly, and so that the timings this job prints are
+    # taken on an idle schedule rather than beside twelve other jobs.
+    - name: Run the model and firmware matrix
+      run: make test-matrix-full
+
+    - name: Run the end-to-end scenarios
+      run: make test-e2e
+
+    # Three separately built core versions drive the public maintenance API.
+    # This is intentionally off the pull-request path: it observes a real
+    # binary swap, candidate process, final exec and failed-trial rollback.
+    - name: Run the automatic upgrade process journeys
+      run: make upgrade-process-e2e
+
+    # The adapter suites need containers, and a broker that fails to start is
+    # worth knowing about on a schedule as well as on a change.
+    - name: Run the adapter suites against real brokers
+      run: make test-adapters
+
+    # A module's own database through its whole life, on the built server, on
+    # SQLite and on two Postgres containers the target starts and removes. It
+    # takes a few minutes, which is why it runs here and on demand and not on
+    # every change.
+    - name: Run a module's own database through its whole life
+      run: make module-database-e2e

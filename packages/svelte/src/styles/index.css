@@ -1,0 +1,15 @@
+/* The stylesheet the tests and prettier read. An application writes its own
+   with an `@source` for its own tree and
+   `@import '@prusa/connect-ui/app.css'`. This file names the same tree
+   directly, being inside the package already. */
+@import 'tailwindcss' source(none);
+@source '../';
+@import './tokens.css';
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+}

@@ -1,0 +1,350 @@
+[
+ {
+  "tag_name": "version_3.0.0-alpha12",
+  "name": "PrusaSlicer 3.0.0-alpha12",
+  "draft": false,
+  "prerelease": true,
+  "published_at": "2026-09-21T14:34:20Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_3.0.0-alpha12",
+  "assets": [
+   {
+    "name": "PrusaSlicer-3.0.0-alpha12.dmg",
+    "size": 135943272,
+    "digest": "sha256:a1f79dda1745e070774999f056d839bb5bd4a971d7f4cd876de3dde93ec5a436",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_3.0.0-alpha12/PrusaSlicer-3.0.0-alpha12.dmg"
+   },
+   {
+    "name": "PrusaSlicer-3.0.0-alpha12.zip",
+    "size": 114714800,
+    "digest": "sha256:928eb512b94ce7c74ffb70dea1dc63700caff9842ad8043daf9f43e26bf958b1",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_3.0.0-alpha12/PrusaSlicer-3.0.0-alpha12.zip"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.9.6",
+  "name": "PrusaSlicer 2.9.6",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-06-25T20:52:26Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.9.6",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.9.6.dmg",
+    "size": 142444072,
+    "digest": "sha256:94fd7b8a9f87c9631e1c71739b15b184fc5f4c0ceabd69072f1c78f229a4fe40",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.6/PrusaSlicer-2.9.6.dmg"
+   },
+   {
+    "name": "PrusaSlicer-2.9.6.zip",
+    "size": 106598059,
+    "digest": "sha256:5aaf22e42f95accecfa122d23a835911f289ecc2ff606db3e83d637ddcc0a209",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.6/PrusaSlicer-2.9.6.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.9.6-setup.exe",
+    "size": 96706936,
+    "digest": "sha256:6820d15f922908c3692cea2bdef7b5a2556fab1b7b55f4c312a89272b5eb8052",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.6/PrusaSlicer-2.9.6-setup.exe"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.9.6-rc1",
+  "name": "PrusaSlicer 2.9.6-rc1",
+  "draft": false,
+  "prerelease": true,
+  "published_at": "2026-06-17T14:48:21Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.9.6-rc1",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.9.6-rc1.zip",
+    "size": 105310624,
+    "digest": "sha256:b525543f54e34d5a69028140f8aea88e57c0297fa2f0b783986d2aa7dc600c7c",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.6-rc1/PrusaSlicer-2.9.6-rc1.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.9.6-rc1.dmg",
+    "size": 152490689,
+    "digest": "sha256:802e2a82b240c2ffde55942be0c79c08b490210b50843ba1c0b2d6bd790e89f0",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.6-rc1/PrusaSlicer-2.9.6-rc1.dmg"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.9.5",
+  "name": "PrusaSlicer 2.9.5",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2026-05-19T13:25:48Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.9.5",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.9.5.dmg",
+    "size": 140677239,
+    "digest": "sha256:e7705ff5eef314d4e86b250086e24ba7ec3b28d247232e45e211420c31a5700f",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.5/PrusaSlicer-2.9.5.dmg"
+   },
+   {
+    "name": "PrusaSlicer-2.9.5.zip",
+    "size": 105005165,
+    "digest": "sha256:6ead72ccb6798533ec3eddec3737a5a332fa3e9b8b1331f9df53ee1d939b5377",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.5/PrusaSlicer-2.9.5.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.9.5-setup.exe",
+    "size": 95259568,
+    "digest": "sha256:a3647b279dab06eeee9a3eff4b657d952345d901fef5de1870f7f1998654ec5a",
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.5/PrusaSlicer-2.9.5-setup.exe"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.9.2",
+  "name": "PrusaSlicer 2.9.2",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2025-04-10T15:46:14Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.9.2",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.9.2-win64.zip",
+    "size": 100638982,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.2/PrusaSlicer-2.9.2-win64.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.9.2-macos-universal.dmg",
+    "size": 136581346,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.9.2/PrusaSlicer-2.9.2-macos-universal.dmg"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.8.1",
+  "name": "PrusaSlicer 2.8.1",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2024-09-19T10:54:34Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.8.1",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.8.1+macOS-universal-202409181403.dmg",
+    "size": 109709162,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.8.1/PrusaSlicer-2.8.1%2BmacOS-universal-202409181403.dmg"
+   },
+   {
+    "name": "PrusaSlicer-2.8.1+linux-x64-newer-distros-GTK3-202409181416.AppImage",
+    "size": 98731200,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.8.1/PrusaSlicer-2.8.1%2Blinux-x64-newer-distros-GTK3-202409181416.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.8.1+linux-x64-older-distros-GTK3-202409181354.AppImage",
+    "size": 94549184,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.8.1/PrusaSlicer-2.8.1%2Blinux-x64-older-distros-GTK3-202409181354.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.8.1+win64-202409181359.zip",
+    "size": 83934503,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.8.1/PrusaSlicer-2.8.1%2Bwin64-202409181359.zip"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.7.4",
+  "name": "PrusaSlicer 2.7.4",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2024-04-05T11:55:59Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.7.4",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.7.4+linux-arm64-GTK3-202404050952.tar.bz2",
+    "size": 82116066,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-arm64-GTK3-202404050952.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+linux-x64-GTK2-202404050940.AppImage",
+    "size": 92144832,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-x64-GTK2-202404050940.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+linux-x64-GTK2-202404050940.tar.bz2",
+    "size": 83314689,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-x64-GTK2-202404050940.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+linux-x64-GTK3-202404050928.AppImage",
+    "size": 92157120,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-x64-GTK3-202404050928.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+linux-x64-GTK3-202404050928.tar.bz2",
+    "size": 83311897,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-x64-GTK3-202404050928.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+win64-202404050928.zip",
+    "size": 81429131,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Bwin64-202404050928.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+macOS-universal-202404050934.dmg",
+    "size": 106089400,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2BmacOS-universal-202404050934.dmg"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+linux-armv7l-GTK2-202404050928.AppImage",
+    "size": 85511948,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-armv7l-GTK2-202404050928.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.7.4+linux-armv7l-GTK2-202404050928.tar.bz2",
+    "size": 78498393,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.4/PrusaSlicer-2.7.4%2Blinux-armv7l-GTK2-202404050928.tar.bz2"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.7.0-alpha1",
+  "name": "PrusaSlicer 2.7.0-alpha1",
+  "draft": false,
+  "prerelease": true,
+  "published_at": "2023-10-20T15:52:29Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.7.0-alpha1",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+MacOS-universal-202310191614.dmg",
+    "size": 107048170,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2BMacOS-universal-202310191614.dmg"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-armv7l-GTK2-202310191602.AppImage",
+    "size": 79195916,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-armv7l-GTK2-202310191602.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-armv7l-GTK2-202310191602.tar.bz2",
+    "size": 72097658,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-armv7l-GTK2-202310191602.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-x64-GTK2-202310191602.AppImage",
+    "size": 85767360,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-x64-GTK2-202310191602.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-x64-GTK2-202310191602.tar.bz2",
+    "size": 76929876,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-x64-GTK2-202310191602.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-x64-GTK3-202310191626.AppImage",
+    "size": 85755072,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-x64-GTK3-202310191626.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-x64-GTK3-202310191626.tar.bz2",
+    "size": 76223462,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-x64-GTK3-202310191626.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+win64-202310191602_signed.zip",
+    "size": 77563928,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Bwin64-202310191602_signed.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.7.0-alpha1+linux-arm64-GTK3-202310192016.tar.bz2",
+    "size": 74749172,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.7.0-alpha1/PrusaSlicer-2.7.0-alpha1%2Blinux-arm64-GTK3-202310192016.tar.bz2"
+   }
+  ]
+ },
+ {
+  "tag_name": "version_2.6.1",
+  "name": "PrusaSlicer 2.6.1",
+  "draft": false,
+  "prerelease": false,
+  "published_at": "2023-09-06T18:56:34Z",
+  "html_url": "https://github.com/prusa3d/PrusaSlicer/releases/tag/version_2.6.1",
+  "assets": [
+   {
+    "name": "PrusaSlicer-2.6.1+win64-202309060711_signed.zip",
+    "size": 75622054,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Bwin64-202309060711_signed.zip"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-x64-GTK2-202309060801.AppImage",
+    "size": 84018368,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-x64-GTK2-202309060801.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-x64-GTK2-202309060801.tar.bz2",
+    "size": 75153093,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-x64-GTK2-202309060801.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-x64-GTK3-202309060711.AppImage",
+    "size": 84026560,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-x64-GTK3-202309060711.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-x64-GTK3-202309060711.tar.bz2",
+    "size": 75148319,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-x64-GTK3-202309060711.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+MacOS-universal-202309060812.dmg",
+    "size": 104718090,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2BMacOS-universal-202309060812.dmg"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-armv7l-GTK2-202309060711.AppImage",
+    "size": 77602572,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-armv7l-GTK2-202309060711.AppImage"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-armv7l-GTK2-202309060711.tar.bz2",
+    "size": 70424572,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-armv7l-GTK2-202309060711.tar.bz2"
+   },
+   {
+    "name": "PrusaSlicer-2.6.1+linux-arm64-GTK3-202309060907.tar.bz2",
+    "size": 72997595,
+    "digest": null,
+    "browser_download_url": "https://github.com/prusa3d/PrusaSlicer/releases/download/version_2.6.1/PrusaSlicer-2.6.1%2Blinux-arm64-GTK3-202309060907.tar.bz2"
+   }
+  ]
+ }
+]

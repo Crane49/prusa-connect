@@ -1,0 +1,31 @@
+# The job state vocabulary the shipping server stores and the two vocabularies
+# it publishes from it, the old backlog. No section of earlier research covers
+# jobs, and earlier research names five values where there are eight
+# stored and six published.
+#
+# Columns: the stored state, what ConnectJobState publishes, what
+# LifeTimeJobState publishes, whether the state is terminal, and what this
+# adapter's connectJobState answers for the same input. A core answer of - is a
+# state this adapter publishes nothing for.
+#
+# The stored half was read from ./data/state.db on a run of the retired server
+# on 2026-08-29: printer_jobs.state is a TEXT column and printer_jobs carries
+# uuid, printer_uuid, state, file_path, file_name, progress, time_printing,
+# start_time, end_time, created_at, printer_job_id, external_context and source.
+# With no job on the printer, GET /api/printers/{id}/jobs answered 200 with an
+# empty array and GET /api/printers/{id}/jobs/current answered 404 with
+# {"error":"no active job"}.
+#
+# The divergence in the last column is the point of this file. The shipping
+# server publishes UNKNOWN on the frozen jobs/{id}/data/state channel for a job
+# that is queued or downloading, and this adapter publishes nothing. A
+# subscriber that reads the channel to mean "there is a job and it has not
+# started" loses that. The old backlog owns the decision.
+QUEUED	UNKNOWN	CREATED	false	-
+DOWNLOADING	UNKNOWN	CREATED	false	-
+PRINTING	PRINTING	PRINTING	false	PRINTING
+PAUSED	PAUSED	PAUSED	false	PAUSED
+FINISHED	FIN_OK	DONE	true	FIN_OK
+FAILED	FIN_ERROR	CANCELLED	true	FIN_ERROR
+STOPPED	FIN_STOPPED	CANCELLED	true	FIN_STOPPED
+ABANDONED	FIN_ERROR	CANCELLED	true	FIN_ERROR

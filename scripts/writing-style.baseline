@@ -1,0 +1,21 @@
+# Baseline for checks 4 to 9 of scripts/check-writing-style.sh, ADR-20260826-gtb rule 9.
+# Format: check-id, path, count, tab separated.
+# A count that rises fails. A count that falls fails until the line is
+# corrected, so the ratchet cannot be left behind. A check with no line here
+# expects zero, which is what a new document is held to.
+# Every line is a document ADR-20260826-gtb did not sweep.
+# Check 7 in a session log the owner decides the fate of.
+# Check 4 templates d and f, the form-or-length tail and the pronoun heading.
+# Each line is a heading written before the template was gated.
+heading	docs/src/content/docs/onboarding/index.md	2
+heading	docs/src/content/docs/plugin-wire-protocol.md	1
+# Check 15 is ADR-20260826-zbh. Every line is a comment that compares the code to a
+# past revision of this repository. Every line here is meant to be deleted
+# rather than kept.
+# Check 6, the bolded lead-in budget, once the pattern stopped requiring the
+# bolding at column 0. Every line is a file that was already over the cap and
+# invisible to the check, not a file that got worse.
+bold	.agents/rules/adversarial-review.md	1
+bold	docs/src/content/docs/onboarding/the-data-flow.md	1
+bold	docs/src/content/docs/prusa-command-architecture.md	1
+# Check 6 in the session logs the owner decides the fate of.

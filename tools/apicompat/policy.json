@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "baseline_taken": "2026-08-25",
+  "note": "What this project promises about each major version of the HTTP API. The rules are ADR-20260825-zkq and the gate is `make api-check`. The stability below is a record, not a switch: `apicompat` reads VERSION and freezes every major at 1.0.0 whatever this file says, then refuses a file that still reads `reporting` at such a release.",
+  "majors": {
+    "v1": {
+      "stability": "reporting",
+      "since": "0.1.0",
+      "why": "VERSION reads 0.1.0 and no release has published the surface, so v1 promises nothing yet and the gate reports a breaking change rather than refusing it. The first 1.0.0 flips it with no edit here, and the gate then refuses this line until it says frozen."
+    }
+  }
+}

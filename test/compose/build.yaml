@@ -1,0 +1,14 @@
+# The build configuration the joint gate composes (ADR-20260901-b2z rule 1, ADR-20260901-7t4).
+#
+# It names a core and one adapter module, and that is the whole of what admits
+# the adapter: no blank import in this tree, no adoption list entry, no build
+# tag, no row in the airlock. The gate in gate_test.go builds it and reads the
+# result back out of the binary.
+core:
+  path: ../..
+adapters:
+  - module: example.com/composefixture
+    path: fixture
+config: ../../config/config.yaml
+variant: full
+output: ../../bin/server-fixture

@@ -1,0 +1,43 @@
+# Verdaccio, configured as the throwaway registry `make client-sdk-install-check`
+# publishes the client SDK to and installs it back from.
+#
+# No uplink and no `proxy` line anywhere: a package that was not published here
+# answers 404, so an install that reaches this registry for anything but the
+# SDK fails rather than being served from npmjs by a fixture nobody meant to
+# proxy. Every consumer's dev tools are installed from the real registry with
+# a frozen lockfile before the lane starts, and the SDK has no runtime
+# dependency, so nothing else needs fetching.
+#
+# `$all` on publish is what makes the lane run without a token. It is the
+# reason this service never appears in docker-compose.yml.
+storage: /verdaccio/storage/data
+
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+    max_users: -1
+
+uplinks: {}
+
+packages:
+  '@prusa/*':
+    access: $all
+    publish: $all
+    unpublish: $all
+  '**':
+    access: $all
+
+web:
+  enable: false
+
+server:
+  keepAliveTimeout: 60
+
+middlewares:
+  audit:
+    enabled: false
+
+log:
+  type: stdout
+  format: pretty
+  level: warn

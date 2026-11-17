@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "bounds": [
+    {
+      "argument": "core.command.set_nozzle_temperature#nozzle_temperature",
+      "models": [
+        "CoreOne", "CoreOneL", "CoreOneL_INDX", "CoreOne_INDX", "IX", "MINI",
+        "MK3.5", "MK3.5S", "MK3.9", "MK3.9S", "MK4", "MK4S", "XL"
+      ],
+      "min": 0,
+      "max": 300,
+      "source": "the 300 C hotend ceiling published for the MK3, MK3.5, MK3.9, MK4, MK4S, MINI, XL and CoreOne families; zero is the setpoint that turns the heater off"
+    },
+    {
+      "argument": "core.command.set_bed_temperature#bed_temperature",
+      "models": [
+        "CoreOne", "CoreOneL", "CoreOneL_INDX", "CoreOne_INDX", "IX", "MINI",
+        "MK3.5", "MK3.5S", "MK3.9", "MK3.9S", "MK4", "MK4S", "XL"
+      ],
+      "min": 0,
+      "max": 120,
+      "source": "the 120 C heated bed ceiling published for the MK3, MK3.5, MK3.9, MK4, MK4S, MINI, XL and CoreOne families; zero turns the bed off"
+    },
+    {
+      "argument": "core.command.set_speed#speed",
+      "models": [
+        "CoreOne", "CoreOneL", "CoreOneL_INDX", "CoreOne_INDX", "IX", "MINI",
+        "MK3.5", "MK3.5S", "MK3.9", "MK3.9S", "MK4", "MK4S", "XL"
+      ],
+      "min": 20,
+      "max": 999,
+      "source": "the M220 feedrate percentage the firmware accepts; no model is known to take a narrower one, so this row repeats the driver baseline rather than guessing"
+    },
+    {
+      "argument": "core.command.set_flow#flow",
+      "models": [
+        "CoreOne", "CoreOneL", "CoreOneL_INDX", "CoreOne_INDX", "IX", "MINI",
+        "MK3.5", "MK3.5S", "MK3.9", "MK3.9S", "MK4", "MK4S", "XL"
+      ],
+      "min": 20,
+      "max": 999,
+      "source": "the M221 flow percentage the firmware accepts; no model is known to take a narrower one, so this row repeats the driver baseline rather than guessing"
+    },
+    {
+      "argument": "core.command.set_chamber_target_temp#chamber.target_temp",
+      "models": ["CoreOne", "CoreOneL", "CoreOneL_INDX", "CoreOne_INDX"],
+      "min": 0,
+      "max": 80,
+      "source": "the four enclosed models are the only ones whose profile carries the chamber setter; the true firmware ceiling is not recorded anywhere this file could read, so this row repeats the driver baseline rather than guessing a tighter one"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+# What the shipping server publishes, captured from a run of its own telemetry
+# publisher against eclipse-mosquitto 2.1.2, not transcribed from its source.
+#
+# Columns: topic, payload, QoS, retain. {printerId} is substituted by the test;
+# the job id is 42 and the tool is head 1. A payload of <unix-seconds> is a
+# timestamp, checked for shape rather than for equality.
+#
+# The four data/tools/1/ rows are not from the capture. They replace its
+# printer-wide material and nozzle rows and its data/slot/ rows, and they are
+# what this adapter publishes for the tool tree (ADR-20261025-frz). Every other row is
+# as the shipping server published it.
+#
+# The inputs that produced it are in publishOneOfEach, and re-capturing it means
+# driving legacy/transport/mqtt.TelemetryPublisher with those same values.
+#
+# v1/server/online is not here: it is a lifecycle topic that belongs to the
+# connection rather than to a printer, and it has tests of its own.
+v1/devices/printers/{printerId}/data/axis-x	10.50	0	true
+v1/devices/printers/{printerId}/data/axis-y	20.25	0	true
+v1/devices/printers/{printerId}/data/axis-z	0.20	0	true
+v1/devices/printers/{printerId}/data/blocking-reasons	<unix-seconds>	1	false
+v1/devices/printers/{printerId}/data/current-job	42	1	true
+v1/devices/printers/{printerId}/data/job-progress	37	0	false
+v1/devices/printers/{printerId}/data/online	1	1	true
+v1/devices/printers/{printerId}/data/speed	100	1	false
+v1/devices/printers/{printerId}/data/state	PRINTING	1	true
+v1/devices/printers/{printerId}/data/temp/chamber/current	31	0	false
+v1/devices/printers/{printerId}/data/temp/heatbed/current	60	0	false
+v1/devices/printers/{printerId}/data/temp/heatbed/target	60	1	false
+v1/devices/printers/{printerId}/data/tools/1/active	1	1	true
+v1/devices/printers/{printerId}/data/tools/1/material	PETG	1	true
+v1/devices/printers/{printerId}/data/tools/1/temp/nozzle/current	206	0	false
+v1/devices/printers/{printerId}/data/tools/1/temp/nozzle/target	210	1	false
+v1/devices/printers/{printerId}/dialog	{"id":1,"code":"12345","text":"t","title":"T","buttons":["OK"],"key":"k"}	2	true
+v1/devices/printers/{printerId}/jobs/42/data/progress	37	0	false
+v1/devices/printers/{printerId}/jobs/42/data/state	PRINTING	1	true
+v1/devices/printers/{printerId}/jobs/42/data/time-remaining	1800	0	false

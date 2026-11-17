@@ -1,0 +1,51 @@
+{
+  "enums": [
+    {
+      "name": "FDMMaterial",
+      "values": [
+        "PLA",
+        "PETG",
+        "ASA",
+        "ABS",
+        "PC",
+        "PA",
+        "TPU",
+        "HIPS",
+        "PVA",
+        "OTHER",
+        "NOTHING"
+      ]
+    },
+    {
+      "name": "SLAMaterial",
+      "values": [
+        "TOUGH",
+        "FLEX",
+        "CASTABLE",
+        "DENTAL",
+        "ABS_LIKE",
+        "OTHER",
+        "NOTHING"
+      ]
+    },
+    {
+      "name": "PrinterState",
+      "values": [
+        "READY",
+        "BUSY",
+        "PRINTING",
+        "PAUSED",
+        "ERROR",
+        "BLOCKED"
+      ]
+    },
+    {
+      "name": "NozzleType",
+      "values": [
+        "BRASS",
+        "HARDENED",
+        "STAINLESS"
+      ]
+    }
+  ]
+}

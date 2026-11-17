@@ -1,0 +1,8 @@
+# Host port for the authentik fixture, so the server and the browser on the
+# host reach one issuer at one address. Reads from the root .env with a
+# default. The issuer identifier follows the port, and
+# scripts/check-oidc-providers.sh reads the same variable.
+services:
+  authentik-fixture:
+    ports:
+      - "127.0.0.1:${PCL_AUTHENTIK_FIXTURE_PORT:-58190}:9000"

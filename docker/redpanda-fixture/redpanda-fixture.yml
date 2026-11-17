@@ -1,0 +1,91 @@
+# The Kafka-protocol broker the event sink adapter is verified against.
+#
+# A fixture, not a deployment. Redpanda rather than Kafka because it is one
+# process with no ZooKeeper and no JVM, which matters for a container a test
+# run starts and discards: a cold Kafka boot is most of a test suite's wall
+# clock. It speaks the same wire, which is the only thing under test.
+#
+# adapters/events/kafka writes that wire on the standard library (ADR-20260825-n55
+# rule 2), so the records it produces are read back with a real Fetch rather
+# than trusted.
+#
+# No host port here. It is in redpanda-fixture.local.yml.
+services:
+  redpanda-fixture:
+    image: redpandadata/redpanda:v26.2.2
+    container_name: prusa_connect_redpanda_fixture
+    # A fixture does not come back on its own. It holds nothing worth keeping,
+    # every suite that uses it skips cleanly when it is absent, and
+    # unless-stopped resurrects it on every reboot forever, which is how six
+    # idle containers were found running after a restart nobody asked for.
+    # Started by a test run or by `make fixtures-up`, and gone when it stops.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      # Advertised address is what a client is told to reconnect to after the
+      # first metadata call, so it must be the host's view and not the
+      # container's. A single broker on a fixture has no other listener to
+      # disagree with it.
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://127.0.0.1:${KAFKA_FIXTURE_PORT:-59092}
+
+    labels:
+      com.prusa3d.description: "Throwaway Kafka-protocol broker the event sink conformance run produces to"
+      com.prusa3d.service: "test-fixture"
+
+    # Nothing outlives the container. Owned by 101 because the image runs as
+    # that uid and never chowns: a root-owned tmpfs fails at startup with
+    # "mkdir failed: Permission denied [/var/lib/redpanda/data/crash_reports]".
+    tmpfs:
+      - /var/lib/redpanda/data:uid=101,gid=101
+
+    healthcheck:
+      # rpk ships in the image. cluster health is the probe that proves the
+      # broker is not merely listening but has a leader, which is what a
+      # produce call needs.
+      test: ["CMD-SHELL", "rpk cluster health -X brokers=127.0.0.1:9092 | grep -q 'Healthy:.*true'"]
+      interval: 3s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "0.1"
+          memory: 256M
+
+    networks:
+      - prusa_connect_backend
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

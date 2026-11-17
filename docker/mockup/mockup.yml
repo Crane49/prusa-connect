@@ -1,0 +1,203 @@
+# The Fractal mockup: four real Prusa Connects in one tree.
+#
+#   hq         the top. It accepts servers under it and asks a person first
+#   brno       under hq. It accepts servers under it and keeps a copy of
+#              everything below it
+#   workshop   under brno, with fake printers
+#   garage     under hq, with fake printers
+#
+# A message from workshop to hq crosses brno, so the mockup shows a server in
+# the middle and not one hop.
+#
+# Behind the `mockup` profile, so a whole-stack `up` leaves it out and
+# `make mockup-up` is what starts it. No host port bindings: those live in
+# mockup.local.yml, so two developers can run different ports without editing
+# this file.
+#
+# The two NATS ports of a server that accepts others stay on the compose
+# network. A server below reaches them by service name, which is what the
+# `advertise` setting of each server names.
+
+# The keys every server of the mockup shares. A server block below adds the
+# name of the server, its volume and what it depends on.
+x-mockup-server: &mockup-server
+  build:
+    context: ../..
+    dockerfile: docker/mockup/Dockerfile
+  image: prusa-connect-mockup:${PRUSA_CONNECT_MOCKUP_TAG:-local}
+  profiles:
+    - mockup
+  restart: unless-stopped
+
+  env_file:
+    - path: ../../.env
+      required: false
+
+  healthcheck:
+    test: ["CMD", "/prusa_connect", "core", "-addr", "127.0.0.1:8080", "healthcheck"]
+    interval: 10s
+    timeout: 5s
+    retries: 6
+    start_period: 90s
+
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+  security_opt:
+    - no-new-privileges:true
+
+  cap_drop:
+    - ALL
+
+  read_only: true
+
+  # `module add` stages the release in a temporary directory before it installs
+  # it, and the root file system is read-only, so scratch space is explicit.
+  tmpfs:
+    - /tmp:size=64m
+
+  deploy:
+    resources:
+      limits:
+        cpus: "2"
+        memory: 1G
+      reservations:
+        cpus: "0.25"
+        memory: 128M
+
+  networks:
+    - pcl_mockup
+
+services:
+  hq:
+    <<: *mockup-server
+    container_name: pcl_mockup_hq
+
+    # The first argument is the name of the server, which selects the settings
+    # file baked into the image. Everything after it goes to the demo. -flap 0
+    # keeps the fleet connected, because the thing on show is the tree and not
+    # a printer coming and going.
+    command:
+      - hq
+      - -dir
+      - /data/demo
+      - -addr
+      - 0.0.0.0:8080
+      - -printers
+      - "0"
+      - -cameras=false
+      - -flap
+      - "0"
+      - -log-level
+      - info
+
+    labels:
+      com.prusa3d.description: "Fractal mockup hq: the top of the tree, which asks a person before it admits a server"
+      com.prusa3d.service: "mockup"
+
+    volumes:
+      - pcl_mockup_hq_data:/data
+
+  brno:
+    <<: *mockup-server
+    container_name: pcl_mockup_brno
+
+    # It sends its join request to hq's join port, so it waits for hq to serve.
+    # Without this the first request goes out before the port is open, which
+    # costs one backoff and reads as a failure to somebody watching.
+    depends_on:
+      hq:
+        condition: service_healthy
+
+    command:
+      - brno
+      - -dir
+      - /data/demo
+      - -addr
+      - 0.0.0.0:8080
+      - -printers
+      - "0"
+      - -cameras=false
+      - -flap
+      - "0"
+      - -log-level
+      - info
+
+    labels:
+      com.prusa3d.description: "Fractal mockup brno: a server in the middle that keeps a copy of everything below it"
+      com.prusa3d.service: "mockup"
+
+    volumes:
+      - pcl_mockup_brno_data:/data
+
+  workshop:
+    <<: *mockup-server
+    container_name: pcl_mockup_workshop
+
+    depends_on:
+      brno:
+        condition: service_healthy
+
+    command:
+      - workshop
+      - -dir
+      - /data/demo
+      - -addr
+      - 0.0.0.0:8080
+      - -printers
+      - "2"
+      - -cameras=false
+      - -flap
+      - "0"
+      - -log-level
+      - info
+
+    labels:
+      com.prusa3d.description: "Fractal mockup workshop: a server under brno with fake printers"
+      com.prusa3d.service: "mockup"
+
+    volumes:
+      - pcl_mockup_workshop_data:/data
+
+  garage:
+    <<: *mockup-server
+    container_name: pcl_mockup_garage
+
+    depends_on:
+      hq:
+        condition: service_healthy
+
+    command:
+      - garage
+      - -dir
+      - /data/demo
+      - -addr
+      - 0.0.0.0:8080
+      - -printers
+      - "2"
+      - -cameras=false
+      - -flap
+      - "0"
+      - -log-level
+      - info
+
+    labels:
+      com.prusa3d.description: "Fractal mockup garage: a server under hq with fake printers"
+      com.prusa3d.service: "mockup"
+
+    volumes:
+      - pcl_mockup_garage_data:/data
+
+volumes:
+  pcl_mockup_hq_data:
+  pcl_mockup_brno_data:
+  pcl_mockup_workshop_data:
+  pcl_mockup_garage_data:
+
+networks:
+  pcl_mockup:
+    name: pcl_mockup
+    driver: bridge

@@ -1,0 +1,31 @@
+<script lang="ts">
+  import { Badge } from '@prusa/connect-ui/primitives';
+  import { parseFileRef } from '@prusa/connect-ui/slots';
+
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The file the page is about, as `<storage>:<path>`. It is the only prop a file view receives. */
+    fileRef: string;
+  }
+
+  let { fileRef }: Props = $props();
+
+  const host = heldHost();
+  const t = host.t;
+
+  // The page keeps its header, its actions and its print button. This view
+  // draws in place of the part that says what the file holds, and only for
+  // the file types the manifest names under file_types.
+  const file = $derived(parseFileRef(fileRef));
+</script>
+
+{#if file === undefined}
+  <p class="text-sm text-muted-foreground">
+    {t('{{$.Name}}.fileView.absent')}
+  </p>
+{:else}
+  <Badge variant="secondary">
+    {t('{{$.Name}}.fileView.body', { path: file.path })}
+  </Badge>
+{/if}

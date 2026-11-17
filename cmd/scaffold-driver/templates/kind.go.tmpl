@@ -1,0 +1,101 @@
+package {{.Package}}
+
+import (
+	"github.com/prusa3d/prusa-connect/sdk/connectorapi"
+	"github.com/prusa3d/prusa-connect/sdk/extension"
+)
+
+// The device kind this module declares, and the verbs that go with it.
+//
+// A kind is what a machine that is not a printer needs. The core's verb table
+// classifies the 59 printer verbs and nothing else, so a class of device the
+// core has never heard of has no word for anything it does: no class for its
+// commands, therefore no grant anybody can hold, therefore no caller who may
+// send one. Declaring a kind is how a module supplies that half.
+//
+// Everything below is checked by the host and none of it is taken on trust. The
+// namespace is derived from this module's own path in the build graph and
+// written in front of every name, so one author cannot claim another's. A verb
+// outside that namespace refuses the whole declaration, including the good
+// verbs beside it. And the host computes its own markings from the capability
+// descriptor: a verb whose arguments it cannot see inside is marked
+// opaque_payload whatever this file says, which is the one check a declaration
+// that claims too little cannot route around.
+
+// Namespace is the collision domain this module's names land in. The host
+// derives it from the module path and never reads it from here; it is written
+// down because a verb key has to carry it and a constant is the only way to
+// spell one at compile time.
+//
+// A module path that changes changes this line and every verb below it.
+const Namespace = "{{.Namespace}}"
+
+// Kind is the bare device-kind name. The host qualifies it with the namespace
+// above, so an operator sees "{{.Qualified}}"-shaped names and this module
+// never spells one.
+const Kind = "{{.KindName}}"
+
+// verb is one of this kind's own verb keys.
+func verb(name string) connectorapi.Capability {
+	return connectorapi.Capability(Namespace + ".command." + name)
+}
+
+// The verbs. Two is enough to show both halves of the rule: one that an
+// operator class reaches, and one that no class reaches because it cannot be
+// undone.
+var (
+	// VerbReadState answers with what the machine is and moves nothing.
+	VerbReadState = verb("read_state")
+	// VerbReboot restarts the machine's controller. It is marked irreversible
+	// by this module, which puts it in the dangerous tier: no class, role or
+	// level confers it, and reaching it takes a row naming the subject, the
+	// device and the verb, or ownership of the machine.
+	VerbReboot = verb("reboot")
+)
+
+// kindDeclaration is what connectorapi.RegisterKind is given.
+//
+// Capabilities is the descriptor the host reads to compute its own markings,
+// and it is this driver's Baseline() and not a second list: a verb with no
+// argument keys in it declares no arguments, which the host reads as
+// constrained by having nothing to constrain.
+func kindDeclaration() connectorapi.KindDeclaration {
+	return connectorapi.KindDeclaration{
+		Kind:        Kind,
+		DisplayName: "{{.KindName}}",
+		DriverTypes: []string{Type.String()},
+		Verbs: map[string]connectorapi.VerbEntry{
+			VerbReadState.String(): {Class: connectorapi.ClassOperate},
+			VerbReboot.String(): {
+				Class:     connectorapi.ClassConfigure,
+				Dangerous: []connectorapi.Marking{connectorapi.MarkingIrreversible},
+			},
+		},
+		Capabilities: kindBaseline(),
+	}
+}
+
+// kindBaseline is the capability set the two verbs above appear in. It is
+// separate from the driver's own Baseline so that a scaffolded module compiles
+// before its author has decided which of the two surfaces each verb belongs to.
+func kindBaseline() connectorapi.Set {
+	return connectorapi.Set{
+		VerbReadState: {Flag: true},
+		VerbReboot:    {Flag: true},
+	}
+}
+
+// kindDoc is what the published extension reference says about this device
+// class. It is a separate descriptor from the driver's: one describes a dialect
+// an operator configures, the other a class of machine an operator grants on.
+func kindDoc() extension.Doc {
+	return extension.Doc{
+		Summary: "A {{.KindName}}, driven by the {{.Name}} dialect.",
+		Description: "A class of device the core has no verbs for, so this module declares them. " +
+			"Replace the two below with the machine's own, keeping every one under this module's " +
+			"namespace: a kind declares verbs in its own namespace and in no other.",
+		Version:   "0.1.0",
+		Contract:  connectorapi.Contract,
+		Stability: extension.StabilityExperimental,
+	}
+}

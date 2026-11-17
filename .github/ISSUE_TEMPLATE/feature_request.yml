@@ -1,0 +1,26 @@
+name: Idea
+description: Something the server, the web app or the API should do.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public, and it is also copied into the Prusa beta portal, where the team sorts ideas.
+        Do not paste tokens, passwords, setup codes, IP addresses, host names or printer serial numbers.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you want to do
+      description: The task you are trying to finish, and what stops you.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help
+      description: How you would like it to work. An extension may already do it, so say if you looked.
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Your printers, how many you run, and other tools you use with the server.

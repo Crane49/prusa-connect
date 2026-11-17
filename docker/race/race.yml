@@ -1,0 +1,133 @@
+# The race detector, on Linux, in the shape the CI runner has.
+#
+# `go test -race` needs cgo, and the machine this repository is developed on
+# has no C compiler, so the detector runs in a container or not at all. A
+# fixture, not a deployment: it runs one `go test`, exits with its status, and
+# holds nothing but two caches worth keeping between runs.
+#
+#   make test-race-linux                                 the tree, CI's tag set
+#   make test-race-linux PACKAGES=./internal/app/        one package
+#   make test-race-linux PACKAGES=./sdk/... TAGS=""      the sdk module, untagged
+#
+# The tree is copied into the image at build, so the run reads the checkout as
+# it was when `make test-race-linux` started and never a host path. The
+# Dockerfile beside this file says why a copy and not a mount.
+#
+# The Postgres fixture is a dependency, so `compose run race` starts it and
+# waits for healthy, and the run reaches it by service name on the compose
+# network. That is the Postgres half of the authz and app suites, the same
+# way the CI unit job runs them against a service container.
+#
+# No host port. Nothing connects to a test run.
+services:
+  race:
+    # Built from the Dockerfile beside this file, from the repository root, so
+    # the whole module is in the context. The tag is what compose names the
+    # built image.
+    image: prusa-connect-race:local
+    build:
+      context: ../..
+      dockerfile: docker/race/Dockerfile
+    # No container_name. Two runs may overlap the way a scaled service does,
+    # one agent on one package while another runs the tree, and a fixed name
+    # makes the second fail to start.
+    # Behind a profile, so `docker compose up -d` over the whole local
+    # composition never starts a test run. `compose run race` activates it.
+    profiles:
+      - race
+    # A run is over when go test exits. Nothing brings it back.
+    restart: "no"
+
+    env_file:
+      - path: ../../.env
+        required: false
+
+    environment:
+      # What go test is given, and the tags it builds with. Both read from the
+      # shell first and .env second, and `make test-race-linux` passes them
+      # through. TAGS set to empty runs untagged; unset runs the CI set.
+      PACKAGES: ${PACKAGES:-./...}
+      TAGS: ${TAGS-full diagnostics observability postgres}
+      # The Postgres fixture by its service name on the compose network, not
+      # the host port. Both engines are required, the way CI requires them, so
+      # a run where the fixture was unreachable fails instead of skipping.
+      AUTHZ_TEST_POSTGRES_DSN: postgres://${PGFIXTURE_USER:-authz}:${PGFIXTURE_PASSWORD:-authz}@postgres-fixture:5432/${PGFIXTURE_DB:-authz}?sslmode=disable
+      AUTHZ_REQUIRED_ENGINES: sqlite,postgres
+
+    depends_on:
+      postgres-fixture:
+        condition: service_healthy
+
+    labels:
+      com.prusa3d.description: "Throwaway race detector run over this tree on Linux, in the CI runner's shape"
+      com.prusa3d.service: "test-fixture"
+
+    # The image runs as uid 10001 and writes only the two caches and /tmp. The
+    # tree and the toolchain are read-only for the run.
+    user: "10001:10001"
+    read_only: true
+
+    volumes:
+      # /tmp is where go test builds and runs every test binary, so it has to
+      # allow exec and hold tens of megabytes per package. A tmpfs mounts
+      # noexec and lives in RAM inside the memory ceiling, so this is an
+      # anonymous disk-backed volume instead, removed with the container.
+      - /tmp
+      # The module cache, kept between runs so a download happens once. Named
+      # rather than anonymous, and labelled to keep, so `make docker-clean`
+      # leaves it alone.
+      - prusa_connect_race_modcache:/go/pkg/mod
+      # The build cache, kept for the same reason: a second run of the same
+      # package is not a second compile of its dependencies under the detector.
+      - prusa_connect_race_buildcache:/home/race/.cache/go-build
+
+    # A test run has no health. Its result is its exit status, and nothing
+    # depends on it, so there is no probe for `up --wait` to wait on.
+    healthcheck:
+      disable: true
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    security_opt:
+      - no-new-privileges:true
+
+    cap_drop:
+      - ALL
+
+    deploy:
+      resources:
+        # The GitHub-hosted runner: four cores and 16 GB. The memory ceiling is
+        # not decoration. Compiling nats-server or quic-go under the detector
+        # past it arrives as `cannot allocate memory` beside a syntax error in
+        # a dependency, and a run that reaches it on a smaller Docker Desktop
+        # VM lowers RACE_MEMORY_LIMIT in .env rather than this file.
+        limits:
+          cpus: "4"
+          memory: ${RACE_MEMORY_LIMIT:-16G}
+        reservations:
+          cpus: "1"
+          memory: 1G
+
+    networks:
+      - prusa_connect_backend
+
+# External, so `docker compose down -v`, which `make docker-check` runs to
+# start the server from empty, does not take the caches with it. `make
+# test-race-linux` creates both before the run, labelled with the project and
+# with com.prusa3d.keep, which is what `make docker-clean` reads to leave them.
+volumes:
+  prusa_connect_race_modcache:
+    name: prusa_connect_race_modcache
+    external: true
+  prusa_connect_race_buildcache:
+    name: prusa_connect_race_buildcache
+    external: true
+
+networks:
+  prusa_connect_backend:
+    name: prusa_connect_backend
+    driver: bridge

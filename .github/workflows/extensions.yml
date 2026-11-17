@@ -1,0 +1,194 @@
+name: Extensions
+
+# The first-party extensions under extensions/ are shipped through the
+# marketplace and versioned apart from the core, so their gates stay out of the
+# core's pipeline, which every core pull request waits for. This workflow starts
+# only when a change touches an extension or what the extensions build against,
+# and it is not part of the core's CI OK.
+#
+# That is the one place a change filter is allowed. internal/arch's change
+# filter gate names this file and refuses one in any other workflow. It also
+# holds the schedule below: a filter cannot see a core change that breaks an
+# extension through a path it does not list, so the same gates run every night.
+on:
+  pull_request:
+    paths:
+      - 'extensions/**'
+      - 'sdk/**'
+      - 'packages/svelte/**'
+      - 'packages/typescript/**'
+      - 'packages/standards/**'
+      - 'internal/**'
+      - 'cmd/**'
+      - 'go.mod'
+      - 'go.sum'
+      - '.nvmrc'
+      - 'Makefile'
+      - '.golangci.yml'
+      - '.github/workflows/extensions.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'extensions/**'
+      - 'sdk/**'
+      - 'packages/svelte/**'
+      - 'packages/typescript/**'
+      - 'packages/standards/**'
+      - 'internal/**'
+      - 'cmd/**'
+      - 'go.mod'
+      - 'go.sum'
+      - '.nvmrc'
+      - 'Makefile'
+      - '.golangci.yml'
+      - '.github/workflows/extensions.yml'
+  schedule:
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+# The same grouping as ci.yml: a pull request keeps only its newest run, and a
+# push or the nightly run each go to the end.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # Holds every extension to the shape extensions/README.md describes, and
+  # names the extensions the gates below run in. An extension is a folder
+  # under extensions/ holding a module.yaml, so a new one needs no edit here.
+  plan:
+    name: Extensions / Find
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # pull-requests reads the commits of a pull request for the CLA step.
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      extensions: ${{ steps.list.outputs.extensions }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    # A pull request whose authors have not all signed CLA.md stops here, and
+    # every job below waits for this one. cla.yml starts the run again once
+    # they have.
+    - name: Check every author signed the contributor licence agreement
+      if: ${{ github.event_name == 'pull_request' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        PR: ${{ github.event.pull_request.number }}
+      run: bash scripts/check-cla-signed.sh "$GITHUB_REPOSITORY" "$PR"
+
+    - name: Check the shape of every extension
+      run: make -C extensions shape
+
+    - name: List the extensions
+      id: list
+      run: |
+        set -eu
+        list=$(cd extensions && for m in */module.yaml; do dirname "$m"; done |
+          jq -R . | jq -cs .)
+        echo "extensions=$list" >> "$GITHUB_OUTPUT"
+        echo "$list"
+
+  # An extension the image carries reaches a server that has it only as an
+  # update, and an update is offered only for a new version. It is a job of
+  # its own so the gates run and report even when it fails.
+  versions:
+    name: Extensions / Versions
+    needs: [ plan ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        # A pull request checks out its merge commit, whose first parent is
+        # the base branch, so the version check below compares with HEAD^1.
+        fetch-depth: 2
+
+    - name: Check every changed extension raised its version
+      if: ${{ github.event_name == 'pull_request' }}
+      run: sh extensions/scripts/check-version-bump.sh HEAD^1
+
+  # One job per extension, side by side. Each runs `make check` in its
+  # extension: golangci-lint over its Go module and its own end-to-end gate.
+  # Each gate installs the Chromium of its own playwright.
+  gates:
+    name: Extensions / ${{ matrix.extension }}
+    needs: [ plan ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      # Every extension reports its own result, so one red gate does not
+      # cancel the others.
+      fail-fast: false
+      matrix:
+        extension: ${{ fromJSON(needs.plan.outputs.extensions) }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        cache: 'pnpm'
+        cache-dependency-path: |
+          packages/typescript/pnpm-lock.yaml
+          packages/svelte/pnpm-lock.yaml
+          extensions/**/pnpm-lock.yaml
+
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: true
+
+    # extension.mk installs the golangci-lint version the root Makefile pins
+    # when the one on the path is another, which takes a compile of about
+    # twenty seconds. The key is that pin.
+    - name: Read the golangci-lint pin
+      id: golangci
+      run: echo "version=$(sed -n 's/^GOLANGCI_VERSION = //p' Makefile)" >> "$GITHUB_OUTPUT"
+
+    - name: Restore golangci-lint
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/go/bin/golangci-lint
+        key: extension-golangci-lint-${{ runner.os }}-${{ steps.golangci.outputs.version }}
+
+    - name: Run the gate of ${{ matrix.extension }}
+      run: make -C extensions check EXT=${{ matrix.extension }}
+
+  # The one result for the whole workflow, under the name the single job had.
+  # It fails when the shape, the version check or any extension's gate did
+  # not pass, and a gate that never started counts as one that did not pass.
+  check:
+    name: Extensions / Check
+    needs: [ plan, versions, gates ]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Check every job passed
+      env:
+        PLAN: ${{ needs.plan.result }}
+        VERSIONS: ${{ needs.versions.result }}
+        GATES: ${{ needs.gates.result }}
+      run: |
+        echo "shape: $PLAN, versions: $VERSIONS, gates: $GATES"
+        [ "$PLAN" = success ] && [ "$VERSIONS" = success ] && [ "$GATES" = success ]

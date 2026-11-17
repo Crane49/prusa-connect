@@ -1,0 +1,3022 @@
+{
+  "components": {
+    "schemas": {
+      "Limits": {
+        "type": "object",
+        "description": "The bounds the operator set.",
+        "properties": {
+          "max_jobs": {
+            "type": "integer",
+            "description": "How many projects slice at once."
+          },
+          "max_queued": {
+            "type": "integer",
+            "description": "How many jobs may wait."
+          },
+          "timeout_minutes": {
+            "type": "integer",
+            "description": "How long one slicer run may take."
+          },
+          "memory_mib": {
+            "type": "integer",
+            "description": "The memory one slicer run may hold, in MiB, derived from the host's memory budget and max_jobs. Read only. 0 means the host set no budget."
+          },
+          "threads": {
+            "type": "integer",
+            "description": "The threads one slicer run may use. 0 lets the slicer choose."
+          },
+          "max_project_mib": {
+            "type": "integer",
+            "description": "The largest project a job takes, in MiB."
+          },
+          "max_upload_bytes": {
+            "type": "integer",
+            "description": "The largest project POST /jobs/upload takes, in bytes."
+          }
+        },
+        "required": [
+          "max_jobs",
+          "max_queued",
+          "timeout_minutes",
+          "memory_mib",
+          "threads",
+          "max_project_mib",
+          "max_upload_bytes"
+        ]
+      },
+      "Status": {
+        "type": "object",
+        "description": "Whether the module can slice, and its bounds.",
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "description": "Whether the host has sent the settings."
+          },
+          "problem": {
+            "type": "string",
+            "description": "Why the module cannot slice, when it cannot."
+          },
+          "selections": {
+            "type": "boolean",
+            "description": "Whether this build slices a chosen bed or chosen objects."
+          },
+          "jobs": {
+            "type": "object",
+            "description": "How many jobs are in each state.",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          },
+          "limits": {
+            "$ref": "#/components/schemas/Limits"
+          }
+        },
+        "required": [
+          "ready",
+          "selections",
+          "limits"
+        ]
+      },
+      "Slicer": {
+        "type": "object",
+        "description": "One installed PrusaSlicer.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The version, such as 2.9.6 or 3.0.0-alpha12."
+          },
+          "channel": {
+            "type": "string",
+            "description": "Whether it is a final release.",
+            "enum": [
+              "stable",
+              "prerelease"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Where it came from: the GitHub manifest, the operator's manifest, or a binary the operator named in local_binaries.",
+            "enum": [
+              "github",
+              "operator",
+              "local"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "description": "The digest of the download it was unpacked from. Empty for a local binary."
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Whether the download matched a SHA-256 its source published. An administrator confirmed an install without one."
+          },
+          "installed_at": {
+            "type": "string",
+            "description": "When it was installed.",
+            "format": "date-time"
+          },
+          "released": {
+            "type": "string",
+            "description": "The day the release was published, when its manifest says.",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string",
+            "description": "The address of the release's notes, when its manifest names one."
+          },
+          "bytes": {
+            "type": "integer",
+            "description": "The room it takes on disk."
+          },
+          "path": {
+            "type": "string",
+            "description": "The executable on this server. Only an administrator is told it."
+          }
+        },
+        "required": [
+          "version",
+          "channel",
+          "source"
+        ]
+      },
+      "Offer": {
+        "type": "object",
+        "description": "One release: a build this server can install, or a release in the supported range it cannot, with the reason.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The version."
+          },
+          "channel": {
+            "type": "string",
+            "description": "Whether it is a final release.",
+            "enum": [
+              "stable",
+              "prerelease"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Where it is offered: the GitHub releases or the operator's manifest.",
+            "enum": [
+              "github",
+              "operator"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "description": "The size of the download in bytes, when its source says."
+          },
+          "asset": {
+            "type": "string",
+            "description": "The file name of the download."
+          },
+          "sha256": {
+            "type": "string",
+            "description": "The SHA-256 its source published for the download, lowercase hex. Absent when it published none."
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Whether the download is checked against a SHA-256 its source published. Installing one that is not takes a confirmation."
+          },
+          "compatible": {
+            "type": "boolean",
+            "description": "Whether this server can install it."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why this server cannot install it."
+          },
+          "released": {
+            "type": "string",
+            "description": "The day the release was published, when the manifest says.",
+            "format": "date"
+          },
+          "notes": {
+            "type": "string",
+            "description": "The address of the release's notes, when the manifest names one."
+          },
+          "installed": {
+            "type": "boolean",
+            "description": "Whether this version is installed from a manifest."
+          }
+        },
+        "required": [
+          "version",
+          "channel",
+          "source",
+          "verified",
+          "compatible",
+          "installed"
+        ]
+      },
+      "Catalogue": {
+        "type": "object",
+        "description": "Where the GitHub release list stands.",
+        "properties": {
+          "github": {
+            "type": "boolean",
+            "description": "Whether the GitHub releases are offered."
+          },
+          "fetched_at": {
+            "type": "string",
+            "description": "When the list was read from GitHub.",
+            "format": "date-time"
+          },
+          "error": {
+            "type": "string",
+            "description": "Why the last reading failed. The list read before is still offered."
+          },
+          "supported": {
+            "type": "string",
+            "description": "The range of versions this module offers, such as \u003e=2.7.0 \u003c4.0.0."
+          }
+        },
+        "required": [
+          "github",
+          "supported"
+        ]
+      },
+      "InstallProgress": {
+        "type": "object",
+        "description": "One install that is running or failed.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The version."
+          },
+          "phase": {
+            "type": "string",
+            "description": "Where the install is.",
+            "enum": [
+              "downloading",
+              "unpacking",
+              "checking",
+              "failed"
+            ]
+          },
+          "done_bytes": {
+            "type": "integer",
+            "description": "How much of the download arrived."
+          },
+          "total_bytes": {
+            "type": "integer",
+            "description": "How large the download is, when known."
+          },
+          "error": {
+            "type": "string",
+            "description": "Why the install failed."
+          }
+        },
+        "required": [
+          "version",
+          "phase",
+          "done_bytes"
+        ]
+      },
+      "SettingProblem": {
+        "type": "object",
+        "description": "A setting the module could not use, such as a local binary that named no version.",
+        "properties": {
+          "what": {
+            "type": "string",
+            "description": "The setting or the path."
+          },
+          "error": {
+            "type": "string",
+            "description": "What went wrong."
+          }
+        },
+        "required": [
+          "what",
+          "error"
+        ]
+      },
+      "Slicers": {
+        "type": "object",
+        "description": "Every slicer the module knows about.",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "description": "This server's operating system and processor, such as linux/arm64."
+          },
+          "installed": {
+            "type": "array",
+            "description": "The slicers a job can run, newest first.",
+            "items": {
+              "$ref": "#/components/schemas/Slicer"
+            }
+          },
+          "available": {
+            "type": "array",
+            "description": "The builds the manifests offer for this server, newest first.",
+            "items": {
+              "$ref": "#/components/schemas/Offer"
+            }
+          },
+          "installing": {
+            "type": "array",
+            "description": "The installs that are running or failed.",
+            "items": {
+              "$ref": "#/components/schemas/InstallProgress"
+            }
+          },
+          "pinned": {
+            "type": "string",
+            "description": "The version an administrator chose as the default."
+          },
+          "default": {
+            "type": "string",
+            "description": "The version a job that names none gets. Empty when nothing is installed."
+          },
+          "update": {
+            "$ref": "#/components/schemas/Offer"
+          },
+          "catalogue": {
+            "$ref": "#/components/schemas/Catalogue"
+          },
+          "problems": {
+            "type": "array",
+            "description": "The settings the module could not use.",
+            "items": {
+              "$ref": "#/components/schemas/SettingProblem"
+            }
+          }
+        },
+        "required": [
+          "platform",
+          "installed",
+          "available",
+          "installing",
+          "catalogue",
+          "problems"
+        ]
+      },
+      "InstallBody": {
+        "type": "object",
+        "description": "One version to install.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The version, such as 2.9.6."
+          },
+          "unverified": {
+            "type": "boolean",
+            "description": "Confirms the install of a release that publishes no SHA-256, whose download cannot be checked."
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "VersionBody": {
+        "type": "object",
+        "description": "One version.",
+        "properties": {
+          "version": {
+            "type": "string",
+            "description": "The version, such as 2.9.6. An empty version clears the default."
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "Selection": {
+        "type": "object",
+        "description": "What a job slices: one bed of one printer setup and the build items on it. A build item is one placed copy of an object, counted from 0 in the order of the project's build list.",
+        "properties": {
+          "setup": {
+            "type": "integer",
+            "description": "The printer setup. A PrusaSlicer 2 project has one, setup 0.",
+            "minimum": 0,
+            "maximum": 63
+          },
+          "bed": {
+            "type": "integer",
+            "description": "The bed, from 0 to 8.",
+            "minimum": 0,
+            "maximum": 8
+          },
+          "items": {
+            "type": "array",
+            "description": "The build items to print. Empty is every printable item on the bed.",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "positions": {
+            "type": "array",
+            "description": "Copies of build items to put on the bed, instead of items. The first position of an item moves it there, and each further one adds a copy. The project's settings are kept.",
+            "maxItems": 512,
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            }
+          }
+        }
+      },
+      "Position": {
+        "type": "object",
+        "description": "One copy of a build item on the bed.",
+        "properties": {
+          "item": {
+            "type": "integer",
+            "description": "The build item whose copy is placed.",
+            "minimum": 0
+          },
+          "x": {
+            "type": "number",
+            "description": "Where the centre of the item's box stands, in millimetres from the origin of the bed shape."
+          },
+          "y": {
+            "type": "number",
+            "description": "The same, along the depth of the bed."
+          },
+          "rotate": {
+            "type": "integer",
+            "description": "How far the copy turns about the vertical axis through the centre of the item's box, in degrees counterclockwise. 0 keeps it as the item stands.",
+            "enum": [
+              0,
+              90
+            ]
+          }
+        },
+        "required": [
+          "item",
+          "x",
+          "y"
+        ]
+      },
+      "Source": {
+        "type": "object",
+        "description": "The project a job slices.",
+        "properties": {
+          "storage": {
+            "type": "string",
+            "description": "The storage that holds it."
+          },
+          "path": {
+            "type": "string",
+            "description": "Its path inside the storage."
+          },
+          "upload": {
+            "type": "string",
+            "description": "The file name of an uploaded project. Empty for one in a storage."
+          }
+        }
+      },
+      "Target": {
+        "type": "object",
+        "description": "Where the G-code goes.",
+        "properties": {
+          "storage": {
+            "type": "string",
+            "description": "The storage. Empty is the storage of the project."
+          },
+          "path": {
+            "type": "string",
+            "description": "The file inside it, without an extension. The module writes into its folder a name that starts with eight characters of a hash of the storage and this path, so a printer's FAT short names tell outputs apart. Then come a dash, this path's own name, and .bgcode or .gcode for what the slicer wrote. The result names the file. Empty is the project's own path."
+          }
+        }
+      },
+      "SubmitBody": {
+        "type": "object",
+        "description": "A project in a storage to slice.",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "output": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "slicer": {
+            "type": "string",
+            "description": "The version to slice with. Empty is the default."
+          },
+          "selection": {
+            "$ref": "#/components/schemas/Selection"
+          },
+          "format": {
+            "type": "string",
+            "description": "Binary or text G-code. Empty keeps what the project says.",
+            "enum": [
+              "",
+              "bgcode",
+              "gcode"
+            ]
+          },
+          "overwrite": {
+            "type": "boolean",
+            "description": "Replace a file of the same name. Without it, a job whose file exists fails."
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "JobError": {
+        "type": "object",
+        "description": "Why a job failed.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Why it failed.",
+            "enum": [
+              "server-slicing/SOURCE_NOT_FOUND",
+              "server-slicing/SOURCE_DENIED",
+              "server-slicing/SOURCE_TOO_LARGE",
+              "server-slicing/NOT_A_PROJECT",
+              "server-slicing/NOT_PRUSASLICER",
+              "server-slicing/NO_SLICER",
+              "server-slicing/SLICER_TOO_OLD",
+              "server-slicing/SELECTION_INVALID",
+              "server-slicing/NOTHING_TO_PRINT",
+              "server-slicing/NO_OUTPUT",
+              "server-slicing/SLICER_FAILED",
+              "server-slicing/TIMEOUT",
+              "server-slicing/MEMORY",
+              "server-slicing/OUTPUT_EXISTS",
+              "server-slicing/OUTPUT_DENIED",
+              "server-slicing/OUTPUT_FAILED",
+              "server-slicing/INTERRUPTED",
+              "server-slicing/INTERNAL"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "What went wrong, in English."
+          },
+          "log": {
+            "type": "array",
+            "description": "The end of what the slicer printed, when it ran.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "existing": {
+            "type": "object",
+            "description": "With server-slicing/OUTPUT_EXISTS, the file that is there already. It is the file the job would have written.",
+            "properties": {
+              "storage": {
+                "type": "string",
+                "description": "The storage the file is in."
+              },
+              "path": {
+                "type": "string",
+                "description": "The file, with its folder and extension."
+              }
+            },
+            "required": [
+              "storage",
+              "path"
+            ]
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "JobObject": {
+        "type": "object",
+        "description": "One object the G-code labels, which a printer can cancel on its own.",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The number the G-code labels it with, M486 S\u003cid\u003e."
+          },
+          "name": {
+            "type": "string",
+            "description": "Its name."
+          },
+          "item": {
+            "type": "integer",
+            "description": "The build item of the project it came from, when the module could tell."
+          },
+          "instance": {
+            "type": "object",
+            "description": "The object and the copy of it that the build item is.",
+            "properties": {
+              "object": {
+                "type": "integer",
+                "description": "The object's index in the project."
+              },
+              "instance": {
+                "type": "integer",
+                "description": "The copy's index in that object."
+              }
+            },
+            "required": [
+              "object",
+              "instance"
+            ]
+          },
+          "polygon": {
+            "type": "array",
+            "description": "Its outline on the bed it was sliced on, in millimetres.",
+            "items": {
+              "$ref": "#/components/schemas/Point"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Point": {
+        "type": "object",
+        "description": "A point on the bed, in millimetres.",
+        "properties": {
+          "x": {
+            "type": "number",
+            "description": "The X position."
+          },
+          "y": {
+            "type": "number",
+            "description": "The Y position."
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ]
+      },
+      "Thumbnail": {
+        "type": "object",
+        "description": "One picture the G-code carries.",
+        "properties": {
+          "format": {
+            "type": "string",
+            "description": "The picture's format.",
+            "enum": [
+              "png",
+              "jpg",
+              "qoi"
+            ]
+          },
+          "width": {
+            "type": "integer",
+            "description": "The width in pixels."
+          },
+          "height": {
+            "type": "integer",
+            "description": "The height in pixels."
+          }
+        },
+        "required": [
+          "format",
+          "width",
+          "height"
+        ]
+      },
+      "JobResult": {
+        "type": "object",
+        "description": "The G-code a job wrote and what it says about the print.",
+        "properties": {
+          "storage": {
+            "type": "string",
+            "description": "The storage it is in."
+          },
+          "path": {
+            "type": "string",
+            "description": "Its path, with the extension."
+          },
+          "size": {
+            "type": "integer",
+            "description": "Its size in bytes."
+          },
+          "sha256": {
+            "type": "string",
+            "description": "The digest the storage computed."
+          },
+          "format": {
+            "type": "string",
+            "description": "What it holds.",
+            "enum": [
+              "bgcode",
+              "gcode"
+            ]
+          },
+          "slicer": {
+            "type": "string",
+            "description": "The version that sliced it."
+          },
+          "duration_ms": {
+            "type": "integer",
+            "description": "How long the slicer ran."
+          },
+          "peak_memory_bytes": {
+            "type": "integer",
+            "description": "The most memory the slicer held, where the server can read it."
+          },
+          "estimated_seconds": {
+            "type": "integer",
+            "description": "The print time the slicer estimated."
+          },
+          "filament_mm": {
+            "type": "number",
+            "description": "The filament the print uses, in millimetres."
+          },
+          "filament_g": {
+            "type": "number",
+            "description": "The filament the print uses, in grams."
+          },
+          "filament_type": {
+            "type": "string",
+            "description": "The material, such as PLA."
+          },
+          "printer_model": {
+            "type": "string",
+            "description": "The printer it was sliced for, such as MK4S."
+          },
+          "nozzle_mm": {
+            "type": "number",
+            "description": "The nozzle diameter."
+          },
+          "layer_height_mm": {
+            "type": "number",
+            "description": "The layer height."
+          },
+          "objects": {
+            "type": "array",
+            "description": "The objects a printer can cancel one by one.",
+            "items": {
+              "$ref": "#/components/schemas/JobObject"
+            }
+          },
+          "thumbnails": {
+            "type": "array",
+            "description": "The pictures the file carries. The slicer copies them from the project.",
+            "items": {
+              "$ref": "#/components/schemas/Thumbnail"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "description": "What went differently from what was asked.",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "storage",
+          "path",
+          "size",
+          "format",
+          "slicer",
+          "duration_ms",
+          "objects",
+          "thumbnails"
+        ]
+      },
+      "Job": {
+        "type": "object",
+        "description": "One slicing job.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The job's id."
+          },
+          "state": {
+            "type": "string",
+            "description": "Where the job is.",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "failed",
+              "canceled"
+            ]
+          },
+          "progress": {
+            "type": "integer",
+            "description": "From 0 to 100, and -1 while the slicer says nothing about how far it is."
+          },
+          "step": {
+            "type": "string",
+            "description": "What the slicer is doing."
+          },
+          "by": {
+            "type": "string",
+            "description": "Who asked for the job."
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "output": {
+            "$ref": "#/components/schemas/Target"
+          },
+          "slicer": {
+            "type": "string",
+            "description": "The version asked for, or the one chosen once the job runs."
+          },
+          "selection": {
+            "$ref": "#/components/schemas/Selection"
+          },
+          "format": {
+            "type": "string",
+            "description": "The format asked for."
+          },
+          "overwrite": {
+            "type": "boolean",
+            "description": "Whether a file of the same name is replaced."
+          },
+          "created_at": {
+            "type": "string",
+            "description": "When the job was taken.",
+            "format": "date-time"
+          },
+          "started_at": {
+            "type": "string",
+            "description": "When it started.",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "type": "string",
+            "description": "When it ended.",
+            "format": "date-time"
+          },
+          "error": {
+            "$ref": "#/components/schemas/JobError"
+          },
+          "result": {
+            "$ref": "#/components/schemas/JobResult"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "progress",
+          "by",
+          "source",
+          "output",
+          "selection",
+          "overwrite",
+          "created_at"
+        ]
+      },
+      "JobList": {
+        "type": "object",
+        "description": "One page of jobs, newest first.",
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "description": "The jobs.",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "description": "How many jobs the filter matched."
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Whether the list holds every person's jobs, which an administrator sees."
+          }
+        },
+        "required": [
+          "jobs",
+          "total",
+          "all"
+        ]
+      },
+      "Refusal": {
+        "type": "object",
+        "description": "One refusal, as RFC 9457 names it. The client SDK reads this shape: code reaches ApiError.code and detail reaches ApiError.message.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "about:blank, because this module publishes no page per code."
+          },
+          "status": {
+            "type": "integer",
+            "description": "The HTTP status, repeated in the body."
+          },
+          "code": {
+            "type": "string",
+            "description": "The module's own code. It is outside the core's registry, so it starts with the module's short name.",
+            "enum": [
+              "server-slicing/ACCESS_UNKNOWN",
+              "server-slicing/BODY_TOO_LARGE",
+              "server-slicing/INVALID",
+              "server-slicing/JOB_FINISHED",
+              "server-slicing/JOB_NOT_FOUND",
+              "server-slicing/NOT_ADMINISTRATOR",
+              "server-slicing/NOT_A_PROJECT",
+              "server-slicing/NOT_READY",
+              "server-slicing/NO_DATA_DIRECTORY",
+              "server-slicing/NO_PRINCIPAL",
+              "server-slicing/NO_SLICER",
+              "server-slicing/OUTPUT_DENIED",
+              "server-slicing/QUEUE_FULL",
+              "server-slicing/REFRESH_TOO_SOON",
+              "server-slicing/SOURCE_DENIED",
+              "server-slicing/SOURCE_NOT_FOUND",
+              "server-slicing/SOURCE_TOO_LARGE",
+              "server-slicing/STORE_FAILED",
+              "server-slicing/UNVERIFIED",
+              "server-slicing/VERSION_BUSY",
+              "server-slicing/VERSION_NOT_INSTALLED",
+              "server-slicing/VERSION_NOT_OFFERED"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "What went wrong, in one English phrase that never varies."
+          },
+          "detail": {
+            "type": "string",
+            "description": "What went wrong this time."
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "What the code fills in."
+          },
+          "retryable": {
+            "type": "boolean",
+            "description": "Whether sending the same request again could work."
+          }
+        },
+        "required": [
+          "type",
+          "status",
+          "code",
+          "title",
+          "detail",
+          "params",
+          "retryable"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API credential this server issued, sent as a bearer token. Its scope decides which routes it reaches: read for a GET, operate for anything else, and administer for the routes that change the installed slicers."
+      },
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "pcl_session",
+        "description": "The session a browser holds after it signs in to this server."
+      }
+    }
+  },
+  "info": {
+    "title": "server-slicing",
+    "version": "0.1.0",
+    "description": "The routes the server-slicing module serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at \u003cmount\u003e/openapi.json."
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/jobs": {
+      "get": {
+        "operationId": "list-jobs",
+        "summary": "The caller's jobs",
+        "description": "The caller's jobs, newest first. An administrator, who may configure modules, gets every person's jobs. The host takes view_resource on the module's instance before this is called, which a credential with the read scope reaches.",
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "description": "Only the jobs in this state.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "running",
+                "done",
+                "failed",
+                "canceled"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "The most jobs to answer, from 1 to 200.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The jobs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/INVALID": {
+                    "summary": "the module did not accept what was sent",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 400,
+                      "code": "server-slicing/INVALID",
+                      "title": "the module did not accept what was sent",
+                      "detail": "the module did not accept what was sent",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/ACCESS_UNKNOWN": {
+                    "summary": "the server did not say what you may do",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/ACCESS_UNKNOWN",
+                      "title": "the server did not say what you may do",
+                      "detail": "the server did not say what you may do",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "read",
+        "x-codes": [
+          "server-slicing/ACCESS_UNKNOWN",
+          "server-slicing/INVALID",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL"
+        ]
+      },
+      "post": {
+        "operationId": "submit-job",
+        "summary": "Slice a project in a storage",
+        "description": "Takes a job that slices one 3MF project a storage holds. The module reads the project as the caller and asks whether the caller may write into the target storage before it takes the job. The answer comes at once, with the job queued. A worker slices it later as the module, and asks the server again whether the caller may still read and write before it does. The host takes operate_resource on the module's instance before this is called, which a credential with the operate scope reaches.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The job is queued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/INVALID": {
+                    "summary": "the module did not accept what was sent",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 400,
+                      "code": "server-slicing/INVALID",
+                      "title": "the module did not accept what was sent",
+                      "detail": "the module did not accept what was sent",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/OUTPUT_DENIED": {
+                    "summary": "you may not write into that storage",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/OUTPUT_DENIED",
+                      "title": "you may not write into that storage",
+                      "detail": "you may not write into that storage",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/SOURCE_DENIED": {
+                    "summary": "you may not read that storage",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/SOURCE_DENIED",
+                      "title": "you may not read that storage",
+                      "detail": "you may not read that storage",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/SOURCE_NOT_FOUND": {
+                    "summary": "there is no such project",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 404,
+                      "code": "server-slicing/SOURCE_NOT_FOUND",
+                      "title": "there is no such project",
+                      "detail": "there is no such project",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_SLICER": {
+                    "summary": "no installed slicer can take the job",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 409,
+                      "code": "server-slicing/NO_SLICER",
+                      "title": "no installed slicer can take the job",
+                      "detail": "no installed slicer can take the job",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/BODY_TOO_LARGE": {
+                    "summary": "the request body is larger than this module reads",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 413,
+                      "code": "server-slicing/BODY_TOO_LARGE",
+                      "title": "the request body is larger than this module reads",
+                      "detail": "the request body is larger than this module reads",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/SOURCE_TOO_LARGE": {
+                    "summary": "the project is larger than this module slices",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 413,
+                      "code": "server-slicing/SOURCE_TOO_LARGE",
+                      "title": "the project is larger than this module slices",
+                      "detail": "the project is larger than this module slices",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_A_PROJECT": {
+                    "summary": "the file is not a 3MF project",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 415,
+                      "code": "server-slicing/NOT_A_PROJECT",
+                      "title": "the file is not a 3MF project",
+                      "detail": "the file is not a 3MF project",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/STORE_FAILED": {
+                    "summary": "the module could not write its files",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 500,
+                      "code": "server-slicing/STORE_FAILED",
+                      "title": "the module could not write its files",
+                      "detail": "the module could not write its files",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/QUEUE_FULL": {
+                    "summary": "too many jobs are waiting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/QUEUE_FULL",
+                      "title": "too many jobs are waiting",
+                      "detail": "too many jobs are waiting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "operate",
+        "x-codes": [
+          "server-slicing/BODY_TOO_LARGE",
+          "server-slicing/INVALID",
+          "server-slicing/NOT_A_PROJECT",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/NO_SLICER",
+          "server-slicing/OUTPUT_DENIED",
+          "server-slicing/QUEUE_FULL",
+          "server-slicing/SOURCE_DENIED",
+          "server-slicing/SOURCE_NOT_FOUND",
+          "server-slicing/SOURCE_TOO_LARGE",
+          "server-slicing/STORE_FAILED"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/jobs/upload": {
+      "post": {
+        "operationId": "upload-job",
+        "summary": "Slice a project sent as the body",
+        "description": "Takes a job that slices the 3MF project sent as the body. The server passes at most 1 MiB to a module, so a larger project is uploaded into a storage and sliced from there. The host takes operate_resource on the module's instance before this is called, which a credential with the operate scope reaches.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "description": "The project's file name, ending in .3mf.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "output_storage",
+            "in": "query",
+            "required": true,
+            "description": "The storage the G-code goes into.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "output_path",
+            "in": "query",
+            "required": false,
+            "description": "The file inside it, without an extension. Empty is the project's name.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slicer",
+            "in": "query",
+            "required": false,
+            "description": "The version to slice with.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "description": "Binary or text G-code.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "bgcode",
+                "gcode"
+              ]
+            }
+          },
+          {
+            "name": "overwrite",
+            "in": "query",
+            "required": false,
+            "description": "true replaces a file of the same name.",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "setup",
+            "in": "query",
+            "required": false,
+            "description": "The printer setup, from 0.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "bed",
+            "in": "query",
+            "required": false,
+            "description": "The bed to slice, from 0 to 8.",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "items",
+            "in": "query",
+            "required": false,
+            "description": "The build items to print, such as 0,2,5.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The job is queued.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/INVALID": {
+                    "summary": "the module did not accept what was sent",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 400,
+                      "code": "server-slicing/INVALID",
+                      "title": "the module did not accept what was sent",
+                      "detail": "the module did not accept what was sent",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/OUTPUT_DENIED": {
+                    "summary": "you may not write into that storage",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/OUTPUT_DENIED",
+                      "title": "you may not write into that storage",
+                      "detail": "you may not write into that storage",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_SLICER": {
+                    "summary": "no installed slicer can take the job",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 409,
+                      "code": "server-slicing/NO_SLICER",
+                      "title": "no installed slicer can take the job",
+                      "detail": "no installed slicer can take the job",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/BODY_TOO_LARGE": {
+                    "summary": "the request body is larger than this module reads",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 413,
+                      "code": "server-slicing/BODY_TOO_LARGE",
+                      "title": "the request body is larger than this module reads",
+                      "detail": "the request body is larger than this module reads",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_A_PROJECT": {
+                    "summary": "the file is not a 3MF project",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 415,
+                      "code": "server-slicing/NOT_A_PROJECT",
+                      "title": "the file is not a 3MF project",
+                      "detail": "the file is not a 3MF project",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/STORE_FAILED": {
+                    "summary": "the module could not write its files",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 500,
+                      "code": "server-slicing/STORE_FAILED",
+                      "title": "the module could not write its files",
+                      "detail": "the module could not write its files",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/QUEUE_FULL": {
+                    "summary": "too many jobs are waiting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/QUEUE_FULL",
+                      "title": "too many jobs are waiting",
+                      "detail": "too many jobs are waiting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "operate",
+        "x-codes": [
+          "server-slicing/BODY_TOO_LARGE",
+          "server-slicing/INVALID",
+          "server-slicing/NOT_A_PROJECT",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/NO_SLICER",
+          "server-slicing/OUTPUT_DENIED",
+          "server-slicing/QUEUE_FULL",
+          "server-slicing/STORE_FAILED"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/jobs/{id}": {
+      "get": {
+        "operationId": "read-job",
+        "summary": "One job",
+        "description": "One job. A job of another person reads as not there, unless the caller is an administrator. The host takes view_resource on the module's instance before this is called, which a credential with the read scope reaches.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The job's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The job.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/JOB_NOT_FOUND": {
+                    "summary": "there is no such job",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 404,
+                      "code": "server-slicing/JOB_NOT_FOUND",
+                      "title": "there is no such job",
+                      "detail": "there is no such job",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "read",
+        "x-codes": [
+          "server-slicing/JOB_NOT_FOUND",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/jobs/{id}/cancel": {
+      "post": {
+        "operationId": "cancel-job",
+        "summary": "Stop one job",
+        "description": "Stops one job. A queued job is canceled at once. A running one is canceled when its slicer has stopped, which the job's state then shows. A person cancels their own jobs, and an administrator any. The host takes operate_resource on the module's instance before this is called, which a credential with the operate scope reaches.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The job's id.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The job as it is now.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/JOB_NOT_FOUND": {
+                    "summary": "there is no such job",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 404,
+                      "code": "server-slicing/JOB_NOT_FOUND",
+                      "title": "there is no such job",
+                      "detail": "there is no such job",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/JOB_FINISHED": {
+                    "summary": "the job has finished already",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 409,
+                      "code": "server-slicing/JOB_FINISHED",
+                      "title": "the job has finished already",
+                      "detail": "the job has finished already",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/STORE_FAILED": {
+                    "summary": "the module could not write its files",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 500,
+                      "code": "server-slicing/STORE_FAILED",
+                      "title": "the module could not write its files",
+                      "detail": "the module could not write its files",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "operate",
+        "x-codes": [
+          "server-slicing/JOB_FINISHED",
+          "server-slicing/JOB_NOT_FOUND",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/STORE_FAILED"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/slicers": {
+      "get": {
+        "operationId": "list-slicers",
+        "summary": "The installed and the offered slicers",
+        "description": "The slicers a job can run, the builds the manifests offer for this server, the installs that are running, and the default. The host takes view_resource on the module's instance before this is called, which a credential with the read scope reaches.",
+        "responses": {
+          "200": {
+            "description": "The slicers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Slicers"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "read",
+        "x-codes": [
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/slicers/default": {
+      "put": {
+        "operationId": "pin-slicer",
+        "summary": "Choose the version a job gets",
+        "description": "Chooses the version a job that names none gets. An empty version clears the choice, and a job then gets the newest installed final release. A project saved by a newer major version of PrusaSlicer still gets a slicer of that major version. The host takes operate_resource on the module's instance, and the module then asks the server whether the caller may configure modules, configure_resource on the sink kind, which only an administrator with a session or a credential with the administer scope reaches.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The slicers, with the new default.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Slicers"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/INVALID": {
+                    "summary": "the module did not accept what was sent",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 400,
+                      "code": "server-slicing/INVALID",
+                      "title": "the module did not accept what was sent",
+                      "detail": "the module did not accept what was sent",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_ADMINISTRATOR": {
+                    "summary": "only a person who may configure modules may change the installed slicers",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NOT_ADMINISTRATOR",
+                      "title": "only a person who may configure modules may change the installed slicers",
+                      "detail": "only a person who may configure modules may change the installed slicers",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/VERSION_NOT_INSTALLED": {
+                    "summary": "that version is not installed",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 404,
+                      "code": "server-slicing/VERSION_NOT_INSTALLED",
+                      "title": "that version is not installed",
+                      "detail": "that version is not installed",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/BODY_TOO_LARGE": {
+                    "summary": "the request body is larger than this module reads",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 413,
+                      "code": "server-slicing/BODY_TOO_LARGE",
+                      "title": "the request body is larger than this module reads",
+                      "detail": "the request body is larger than this module reads",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/STORE_FAILED": {
+                    "summary": "the module could not write its files",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 500,
+                      "code": "server-slicing/STORE_FAILED",
+                      "title": "the module could not write its files",
+                      "detail": "the module could not write its files",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/ACCESS_UNKNOWN": {
+                    "summary": "the server did not say what you may do",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/ACCESS_UNKNOWN",
+                      "title": "the server did not say what you may do",
+                      "detail": "the server did not say what you may do",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "administer",
+        "x-codes": [
+          "server-slicing/ACCESS_UNKNOWN",
+          "server-slicing/BODY_TOO_LARGE",
+          "server-slicing/INVALID",
+          "server-slicing/NOT_ADMINISTRATOR",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/STORE_FAILED",
+          "server-slicing/VERSION_NOT_INSTALLED"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/slicers/install": {
+      "post": {
+        "operationId": "install-slicer",
+        "summary": "Install one offered version",
+        "description": "Starts downloading one version a manifest offers. The module checks the download against the digest the manifest names, unpacks it beside the other versions, and runs it once to check its version. The answer comes at once, and GET /slicers shows the install. The host takes operate_resource on the module's instance, and the module then asks the server whether the caller may configure modules, configure_resource on the sink kind, which only an administrator with a session or a credential with the administer scope reaches.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InstallBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The install has started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Slicers"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/INVALID": {
+                    "summary": "the module did not accept what was sent",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 400,
+                      "code": "server-slicing/INVALID",
+                      "title": "the module did not accept what was sent",
+                      "detail": "the module did not accept what was sent",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_ADMINISTRATOR": {
+                    "summary": "only a person who may configure modules may change the installed slicers",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NOT_ADMINISTRATOR",
+                      "title": "only a person who may configure modules may change the installed slicers",
+                      "detail": "only a person who may configure modules may change the installed slicers",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/VERSION_NOT_OFFERED": {
+                    "summary": "no manifest offers that version for this server",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 404,
+                      "code": "server-slicing/VERSION_NOT_OFFERED",
+                      "title": "no manifest offers that version for this server",
+                      "detail": "no manifest offers that version for this server",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/UNVERIFIED": {
+                    "summary": "the release publishes no checksum, so its download cannot be checked",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 409,
+                      "code": "server-slicing/UNVERIFIED",
+                      "title": "the release publishes no checksum, so its download cannot be checked",
+                      "detail": "the release publishes no checksum, so its download cannot be checked",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/VERSION_BUSY": {
+                    "summary": "that version is being installed or is slicing a job",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 409,
+                      "code": "server-slicing/VERSION_BUSY",
+                      "title": "that version is being installed or is slicing a job",
+                      "detail": "that version is being installed or is slicing a job",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Content Too Large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/BODY_TOO_LARGE": {
+                    "summary": "the request body is larger than this module reads",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 413,
+                      "code": "server-slicing/BODY_TOO_LARGE",
+                      "title": "the request body is larger than this module reads",
+                      "detail": "the request body is larger than this module reads",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/STORE_FAILED": {
+                    "summary": "the module could not write its files",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 500,
+                      "code": "server-slicing/STORE_FAILED",
+                      "title": "the module could not write its files",
+                      "detail": "the module could not write its files",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/ACCESS_UNKNOWN": {
+                    "summary": "the server did not say what you may do",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/ACCESS_UNKNOWN",
+                      "title": "the server did not say what you may do",
+                      "detail": "the server did not say what you may do",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "administer",
+        "x-codes": [
+          "server-slicing/ACCESS_UNKNOWN",
+          "server-slicing/BODY_TOO_LARGE",
+          "server-slicing/INVALID",
+          "server-slicing/NOT_ADMINISTRATOR",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/STORE_FAILED",
+          "server-slicing/UNVERIFIED",
+          "server-slicing/VERSION_BUSY",
+          "server-slicing/VERSION_NOT_OFFERED"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/slicers/refresh": {
+      "post": {
+        "operationId": "refresh-slicers",
+        "summary": "Read the GitHub release list again",
+        "description": "Reads the PrusaSlicer release list from the GitHub Releases API again, with the ETag of the copy on disk. A list that cannot be read is not a refusal: the answer carries the copy on disk and the reason under catalogue.error. A second reading within a minute is refused. The host takes operate_resource on the module's instance, and the module then asks the server whether the caller may configure modules, configure_resource on the sink kind, which only an administrator with a session or a credential with the administer scope reaches.",
+        "responses": {
+          "200": {
+            "description": "The slicers, with the list read again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Slicers"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_ADMINISTRATOR": {
+                    "summary": "only a person who may configure modules may change the installed slicers",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NOT_ADMINISTRATOR",
+                      "title": "only a person who may configure modules may change the installed slicers",
+                      "detail": "only a person who may configure modules may change the installed slicers",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/REFRESH_TOO_SOON": {
+                    "summary": "the release list was read a moment ago",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 429,
+                      "code": "server-slicing/REFRESH_TOO_SOON",
+                      "title": "the release list was read a moment ago",
+                      "detail": "the release list was read a moment ago",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/ACCESS_UNKNOWN": {
+                    "summary": "the server did not say what you may do",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/ACCESS_UNKNOWN",
+                      "title": "the server did not say what you may do",
+                      "detail": "the server did not say what you may do",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "administer",
+        "x-codes": [
+          "server-slicing/ACCESS_UNKNOWN",
+          "server-slicing/NOT_ADMINISTRATOR",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/REFRESH_TOO_SOON"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/slicers/{version}": {
+      "delete": {
+        "operationId": "remove-slicer",
+        "summary": "Remove one installed version",
+        "description": "Removes one installed version and its files. A version a job is slicing with is refused. A local binary is the operator's and is not removed. The host takes operate_resource on the module's instance, and the module then asks the server whether the caller may configure modules, configure_resource on the sink kind, which only an administrator with a session or a credential with the administer scope reaches.",
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "description": "The version, such as 2.9.6.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The version is removed."
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_ADMINISTRATOR": {
+                    "summary": "only a person who may configure modules may change the installed slicers",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NOT_ADMINISTRATOR",
+                      "title": "only a person who may configure modules may change the installed slicers",
+                      "detail": "only a person who may configure modules may change the installed slicers",
+                      "params": {},
+                      "retryable": false
+                    }
+                  },
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/VERSION_NOT_INSTALLED": {
+                    "summary": "that version is not installed",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 404,
+                      "code": "server-slicing/VERSION_NOT_INSTALLED",
+                      "title": "that version is not installed",
+                      "detail": "that version is not installed",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/VERSION_BUSY": {
+                    "summary": "that version is being installed or is slicing a job",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 409,
+                      "code": "server-slicing/VERSION_BUSY",
+                      "title": "that version is being installed or is slicing a job",
+                      "detail": "that version is being installed or is slicing a job",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/STORE_FAILED": {
+                    "summary": "the module could not write its files",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 500,
+                      "code": "server-slicing/STORE_FAILED",
+                      "title": "the module could not write its files",
+                      "detail": "the module could not write its files",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/ACCESS_UNKNOWN": {
+                    "summary": "the server did not say what you may do",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/ACCESS_UNKNOWN",
+                      "title": "the server did not say what you may do",
+                      "detail": "the server did not say what you may do",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  },
+                  "server-slicing/NO_DATA_DIRECTORY": {
+                    "summary": "the module was granted no data directory, so it cannot slice",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NO_DATA_DIRECTORY",
+                      "title": "the module was granted no data directory, so it cannot slice",
+                      "detail": "the module was granted no data directory, so it cannot slice",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "administer",
+        "x-codes": [
+          "server-slicing/ACCESS_UNKNOWN",
+          "server-slicing/NOT_ADMINISTRATOR",
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_DATA_DIRECTORY",
+          "server-slicing/NO_PRINCIPAL",
+          "server-slicing/STORE_FAILED",
+          "server-slicing/VERSION_BUSY",
+          "server-slicing/VERSION_NOT_INSTALLED"
+        ]
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.server-slicing/status": {
+      "get": {
+        "operationId": "read-status",
+        "summary": "Whether the module can slice, and its bounds",
+        "description": "Whether the module can slice, how many jobs are in each state, and the bounds the operator set. The host takes view_resource on the module's instance before this is called, which a credential with the read scope reaches.",
+        "responses": {
+          "200": {
+            "description": "The status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NO_PRINCIPAL": {
+                    "summary": "the request carries no signed-in person",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 403,
+                      "code": "server-slicing/NO_PRINCIPAL",
+                      "title": "the request carries no signed-in person",
+                      "detail": "the request carries no signed-in person",
+                      "params": {},
+                      "retryable": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                },
+                "examples": {
+                  "server-slicing/NOT_READY": {
+                    "summary": "the module is still starting",
+                    "value": {
+                      "type": "about:blank",
+                      "status": 503,
+                      "code": "server-slicing/NOT_READY",
+                      "title": "the module is still starting",
+                      "detail": "the module is still starting",
+                      "params": {},
+                      "retryable": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-scope": "read",
+        "x-codes": [
+          "server-slicing/NOT_READY",
+          "server-slicing/NO_PRINCIPAL"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    },
+    {
+      "session": []
+    }
+  ]
+}

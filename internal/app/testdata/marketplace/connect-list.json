@@ -1,0 +1,41 @@
+{
+  "extensions": [
+    {
+      "id": "com.github.aux.prusa3d.parts",
+      "module": "github.com/prusa3d/parts",
+      "name": "parts",
+      "title": "Parts",
+      "summary": "Counts the parts each print made.",
+      "author": {
+        "id": "8b6a1f3e-2c4d-4e5f-9a0b-1c2d3e4f5a6b",
+        "name": "Prusa Research",
+        "trust": "official"
+      },
+      "trust": "official",
+      "page_url": "https://plugin-marketplace.prusa3d.com/connect/extensions/com.github.aux.prusa3d.parts",
+      "downloads": 42,
+      "latest": {
+        "version": "0.2.0",
+        "published_at": "2026-10-01T12:00:00.000Z",
+        "channel": "stable",
+        "trust": "official",
+        "core": ">=0.1.0",
+        "kind": "sink",
+        "platforms": ["darwin_arm64", "linux_amd64", "linux_arm64"],
+        "permissions": ["observe"],
+        "records_mib": 64,
+        "events": {"counted": "parts.counted"},
+        "check_absent_people": true,
+        "has_ui": true,
+        "size": 1048576,
+        "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+        "download_url": "https://plugin-marketplace.prusa3d.com/api/connect/v1/extensions/com.github.aux.prusa3d.parts/download?version=0.2.0",
+        "changelog": "Counts parts per plate."
+      }
+    }
+  ],
+  "total": 3,
+  "limit": 1,
+  "offset": 0,
+  "next": "/api/connect/v1/extensions?platform=linux_arm64&limit=1&offset=1"
+}

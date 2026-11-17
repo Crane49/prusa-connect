@@ -1,0 +1,112 @@
+{
+  "estimated_seconds": 1000,
+  "filament_mm": 297.65,
+  "filament_g": 0.89,
+  "layer_height_mm": 0.3,
+  "nozzle_mm": 0.4,
+  "material": "PLA",
+  "printer_model": "MK3.5MMU3",
+  "print_profile": "0.20mm SPEED @MK3.5MMU 0.4",
+  "printer_profile": "Original Prusa MK3.5 \u0026 MK3.5S MMU3 0.4 nozzle",
+  "filament_profile": "Prusament PLA @MMU",
+  "filaments": [
+    {
+      "index": 0,
+      "used": true,
+      "material": "PLA",
+      "nozzle_mm": 0.4,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 205,
+      "first_layer_nozzle_temp_c": 215,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "filament_g": 0.51,
+      "filament_mm": 171.68,
+      "colour": "#FF8000"
+    },
+    {
+      "index": 1,
+      "used": true,
+      "material": "PETG",
+      "nozzle_mm": 0.4,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 230,
+      "first_layer_nozzle_temp_c": 230,
+      "bed_temp_c": 90,
+      "first_layer_bed_temp_c": 85,
+      "filament_g": 0.38,
+      "filament_mm": 125.97,
+      "colour": "#DB5182"
+    },
+    {
+      "index": 2,
+      "used": false,
+      "material": "PLA",
+      "nozzle_mm": 0.4,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 205,
+      "first_layer_nozzle_temp_c": 215,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "colour": "#3EC0FF"
+    },
+    {
+      "index": 3,
+      "used": false,
+      "material": "PLA",
+      "nozzle_mm": 0.4,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 205,
+      "first_layer_nozzle_temp_c": 215,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "colour": "#FF4F4F"
+    },
+    {
+      "index": 4,
+      "used": false,
+      "material": "PLA",
+      "nozzle_mm": 0.4,
+      "high_flow": false,
+      "abrasive": false,
+      "nozzle_temp_c": 205,
+      "first_layer_nozzle_temp_c": 215,
+      "bed_temp_c": 60,
+      "first_layer_bed_temp_c": 60,
+      "colour": "#FBEB7D"
+    }
+  ],
+  "max_layer_z_mm": 9.9,
+  "bounds": {
+    "min_x_mm": 120,
+    "min_y_mm": 100,
+    "max_x_mm": 130,
+    "max_y_mm": 110
+  },
+  "bed": {
+    "width_mm": 250,
+    "depth_mm": 210,
+    "height_mm": 210
+  },
+  "checks": {
+    "printer_model": "MK3.5",
+    "nozzles": [
+      {
+        "index": 0,
+        "diameter_mm": 0.4,
+        "hardened": false,
+        "high_flow": false
+      }
+    ],
+    "gcode_level": 2,
+    "features": [
+      "Input shaper",
+      "MMU3"
+    ],
+    "firmware": "6.5.3+12780"
+  }
+}

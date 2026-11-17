@@ -1,0 +1,36 @@
+# This package alone, on packages/typescript's model. Every JavaScript package
+# in this tree is its own pnpm project.
+packages:
+  - .
+
+# Dependencies must have been public for 3 days before pnpm resolves them,
+# the same window packages/typescript, frontend/ and docs/ set, and the same
+# cooldown .github/dependabot.yml carries. Change one and the other has to move.
+minimumReleaseAge: 4320
+
+# Written versions stay exact.
+savePrefix: ''
+
+# No dependency here needs a build script, so none is allowed one. pnpm 11
+# refuses every dependency script that allowBuilds does not name, and it names
+# esbuild here rather than nothing: the Storybook brought esbuild in, and its
+# postinstall only checks a binary this package never runs. Playwright's
+# install script only prints a hint; the browser comes from
+# `pnpm exec playwright install chromium`.
+allowBuilds:
+  esbuild: false
+
+# Refuse to run a script when node_modules has drifted from the lockfile,
+# instead of failing later with a confusing error.
+verifyDepsBeforeRun: error
+
+# package.json names standards by version, the way it will once it is on npm.
+# Here it comes from this tree instead: linked it would load eslint from
+# packages/standards's own node_modules rather than from here.
+overrides:
+  '@prusa/frontend-standards': 'file:../standards'
+
+# The three peers are dev dependencies here already. Left on, pnpm would also
+# try to fetch @prusa/connect from the public registry, where nothing
+# publishes it before the release workflow does (ADR-20260909-c7x rule 11).
+autoInstallPeers: false

@@ -1,0 +1,431 @@
+diff --git a/hw/arm/prusa/parts/door_sensor.c b/hw/arm/prusa/parts/door_sensor.c
+new file mode 100644
+index 0000000000..49deaeeb0d
+--- /dev/null
++++ b/hw/arm/prusa/parts/door_sensor.c
+@@ -0,0 +1,140 @@
++/*
++	door_sensor.c - Sim door sensor for Mini404.
++
++	Written for Mini404 in 2026 in the style of hall_sensor.c by VintagePC.
++
++	This file is part of Mini404.
++	Mini404 is free software: you can redistribute it and/or modify
++	it under the terms of the GNU General Public License as published by
++	the Free Software Foundation, either version 3 of the License, or
++	(at your option) any later version.
++	Mini404 is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++	GNU General Public License for more details.
++	You should have received a copy of the GNU General Public License
++	along with Mini404.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "qemu/osdep.h"
++#include "../utility/p404scriptable.h"
++#include "../utility/macros.h"
++#include "../utility/ScriptHost_C.h"
++#include "../utility/ArgHelper.h"
++#include "migration/vmstate.h"
++#include "qemu/module.h"
++#include "hw/core/irq.h"
++#include "qom/object.h"
++#include "hw/core/sysbus.h"
++#include "hw/core/qdev-properties.h"
++
++#define TYPE_DOOR_SENSOR "door-sensor"
++
++// Raw 12-bit levels the CORE One firmware reads on ADC3 channel 15. It sorts
++// them by midpoint: below 0x3ff closed, below 0xcff open, above that the
++// sensor counts as detached and the firmware refuses to run
++// (src/buddy/door_sensor.cpp).
++#define DOOR_RAW_CLOSED 0x000U
++#define DOOR_RAW_OPEN 0x7ffU
++#define DOOR_RAW_DETACHED 0xfffU
++
++OBJECT_DECLARE_SIMPLE_TYPE(DoorSensorState, DOOR_SENSOR)
++
++struct DoorSensorState {
++	SysBusDevice parent_obj;
++	/*< private >*/
++	/*< public >*/
++	uint32_t raw_value;
++	bool start_detached;
++	qemu_irq irq;
++};
++
++enum {
++	ACT_CLOSE,
++	ACT_OPEN,
++	ACT_DETACH,
++};
++
++OBJECT_DEFINE_TYPE_SIMPLE_WITH_INTERFACES(DoorSensorState, door_sensor, DOOR_SENSOR, SYS_BUS_DEVICE, {TYPE_P404_SCRIPTABLE}, {NULL})
++
++static void door_sensor_finalize(Object *obj)
++{
++}
++
++static void door_sensor_set(DoorSensorState *s, uint32_t raw)
++{
++	s->raw_value = raw;
++	qemu_set_irq(s->irq, s->raw_value);
++}
++
++static void door_sensor_reset(DeviceState *dev)
++{
++	DoorSensorState *s = DOOR_SENSOR(dev);
++	door_sensor_set(s, s->start_detached ? DOOR_RAW_DETACHED : DOOR_RAW_CLOSED);
++}
++
++static int door_sensor_process_action(P404ScriptIF *obj, unsigned int action, script_args args)
++{
++	DoorSensorState *s = DOOR_SENSOR(obj);
++	switch (action)
++	{
++		case ACT_CLOSE:
++			door_sensor_set(s, DOOR_RAW_CLOSED);
++			break;
++		case ACT_OPEN:
++			door_sensor_set(s, DOOR_RAW_OPEN);
++			break;
++		case ACT_DETACH:
++			door_sensor_set(s, DOOR_RAW_DETACHED);
++			break;
++		default:
++			return ScriptLS_Unhandled;
++	}
++	return ScriptLS_Finished;
++}
++
++static void door_sensor_realize(DeviceState *dev, Error **errp)
++{
++	DoorSensorState *s = DOOR_SENSOR(dev);
++	door_sensor_set(s, s->start_detached ? DOOR_RAW_DETACHED : DOOR_RAW_CLOSED);
++}
++
++static void door_sensor_init(Object *obj)
++{
++	DoorSensorState *s = DOOR_SENSOR(obj);
++	qdev_init_gpio_out(DEVICE(obj), &s->irq, 1);
++
++	script_handle pScript = script_instance_new(P404_SCRIPTABLE(obj), TYPE_DOOR_SENSOR);
++
++	script_register_action(pScript, "Close", "Reports the door as closed", ACT_CLOSE);
++	script_register_action(pScript, "Open", "Reports the door as open", ACT_OPEN);
++	script_register_action(pScript, "Detach", "Reports the door sensor as missing", ACT_DETACH);
++
++	scripthost_register_scriptable(pScript);
++}
++
++static const VMStateDescription vmstate_door_sensor = {
++	.name = TYPE_DOOR_SENSOR,
++	.version_id = 1,
++	.minimum_version_id = 1,
++	.fields = (VMStateField []) {
++		VMSTATE_UINT32(raw_value, DoorSensorState),
++		VMSTATE_END_OF_LIST(),
++	}
++};
++
++static const Property door_sensor_properties[] = {
++	DEFINE_PROP_BOOL("start-detached", DoorSensorState, start_detached, false),
++};
++
++static void door_sensor_class_init(ObjectClass *oc, const void *data)
++{
++	DeviceClass *dc = DEVICE_CLASS(oc);
++	device_class_set_legacy_reset(dc, door_sensor_reset);
++	dc->realize = door_sensor_realize;
++	dc->vmsd = &vmstate_door_sensor;
++
++	device_class_set_props(dc, door_sensor_properties);
++	P404ScriptIFClass *sc = P404_SCRIPTABLE_CLASS(oc);
++	sc->ScriptHandler = door_sensor_process_action;
++}
+diff --git a/hw/arm/prusa/parts/meson.build b/hw/arm/prusa/parts/meson.build
+index 3533f517ed..c8c4d68e74 100644
+--- a/hw/arm/prusa/parts/meson.build
++++ b/hw/arm/prusa/parts/meson.build
+@@ -7,10 +7,12 @@ arm_ss.add(when: 'CONFIG_BUDDYBOARD', if_true: files(
+         'corexy_helper.c',
+         'current_sum.c',
+         'demux.c',
++        'door_sensor.c',
+         'dwarf_buttons.c',
+         'encoder_input.c',
+         'fan.c',
+         'FUSB302B.c',
++        'tca6408a.c',
+         'gl_dashboard.c',
+         'gt911.c',
+         '2d-dashboard.c',
+diff --git a/hw/arm/prusa/parts/tca6408a.c b/hw/arm/prusa/parts/tca6408a.c
+new file mode 100644
+index 0000000000..6ac43aafa6
+--- /dev/null
++++ b/hw/arm/prusa/parts/tca6408a.c
+@@ -0,0 +1,132 @@
++/*
++	tca6408a.c - TCA6408A I2C GPIO expander stub for Mini404
++
++    Written for Mini404 in 2026 in the style of FUSB302B.c by VintagePC.
++
++ 	This file is part of Mini404.
++	Mini404 is free software: you can redistribute it and/or modify
++	it under the terms of the GNU General Public License as published by
++	the Free Software Foundation, either version 3 of the License, or
++	(at your option) any later version.
++	Mini404 is distributed in the hope that it will be useful,
++	but WITHOUT ANY WARRANTY; without even the implied warranty of
++	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++	GNU General Public License for more details.
++	You should have received a copy of the GNU General Public License
++	along with Mini404.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++
++#include "qemu/osdep.h"
++#include "qapi/error.h"
++#include "qemu/module.h"
++#include "hw/i2c/i2c.h"
++#include "hw/core/qdev-properties.h"
++#include "qom/object.h"
++
++
++#define TYPE_TCA6408A "tca6408a"
++
++// Register file: 0 input, 1 output, 2 polarity inversion, 3 configuration.
++#define TCA6408A_REG_INPUT 0U
++#define TCA6408A_REG_OUTPUT 1U
++#define TCA6408A_REG_POLARITY 2U
++#define TCA6408A_REG_CONFIG 3U
++#define TCA6408A_NUM_REGS 4U
++
++typedef struct TCA6408AState {
++    I2CSlave parent_obj;
++
++	uint8_t regs[TCA6408A_NUM_REGS];
++	uint8_t ptr;
++	bool have_ptr;
++
++} TCA6408AState;
++
++DECLARE_INSTANCE_CHECKER(TCA6408AState, TCA6408A,
++                         TYPE_TCA6408A)
++
++static
++int tca6408a_event(I2CSlave *ss, enum i2c_event event)
++{
++    TCA6408AState *s = TCA6408A(ss);
++	if (event == I2C_START_SEND)
++	{
++		s->have_ptr = false;
++	}
++	return 0;
++}
++
++static
++uint8_t tca6408a_recv(I2CSlave *ss)
++{
++    TCA6408AState *s = TCA6408A(ss);
++	uint8_t reg = s->ptr % TCA6408A_NUM_REGS;
++	uint8_t ret = s->regs[reg];
++	if (reg == TCA6408A_REG_INPUT)
++	{
++		// A pin configured as output reads back what was driven; an input
++		// floats high, as it would with the datasheet's pull-ups.
++		ret = (s->regs[TCA6408A_REG_OUTPUT] & ~s->regs[TCA6408A_REG_CONFIG]) | s->regs[TCA6408A_REG_CONFIG];
++	}
++    return ret;
++}
++
++static
++int tca6408a_send(I2CSlave *ss, uint8_t data)
++{
++    TCA6408AState *s = TCA6408A(ss);
++	if (!s->have_ptr)
++	{
++		s->ptr = data % TCA6408A_NUM_REGS;
++		s->have_ptr = true;
++	}
++	else if (s->ptr != TCA6408A_REG_INPUT) // the input register is read-only
++	{
++		s->regs[s->ptr] = data;
++	}
++    return 0;
++}
++
++static
++void tca6408a_reset(DeviceState *state)
++{
++    TCA6408AState *s = TCA6408A(I2C_SLAVE(state));
++	// Power-on defaults from the datasheet: outputs high, no polarity
++	// inversion, every pin an input.
++	s->regs[TCA6408A_REG_INPUT] = 0xFFU;
++	s->regs[TCA6408A_REG_OUTPUT] = 0xFFU;
++	s->regs[TCA6408A_REG_POLARITY] = 0U;
++	s->regs[TCA6408A_REG_CONFIG] = 0xFFU;
++	s->ptr = 0;
++	s->have_ptr = false;
++}
++
++static
++void tca6408a_class_init(ObjectClass *klass, const void *data)
++{
++    DeviceClass *dc = DEVICE_CLASS(klass);
++    I2CSlaveClass *k = I2C_SLAVE_CLASS(klass);
++
++    k->event = &tca6408a_event;
++    k->recv = &tca6408a_recv;
++    k->send = &tca6408a_send;
++
++    device_class_set_legacy_reset(dc, tca6408a_reset);
++}
++
++static
++const TypeInfo tca6408a_type = {
++    .name = TYPE_TCA6408A,
++    .parent = TYPE_I2C_SLAVE,
++    .instance_size = sizeof(TCA6408AState),
++    .class_size = sizeof(I2CSlaveClass),
++    .class_init = tca6408a_class_init,
++};
++
++static void tca6408a_register(void)
++{
++    type_register_static(&tca6408a_type);
++}
++
++type_init(tca6408a_register)
+diff --git a/hw/arm/prusa/prusa-mk4.c b/hw/arm/prusa/prusa-mk4.c
+index e4fa85b09b..a65e411552 100644
+--- a/hw/arm/prusa/prusa-mk4.c
++++ b/hw/arm/prusa/prusa-mk4.c
+@@ -123,6 +123,9 @@ typedef struct mk4_cfg_t {
+     bool f_inverted;
+     bool has_at21;
+ 	bool has_loadcell;
++	// CORE One reads a door sensor on the ADC3 channel the MK4 leaves to the
++	// case thermistor, and refuses to run if it reads as detached.
++	bool has_door_sensor;
+ 	temp_cfg_t temps;
+     uint8_t motor;
+ 	uint8_t e_t_mass;
+@@ -212,6 +215,55 @@ static const mk4_cfg_t mk4_027c_cfg = {
+ 	.xflash_fn = XFLASH_FN(Mk4)
+ };
+ 
++// CORE One on the same 0.2.7c xBuddy board. The one difference the firmware
++// insists on is ADC3 channel 15: the MK4 wires the case thermistor there and
++// needs it to read as a detached door sensor, CORE One needs a real one.
++static const mk4_cfg_t coreone_cfg = {
++    .lcd_spi = STM32_P_SPI6,
++    .lcd_cs = STM_PIN(GPIOD,11),
++    .lcd_cs_invert = false,
++    .lcd_cd = STM_PIN(GPIOD,15),
++    .w25_spi = STM32_P_SPI5,
++    .w25_cs = STM_PIN(GPIOF,2),
++    .at24_i2c = STM32_P_I2C2,
++    .hx717_data = STM_PIN(GPIOE,7),
++    .hx717_sck = STM_PIN(GPIOG,1),
++    .enc_a = STM_PIN(GPIOD,13),
++    .enc_b = STM_PIN(GPIOD,12),
++    .enc_btn = STM_PIN(GPIOG,3),
++    .z_min = STM_PIN(GPIOB, 8),
++    .f_rpms = { 6600, 7500 },
++    .f_tach = {STM_PIN(GPIOE,10), STM_PIN(GPIOE,10)},
++    .f_inverted = true,
++    .has_at21 = true,
++	.has_loadcell = true,
++	.has_door_sensor = true,
++	.temps =
++	{
++		.adc = { [T_NOZ] = STM32_P_ADC1, [T_BED] = STM32_P_ADC1, [T_BRK] = STM32_P_ADC1, [T_BRD] = STM32_P_ADC3, [T_CASE] = STM32_P_UNDEFINED },
++		.channel = { [T_NOZ] = 10, [T_BED] = 4, [T_BRK] = 6, [T_BRD] = 8 },
++		.ambient = {18, 20, 21, 25, 19},
++		.table = { [T_NOZ] = 2005, [T_BED] = 2004, [T_BRK] = 5, [T_BRD] = 2000 }
++	},
++
++	.e_t_mass = 35,
++    .motor = TMC2130,
++    .m_label = {'X','Y','Z','E'},
++    .m_step = { STM_PIN(GPIOD,7), STM_PIN(GPIOD,5), STM_PIN(GPIOD,3), STM_PIN(GPIOD,1)},
++    .m_dir = { STM_PIN(GPIOD,6), STM_PIN(GPIOD,4), STM_PIN(GPIOD,2), STM_PIN(GPIOD,0)},
++    .m_en = { STM_PIN(GPIOB,9), STM_PIN(GPIOB,9), STM_PIN(GPIOB,8), STM_PIN(GPIOD,10)},
++    .m_diag = { STM_PIN(GPIOG,9), STM_PIN(GPIOE,13), STM_PIN(GPIOB,4), STM_PIN(GPIOD,14)},
++    .m_select = {STM_PIN(GPIOG,15), STM_PIN(GPIOB,5), STM_PIN(GPIOF,15), STM_PIN(GPIOF,12)},
++	.m_inverted = {1,0,1,1},
++    .m_spi = STM32_P_SPI3,
++	.is_400step = true,
++	.dm_ver = 27,
++	.boot_fn = BOOTLOADER_IMAGE(Mk4),
++	.eeprom_fn = EEPROM_FN(Mk4),
++	.eeprom_sys_fn = EEPROM_SYS_FN(Mk4),
++	.xflash_fn = XFLASH_FN(Mk4)
++};
++
+ static const mk4_cfg_t mk4_034_cfg = {
+     .lcd_spi = STM32_P_SPI6,
+     .lcd_cs = STM_PIN(GPIOD,11),
+@@ -431,6 +483,7 @@ static void mk4_init(MachineState *machine)
+ 	const mk4_cfg_t cfg = *mc->cfg;
+ 
+ 	OTP_v4 otp_data = { .version = 4, .size = sizeof(OTP_v4),
++		.bomID = 14, // Firmware >= 5.x refuses to boot a board whose BOM id it does not know (src/hw/xbuddy/hw_configuration.cpp). 14 is an early revision it accepts; 37 and newer would make it expect an I2C GPIO expander at 0x22 this machine does not model.
+ 		.datamatrix = {'4', '5', '5', '8', '-', '2', '7', '0', '0', '0', '0', '1', '9', '0', '0', '5', '2', '5', '9', '9', '9', '9', 0, 0}
+ 	};
+ 	if (cfg.dm_ver == 34)
+@@ -609,6 +662,14 @@ static void mk4_init(MachineState *machine)
+         qdev_prop_set_uint8(dev, "address", 0x23);
+         qdev_realize(dev, bus, &error_fatal);
+ 	}
++	{
++		// IO expander 2 on the xBuddy. Firmware initialises it during boot and
++		// redscreens with I2C_TX_ERROR when nothing acknowledges 0x20.
++		bus = qdev_get_child_bus(stm32_soc_get_periph(dev_soc, cfg.at24_i2c),"i2c");
++        dev = qdev_new("tca6408a");
++        qdev_prop_set_uint8(dev, "address", 0x20);
++        qdev_realize(dev, bus, &error_fatal);
++	}
+     DeviceState *motors[4];
+ #ifdef BUDDY_HAS_GL
+     DeviceState *gl_db = qdev_new("gl-dashboard");
+@@ -732,6 +793,12 @@ static void mk4_init(MachineState *machine)
+ 			bed = dev;
+ 		}
+ 		qdev_connect_gpio_out_named(dev, "temp_out_256x", 0, qdev_get_gpio_in_named(db2,"therm-temp",i));
++    }
++    if (cfg.has_door_sensor)
++    {
++        dev = qdev_new("door-sensor");
++        sysbus_realize(SYS_BUS_DEVICE(dev), &error_fatal);
++        qdev_connect_gpio_out(dev, 0, qdev_get_gpio_in_named(stm32_soc_get_periph(dev_soc, STM32_P_ADC3),"adc_data_in",15));
+     }
+      // Currents - heater, mmu, system. All on ADC3
+ 	// TBD -find out the system scaling, it's not the same as the other two.... perhaps not a CS30
+@@ -1053,6 +1120,11 @@ static const xBuddyData mk4_027c_mmu = {
+     .has_mmu = true,
+ };
+ 
++static const xBuddyData coreone = {
++	.cfg = &coreone_cfg,
++	.descr = "Prusa CORE One",
++};
++
+ static const xBuddyData mk4_034 = {
+ 	.cfg = &mk4_034_cfg,
+ 	.descr = "Prusa Mk4 0.3.4",
+@@ -1099,6 +1171,11 @@ static const TypeInfo xbuddy_machine_types[] = {
+         .parent         = TYPE_XBUDDY_MACHINE,
+ 		.class_init     = xbuddy_class_init,
+ 		.class_data		= (void*)&mk4_027c_mmu,
++    }, {
++        .name           = MACHINE_TYPE_NAME("prusa-coreone"),
++        .parent         = TYPE_XBUDDY_MACHINE,
++		.class_init     = xbuddy_class_init,
++		.class_data		= (void*)&coreone
+     }, {
+         .name           = MACHINE_TYPE_NAME("prusa-mk4-034"),
+         .parent         = TYPE_XBUDDY_MACHINE,

@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prusa Connect: developer console</title>
+<!--style-->
+</head>
+<body>
+<header>
+  <h1>developer console</h1>
+  <p id="build">reading the build...</p>
+  <p id="principal" class="pill">identity: reading...</p>
+  <p id="wire-state" class="pill">wire: connecting</p>
+  <button id="refresh" type="button">refresh</button>
+</header>
+
+<nav id="tabs">
+  <button id="tab-fleet" type="button">printers</button>
+  <button id="tab-events" type="button">events</button>
+  <button id="tab-access" type="button">users and access</button>
+  <button id="tab-config" type="button">configuration</button>
+  <button id="tab-setup" type="button">first run</button>
+</nav>
+
+<p id="link-alarm" class="alarm" hidden></p>
+
+<main>
+
+<div id="view-fleet" class="view">
+  <section id="panel-connectors">
+    <h2>connectors</h2>
+    <p class="note">Every printer dialect compiled into this binary. A dialect whose firmware has absolute
+    paths compiled in declares them, and this column says whether the origin is serving them.</p>
+    <table id="connectors"><thead><tr>
+      <th>type</th><th>qualified</th><th>direction</th><th>status</th><th>routes</th><th>baseline</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-routes">
+    <h2>routes this origin serves that are not operations</h2>
+    <table id="routes"><thead><tr><th>pattern</th><th>reason</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-resources">
+    <h2>resource instances</h2>
+    <p id="readiness-verdict" class="note">reading readiness...</p>
+    <table id="resources"><thead><tr>
+      <th>instance</th><th>state</th><th>required</th><th>serving</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-printers">
+    <h2>printers</h2>
+    <p class="note">A printer appears when it dials in and is admitted. One that departs while this page is
+    open stays on the list, marked gone. The link column is what this server made of the frames the
+    printer sent: a machine whose firmware speaks something this build cannot read stays connected,
+    reports nothing, and says so only here.</p>
+    <p id="roster-note" class="note warn" hidden></p>
+    <table id="printers"><thead><tr>
+      <th>id</th><th>model</th><th>serial</th><th>firmware</th><th>driver</th><th>session</th>
+      <th>link</th><th>caps</th><th>epoch</th><th>profile</th><th>may</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-detail">
+    <h2>selected printer</h2>
+    <p id="detail-empty" class="note">Pick a printer above.</p>
+    <p id="detail-missing" class="note warn" hidden></p>
+    <div id="detail" hidden>
+      <table id="detail-identity"><tbody></tbody></table>
+
+      <h3>issues</h3>
+      <p id="detail-issues-empty" class="note">Nothing is wrong with this printer.</p>
+      <table id="detail-issues"><thead><tr>
+        <th>issue</th><th>severity</th><th>since</th><th>detail</th>
+      </tr></thead><tbody></tbody></table>
+
+      <h3>resolved capabilities (<span id="capability-count">0</span>)</h3>
+      <ul id="capabilities" class="chips"></ul>
+
+      <h3>last telemetry</h3>
+      <p class="note">Value is what the printer last reported. Seen is when this page saw the frame carrying
+      it, so a path with no time has not been reported since the page was opened.</p>
+      <table id="telemetry"><thead><tr><th>path</th><th>value</th><th>seen</th></tr></thead><tbody></tbody></table>
+
+      <h3>commands</h3>
+      <p id="commands-dropped" class="note"></p>
+      <table id="commands"><thead><tr>
+        <th>at</th><th>verb</th><th>args</th><th>elapsed</th><th>outcome</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section id="panel-command">
+    <h2>send a command</h2>
+    <p class="note">The verbs are the selected printer's own capability set, and the fields under each are
+    the arguments the capability vocabulary declares for it. A verb the printer does not carry is not on
+    the list, so a refusal here is the printer's answer and not a typo.</p>
+    <p id="command-empty" class="note warn">Pick a printer on the list above first.</p>
+    <div id="command-form" hidden>
+      <label for="command-verb">verb</label>
+      <select id="command-verb"></select>
+      <div id="command-args" class="fields"></div>
+      <button id="command-send" type="button">send</button>
+      <p id="command-outcome" class="note"></p>
+    </div>
+
+    <h3>raw gcode</h3>
+    <p class="note">One command a line. Force runs each step ahead of the print queue, which is what a
+    bench wants and a print job does not.</p>
+    <textarea id="gcode-body" rows="4" spellcheck="false"></textarea>
+    <label><input type="checkbox" id="gcode-force"> force</label>
+    <button id="gcode-send" type="button">run gcode</button>
+    <p id="gcode-outcome" class="note"></p>
+
+    <h3>saved sequences</h3>
+    <select id="gcode-preset"></select>
+    <button id="preset-run" type="button">run preset</button>
+    <p id="preset-run-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-devicefiles">
+    <h2>printer storage</h2>
+    <p class="note">What the selected printer reports it can read. It is a listing and nothing else: this
+    console neither uploads nor deletes.</p>
+    <table id="device-storages"><thead><tr>
+      <th>storage</th><th>name</th><th>available</th><th>read only</th><th>free</th>
+    </tr></thead><tbody></tbody></table>
+    <label for="device-path">path</label>
+    <input id="device-path" type="text" spellcheck="false" value="/">
+    <button id="device-list" type="button">list</button>
+    <p id="device-files-outcome" class="note"></p>
+    <table id="device-files"><thead><tr>
+      <th>name</th><th>kind</th><th>size</th><th>modified</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+</div>
+
+<div id="view-events" class="view" hidden>
+  <section id="panel-wire">
+    <h2>the stream</h2>
+    <p class="note">Every frame the event hub delivered to this reader is kept here, newest first, up to the
+    bound the summary names. Frames are coalesced into windows before they leave the hub, so two updates
+    to one path inside a window arrive as one.</p>
+    <label for="events-origins">origins the server narrows to, comma separated, as kind:id</label>
+    <input id="events-origins" type="text" spellcheck="false">
+    <label for="events-interval">coalescing window in milliseconds, 100 to 10000, empty for the default</label>
+    <input id="events-interval" type="text" spellcheck="false">
+    <button id="events-reconnect" type="button">reopen the stream</button>
+    <button id="events-pause" type="button">pause</button>
+    <button id="events-clear" type="button">clear the store</button>
+    <p id="events-continuity" class="note warn" hidden></p>
+  </section>
+
+  <section id="panel-events-search">
+    <h2>search the store</h2>
+    <p class="note">Every filter is applied together. Type and origin match on any part of the value, so
+    printer matches every printer origin and telemetry every telemetry type.</p>
+    <label for="events-type">type</label>
+    <select id="events-type"></select>
+    <label for="events-origin">origin</label>
+    <select id="events-origin"></select>
+    <label for="events-text">anything in the payload</label>
+    <input id="events-text" type="text" spellcheck="false">
+    <label for="events-from">from, as a time of day such as 14:30:00</label>
+    <input id="events-from" type="text" spellcheck="false">
+    <label for="events-to">to</label>
+    <input id="events-to" type="text" spellcheck="false">
+    <button id="events-apply" type="button">apply</button>
+    <button id="events-reset" type="button">reset</button>
+    <p id="events-summary" class="note"></p>
+  </section>
+
+  <section id="panel-events-counts">
+    <h2>what has arrived</h2>
+    <p class="note">Every type in the store with its share. Selecting one narrows the search above to it.</p>
+    <table id="events-counts"><thead><tr>
+      <th>type</th><th>held</th><th>first</th><th>last</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-events-rows">
+    <h2>matching events</h2>
+    <table id="events-rows"><thead><tr>
+      <th>at</th><th>type</th><th>origin</th><th>data</th>
+    </tr></thead><tbody></tbody></table>
+    <h3>selected envelope</h3>
+    <pre id="events-detail">Pick a row.</pre>
+  </section>
+</div>
+
+<div id="view-access" class="view" hidden>
+  <section id="panel-identity">
+    <h2>who this browser is</h2>
+    <p id="identity-principal" class="note">reading...</p>
+    <p id="identity-info" class="note">reading...</p>
+    <label for="login-username">username</label>
+    <input id="login-username" type="text" spellcheck="false">
+    <label for="login-password">password</label>
+    <input id="login-password" type="password">
+    <button id="login-submit" type="button">log in</button>
+    <button id="logout" type="button">log out</button>
+    <p id="login-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-accounts">
+    <h2>accounts</h2>
+    <p class="note">Every account this server holds a password for. A new account holds no grant, so it can
+    log in and reach nothing until one is written for it below.</p>
+    <table id="accounts"><thead><tr>
+      <th>id</th><th>username</th><th>display name</th><th>created</th><th></th>
+    </tr></thead><tbody></tbody></table>
+    <label for="account-username">username</label>
+    <input id="account-username" type="text" spellcheck="false">
+    <label for="account-display">display name</label>
+    <input id="account-display" type="text" spellcheck="false">
+    <label for="account-password">password, at least 8 bytes</label>
+    <input id="account-password" type="password">
+    <button id="account-create" type="button">create</button>
+    <button id="account-password-set" type="button">set the selected account's password</button>
+    <button id="account-delete" type="button">delete the selected account</button>
+    <p id="accounts-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-grants">
+    <h2>grants</h2>
+    <p class="note">One tuple is an object, an edge and who holds it. Reading them takes the same grant that
+    writing one takes, so an empty table can mean no grants or no permission, and the outcome line says
+    which.</p>
+    <label for="grant-object-type">object type</label>
+    <select id="grant-object-type"></select>
+    <label for="grant-object-id">object id</label>
+    <input id="grant-object-id" type="text" spellcheck="false">
+    <button id="grants-load" type="button">read</button>
+    <table id="grants"><thead><tr>
+      <th>object</th><th>relation</th><th>subject</th><th></th>
+    </tr></thead><tbody></tbody></table>
+    <label for="grant-relation">relation</label>
+    <select id="grant-relation"></select>
+    <label for="grant-subject">subject, as type:id or type:id#relation</label>
+    <input id="grant-subject" type="text" spellcheck="false">
+    <button id="grant-write" type="button">write</button>
+    <p id="grants-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-check">
+    <h2>what this caller may do</h2>
+    <p class="note">The subject is always the caller. It answers for an object this server does not have
+    exactly as for one the caller reaches nothing on, so it cannot be used to find out what exists.</p>
+    <label for="check-object-type">object type</label>
+    <select id="check-object-type"></select>
+    <label for="check-object-id">object id</label>
+    <input id="check-object-id" type="text" spellcheck="false">
+    <label for="check-action">action</label>
+    <select id="check-action"></select>
+    <button id="check-run" type="button">ask</button>
+    <p id="check-outcome" class="note"></p>
+    <ul id="check-actions" class="chips"></ul>
+  </section>
+
+  <section id="panel-authz">
+    <h2>the authorization vocabulary</h2>
+    <p id="authz-version" class="note"></p>
+    <h3>relations</h3>
+    <table id="authz-relations"><thead><tr>
+      <th>relation</th><th>role</th><th>means</th>
+    </tr></thead><tbody></tbody></table>
+    <h3>actions</h3>
+    <table id="authz-actions"><thead><tr>
+      <th>action</th><th>on</th><th>conferred by</th><th>permits</th>
+    </tr></thead><tbody></tbody></table>
+    <h3>which tuples are well formed</h3>
+    <table id="authz-shapes"><thead><tr>
+      <th>object type</th><th>relation</th><th>subject type</th><th>subject relation</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+</div>
+
+<div id="view-config" class="view" hidden>
+  <section id="panel-config-resources">
+    <h2>resource instances</h2>
+    <p class="note">Each instance says where it was declared. A file row is the operator's own configuration
+    and this console cannot write it; an overlay row is the one the API owns. The version is the
+    precondition a write carries, so a write refused with 412 is somebody else having written first.</p>
+    <table id="config-resources"><thead><tr>
+      <th>kind</th><th>name</th><th>type</th><th>state</th><th>serving</th><th>source</th><th>version</th>
+    </tr></thead><tbody></tbody></table>
+    <p id="resource-selected" class="note">Pick an instance.</p>
+    <textarea id="resource-spec" rows="14" spellcheck="false"></textarea>
+    <button id="resource-save" type="button">save</button>
+    <button id="resource-restart" type="button">restart</button>
+    <button id="resource-delete" type="button">delete</button>
+    <p id="resource-outcome" class="note"></p>
+    <h3>create one</h3>
+    <label for="resource-new-kind">kind</label>
+    <select id="resource-new-kind"></select>
+    <label for="resource-new-name">name</label>
+    <input id="resource-new-name" type="text" spellcheck="false">
+    <button id="resource-new" type="button">start a new instance from a template</button>
+  </section>
+
+  <section id="panel-endpoints">
+    <h2>the addresses this server dials</h2>
+    <p class="note">An endpoint is one machine this server reaches out to. A printer that dials in is not
+    here: it appears under printers once it has arrived, and nothing declares it.</p>
+    <table id="endpoints"><thead><tr>
+      <th>name</th><th>connector</th><th>address</th><th>enabled</th><th>options</th><th>version</th>
+    </tr></thead><tbody></tbody></table>
+    <label for="endpoint-name">name</label>
+    <input id="endpoint-name" type="text" spellcheck="false">
+    <label for="endpoint-connector">connector instance</label>
+    <select id="endpoint-connector"></select>
+    <label for="endpoint-address">address</label>
+    <input id="endpoint-address" type="text" spellcheck="false">
+    <label><input type="checkbox" id="endpoint-enabled" checked> enabled</label>
+    <label for="endpoint-options">options, as a JSON object</label>
+    <textarea id="endpoint-options" rows="4" spellcheck="false">{}</textarea>
+    <button id="endpoint-save" type="button">save</button>
+    <button id="endpoint-delete" type="button">delete</button>
+    <p id="endpoint-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-presets">
+    <h2>saved gcode sequences</h2>
+    <p class="note">A sequence is a named list of gcode commands with the models it was written for. An
+    empty model list runs on every printer.</p>
+    <table id="presets"><thead><tr>
+      <th>name</th><th>summary</th><th>models</th><th>steps</th><th>force</th><th>version</th>
+    </tr></thead><tbody></tbody></table>
+    <label for="preset-name">name</label>
+    <input id="preset-name" type="text" spellcheck="false">
+    <label for="preset-summary">summary</label>
+    <input id="preset-summary" type="text" spellcheck="false">
+    <label for="preset-models">models, comma separated, empty for every printer</label>
+    <input id="preset-models" type="text" spellcheck="false">
+    <label for="preset-steps">steps, one gcode command a line</label>
+    <textarea id="preset-steps" rows="5" spellcheck="false"></textarea>
+    <label><input type="checkbox" id="preset-force"> force</label>
+    <button id="preset-save" type="button">save</button>
+    <button id="preset-delete" type="button">delete</button>
+    <p id="preset-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-health">
+    <h2>connector health</h2>
+    <table id="connector-health"><thead><tr>
+      <th>connector</th><th>devices</th><th>connected</th><th>issues</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-namespaces">
+    <h2>module state namespaces</h2>
+    <p class="note">What each configured module has stored, and what it counts toward its byte limit.</p>
+    <table id="namespaces"><thead><tr>
+      <th>namespace</th><th>instance</th><th>keys</th><th>bytes</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-vocabularies">
+    <h2>vocabularies this build publishes</h2>
+    <table id="vocabularies"><thead><tr>
+      <th>name</th><th>version</th><th>format</th><th>decides</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+</div>
+
+<div id="view-setup" class="view" hidden>
+  <section id="panel-setup-state">
+    <h2>what this install still needs</h2>
+    <p class="note">Every row is read from the running server. A row that is not done names the step that
+    finishes it, and the steps below are those steps in order.</p>
+    <table id="setup-checklist"><thead><tr>
+      <th>step</th><th>state</th><th>what it means</th>
+    </tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="panel-setup-admin">
+    <h2>step one: the first administrator</h2>
+    <p class="note">This creates the account the server's first grant already names, which is what makes the
+    person who runs it an administrator. It is refused once any account exists.</p>
+    <p id="setup-state" class="note">reading...</p>
+    <label for="setup-username">username</label>
+    <input id="setup-username" type="text" spellcheck="false">
+    <label for="setup-display">display name</label>
+    <input id="setup-display" type="text" spellcheck="false">
+    <label for="setup-password">password, at least 8 bytes</label>
+    <input id="setup-password" type="password">
+    <button id="setup-submit" type="button">create the administrator</button>
+    <button id="setup-login" type="button">log in as them</button>
+    <p id="setup-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-setup-printer">
+    <h2>step two: the first printer</h2>
+    <p class="note">A printer this server dials is declared here. A printer that dials in instead needs
+    nothing declared: point its firmware at this address and it appears under printers.</p>
+    <label for="setup-printer-name">name</label>
+    <input id="setup-printer-name" type="text" spellcheck="false">
+    <label for="setup-printer-connector">connector instance</label>
+    <select id="setup-printer-connector"></select>
+    <label for="setup-printer-address">address</label>
+    <input id="setup-printer-address" type="text" spellcheck="false">
+    <button id="setup-printer-save" type="button">declare it</button>
+    <p id="setup-printer-outcome" class="note"></p>
+  </section>
+
+  <section id="panel-setup-storage">
+    <h2>step three: somewhere to keep files</h2>
+    <p class="note">A storage instance is what uploads land in. This declares one on the local filesystem,
+    which is what a self-hosted install starts with.</p>
+    <label for="setup-storage-name">name</label>
+    <input id="setup-storage-name" type="text" spellcheck="false" value="local">
+    <label for="setup-storage-root">directory on this server</label>
+    <input id="setup-storage-root" type="text" spellcheck="false">
+    <label><input type="checkbox" id="setup-storage-required" checked> refuse to serve until it is ready</label>
+    <button id="setup-storage-save" type="button">declare it</button>
+    <p id="setup-storage-outcome" class="note"></p>
+  </section>
+</div>
+
+</main>
+
+<footer id="calls-panel">
+  <h2>every request this page made <button id="calls-clear" type="button">clear</button></h2>
+  <p class="note">The console reads nothing this server does not publish, so this is the whole of what it
+  did. A row here is a request that could have been a curl, and the detail is the server's own refusal.</p>
+  <table id="calls"><thead><tr>
+    <th>at</th><th>method</th><th>path</th><th>status</th><th>ms</th><th>detail</th>
+  </tr></thead><tbody></tbody></table>
+</footer>
+<!--script-->
+</body>
+</html>

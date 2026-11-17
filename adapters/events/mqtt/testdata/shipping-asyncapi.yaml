@@ -1,0 +1,492 @@
+# The AsyncAPI document the shipping server generated from its own topic
+# registry, copied here below this header, with one change. The printer-wide
+# material and nozzle channels and the data/slot/ channels are replaced by the
+# data/tools/{toolId}/ channels of the tool tree (ADR-20261025-frz). Every other
+# channel is as the shipping server published it.
+#
+# It lives in this adapter's testdata rather than being read out of legacy/,
+# because a gate that reads into the quarantine dies with the quarantine
+# (ADR-20260824-dym, ADR-0013 rule 8). The sibling .tsv captures were taken the same
+# way and for the same reason.
+#
+# Source: legacy/transport/mqtt/asyncapi.yaml
+asyncapi: 2.4.0
+info:
+  title: Prusa Connect MQTT API
+  version: 1.0.0
+  description: 'MQTT topics published by the Prusa Connect server. Clients subscribe
+    via WebSocket. Source of truth: legacy/transport/mqtt/topics.go'
+servers:
+  broker:
+    url: ws://localhost:1884/mqtt
+    description: Embedded MQTT broker (WebSocket transport). Port is configurable.
+    protocol: mqtt
+channels:
+  v1/devices/printers/{printerId}/data/axis-x:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: X-axis position (mm, 2 decimal places).
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: X-axis position (mm, 2 decimal places).
+          type: number
+        description: X-axis position (mm, 2 decimal places).
+    x-prusa-connect-field-mapping: axis_x
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: axisX
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/axis-y:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Y-axis position (mm, 2 decimal places).
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Y-axis position (mm, 2 decimal places).
+          type: number
+        description: Y-axis position (mm, 2 decimal places).
+    x-prusa-connect-field-mapping: axis_y
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: axisY
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/axis-z:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Z-axis position (mm, 2 decimal places).
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Z-axis position (mm, 2 decimal places).
+          type: number
+        description: Z-axis position (mm, 2 decimal places).
+    x-prusa-connect-field-mapping: axis_z
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: axisZ
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/blocking-reasons:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: 'Unix timestamp published when a printer''s blocking reasons change.
+        A nudge to re-query them; the payload carries no reasons. Not retained: a
+        stored nudge would make every new subscriber refetch for a change it already
+        sees.'
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: 'Unix timestamp published when a printer''s blocking reasons
+            change. A nudge to re-query them; the payload carries no reasons. Not
+            retained: a stored nudge would make every new subscriber refetch for a
+            change it already sees.'
+          type: integer
+        description: 'Unix timestamp published when a printer''s blocking reasons
+          change. A nudge to re-query them; the payload carries no reasons. Not retained:
+          a stored nudge would make every new subscriber refetch for a change it already
+          sees.'
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: blockingReasons
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/current-job:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Current job ID. Publishes 0 when no job is active.
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Current job ID. Publishes 0 when no job is active.
+          type: integer
+        description: Current job ID. Publishes 0 when no job is active.
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: currentJob
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/job-progress:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Current print job progress (0–100 %).
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Current print job progress (0–100 %).
+          type: integer
+        description: Current print job progress (0–100 %).
+    x-prusa-connect-field-mapping: job_progress
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: jobProgress
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/online:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Per-printer online status. '1' = online, '0' = offline.
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Per-printer online status. '1' = online, '0' = offline.
+          enum:
+          - "0"
+          - "1"
+          type: string
+        description: Per-printer online status. '1' = online, '0' = offline.
+    x-prusa-connect-field-mapping: online
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: online
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/speed:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Print speed override percentage (e.g. 100).
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Print speed override percentage (e.g. 100).
+          type: integer
+        description: Print speed override percentage (e.g. 100).
+    x-prusa-connect-field-mapping: speed
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: speed
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/state:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Printer state machine value (e.g. IDLE, PRINTING, PAUSED, STOPPED).
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: Printer state machine value (e.g. IDLE, PRINTING, PAUSED, STOPPED).
+          type: string
+        description: Printer state machine value (e.g. IDLE, PRINTING, PAUSED, STOPPED).
+    x-prusa-connect-field-mapping: state
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: state
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/temp/chamber/current:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Chamber temperature, current value (°C, rounded to integer).
+      tags:
+      - name: printer
+      - name: temperature
+      message:
+        payload:
+          description: Chamber temperature, current value (°C, rounded to integer).
+          type: integer
+        description: Chamber temperature, current value (°C, rounded to integer).
+    x-prusa-connect-field-mapping: chamber_temp
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: tempChamberCurrent
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/temp/heatbed/current:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Heatbed temperature, current value (°C, rounded to integer).
+      tags:
+      - name: printer
+      - name: temperature
+      message:
+        payload:
+          description: Heatbed temperature, current value (°C, rounded to integer).
+          type: integer
+        description: Heatbed temperature, current value (°C, rounded to integer).
+    x-prusa-connect-field-mapping: temp_bed
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: tempBedCurrent
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/temp/heatbed/target:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Heatbed temperature, target value (°C, rounded to integer).
+      tags:
+      - name: printer
+      - name: temperature
+      message:
+        payload:
+          description: Heatbed temperature, target value (°C, rounded to integer).
+          type: integer
+        description: Heatbed temperature, target value (°C, rounded to integer).
+    x-prusa-connect-field-mapping: target_bed
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: tempBedTarget
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/tools/{toolId}/active:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+      toolId:
+        description: Tool id in the tool tree. "0" is the first head and "0.2" is slot 2 of the feeder on head 0.
+        schema:
+          type: string
+    subscribe:
+      summary: Whether the tool is active, as the tool tree marks it. '1' = active, '0' = not active. An empty payload clears it while not known, such as for a disabled tool.
+      tags:
+      - name: printer
+      - name: tool
+      message:
+        payload:
+          description: Whether the tool is active, as the tool tree marks it. '1' = active, '0' = not active. An empty payload clears it while not known, such as for a disabled tool.
+          enum:
+          - "0"
+          - "1"
+          type: string
+        description: Whether the tool is active, as the tool tree marks it. '1' = active, '0' = not active. An empty payload clears it while not known, such as for a disabled tool.
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: toolActive
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/tools/{toolId}/material:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+      toolId:
+        description: Tool id in the tool tree. "0" is the first head and "0.2" is slot 2 of the feeder on head 0.
+        schema:
+          type: string
+    subscribe:
+      summary: Short name of the material loaded in the tool (e.g. PLA, PETG). Empty while nothing is loaded or while not known.
+      tags:
+      - name: printer
+      - name: tool
+      message:
+        payload:
+          description: Short name of the material loaded in the tool (e.g. PLA, PETG). Empty while nothing is loaded or while not known.
+          type: string
+        description: Short name of the material loaded in the tool (e.g. PLA, PETG). Empty while nothing is loaded or while not known.
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: toolMaterial
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/tools/{toolId}/temp/nozzle/current:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+      toolId:
+        description: Tool id in the tool tree. "0" is the first head and "0.2" is slot 2 of the feeder on head 0.
+        schema:
+          type: string
+    subscribe:
+      summary: Nozzle temperature of a head, current value (°C, rounded to integer). Empty while not known.
+      tags:
+      - name: printer
+      - name: tool
+      - name: temperature
+      message:
+        payload:
+          description: Nozzle temperature of a head, current value (°C, rounded to integer). Empty while not known.
+          type: integer
+        description: Nozzle temperature of a head, current value (°C, rounded to integer). Empty while not known.
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: toolTempNozzleCurrent
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/data/tools/{toolId}/temp/nozzle/target:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+      toolId:
+        description: Tool id in the tool tree. "0" is the first head and "0.2" is slot 2 of the feeder on head 0.
+        schema:
+          type: string
+    subscribe:
+      summary: Nozzle temperature of a head, target value (°C, rounded to integer). 0 while the heater is off, empty while not known.
+      tags:
+      - name: printer
+      - name: tool
+      - name: temperature
+      message:
+        payload:
+          description: Nozzle temperature of a head, target value (°C, rounded to integer). 0 while the heater is off, empty while not known.
+          type: integer
+        description: Nozzle temperature of a head, target value (°C, rounded to integer). 0 while the heater is off, empty while not known.
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: toolTempNozzleTarget
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/dialog:
+    parameters:
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: 'Printer dialog (attention/error prompt). JSON object: {id, code, text,
+        title, buttons, key}; nulls when cleared.'
+      tags:
+      - name: printer
+      message:
+        payload:
+          description: 'Printer dialog (attention/error prompt). JSON object: {id,
+            code, text, title, buttons, key}; nulls when cleared.'
+          type: string
+        description: 'Printer dialog (attention/error prompt). JSON object: {id, code,
+          text, title, buttons, key}; nulls when cleared.'
+    x-prusa-connect-qos: 2
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: dialog
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/jobs/{jobId}/data/progress:
+    parameters:
+      jobId:
+        description: Job identifier.
+        schema:
+          type: string
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Per-job progress for the active job (0–100 %).
+      tags:
+      - name: printer
+      - name: job
+      message:
+        payload:
+          description: Per-job progress for the active job (0–100 %).
+          type: integer
+        description: Per-job progress for the active job (0–100 %).
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: jobProgressById
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/jobs/{jobId}/data/state:
+    parameters:
+      jobId:
+        description: Job identifier.
+        schema:
+          type: string
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Per-job state compatible with Prusa Connect MQTT job topics.
+      tags:
+      - name: printer
+      - name: job
+      message:
+        payload:
+          description: Per-job state compatible with Prusa Connect MQTT job topics.
+          type: string
+        description: Per-job state compatible with Prusa Connect MQTT job topics.
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: jobState
+    x-prusa-connect-wildcard: false
+  v1/devices/printers/{printerId}/jobs/{jobId}/data/time-remaining:
+    parameters:
+      jobId:
+        description: Job identifier.
+        schema:
+          type: string
+      printerId:
+        description: Printer UUID.
+        schema:
+          type: string
+    subscribe:
+      summary: Per-job estimated time remaining (seconds).
+      tags:
+      - name: printer
+      - name: job
+      message:
+        payload:
+          description: Per-job estimated time remaining (seconds).
+          type: integer
+        description: Per-job estimated time remaining (seconds).
+    x-prusa-connect-qos: 0
+    x-prusa-connect-retain: false
+    x-prusa-connect-ts-key: jobTimeRemaining
+    x-prusa-connect-wildcard: false
+  v1/server/online:
+    subscribe:
+      summary: Server online/offline (Last Will and Testament). '1' = online, '0'
+        = offline.
+      tags:
+      - name: server
+      message:
+        payload:
+          description: Server online/offline (Last Will and Testament). '1' = online,
+            '0' = offline.
+          enum:
+          - "0"
+          - "1"
+          type: string
+        description: Server online/offline (Last Will and Testament). '1' = online,
+          '0' = offline.
+    x-prusa-connect-qos: 1
+    x-prusa-connect-retain: true
+    x-prusa-connect-ts-key: serverOnline
+    x-prusa-connect-wildcard: false

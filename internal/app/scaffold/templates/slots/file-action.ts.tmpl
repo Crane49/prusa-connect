@@ -1,0 +1,16 @@
+import { parseFileRef } from '@prusa/connect-ui/slots';
+
+import { heldHost } from './host';
+
+// The host calls this with the file's reference, `<storage>:<path>`, when a
+// person picks the menu item on a file in storage. Throw or reject to show
+// the person why it did not run; the host shows nothing on success, so report
+// the result yourself.
+// eslint-disable-next-line @typescript-eslint/require-await
+export default async (fileRef: string): Promise<void> => {
+  const host = heldHost();
+  const file = parseFileRef(fileRef);
+  if (file === undefined) {
+    throw new Error(host.t('{{$.Name}}.fileAction.absent'));
+  }
+};

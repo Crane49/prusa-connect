@@ -1,0 +1,79 @@
+# The human account and token wire surface of the retired server, the old backlog
+# gap 1. Earlier research records hashing, lifetimes and the cross-transport
+# rule, and not one request or response shape.
+#
+# Columns: case, caller, method, path, request keys, status, set-cookie,
+# response body key paths. A key path collapses an array to []. A cell of -
+# means the column does not apply, and a body of - is an empty body.
+#
+# Read from a run, not from the source. The binary was built with
+# `-tags "full mqtt mqttbroker observability sqlite"` and CGO_ENABLED=1 and
+# started as `prusa-connect serve` against the shipped config/config.yaml
+# on 2026-08-29, with auth.mode local and auth.store.type sqlite. Each row is
+# one HTTP call and its answer. The walk starts on an empty ./data/auth.db.
+#
+# What the walk found that no document here said:
+#
+#   POST /api/admin/users with roles ["operator"] answers 201 and roles
+#   ["viewer"]. An unknown role is taken as the lowest one rather than refused.
+#
+#   PUT /api/admin/users/{id}/roles with an empty list answers 200. An account
+#   is allowed to hold no role at all.
+#
+#   DELETE on the last administrator answers 400, so an empty store is not
+#   reachable through this surface.
+#
+#   The mqtt-kind token from GET /api/account/mqtt-token is refused on HTTP with
+#   401, and an api-kind token from POST /api/tokens is accepted. That is
+#   earlier research's cross-transport rule, observed rather than argued.
+#
+#   The session cookie is pcl_session, Path, HttpOnly, SameSite and Max-Age
+#   2592000, which is the auth.token_ttl of 720h. Logout sends the same cookie
+#   with Max-Age 0.
+#
+#   GET /api/account/mqtt-token answers expires_in 43200, which is 12 hours and
+#   is not the session lifetime.
+first-run-reports-setup-is-needed	anonymous	GET	/auth/info	-	200	-	authenticated,capabilities.credentials,capabilities.redirect,enabled,mode,needs_setup
+account-needs-a-caller	anonymous	GET	/api/account	-	401	-	error
+token-list-needs-a-caller	anonymous	GET	/api/tokens	-	401	-	error
+user-list-needs-a-caller	anonymous	GET	/api/admin/users	-	401	-	error
+mqtt-token-needs-a-caller	anonymous	GET	/api/account/mqtt-token	-	401	-	error
+login-refuses-an-unknown-account	anonymous	POST	/auth/login	email,password	401	-	error
+redirect-login-is-not-configured	anonymous	GET	/auth/sso/begin	-	400	-	error
+redirect-callback-is-not-configured	anonymous	GET	/auth/sso/callback	-	400	-	error
+setup-creates-the-first-admin	session	POST	/setup	display_name,email,password	200	pcl_session;Path;Max-Age=2592000;HttpOnly;SameSite	user.display_name,user.email,user.roles.[]
+setup-closes-once-an-account-exists	anonymous	POST	/setup	email,password	404	-	error
+logout-clears-the-cookie	session	POST	/auth/logout	-	200	pcl_session;Path;Max-Age=0;HttpOnly;SameSite	status
+login-refuses-a-wrong-password	anonymous	POST	/auth/login	email,password	401	-	error
+login-issues-a-session-cookie	session	POST	/auth/login	email,password	200	pcl_session;Path;Max-Age=2592000;HttpOnly;SameSite	user.display_name,user.email,user.roles.[]
+auth-info-names-the-caller	session	GET	/auth/info	-	200	-	authenticated,capabilities.credentials,capabilities.redirect,enabled,mode,needs_setup,user.display_name,user.email,user.roles.[]
+account-reads-back	session	GET	/api/account	-	200	-	display_name,email,roles.[]
+account-updates	session	PUT	/api/account	display_name,email	200	-	display_name,email,roles.[]
+account-update-refuses-a-missing-email	session	PUT	/api/account	display_name	400	-	error
+password-change-refuses-a-wrong-current	session	POST	/api/account/password	current,new	403	-	error
+password-change-refuses-a-short-new	session	POST	/api/account/password	current,new	400	-	error
+mqtt-token-is-issued-to-the-caller	session	GET	/api/account/mqtt-token	-	200	-	expires_in,token,username
+token-is-created-with-a-label-and-a-ttl	session	POST	/api/tokens	label,ttl_seconds	201	-	id,label,token
+token-is-created-from-an-empty-body	session	POST	/api/tokens	{}	201	-	id,label,token
+token-list-never-carries-the-secret	session	GET	/api/tokens	-	200	-	tokens.[].created_at,tokens.[].expires_at,tokens.[].id,tokens.[].kind,tokens.[].label
+an-api-token-authenticates-over-http	bearer	GET	/api/account	-	200	-	display_name,email,roles.[]
+an-mqtt-token-is-refused-over-http	bearer	GET	/api/account	-	401	-	error
+an-invented-token-is-refused	bearer	GET	/api/account	-	401	-	error
+token-is-revoked	session	DELETE	/api/tokens/{id}	-	200	-	status
+a-revoked-token-stops-working	bearer	GET	/api/account	-	401	-	error
+revoking-an-unknown-token	session	DELETE	/api/tokens/{unknown}	-	404	-	error
+an-unknown-role-is-taken-as-viewer	session	POST	/api/admin/users	email,password,roles	201	-	created_at,display_name,email,id,roles.[]
+an-account-is-created	session	POST	/api/admin/users	email,password,roles	201	-	created_at,display_name,email,id,roles.[]
+a-duplicate-email-is-refused	session	POST	/api/admin/users	email,password,roles	409	-	error
+the-user-list-never-carries-a-hash	session	GET	/api/admin/users	-	200	-	users.[].created_at,users.[].display_name,users.[].email,users.[].id,users.[].roles.[]
+roles-are-replaced	session	PUT	/api/admin/users/{id}/roles	roles	200	-	status
+an-empty-role-list-is-accepted	session	PUT	/api/admin/users/{id}/roles	roles	200	-	status
+an-administrator-sets-another-password	session	POST	/api/admin/users/{id}/password	password	200	-	status
+an-account-is-deleted	session	DELETE	/api/admin/users/{id}	-	200	-	status
+roles-on-an-unknown-account	session	PUT	/api/admin/users/{unknown}/roles	roles	404	-	error
+a-password-on-an-unknown-account	session	POST	/api/admin/users/{unknown}/password	password	404	-	error
+deleting-an-unknown-account	session	DELETE	/api/admin/users/{unknown}	-	404	-	error
+the-user-list-before-the-last-delete	session	GET	/api/admin/users	-	200	-	users.[].created_at,users.[].display_name,users.[].email,users.[].id,users.[].roles.[]
+the-last-administrator-cannot-be-deleted	session	DELETE	/api/admin/users/{id}	-	400	-	error
+logout-clears-the-cookie-again	session	POST	/auth/logout	-	200	pcl_session;Path;Max-Age=0;HttpOnly;SameSite	status
+the-cleared-cookie-no-longer-authenticates	session	GET	/api/account	-	401	-	error

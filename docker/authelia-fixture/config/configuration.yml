@@ -1,0 +1,67 @@
+# Authelia for the sign-in check against real providers. Read through
+# Authelia's template filter, so the env and secret calls below are resolved
+# at start. Every secret here is a throwaway that guards nothing.
+server:
+  address: 'tcp://:9091'
+  # Authelia refuses a portal address that is not https, so it serves TLS
+  # itself, on the certificate the image made when it was built.
+  tls:
+    key: '/config/tls/private.pem'
+    certificate: '/config/tls/public.crt'
+log:
+  level: 'warn'
+# The clock check asks a public time server, which a runner may not reach.
+ntp:
+  disable_startup_check: true
+identity_validation:
+  reset_password:
+    jwt_secret: 'pcl-authelia-fixture-reset-password-secret-0123456789'
+authentication_backend:
+  file:
+    path: '/config/users.yml'
+    watch: false
+access_control:
+  default_policy: 'one_factor'
+session:
+  secret: 'pcl-authelia-fixture-session-secret-0123456789'
+  cookies:
+    - domain: '127.0.0.1'
+      authelia_url: 'https://127.0.0.1:{{ env "PCL_AUTHELIA_FIXTURE_PORT" | default "58191" }}'
+storage:
+  encryption_key: 'pcl-authelia-fixture-storage-key-0123456789'
+  local:
+    path: '/tmp/authelia.sqlite3'
+notifier:
+  filesystem:
+    filename: '/tmp/notification.txt'
+identity_providers:
+  oidc:
+    hmac_secret: 'pcl-authelia-fixture-hmac-secret-0123456789'
+    jwks:
+      - key_id: 'pcl-fixture'
+        algorithm: 'RS256'
+        use: 'sig'
+        key: {{ secret "/config/jwks/private.pem" | mindent 10 "|" | msquote }}
+      # The client below signs its ID tokens with this key, so the check runs
+      # an ES256 signature.
+      - key_id: 'pcl-fixture-ec'
+        algorithm: 'ES256'
+        use: 'sig'
+        key: {{ secret "/config/jwks/ec-private.pem" | mindent 10 "|" | msquote }}
+    clients:
+      - client_id: 'prusa-connect'
+        client_name: 'Prusa Connect'
+        # pcl-authelia-fixture-secret, hashed as Authelia asks.
+        client_secret: '$pbkdf2-sha512$310000$6WbNYb2O2WumRiqDAjoZ/Q$J8je1QM5ugfwb/dhgxYlWy5O8ytqNBNtpAIV5tq0Qxf526s070/tJtpIco9JjVKiXPzFQpLluhyXWsI56h01zg'
+        public: false
+        authorization_policy: 'one_factor'
+        require_pkce: true
+        pkce_challenge_method: 'S256'
+        consent_mode: 'implicit'
+        redirect_uris:
+          - 'http://127.0.0.1:18097/api/v1/auth/callback'
+        scopes: ['openid', 'profile', 'email']
+        response_types: ['code']
+        grant_types: ['authorization_code']
+        token_endpoint_auth_method: 'client_secret_basic'
+        id_token_signed_response_alg: 'ES256'
