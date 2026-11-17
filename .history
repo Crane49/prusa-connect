@@ -1,1 +1,1 @@
-3628 1794876915 +0100 fix(deploy): let the systemd unit list the network addresses
+3629 1794876980 +0100 fix(compose): report a config typo without the restore step's name
