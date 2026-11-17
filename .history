@@ -1,1 +1,1 @@
-3629 1794876980 +0100 fix(compose): report a config typo without the restore step's name
+3630 1794878092 +0100 fix(setup): keep the wizard on a published port after the restart
