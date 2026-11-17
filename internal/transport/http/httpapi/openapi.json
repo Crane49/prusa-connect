@@ -10128,6 +10128,10 @@
       "ResourceSection": {
         "additionalProperties": false,
         "properties": {
+          "cross_origin_isolated": {
+            "description": "On a printer tab, true when the module's manifest asks for the tab's page to be cross-origin isolated. The server then sends that page with both isolation headers unless the tab is hidden, and a client opens and leaves the tab with a full page load. Absent otherwise.",
+            "type": "boolean"
+          },
           "devices": {
             "$ref": "#/components/schemas/ResourceDeviceSelector",
             "description": "On a device slot, the devices the entry is drawn for. Absent for every device."

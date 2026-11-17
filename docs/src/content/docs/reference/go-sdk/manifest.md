@@ -1278,6 +1278,10 @@ type Section struct {
     // Devices limits an entry of a device slot to the devices it selects. The
     // zero value is every device. Other slots take none.
     Devices DeviceSelector
+    // CrossOriginIsolated asks for the entry's page to be sent cross-origin
+    // isolated, so a device page it frames can use SharedArrayBuffer. Only a
+    // slot that allows it takes it.
+    CrossOriginIsolated bool
 }
 ```
 
@@ -1462,6 +1466,9 @@ type Slot struct {
     // Primary is whether an entry of an action slot may ask to be a button
     // on its subject's own page instead of an item in its menu.
     Primary bool
+    // CrossOriginIsolated is whether an entry may ask for a cross-origin
+    // isolated page.
+    CrossOriginIsolated bool
 }
 ```
 

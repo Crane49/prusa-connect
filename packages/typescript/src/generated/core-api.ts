@@ -7456,6 +7456,8 @@ export interface components {
             summary: string;
         };
         ResourceSection: {
+            /** @description On a printer tab, true when the module's manifest asks for the tab's page to be cross-origin isolated. The server then sends that page with both isolation headers unless the tab is hidden, and a client opens and leaves the tab with a full page load. Absent otherwise. */
+            cross_origin_isolated?: boolean;
             /** @description On a device slot, the devices the entry is drawn for. Absent for every device. */
             devices?: components["schemas"]["ResourceDeviceSelector"];
             /** @description For a slot handed a file, the file types the entry is drawn for: a lowercase extension with its dot, such as .3mf. Absent for every file. */

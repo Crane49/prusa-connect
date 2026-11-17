@@ -281,6 +281,9 @@ type Slot struct {
 	// Primary is whether an entry of an action slot may ask to be a button
 	// on its subject's own page instead of an item in its menu.
 	Primary bool
+	// CrossOriginIsolated is whether an entry may ask for a cross-origin
+	// isolated page.
+	CrossOriginIsolated bool
 }
 
 //nolint:gochecknoglobals // a closed table, read and never written.
@@ -310,9 +313,14 @@ var slots = []Slot{
 		Offer:   "a section at the foot of each printer's Status tab",
 	},
 	{
-		Name: SlotDeviceTab, Screen: ScreenPrinterDetail, Area: AreaTabs, Form: FormSection, Subject: SubjectDevice,
-		Where: "A tab of the module's own on a printer's page, after the core's tabs.",
-		Offer: "a tab of its own on each printer's page",
+		Name:                SlotDeviceTab,
+		Screen:              ScreenPrinterDetail,
+		Area:                AreaTabs,
+		Form:                FormSection,
+		Subject:             SubjectDevice,
+		Where:               "A tab of the module's own on a printer's page, after the core's tabs.",
+		Offer:               "a tab of its own on each printer's page",
+		CrossOriginIsolated: true,
 	},
 	{
 		Name:    SlotDashboardCard,

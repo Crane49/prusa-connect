@@ -80,6 +80,7 @@ device_section:
 device_tab:
   - id: my-device-tab
     title: My device tab
+    cross_origin_isolated: false
 ```
 
 `device-action`
