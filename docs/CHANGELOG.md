@@ -13,6 +13,145 @@ How an entry is written and what earns one: `.agents/rules/changelog-discipline.
 News that no release has shipped yet waits in [`docs/changes/`](changes/README.md), one
 file per change, and the release files it here under its own version.
 
+## 0.1.0-beta.1 - 2026-11-17
+
+### Security
+- Go 1.26.11 now builds the server and every container image, and it fixes GO-2026-6859 in `net/http`. Building from source needs Go 1.26.11
+
+### Changed
+- An install that cannot grant a permission says the module may still ask whether a person holds it.
+- Printers nearby lists a machine that runs a Prusa Connect server once, as that server. A printer that runs a server beside its PrusaLink is no longer offered under Add printer.
+- The camera beside a running print on a printer's Now tab shows its last picture and plays its live view only when you press play. It says it is live only while it plays, and the larger camera window is gone.
+- The camera card of a dashboard and the Cameras view of the printer list show the whole picture and play the live view, as a printer's Cameras tab does. The camera card's Picture setting is gone.
+- What a camera serves, and the addresses of a generic or MJPEG camera, now show beside its picture in the Cameras tab. The Edit button is gone.
+- The server log says at INFO when a printer's connection ends, and why.
+- The primary button, the selected item and checked controls show white text on the brand orange, as in the Prusa Design System, and darken on hover. The PRO skin takes the design system's Connect colours in the same way.
+- The fleet severity filter has no Needs hands tier: a paused printer is under Needs attention
+- Checkboxes, radios, switches and sliders paint the skin's on colour. Segmented controls and tabs paint its selected colour, and progress bars its progress colour. The Slicer and PRO skins show their own colours there.
+- The Official badge on Extensions is outlined, so the orange fill on a row is the Install button alone.
+- The systemd unit lets the server open a port below 1024, for the time server on UDP port 123. The modules the server starts do not get that right.
+- GET /api/v1/devices/{device_id}/files no longer waits for the printer. It used to wait on a folder it held nothing for, and on `refresh=true`, and failed with 409 or 504. It now answers 200 within about a second with the rows this server holds. While the printer reads the folder, the answer carries `reading: true` and `reading_since`, and `items` is empty if nothing was held. A read that failed answers 200 with `fault`, such as `core.printer/LISTING_UNFINISHED` for a read the printer did not finish. `refresh=true` starts a new read and answers the held rows at once. A client that checks only the status code reads an empty folder as an empty drive. Check `reading` and `fault`, wait for `com.prusa.connect.device.files.changed` for that folder, then ask again without `refresh`.
+- GET /api/v1/devices/{device_id}/storages?refresh=true waits at most about a second for the printer. It used to wait for a busy printer and fail with 504. It now answers 200 with what the printer last said. A later answer that differs is published as `com.prusa.connect.device.storages.changed`, so a client that needs the current drives listens for that event.
+- The container image carries the slicing extension in `/opt/modules/server-slicing`, with the module path `github.com/prusa3d/server-slicing`. It was `/opt/modules/slicer` with `github.com/prusa3d/slicer`, and a `core.modules_local` entry that names that pair finds no folder. Replace the entry with the new pair and switch the extension on again. It is a new module with a new data folder, so install the PrusaSlicer versions again.
+- [sdk] The `type` of every error response now points to `https://beta.prusa3d.com/connect-local/docs/error-codes/` instead of `https://prusa-connect.org/docs/error-codes/`, a domain Prusa does not own. The anchor after `#` is unchanged. A client that compares the whole `type` updates the base, or compares `code`, which is the stable identifier.
+- Cameras are devices kept in the server's database, and no configuration file declares them. A camera used to be a `camera` resource: a `resources.camera` block of `config.yaml`, or an entry the interface wrote into `config.d/resources.json` through `/api/v1/resources/camera/<name>`, which now answers 422. Add, change and remove one with `PUT` and `DELETE /api/v1/cameras/<name>`, and read the settings with `GET /api/v1/camera-settings`; each camera has its own version to quote. The first start of this version moves the cameras of both files into the database with their grants and logs each one. A `resources.camera` block left in `config.yaml` after that start is logged and not read, so delete it. A backup of the database carries the cameras, and a copy of the files does not.
+- A camera's status events, `com.prusa.connect.resource.state.changed` on its own origin, reach whoever may see the camera. A grant on `resource_kind:camera` is still what lets a person change cameras.
+- [sdk] `CameraSettings` from `@prusa/connect-ui/data` reads and writes cameras through `listCameraSettings`, `putCamera` and `deleteCamera`, so the client it is given must carry them. `declaredInFile` is gone, because no camera is declared in a file.
+- The Extensions page lists only the official marketplace extensions until an organization administrator switches on Show community extensions in the marketplace settings. Installing or updating an unverified extension asks the person to accept the risk first, and every row shows its trust badge.
+- [sdk] A `module.yaml` must name the licence of the module under `license`, free text of at most 200 characters such as `MIT`. The server refuses to install or start a module whose manifest has none, so add the key to your manifest before you update the server.
+- [sdk] A `module.yaml` is refused when its `license`, or the `why` or `sends` of an `egress` entry, holds a control or invisible character. Such a character is a terminal escape, a reversal of the writing direction or a zero-width space.
+
+### Added
+- [sdk] The tool tree carries the material package instance a driver reports for a tool: its uuids, type, colour, full weight and profile temperatures, in `Tool.Reported`.
+- [sdk] `connectorapi.ValidColor` says whether a tool's colour is #rrggbb or #rrggbbaa, and `ReadTools` reads no other colour.
+- The PrusaLink-compatible xbuddy driver publishes the material package instance a printer reports for a tool, so the tool tree carries it. A spool the printer stops reporting leaves the tool tree.
+- [sdk] A module reads whether a device was removed or registered again under a new id, in `deviceapi.Device.Retired`.
+- [sdk] A module lists the actions it only asks access.check about under checks: in module.yaml, and the install withholds nothing for them. Materials asks so whether a person may operate a printer. The operator approves each one at install, as `check <action>`.
+- `core.discovery.host_records: system` lets another mDNS responder on the machine, such as Avahi, answer for its host name. The server then announces only its services, so discovery can stay on there without the machine being renamed to `<hostname>-2.local`.
+- Storage has a Shared column on a server with the Fractal module and its `files` block, and its switch shares a folder with the servers below. A card under it lists the folders that the servers above and below share.
+- [sdk] A module may name `qr-code` as the icon of a page or an action. The set a manifest may choose from is closed, and until now it held no glyph for a code a camera reads.
+- [sdk] A module can hand a JPEG to a push camera with `camera.accept`. The bytes travel on the call's own stream, and the call needs `operate` on the camera, the permission the HTTP push route takes.
+- A generic camera type takes the pictures a camera sends, or fetches them from an address, and can also stream over RTSP or MJPEG.
+- A printer's page has a Cameras tab with one card per camera. It shows the camera's last picture and plays its live view, MJPEG or H.264, when you press play, and it adds, changes and removes cameras.
+- [sdk] A module can draw a section for each camera in the Cameras tab, with the new `camera-section` slot.
+- [sdk] A module can offer camera types with `camera_types` in its manifest. A camera of such a type runs on the core's generic camera, and the module feeds it its pictures with no grant. The module can draw its live view in the new `camera-view` slot.
+- The camera listing names each camera's type, and `GET /api/v1/camera-types` lists the types a new camera may be declared as. The Cameras card offers them.
+- [sdk] The event `com.prusa.connect.camera.frame.received` tells a reader that a camera was handed a new frame.
+- [sdk] `printcompat` now warns when a file for a Core One with INDX does not name the INDX lock feature. Firmware 6.6.2 and newer stops at a warning before such a print. An INDX printer on older firmware now reports the feature as unsupported
+- [sdk] `printcompat` now lists the nozzle cleaner check as unverified on every Core One with INDX. The firmware refuses each print until the cleaner is calibrated, and the printer does not report whether it is
+- [sdk] `printcompat` now lists the abrasive filament check of firmware 6.8.0 and newer as unverified in one case. The file names a filament type that is no firmware preset, and the nozzle is not reported as hardened. Such a filament may be one a person defined on the printer as abrasive, and the printer does not report that setting
+- The web app can be installed from the browser, on a phone or a handheld scanner too. It serves `/manifest.webmanifest` and an icon, so an installed copy opens full screen. A browser installs it only from a page whose certificate it trusts.
+- [sdk] An entry of `device_card`, `device_section`, `device_tab` or `device_action` in module.yaml may carry `devices: {resident: true}`, and it then shows only on the printer this server runs on. `GET /api/v1/resources` returns the block on the entry.
+- [sdk] `SlotOutlet`, `SlotActions` and `moduleTabs()` from `@prusa/connect-ui/slots` take the device record, and show an entry that carries a `devices` block only for a record that meets it. An app built on the library must pass the record, or such an entry shows on no printer.
+- A file dropped on a printer's page asks whether to print it now or only copy it to the printer. Print now sends the file and starts it once it lands, and it goes on when the page is closed. It is offered for one file on a printer that can start a print now; otherwise the dialog says why, in the words the print dialog uses.
+- The server can answer the time on UDP port 123, so a camera or another device on a network with no internet can set its clock. It is off by default, the switch under Settings, Server, Network or `core.time_server.enabled` turns it on, and the page says why when the port does not open.
+- A printer's dialog that comes with a code alone is named as Prusa Connect names it, such as File error after an upload to an MK4 is stopped. The words and the buttons under them can be translated, and the words the printer sends itself are kept.
+- [sdk] connectorapi.FileChange is one entry of a device's file tree that the device said changed.
+- The event com.prusa.connect.device.files.changed says when a printer folder starts being read and when its listing lands or changes.
+- A printer's Files tab opens on rows already read, because the server reads each drive's root when the printer connects or a drive is put in.
+- The demo takes `-listing-delay`, how long each simulated printer takes to list a folder. It answers no other command meanwhile, as a real printer does, so `-listing-delay 13s` shows what a full USB drive costs.
+- The server image carries the Fractal module under `/opt/modules/fractal`, so a container can join a Fractal network with no separate build of the module. It needs its settings at install, through `prusa-connect module add -settings`, as [running in a container](src/content/docs/container.md#bundled-extensions) says.
+- Removing a printer with `DELETE /api/v1/devices/{device_id}` also removes the cameras that watch it, so none keeps running with no printer page to be seen on.
+- `PUT /api/v1/modules/marketplace` takes `community`, and the marketplace object it and `GET /api/v1/modules/index` answer carries it. It says whether an organization administrator chose to list the community extensions, those whose trust is not `official`, and it is false until one does.
+- [sdk] A `module.yaml` can list under `egress` every connection the module makes outside Prusa Connect. Each entry names the host or the option that holds it, the ports, whether the process or the page connects, why, and what it sends. `module add` prints each one.
+- Before an extension is installed or updated, the Extensions page shows its licence and every connection it makes outside Prusa Connect. A release that does not declare its connections is shown as one that says nothing about them.
+
+### Fixed
+- A module that publishes events keeps running after its settings change. The rewritten declaration put the namespace in front of each event type a second time, and the module was stopped.
+- An approved update keeps the events a module was allowed to publish. It dropped them when the release asked for the same events as before.
+- The printer search finds a printer by the model name the pages show, such as "Core One" for a Prusa CORE One L. A model a driver declares is found by its name too. Before, only the model code the printer reports matched.
+- An RTSP camera that sends its first packets before it answers PLAY, such as a Buddy3D, now plays. The packets that came first are dropped.
+- A pushed camera's new picture shows on the page when it arrives. Before, the page asked for it twice a second.
+- An update, online or from an offline bundle, is no longer refused because the release's module wire contract changed, such as from 1.0.0 to 1.1.0. The server being updated runs this check, so 0.0.1-alpha.7 still refuses 0.0.1-alpha.8, and its binary has to be replaced manually.
+- An online update that fails verification, or whose migration rehearsal fails, now ends with the reason on the Updates page. Stage another update right away, without cancelling the failed one first.
+- A server now reads the version report of a release that adds fields to it, where it refused that release before.
+- An update whose verification or migration rehearsal was stopped, by a closed page or a server restart, now continues from that step at the next Run preflight and prepare.
+- [sdk] `device.print` of a file the printer already holds fails with `deviceapi.ErrPrintRefused`, code 3010, when the printer refuses to start it. A module was answered as if the print had begun. The message carries the printer's own reason where it gave one.
+- [sdk] `device.print` of a file the printer already holds fails with `deviceapi.ErrPrintFailed`, code 3011, when the printer takes the start command and then fails it. A module read that the host could not answer. The printer may have begun, so a module reads its state before it starts the print again.
+- The web app's left menu now reads Czech when the browser or the language setting asks for Czech. The menu entries, the Settings sections, the menu buttons, the theme choice and the connection status were English before.
+- A printer's page offers Print again only while the printer still holds the file, and otherwise says the file is no longer on the printer. A stopped upload left the button pointing at a file the printer never kept, and the printer refused it.
+- [sdk] A transfer's `bytes_sent` counts a byte the printer asks for again once, so a transfer's progress no longer passes 100 %. A printer that started a file over on each connection was shown at over 1000 %.
+- A print start or a firmware flash sent while a printer's file pictures load no longer runs out of time. The server asks a printer for one picture at a time, so a command waits behind one picture at most.
+- A confirmation that named a long file, such as Delete on a printer's files, drew the name and the buttons past the edge of its box. The name now breaks onto more lines and the box holds it.
+- The confirmation for Reset printer, Stop print and Remove printer closes once the act is confirmed. It used to stay open until Cancel was pressed, even after the printer had restarted.
+- Jobs no longer asks the printer for a print's picture that its file list already gave. Each visit used to ask once per print, one at a time, so the pictures came in slowly.
+- Files and Jobs no longer ask the printer again for a picture they already read when the printer gives a file's time a second apart in two answers.
+- A printer on the Prusa Connect SDK, such as the Prusa Pro HT90, lists its files and answers commands instead of failing with an unexpected answer
+- A storage other than the default one, such as the local storage of the Prusa Pro HT90, lists its files instead of reporting them not found
+- A dialog a printer raises with its text alone, such as a door opened on the Prusa Pro HT90, is shown on the printer's page
+- The Prusa Pro HT90 is drawn as itself rather than as an unknown printer
+- A printer's page names its model by its product name, as Prusa Connect does, such as Original Prusa MK4 or Prusa CORE One, where it showed what the printer sent
+- Settings › People › Add person says a password needs at least 8 characters while a shorter one is typed, where the Add person button stayed disabled without a reason
+- Settings › Server › Health says All printers away for a connector none of whose printers is connected, where it said Most printers away
+- The printer menu on the Printers page offers Pause only while the printer prints, and Stop only while it prints or is paused
+- On a wide screen a setting's label and its value sit side by side, where Settings › Account and Network put them at opposite edges
+- Adding a printer names its model, such as HT90 or MK4S, where it showed what the printer sent, such as 6.1.0 for the Prusa Pro HT90
+- A HEAD request for a stored file answers with its headers without reading the file
+- With the sidebar collapsed, the Settings menu closes when another page opens, and its current entry stays highlighted under the pointer
+- Settings › Server › Overview no longer says there is no newer release when the server could not check, such as before it is paired with the Beta Portal
+- A file opened in Storage offers Download in its menu
+- Coming back to a printer's Files tab opens the drive itself again, instead of sometimes a folder inside it that could read "This folder is empty"
+- A toast stays on screen for 8 seconds instead of 4, long enough to read a command result or a reason
+- A command that took a second or longer gives its time in seconds, such as "Took 18 sec" rather than "Took 18,845 ms"
+- A module's menu item runs for the printer or file it was chosen for. Before, when the page showed another printer or file before the module had loaded, the item ran for that one.
+- A toast waits while the browser tab is in the background, so a result that lands meanwhile is still there on return
+- A command that took a minute or longer gives its time in minutes
+- A server that cannot open its port no longer prints a setup code. A second copy started while another one held the port printed a code that the running copy refused with `core.auth/SETUP_CODE_REFUSED`.
+- A file on its way to a printer can be stopped from the printer's Now tab, as on its Files tab
+- A finished or stopped printer counts as Done in the dashboard summary, as Prusa Connect counts it, and no longer as needing attention
+- Links reach 4.5:1 against the page. They take a darker step of the brand colour, where the brand orange read 3.32:1 on white.
+- Every link, row and card reached with the keyboard shows the same focus ring, the footer links and the navigation rail included.
+- The hint lines in settings take the small type step, one step under the title they explain.
+- A pressed primary button darkens further instead of lightening, so its white text stays readable while held.
+- The download button in Add printer fits a 320px screen, and the footer links are 24px tall.
+- A file on its way to a Prusa printer no longer reads 100 % within a second and stays there for minutes. A Buddy board asks for the end of a G-code file first, and the progress counted how far into the file the bytes sent so far reached. It now counts the bytes of the file the printer has been sent, each once.
+- A read-scoped API token no longer sees operate actions and verbs in the device list. `GET /api/v1/devices` gives each printer only the `actions` and `verbs` the token's scopes allow.
+- The Remove dialog says an extension's database stays, and Databases no extension uses lists it without a reload.
+- A camera with no still image shows its live view, or a short hint, instead of a broken picture, and is no longer polled for one.
+- A command button shows a spinner while its command is under way.
+- The switch that hides the server from the local network no longer jumps back when a read sent before the change answers after it.
+- Beep on a Prusa printer plays a clear tone instead of a click.
+- A switch now shows whether it is on or off by more than colour: off is an outline, and on is a filled track with a tick on its thumb.
+- An extension installed or updated in Safari no longer shows "Importing a module script failed" until the page is reloaded. The browser now loads each release of an extension under its own address and tries once more when a load fails.
+- Settings > Server > Overview now says when it could not read whether you may restart the server. It offers Try again instead of an empty Restart card.
+- The Files tab of a printer shows the rows the server holds at once and updates them when the printer's read lands.
+- The Files tab says when the printer is reading its drive, counts the seconds, and offers Retry after a failed read.
+- A send, a delete or a new folder on a printer no longer makes the Files tab read the whole drive again.
+- A file sent to the root of a printer's USB drive finishes seconds sooner, because the printer is asked about the file instead of the whole folder.
+- Sending several files to a printer in a row no longer waits behind a background read of its drive between them.
+- Opening a printer folder no longer has the printer read it again, so a send started meanwhile does not wait 12 to 15 s behind that read. The Files tab offers Refresh for a change made on the printer's screen.
+- A file uploaded, deleted or created on a printer through another client, such as PrusaLink, shows in the Files tab without a read of its folder. The server applies the printer's own file events.
+- File pictures load when their row comes into view and two at a time, so a busy printer no longer stalls the rest of the page.
+- The print dialog shows how far a file has got on its way to each printer, then says when the printer writes it to its drive.
+- A print's page no longer shows a serial number and firmware version under Origin. It showed the printer's current values, which can differ from the ones the print ran on, and the server does not record those.
+- A person signed in through Synology SSO was named by their email address. The name is now read from the `username` claim, which Synology SSO sends in place of `preferred_username`.
+- Settings > Account offered a password change to a person signed in at an OpenID Connect provider, who has no password on this server. The page now shows their name and hides the password change.
+- On a phone, the menu now closes when a page in it is tapped, and the bottom bar stays on screen on a long page
+- The `install.sh` that `make new-module` writes runs pnpm from inside each project, so corepack uses the pinned pnpm version. It failed with `ERR_PNPM_BAD_PM_VERSION` when corepack defaulted to another major version.
+- Under the systemd unit from `prusa-connect.service`, the server now announces itself over mDNS on its network addresses. The first-run page and the log banner now offer those addresses too
+- A typo in the configuration file now stops the server with the key and its line alone. The message no longer starts with "recover interrupted backup restore"
+- The setup wizard stays on its page after the restart when the server is reached through another port, such as a published container port or a proxy. It went to the port the server listens on, which the browser could not reach.
+
 ## 0.0.1-alpha.8 - 2026-11-06
 
 ### Security

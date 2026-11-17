@@ -1,7 +1,0 @@
-### Changed
-- Cameras are devices kept in the server's database, and no configuration file declares them. A camera used to be a `camera` resource: a `resources.camera` block of `config.yaml`, or an entry the interface wrote into `config.d/resources.json` through `/api/v1/resources/camera/<name>`, which now answers 422. Add, change and remove one with `PUT` and `DELETE /api/v1/cameras/<name>`, and read the settings with `GET /api/v1/camera-settings`; each camera has its own version to quote. The first start of this version moves the cameras of both files into the database with their grants and logs each one. A `resources.camera` block left in `config.yaml` after that start is logged and not read, so delete it. A backup of the database carries the cameras, and a copy of the files does not.
-- A camera's status events, `com.prusa.connect.resource.state.changed` on its own origin, reach whoever may see the camera. A grant on `resource_kind:camera` is still what lets a person change cameras.
-- [sdk] `CameraSettings` from `@prusa/connect-ui/data` reads and writes cameras through `listCameraSettings`, `putCamera` and `deleteCamera`, so the client it is given must carry them. `declaredInFile` is gone, because no camera is declared in a file.
-
-### Added
-- Removing a printer with `DELETE /api/v1/devices/{device_id}` also removes the cameras that watch it, so none keeps running with no printer page to be seen on.
