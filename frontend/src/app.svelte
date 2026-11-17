@@ -44,6 +44,7 @@
   } from '@prusa/connect-ui/slots';
 
   import { client, onRefusal } from './lib/client';
+  import { isolateModuleTabs } from './lib/isolation';
   import FirstRun from './lib/first-run.svelte';
   import { saveBlob } from './lib/download';
   import { entries, log, navigate } from './lib/log';
@@ -258,6 +259,10 @@
 
   // The outlets find both here rather than in a module-level singleton.
   setSlotContext({ registry, loader });
+
+  // A printer tab that asks for a cross-origin isolated page is opened and
+  // left with a full page load, because only its document carries the headers.
+  $effect(() => isolateModuleTabs(router, registry));
 
   // A printer icon with no artwork of its own reads the vocabulary's name for
   // the model and the drawing a driver declared for it (ADR-20261016-qrp).

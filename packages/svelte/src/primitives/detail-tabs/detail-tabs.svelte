@@ -26,6 +26,9 @@
 
 <Tabs
   bind:value={() => active, (next: string) => onChange(next)}
+  activationMode={tabs.some((tab) => tab.loadsPage === true)
+    ? 'manual'
+    : 'automatic'}
   class={['w-full gap-6', className]}
 >
   {#if segmented}

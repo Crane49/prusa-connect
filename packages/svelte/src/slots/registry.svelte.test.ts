@@ -126,6 +126,30 @@ describe('SlotRegistry', () => {
     );
   });
 
+  it('carries cross_origin_isolated from the manifest to the declared tabs', () => {
+    const registry = new SlotRegistry();
+    registry.declare('console', {
+      device_tab: [
+        { id: 'console', title: 'Device page', cross_origin_isolated: true },
+        { id: 'log', title: 'Log' },
+      ],
+    });
+
+    expect(
+      registry
+        .declaredSections('device-tab')
+        .map((entry) => [entry.id, entry.crossOriginIsolated]),
+    ).toEqual([
+      ['console', true],
+      ['log', undefined],
+    ]);
+
+    registry.refuse({ namespace: 'console', reason: 'threw', detail: 'boom' });
+    expect(registry.refusedSections('device-tab')[0]?.crossOriginIsolated).toBe(
+      true,
+    );
+  });
+
   // Controller ruling: a module the loader refused shows no tab and no
   // action menu item, so the tab strip and the kebab menu must not draw from
   // a namespace's declaration once it has a refusal against it.

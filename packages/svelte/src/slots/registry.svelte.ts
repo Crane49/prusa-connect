@@ -96,6 +96,11 @@ export interface DeclaredEntry {
   fileTypes?: readonly string[] | undefined;
   /** On a device slot, the devices the entry is drawn for. Absent is every device (ADR-20261110-5np). */
   devices?: DeviceSelector | undefined;
+  /**
+   * On a printer tab, whether the manifest asks for the tab's page to be
+   * cross-origin isolated. Absent is not isolated.
+   */
+  crossOriginIsolated?: boolean | undefined;
 }
 
 /** A declared entry of an action slot, with the fields only an action carries. */
@@ -632,6 +637,7 @@ export class SlotRegistry {
           title: entry.title,
           fileTypes: entry.file_types,
           devices: entry.devices,
+          crossOriginIsolated: entry.cross_origin_isolated,
         })),
     );
   }
@@ -651,6 +657,7 @@ export class SlotRegistry {
           title: entry.title,
           fileTypes: entry.file_types,
           devices: entry.devices,
+          crossOriginIsolated: entry.cross_origin_isolated,
         })),
       );
   }

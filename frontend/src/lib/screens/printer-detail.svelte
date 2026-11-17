@@ -73,6 +73,7 @@
 
   import { watchCameras } from '../cameras';
   import { client } from '../client';
+  import { browserIsolation } from '../isolation';
   import { jobsOfPrinterHref } from '../routes';
   import type { AppContext } from '../screens';
   import { pendingSendsOf, printFirst } from '../stores/sends.svelte';
@@ -343,8 +344,16 @@
       ? asked
       : 'status',
   );
+  // Where the browser can isolate and the strip has an isolated tab, a tab
+  // opens only on Enter, Space or a click.
+  const isolating = browserIsolation().capable;
   const tabsForModules = $derived(
-    declaredTabs.map((row) => ({ ...row, panel: moduleTab })),
+    declaredTabs.map((row) => ({
+      id: row.id,
+      label: row.label,
+      loadsPage: row.isolated && isolating,
+      panel: moduleTab,
+    })),
   );
 
   // Only a transfer says which file on this server a file on the printer is.

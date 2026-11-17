@@ -13,6 +13,13 @@ export interface DetailTab {
    * its frame before its tabs and is never broken in between.
    */
   panel?: Snippet | undefined;
+  /**
+   * Opening the tab may load a new page, such as a cross-origin isolated
+   * module tab. While the strip holds one, a tab opens only on Enter, Space or
+   * a click, and the arrow keys only move the focus (WAI-ARIA tabs, manual
+   * activation).
+   */
+  loadsPage?: boolean | undefined;
 }
 
 export interface DetailTabsProps {

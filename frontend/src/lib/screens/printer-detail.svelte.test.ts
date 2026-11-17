@@ -2,7 +2,7 @@
 // person confirmed them on, whichever printer the page shows afterwards.
 import type { StreamEvent } from '@prusa/connect';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
 
 import { appContext } from '../../test/app-context';
@@ -22,7 +22,23 @@ import {
 // own tests use, rather than keep a second copy in sync.
 import PlainSection from '../../../../packages/svelte/src/test/plain-section.svelte';
 import WithSlots from '../../test/with-slots.svelte';
+import type * as Isolation from '../isolation';
 import PrinterDetail from './printer-detail.svelte';
+
+// Whether the browser can isolate a page is the test's to set: a test page on
+// `localhost` always can.
+const isolation = vi.hoisted(() => ({ capable: true }));
+vi.mock('../isolation', async (original) => {
+  const real = await original<typeof Isolation>();
+
+  return {
+    ...real,
+    browserIsolation: (): Isolation.DocumentIsolation => ({
+      ...real.browserIsolation(),
+      capable: isolation.capable,
+    }),
+  };
+});
 
 const printer = (id: string) => ({
   id,
@@ -498,6 +514,77 @@ describe('a module tab on the printer page', () => {
       document.querySelector('[data-state="active"]')?.textContent.trim(),
     ).toBe('Now');
     expect(document.querySelector('[data-testid="plain-section"]')).toBeNull();
+  });
+});
+
+// While the strip holds a tab whose page is cross-origin isolated, moving the
+// focus along it opens no tab, because opening that one loads a new page.
+// Where the browser cannot isolate, nothing loads a page, and a strip with no
+// such tab keeps opening a tab on focus.
+describe('a module tab whose page is cross-origin isolated', () => {
+  const routes: Routes = {
+    'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),
+  };
+  const isolated = {
+    id: 'console',
+    title: 'Device page',
+    cross_origin_isolated: true,
+  };
+  const plain = { id: 'log', title: 'Log' };
+
+  afterEach(() => {
+    isolation.capable = true;
+  });
+
+  // Renders the page on Now with one module tab, moves the focus one tab on,
+  // and answers the spy that records where the page went.
+  const moveFromNow = async (
+    tab: typeof isolated | typeof plain,
+  ): Promise<ReturnType<typeof vi.fn>> => {
+    const registry = new SlotRegistry();
+    registry.declare('console', { device_tab: [tab] });
+    const go = vi.fn();
+    await render(WithSlots, {
+      props: {
+        registry,
+        screen: PrinterDetail,
+        ctx: appContext(routes, { params: { id: 'a', tab: 'status' }, go }),
+      },
+    });
+
+    await expect
+      .element(page.getByRole('tab', { name: tab.title }))
+      .toBeVisible();
+    page.getByRole('tab', { name: 'Now' }).element().focus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect
+      .element(page.getByRole('tab', { name: 'Controls' }))
+      .toHaveFocus();
+
+    return go;
+  };
+
+  it('opens a tab on Enter rather than on focus where the browser can isolate', async () => {
+    const go = await moveFromNow(isolated);
+    expect(go.mock.calls).toEqual([]);
+
+    await userEvent.keyboard('{Enter}');
+
+    expect(go.mock.calls).toEqual([['/printers/a/controls']]);
+  });
+
+  it('opens a tab on focus where the browser cannot isolate', async () => {
+    isolation.capable = false;
+
+    const go = await moveFromNow(isolated);
+
+    expect(go.mock.calls).toEqual([['/printers/a/controls']]);
+  });
+
+  it('opens a tab on focus when no module tab asks for an isolated page', async () => {
+    const go = await moveFromNow(plain);
+
+    expect(go.mock.calls).toEqual([['/printers/a/controls']]);
   });
 });
 
