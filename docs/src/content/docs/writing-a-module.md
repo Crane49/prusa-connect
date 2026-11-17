@@ -2465,6 +2465,84 @@ No printer of the demo is resident, so on the demo such an entry shows on no
 printer. To see it while you develop, remove `devices`, and add it again
 before you publish the module.
 
+### Framing a device's own page in a tab
+
+A device may serve a web UI of its own, and a module's tab can show that
+page in a frame. Some device pages need `SharedArrayBuffer`. A WebAssembly
+app with threads is one example. The browser gives `SharedArrayBuffer` to
+the page in the frame only when the page around the frame is cross-origin
+isolated too.
+
+A `device_tab` entry asks for that with `cross_origin_isolated: true`:
+
+```yaml
+    device_tab:
+      - id: console
+        title: Device page
+        cross_origin_isolated: true
+```
+
+The server then sends `Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp` with the app's page at the tab's
+address, and with no other page. The app opens the tab with a full page
+load, and leaves it the same way. When the app itself runs in a frame of
+another page, the tab opens in a new browser tab instead. A frame inside a
+page that is not isolated is never isolated. On plain HTTP at a
+network address, the app opens the tab like any other, because nothing can
+be isolated there.
+
+What the isolated page costs:
+
+- A resource from another origin, such as an image, a font or a script, loads
+  there only when its server sends `Cross-Origin-Resource-Policy` or allows
+  CORS. That holds for every part of the printer's page while the tab is
+  open, other modules' parts included.
+- Opening or leaving the tab loses a file for a printer while it is still
+  uploading from this browser or waits there to be sent. So the browser asks
+  the person first.
+- Isolation works only on HTTPS or on `localhost`.
+- A frame of the module's own HTML file, or a worker started from the
+  module's URL, is blocked, because the module's files carry no embedder
+  policy.
+
+What the device's page and the frame need, which the server cannot add:
+
+- The device's page sends `Cross-Origin-Embedder-Policy: require-corp` and
+  `Cross-Origin-Resource-Policy: cross-origin`. With `same-site`, Chrome
+  blocks the frame when the pages are opened at an IP address, even at one
+  address on two ports.
+- The frame carries `allow="cross-origin-isolated"`. Without it, Chrome does
+  not isolate the frame.
+- On HTTPS, the device's page is HTTPS too. A browser blocks a frame served
+  over plain HTTP inside a page served over HTTPS. So the frame works on
+  `localhost`, or with certificates the browser trusts on both sides.
+- A browser blocks a frame whose certificate it has not accepted and offers
+  no way to accept it there. Give the tab a link that opens the device's page
+  in a window of its own, and a way to reload the frame.
+
+The component can say what is missing instead of showing a device page that
+does not work. First check `window.top !== window.self`. It is true when the
+app runs in a frame of another page, whatever the flags below say. When it is
+true, offer a link that opens the tab in a new browser tab. Otherwise read
+`window.crossOriginIsolated` and `window.isSecureContext`:
+
+| `crossOriginIsolated` | `isSecureContext` | what it means |
+| --- | --- | --- |
+| true | true | the page is isolated, and the framed page may use `SharedArrayBuffer` |
+| false | false | the app was opened over plain HTTP at a network address |
+| false | true | a proxy removed the headers, or the browser cannot isolate the page |
+
+The server isolates the tab's address on every printer, even where a
+`devices` block keeps the tab off it. On such a printer the address opens the
+printer's first tab, **Now**, on an isolated page. The server does not isolate a tab that the
+module or the operator hides.
+
+A manifest is refused when an entry of any slot other than `device_tab`
+carries `cross_origin_isolated`, or when the value is not true or false. An
+older core does not know the key and refuses the manifest as well. Put the
+first release that reads it in `require.core`
+([saying what the module needs](#saying-what-the-module-needs)).
+
 ## Adding to a file in storage
 
 A module can add an item to the menu of each file on the Storage page, and a
