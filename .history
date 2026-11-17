@@ -1,1 +1,1 @@
-3614 1794873338 +0100 infra(ci): run each extension's gate in its own job
+3615 1794874081 +0100 test(mini404): put the QMP socket where macOS can bind it
