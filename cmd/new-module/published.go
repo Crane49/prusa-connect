@@ -13,7 +13,7 @@ const (
 	publishedSDK = "v0.1.0"
 	// publishedPackages is the version of @prusa/connect and
 	// @prusa/connect-ui.
-	publishedPackages = "0.0.1"
+	publishedPackages = "0.1.0"
 )
 
 // oldestNode must match the library's engines entry. checkTools enforces it.

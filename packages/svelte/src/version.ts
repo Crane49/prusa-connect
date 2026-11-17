@@ -7,4 +7,4 @@
  * dependency list. `version.test.ts` holds the constant equal to the manifest,
  * so the two cannot drift.
  */
-export const LIBRARY_VERSION = '0.0.1';
+export const LIBRARY_VERSION = '0.1.0';

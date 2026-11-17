@@ -22,7 +22,7 @@
     "test": "tsc -p tsconfig.json && tsc -p tsconfig.test.json && node --test \"test/*.test.ts\""
   },
   "peerDependencies": {
-    "@prusa/connect": "0.0.1"
+    "@prusa/connect": "0.1.0"
   },
   "devDependencies": {
     "@prusa/connect": "link:../../../packages/typescript",

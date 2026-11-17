@@ -1,6 +1,6 @@
 {
   "name": "@prusa/connect",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A typed client for the Prusa Connect HTTP API, generated from the core's own contracts.",
   "type": "module",
   "license": "SEE LICENSE IN LICENSE",
