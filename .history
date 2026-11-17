@@ -1,1 +1,1 @@
-3627 1794876345 +0100 fix(modules): run pnpm from inside the project in the module install.sh
+3628 1794876915 +0100 fix(deploy): let the systemd unit list the network addresses
