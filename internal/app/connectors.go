@@ -790,6 +790,19 @@ func withPrinterAdmission(settings httpapi.AppSettings, tables []admissionTable)
 	return settings
 }
 
+// appMounter builds the mount that serves the core's app, and reports false
+// for a build that carries none.
+type appMounter func(httpapi.AppOptions) (httpapi.Mount, bool)
+
+// appMounter is Options.appMount, or httpapi.AppMount when it is nil.
+func (o Options) appMounter() appMounter {
+	if o.appMount != nil {
+		return o.appMount
+	}
+
+	return httpapi.AppMount
+}
+
 // withCoreApp adds the mount that serves the core's own app at the origin root,
 // for a build that carries one and a configuration that asks for it. It
 // returns the mounts and where the app stands. The readiness report and the
@@ -805,8 +818,14 @@ func withPrinterAdmission(settings httpapi.AppSettings, tables []admissionTable)
 // and then to this server's own refusal, which is also what a build carrying
 // no app answers there. A deployment that puts its own page in front of this
 // API needs that.
-func withCoreApp(mounts []httpapi.Mount, frontend config.Frontend) ([]httpapi.Mount, string) {
-	app, carried := httpapi.AppMount()
+//
+// isolatedTab reports whether a module's printer tab asks for a cross-origin
+// isolated page. The mount is built before the server, so it gets the lookup
+// here. serveOver passes Options.appMounter as mount.
+func withCoreApp(
+	mounts []httpapi.Mount, frontend config.Frontend, isolatedTab func(namespace, tab string) bool, mount appMounter,
+) ([]httpapi.Mount, string) {
+	app, carried := mount(httpapi.AppOptions{IsolatedTab: isolatedTab})
 	if !carried {
 		return mounts, httpapi.AppAbsent
 	}

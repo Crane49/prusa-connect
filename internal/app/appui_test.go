@@ -1,6 +1,8 @@
 package app
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,7 +22,7 @@ import (
 func TestTheAppIsMountedOnlyWhereTheConfigurationAsksForIt(t *testing.T) {
 	t.Parallel()
 
-	_, carried := httpapi.AppMount()
+	_, carried := httpapi.AppMount(httpapi.AppOptions{})
 
 	beside := []httpapi.Mount{{Pattern: "/p/ws", Handler: nil, Reason: "a device wire"}}
 
@@ -28,8 +30,8 @@ func TestTheAppIsMountedOnlyWhereTheConfigurationAsksForIt(t *testing.T) {
 	off := on
 	off.Enabled = new(false)
 
-	mountedOn, stateOn := withCoreApp(beside, on)
-	mountedOff, stateOff := withCoreApp(beside, off)
+	mountedOn, stateOn := withCoreApp(beside, on, nil, httpapi.AppMount)
+	mountedOff, stateOff := withCoreApp(beside, off, nil, httpapi.AppMount)
 
 	require.Len(t, mountedOff, len(beside), "the app was mounted on a deployment that switched it off")
 
@@ -44,6 +46,14 @@ func TestTheAppIsMountedOnlyWhereTheConfigurationAsksForIt(t *testing.T) {
 	require.Equal(t, httpapi.AppServed, stateOn)
 	require.Equal(t, httpapi.AppOff, stateOff)
 	require.Len(t, mountedOn, len(beside)+1, "the app was not mounted on a build that carries it")
+}
+
+// testAppMount is httpapi.AppMount over the fixture bundle httpapi's own tests
+// serve, for Options.appMount.
+func testAppMount(opts httpapi.AppOptions) (httpapi.Mount, bool) {
+	files := os.DirFS(filepath.Join("..", "transport", "http", "httpapi", "testdata", "appbundle"))
+
+	return httpapi.Mount{Pattern: "/*", Handler: httpapi.AppHandler(files, opts), Reason: "the fixture app"}, true
 }
 
 // TestThePageIsToldHowToLookWhateverTheAnswerIs covers what GET /api/v1/ui

@@ -534,7 +534,8 @@ func serveOver(
 	// Where the web app stands, decided once: this build either carries it or
 	// does not, and core.frontend.enabled was read from the file at load. The
 	// readiness report and the startup line below both say the same word.
-	mounts, appState := withCoreApp(built.mounts, core.Frontend)
+	mounts, appState := withCoreApp(built.mounts, core.Frontend,
+		modulePlane{host: supervision.host, store: store}.IsolatedTab, opts.appMounter())
 
 	// What this server tells the local network about itself. It is built here
 	// and started in listen, because the record names the port bind was
