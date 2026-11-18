@@ -1,5 +1,6 @@
 <!-- One printer, and everything this product knows about it. -->
 <script lang="ts">
+  import CalendarClockIcon from '@lucide/svelte/icons/calendar-clock';
   import CameraIcon from '@lucide/svelte/icons/camera';
   import FolderIcon from '@lucide/svelte/icons/folder';
   import HammerIcon from '@lucide/svelte/icons/hammer';
@@ -114,6 +115,7 @@
   const moduleIcons = new Map<string, DetailTab['icon']>([
     ['tools', LayersIcon],
     ['logs', ListIcon],
+    ['queue', CalendarClockIcon],
   ]);
 
   // A retired printer's page is its record: no tab sends a command to it.
