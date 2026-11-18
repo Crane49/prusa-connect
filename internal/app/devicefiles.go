@@ -543,6 +543,15 @@ func (d *devices) readThumbnail(
 	picture := printfile.Picture(file.Preview)
 	key := previewKey{device: entry.id, path: path, size: file.Size, modified: file.Modified}
 
+	// A file this server is still sending to the printer has no picture the
+	// printer can read yet, and it already reports the length and the time the
+	// whole file will have. Remembering "no picture" for that version would
+	// outlive the transfer, so nothing is remembered and the next request asks
+	// again.
+	if picture == nil && d.arriving(entry.id, path) {
+		return file, nil, nil
+	}
+
 	d.previews.put(key, printfile.Preview{Thumbnail: picture})
 	d.thumbnails.put(key, printfile.Preview{Thumbnail: picture})
 
@@ -553,6 +562,24 @@ func (d *devices) readThumbnail(
 	}
 
 	return file, picture, nil
+}
+
+// arriving reports whether a transfer to this path on this printer is running.
+func (d *devices) arriving(id string, path string) bool {
+	origin, err := deviceOrigin(id)
+	if err != nil {
+		return false
+	}
+
+	asked := strings.TrimPrefix(path, "/")
+
+	for _, record := range d.transfers.running(origin.String()) {
+		if strings.TrimPrefix(record.Destination, "/") == asked {
+			return true
+		}
+	}
+
+	return false
 }
 
 // listedVersion names a file as the held listing of its folder does: by the
