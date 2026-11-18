@@ -628,6 +628,11 @@ func moduleFile(file httpapi.DeviceFile) deviceapi.File {
 		Folder:      file.Folder,
 		Size:        file.Size,
 		ReadOnly:    file.ReadOnly,
+
+		EstimatedSeconds: file.EstimatedSeconds,
+		PrinterModel:     file.PrinterModel,
+		LayerHeightMM:    file.LayerHeightMM,
+		Material:         file.Material,
 	}
 
 	if file.Modified != nil {

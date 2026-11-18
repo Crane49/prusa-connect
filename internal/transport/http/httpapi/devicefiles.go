@@ -70,6 +70,12 @@ type DeviceFile struct {
 	Size        int64      `json:"size"                   doc:"Bytes the entry occupies, zero for a folder."`
 	Modified    *time.Time `json:"modified,omitempty"     doc:"When the entry last changed, as an RFC 3339 string. The printer reports whole seconds, so this value has no fraction of a second. It is absent for a board that reported no timestamp."`
 	ReadOnly    bool       `json:"read_only"              doc:"Whether the printer refuses to change this entry."`
+	// EstimatedSeconds comes with the answer about one file only, as the
+	// picture does: a listing of a folder names no times.
+	EstimatedSeconds int64   `json:"estimated_seconds,omitempty" doc:"The print time the slicer estimated, in whole seconds, as the printer read it out of the file. It is present only on the directory of an answer about one print file, and absent for a printer or a file that names none."`
+	PrinterModel     string  `json:"printer_model,omitempty"     doc:"The printer the file was sliced for, such as XL2IS. Present only on the directory of an answer about one print file that names it."`
+	LayerHeightMM    float64 `json:"layer_height_mm,omitempty"   doc:"The layer height the file was sliced with, in millimetres. Present only on the directory of an answer about one print file that names it."`
+	Material         string  `json:"material,omitempty"          doc:"The material the file was sliced for, one for each tool joined by a semicolon, such as PLA;PETG. Present only on the directory of an answer about one print file that names it."`
 }
 
 // DeviceListing is one directory of a device's own file tree.

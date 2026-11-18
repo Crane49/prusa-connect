@@ -2838,9 +2838,23 @@
             "description": "The name written for a person, absent when the printer reports only one name.",
             "type": "string"
           },
+          "estimated_seconds": {
+            "description": "The print time the slicer estimated, in whole seconds, as the printer read it out of the file. It is present only on the directory of an answer about one print file, and absent for a printer or a file that names none.",
+            "format": "int64",
+            "type": "integer"
+          },
           "folder": {
             "description": "Whether the entry holds other entries.",
             "type": "boolean"
+          },
+          "layer_height_mm": {
+            "description": "The layer height the file was sliced with, in millimetres. Present only on the directory of an answer about one print file that names it.",
+            "format": "double",
+            "type": "number"
+          },
+          "material": {
+            "description": "The material the file was sliced for, one for each tool joined by a semicolon, such as PLA;PETG. Present only on the directory of an answer about one print file that names it.",
+            "type": "string"
           },
           "modified": {
             "description": "When the entry last changed, as an RFC 3339 string. The printer reports whole seconds, so this value has no fraction of a second. It is absent for a board that reported no timestamp.",
@@ -2853,6 +2867,10 @@
           },
           "path": {
             "description": "The storage-prefixed path, such as usb/models/part.bgcode. It is what the files endpoint takes.",
+            "type": "string"
+          },
+          "printer_model": {
+            "description": "The printer the file was sliced for, such as XL2IS. Present only on the directory of an answer about one print file that names it.",
             "type": "string"
           },
           "read_only": {

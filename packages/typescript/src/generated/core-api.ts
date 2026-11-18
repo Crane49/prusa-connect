@@ -4485,8 +4485,20 @@ export interface components {
         DeviceFile: {
             /** @description The name written for a person, absent when the printer reports only one name. */
             display_name?: string;
+            /**
+             * Format: int64
+             * @description The print time the slicer estimated, in whole seconds, as the printer read it out of the file. It is present only on the directory of an answer about one print file, and absent for a printer or a file that names none.
+             */
+            estimated_seconds?: number;
             /** @description Whether the entry holds other entries. */
             folder: boolean;
+            /**
+             * Format: double
+             * @description The layer height the file was sliced with, in millimetres. Present only on the directory of an answer about one print file that names it.
+             */
+            layer_height_mm?: number;
+            /** @description The material the file was sliced for, one for each tool joined by a semicolon, such as PLA;PETG. Present only on the directory of an answer about one print file that names it. */
+            material?: string;
             /**
              * Format: date-time
              * @description When the entry last changed, as an RFC 3339 string. The printer reports whole seconds, so this value has no fraction of a second. It is absent for a board that reported no timestamp.
@@ -4496,6 +4508,8 @@ export interface components {
             name: string;
             /** @description The storage-prefixed path, such as usb/models/part.bgcode. It is what the files endpoint takes. */
             path: string;
+            /** @description The printer the file was sliced for, such as XL2IS. Present only on the directory of an answer about one print file that names it. */
+            printer_model?: string;
             /** @description Whether the printer refuses to change this entry. */
             read_only: boolean;
             /**

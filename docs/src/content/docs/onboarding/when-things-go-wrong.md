@@ -306,7 +306,7 @@ Every other event carrying a command id completes it.
 
 ### Why a refusal sometimes says the printer does not exist
 
-`notFound` (`internal/app/devicerender.go:388`) is the one refusal the printer
+`notFound` (`internal/app/devicerender.go:393`) is the one refusal the printer
 surface has. A printer the caller holds nothing on is reported exactly as one
 that is not connected, so a refusal never tells anybody that a printer exists.
 A listing is the only thing that says which printers there are.

@@ -589,6 +589,18 @@ type File struct {
 	Size     int64 `json:"size"`
 	Modified int64 `json:"modified"`
 	ReadOnly bool  `json:"read_only"`
+	// EstimatedSeconds is the print time the slicer estimated, in whole
+	// seconds, as the printer read it out of the file. It comes only on
+	// Listing.Entry, the answer about one print file, and is zero for a
+	// printer or a file that names none.
+	EstimatedSeconds int64 `json:"estimated_seconds,omitempty"`
+	// PrinterModel, LayerHeightMM and Material are what the slicer wrote:
+	// the printer it sliced for, the layer height in millimetres, and the
+	// material, one for each tool joined by a semicolon. They come only on
+	// Listing.Entry, and are empty or zero for a file that names none.
+	PrinterModel  string  `json:"printer_model,omitempty"`
+	LayerHeightMM float64 `json:"layer_height_mm,omitempty"`
+	Material      string  `json:"material,omitempty"`
 }
 
 // FilesParams is what MethodFiles carries.
