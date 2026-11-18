@@ -55,6 +55,7 @@ var _ deviceapi.Fleet = moduleFleet{}
 type moduleDevices interface {
 	httpapi.DeviceFleet
 	FilesNow(ctx context.Context, principal, id, path string) (httpapi.DeviceListing, error)
+	FilesHeld(ctx context.Context, principal, id, path string) (httpapi.DeviceListing, error)
 }
 
 // moduleFleets binds an instance to the fleet it may read.
@@ -324,11 +325,19 @@ func (f moduleFleet) Files(ctx context.Context, params deviceapi.FilesParams) (d
 		return deviceapi.Listing{}, err
 	}
 
-	// Always from the printer. The listing carries no stale mark on the module
-	// wire, so a module has no way to know it should ask again.
-	listing, err := f.fleet.FilesNow(ctx, who, params.ID, params.Path)
+	// From the printer, unless the module asked for what this server holds.
+	// The listing carries no stale mark on the module wire, so a module that
+	// takes the held rows knows only that it asked for them.
+	listing, err := f.listing(ctx, who, params)
 	if err != nil {
 		return deviceapi.Listing{}, moduleRefusal(err)
+	}
+
+	// A held answer is the one marked stale. Without one the listing names the
+	// path as an empty folder, which is a guess: the path may be a file. The
+	// module is told nothing about it.
+	if params.Cached && !listing.Stale {
+		return deviceapi.Listing{Items: []deviceapi.File{}, Limit: limit, Offset: params.Offset}, nil
 	}
 
 	entry := moduleFile(listing.Directory)
@@ -534,6 +543,19 @@ func (f moduleFleet) JobHistory(
 	}
 
 	return deviceapi.JobPage{Items: items, Cursor: page.Cursor, Limit: page.Limit}, nil
+}
+
+// listing answers one path: what this server holds of it at once when the
+// module asked for that, and the printer's answer otherwise. A path nothing
+// is held of is answered with no rows while the read it starts runs.
+func (f moduleFleet) listing(
+	ctx context.Context, who string, params deviceapi.FilesParams,
+) (httpapi.DeviceListing, error) {
+	if params.Cached {
+		return f.fleet.FilesHeld(ctx, who, params.ID, params.Path) //nolint:wrapcheck // moduleRefusal names it.
+	}
+
+	return f.fleet.FilesNow(ctx, who, params.ID, params.Path) //nolint:wrapcheck // moduleRefusal names it.
 }
 
 // storages is the root of a device's file tree: the storage devices it

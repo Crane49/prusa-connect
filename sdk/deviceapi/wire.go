@@ -620,6 +620,15 @@ type FilesParams struct {
 
 	Limit  int `json:"limit,omitempty"`
 	Offset int `json:"offset,omitempty"`
+
+	// Cached answers a path from what the server last read of it, at once
+	// and without waiting on the printer, which runs one command at a time.
+	// The rows may be out of date, and a file in a folder's rows carries no
+	// slicer's facts. A path the server holds nothing of is answered with no
+	// rows and no entry while the read it starts runs, so asking again a
+	// little later finds it. A path whose last read failed is answered the
+	// same way, and is not read again for this ask.
+	Cached bool `json:"cached,omitempty"`
 }
 
 // Validate holds one files read to the bounds this contract publishes.

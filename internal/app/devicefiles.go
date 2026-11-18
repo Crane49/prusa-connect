@@ -97,6 +97,21 @@ func heldStorages(ctx context.Context, entry *device) (httpapi.DeviceStorages, e
 func (d *devices) Files(
 	ctx context.Context, principal string, id string, path string, refresh bool,
 ) (httpapi.DeviceListing, error) {
+	return d.listFiles(ctx, principal, id, path, refresh, true)
+}
+
+// FilesHeld is Files for a module that asked for what is held: it never waits
+// for the printer, not even the grace a person's cold read is given, and a
+// path nothing is held of is answered as being read.
+func (d *devices) FilesHeld(
+	ctx context.Context, principal string, id string, path string,
+) (httpapi.DeviceListing, error) {
+	return d.listFiles(ctx, principal, id, path, false, false)
+}
+
+func (d *devices) listFiles(
+	ctx context.Context, principal string, id string, path string, refresh, grace bool,
+) (httpapi.DeviceListing, error) {
 	entry, err := d.reachLive(ctx, principal, id, authz.ActionOperate)
 	if err != nil {
 		return httpapi.DeviceListing{}, err
@@ -118,12 +133,14 @@ func (d *devices) Files(
 		return heldListingOf(path, rows, held, failed, read), nil
 	}
 
-	read, mine := d.listings.join(id, path, false)
+	// A read nobody waits the grace for is one no person waits for, so the
+	// printer answers a person's commands ahead of it.
+	read, mine := d.listings.join(id, path, !grace)
 	if mine {
 		d.startListing(ctx, entry, id, path, read)
 	}
 
-	if !held && failed == nil {
+	if grace && !held && failed == nil {
 		grace := time.NewTimer(listingGrace)
 		defer grace.Stop()
 
