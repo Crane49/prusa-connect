@@ -130,6 +130,9 @@ type Config struct {
 	// with no filament sensor reports it, so the host keeps what a person said
 	// is loaded. Zero reports PLA.
 	NoMaterial bool
+	// Enclosure fits an XL with its enclosure, switched on. Such a machine
+	// sends an enclosure block in its telemetry, and one without sends none.
+	Enclosure bool
 	// TransferRate is how many bytes a second this printer fetches a file at.
 	// It asks for the next block once the last one would have taken that long
 	// to arrive. Zero fetches as fast as the server answers. A real board fetches
@@ -201,6 +204,12 @@ type Printer struct {
 	// for each. A verb the host should send and never does is invisible on the
 	// state tree. See Asked.
 	asked map[string]int
+	// chamber is the enclosure of a machine with one. See chamber.go.
+	chamber chamber
+	// blocksSent is the chamber and enclosure blocks as last sent, and
+	// blocksSession the connection they were sent on. See sendChanged.
+	blocksSent    map[string]string
+	blocksSession uint64
 	// filamentToLoad is the name the last M701 carried, and filamentAsked is
 	// whether one arrived at all. See FilamentToLoad.
 	filamentToLoad string
@@ -281,6 +290,7 @@ func New(cfg Config) (*Printer, error) {
 		state:        stateIdle,
 		jobState:     stateIdle,
 		asked:        map[string]int{},
+		chamber:      newChamber(),
 		booted:       time.Now(),
 		nextDialogID: firstDialogID,
 		metrics:      metricsTarget{metricsPort: defaultMetricsPort, syslogPort: defaultSyslogPort},

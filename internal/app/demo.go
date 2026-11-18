@@ -128,6 +128,9 @@ const (
 	demoEchoFirmware  = "0.12.0"
 )
 
+// demoEnclosureModel is the model whose demo printer has its enclosure fitted.
+const demoEnclosureModel = "XL"
+
 // demoModels are the models the fleet is drawn from. Three families with three
 // different capability sets, so the demo shows what a fleet of one model cannot.
 // The XL is the one with five toolheads, so a page's per-tool rows have a

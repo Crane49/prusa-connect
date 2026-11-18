@@ -224,6 +224,14 @@ func (p *Printer) telemetryFields() map[string]any {
 		fields["axis_y"] = 0.0
 	}
 
+	if p.hasChamber() {
+		p.sendChanged(fields, "chamber", p.chamberFields(printing))
+	}
+
+	if p.cfg.Enclosure {
+		p.sendChanged(fields, "enclosure", p.enclosureFields(printing))
+	}
+
 	switch {
 	case p.cfg.ToolTree:
 		fields["tools"] = p.treeTelemetry(printing)

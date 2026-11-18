@@ -28,5 +28,10 @@ export interface TemperatureReadingProps {
   target: number | undefined;
   /** A last-known reading from a printer this instance can no longer hear from. */
   muted?: boolean;
+  /**
+   * A chamber: a heater against its target, and off with none whatever the
+   * air. See `chamberState`.
+   */
+  chamber?: boolean;
   class?: ClassValue | undefined;
 }

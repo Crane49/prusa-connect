@@ -6,6 +6,8 @@
   import {
     BED_PATH,
     BED_TARGET_PATH,
+    CHAMBER_PATH,
+    CHAMBER_TARGET_PATH,
     FLOW_PATH,
     currentHeadOf,
     nozzlePath,
@@ -23,6 +25,7 @@
   import {
     Badge,
     Button,
+    ChamberIcon,
     HeatbedIcon,
     NozzleIcon,
     PopoverContent,
@@ -41,6 +44,7 @@
   import {
     BED_MAX_CELSIUS,
     blocked,
+    chamberMaxCelsius,
     declaresArgument,
     degreeScale,
     groupReason,
@@ -115,14 +119,17 @@
   // The chips read in the unit the reader chose, so the editors do too.
   const scale = $derived(degreeScale());
 
+  // A heater with no material column, the chamber, offers Off alone.
   const presetsFor = (
-    column: (preset: PreheatPreset) => number,
+    column?: (preset: PreheatPreset) => number,
   ): ValuePreset[] => [
     { label: t('printerDetailControls.preset.off'), value: scale.shown(0) },
-    ...PREHEAT_PRESETS.map((preset) => ({
-      label: preset.material,
-      value: scale.shown(column(preset)),
-    })),
+    ...(column === undefined
+      ? []
+      : PREHEAT_PRESETS.map((preset) => ({
+          label: preset.material,
+          value: scale.shown(column(preset)),
+        }))),
   ];
 
   /** One heater, as this row draws it and as its editor sends it. */
@@ -141,6 +148,8 @@
     verb: string;
     /** What the dialect calls the setpoint on the wire. */
     argument: string;
+    /** A chamber, which is off with no target whatever the air. */
+    chamber: boolean;
   }
 
   const heater = (spec: {
@@ -151,7 +160,8 @@
     verb: string;
     argument: string;
     max: number;
-    column: (preset: PreheatPreset) => number;
+    column?: (preset: PreheatPreset) => number;
+    chamber?: boolean;
   }): HeaterChip => {
     const projection = resolve(spec.verb);
 
@@ -169,6 +179,7 @@
       max: spec.max,
       verb: spec.verb,
       argument: spec.argument,
+      chamber: spec.chamber === true,
     };
   };
 
@@ -196,6 +207,24 @@
       max: BED_MAX_CELSIUS,
       column: (preset) => preset.bedCelsius,
     }),
+  );
+
+  // The air inside an enclosed printer. A CORE One reports it and takes a
+  // target; an XL with its enclosure on reports it and takes none.
+  const chamber = $derived(
+    heater({
+      name: t('printerDetail.chip.chamber'),
+      label: t('printerDetailControls.chamberTemp.label'),
+      path: CHAMBER_PATH,
+      targetPath: CHAMBER_TARGET_PATH,
+      verb: VERBS.chamberTemp,
+      argument: 'chamber.target_temp',
+      max: chamberMaxCelsius(device.model),
+      chamber: true,
+    }),
+  );
+  const hasChamber = $derived(
+    chamber.settable || chamber.current !== undefined,
   );
 
   // A tool changer whose verb takes no tool can only heat the active head,
@@ -237,6 +266,10 @@
 
 {#snippet bedIcon()}
   <HeatbedIcon aria-hidden="true" class="size-3.5" />
+{/snippet}
+
+{#snippet chamberIcon()}
+  <ChamberIcon aria-hidden="true" class="size-3.5" />
 {/snippet}
 
 {#snippet toolRow(choice: ValueChoice)}
@@ -304,6 +337,7 @@
                     {icon}
                     current={chip.current}
                     target={chip.target}
+                    chamber={chip.chamber}
                   />
                   <ChevronDownIcon aria-hidden="true" />
                 </button>
@@ -317,6 +351,7 @@
             {icon}
             current={chip.current}
             target={chip.target}
+            chamber={chip.chamber}
           />
         </Badge>
       {/if}
@@ -338,6 +373,9 @@
     </div>
   {/if}
   {@render heaterChip(bed, bedIcon)}
+  {#if hasChamber}
+    {@render heaterChip(chamber, chamberIcon)}
+  {/if}
 
   <div>
     <dt class="sr-only">{t('printerDetail.chip.material')}</dt>

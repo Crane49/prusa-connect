@@ -489,6 +489,125 @@ describe('PrinterControlsPanel', () => {
     );
   });
 
+  // A CORE One reports its fan target and light, so the section opens on what
+  // the printer runs rather than on a default.
+  it('shows the chamber fan and light the printer reports', async () => {
+    const reporting = (
+      fan: number,
+      light: number,
+      target = 45,
+    ): TelemetrySource => ({
+      value: (path) =>
+        ({
+          ...READINGS,
+          '/chamber/fan_pwm_target': fan,
+          '/chamber/led_intensity': light,
+          '/temperature/chamber_target': target,
+        })[path],
+      points: () => [],
+    });
+    const chamberVerbs = [
+      ...EVERY_VERB,
+      'core.command.set_chamber_target_temp',
+      'core.command.set_chamber_target_temp#chamber.target_temp',
+    ];
+
+    const first = await render(PrinterControlsPanel, {
+      props: props({
+        telemetry: reporting(40, 49),
+        device: printer('IDLE', chamberVerbs),
+      }),
+    });
+
+    await expect
+      .element(page.getByRole('radio', { name: 'Manual' }))
+      .toBeChecked();
+    await expect
+      .element(page.getByRole('slider', { name: 'Chamber fan speed' }))
+      .toHaveAttribute('aria-valuenow', '40');
+    await expect
+      .element(page.getByRole('slider', { name: 'Light' }))
+      .toHaveAttribute('aria-valuenow', '49');
+    await expect
+      .element(
+        page.getByText(
+          'The chamber target applies only while the fans run on Auto.',
+        ),
+      )
+      .toBeVisible();
+
+    await first.unmount();
+    const second = await render(PrinterControlsPanel, {
+      props: props({
+        telemetry: reporting(-1, 100),
+        device: printer('IDLE', chamberVerbs),
+      }),
+    });
+
+    await expect
+      .element(page.getByRole('radio', { name: 'Auto' }))
+      .toBeChecked();
+    await expect
+      .element(
+        page.getByText(
+          'The chamber target applies only while the fans run on Auto.',
+        ),
+      )
+      .not.toBeInTheDocument();
+
+    // With no target there is nothing for the note to warn about.
+    await second.unmount();
+    await render(PrinterControlsPanel, {
+      props: props({
+        telemetry: reporting(0, 100, 0),
+        device: printer('IDLE', chamberVerbs),
+      }),
+    });
+
+    await expect
+      .element(page.getByRole('radio', { name: 'Off' }))
+      .toBeChecked();
+    await expect
+      .element(
+        page.getByText(
+          'The chamber target applies only while the fans run on Auto.',
+        ),
+      )
+      .not.toBeInTheDocument();
+  });
+
+  // Off and back to Manual returns to the speed the fans last ran at, not to
+  // full speed.
+  it('returns to the last chamber fan speed after Off', async () => {
+    let fan = $state(40);
+    const onCommand = vi.fn();
+    await render(PrinterControlsPanel, {
+      props: props({
+        commands: { onCommand },
+        telemetry: {
+          value: (path) =>
+            ({ ...READINGS, '/chamber/fan_pwm_target': fan })[path],
+          points: () => [],
+        },
+      }),
+    });
+
+    await expect
+      .element(page.getByRole('radio', { name: 'Manual' }))
+      .toBeChecked();
+    fan = 0;
+    await expect
+      .element(page.getByRole('radio', { name: 'Off' }))
+      .toBeChecked();
+
+    await page.getByRole('radio', { name: 'Manual' }).click();
+
+    expect(onCommand).toHaveBeenLastCalledWith(
+      'core.command.set_chamber_fan_target',
+      { 'chamber.fan_pwm_target': '40' },
+    );
+  });
+
   // A preset is a shortcut to a figure.
   it('sends the firmware figure for the material a reader picks', async () => {
     const onCommand = vi.fn();
@@ -524,6 +643,52 @@ describe('PrinterControlsPanel', () => {
     expect(onCommand).toHaveBeenCalledWith('core.command.set_bed_temperature', {
       bed_temperature: '85',
     });
+  });
+
+  // A CORE One reports its chamber and takes a target for it. A printer with
+  // neither the reading nor the verb draws no chamber row.
+  it('sets the chamber target where the printer has a chamber', async () => {
+    const onCommand = vi.fn();
+    const chamber: TelemetrySource = {
+      value: (path) =>
+        ({
+          ...READINGS,
+          '/temperature/chamber': 38.4,
+          '/temperature/chamber_target': 0,
+        })[path],
+      points: () => [],
+    };
+    await render(PrinterControlsPanel, {
+      props: props({
+        telemetry: chamber,
+        device: printer('IDLE', [
+          ...EVERY_VERB,
+          'core.command.set_chamber_target_temp',
+          'core.command.set_chamber_target_temp#chamber.target_temp',
+        ]),
+        commands: { onCommand },
+      }),
+    });
+
+    await page
+      .getByRole('button', { name: 'Set chamber target, currently 0°C' })
+      .click();
+    const surface = await openSurface();
+    await surface.getByRole('spinbutton', { name: 'Target (°C)' }).fill('45');
+    await surface.getByRole('button', { name: 'Set', exact: true }).click();
+
+    expect(onCommand).toHaveBeenCalledWith(
+      'core.command.set_chamber_target_temp',
+      { 'chamber.target_temp': '45' },
+    );
+  });
+
+  it('draws no chamber row on a printer without one', async () => {
+    await render(PrinterControlsPanel, { props: props() });
+
+    await expect
+      .element(page.getByRole('button', { name: /^Set chamber target/ }))
+      .not.toBeInTheDocument();
   });
 
   // The row reads in the unit the reader chose, so its editor does too, and

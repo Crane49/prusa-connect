@@ -54,6 +54,26 @@ export const heaterState = ({
   return 'at-temperature';
 };
 
+/**
+ * What a chamber is doing. A chamber has fans and no heater, and its target
+ * works both ways: the fans hold the air under it, and a print waits while the
+ * bed warms the air up to it. So against a target it is a heater like any
+ * other, and with no target it is off whatever the air, because nothing is holding the
+ * air anywhere and a warm chamber is no hazard the way a warm nozzle is.
+ */
+export const chamberState = ({
+  current,
+  target,
+}: HeaterReading): HeaterState => {
+  if (current === undefined) {
+    return 'not-reported';
+  }
+  if (target === undefined || target <= 0) {
+    return 'off';
+  }
+  return heaterState({ current, target });
+};
+
 // Whether a heater is still climbing towards its target: the one condition
 // the interface marks with continuous motion (a slow pulse on the reading),
 // because a monitoring product with no sign of life on screen reads as a
