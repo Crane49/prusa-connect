@@ -24767,7 +24767,7 @@ export interface operations {
                      *           "path": "/api/v1/vocabularies/event-types",
                      *           "reference": "/docs/event-types/",
                      *           "summary": "The core event types this build publishes, and the class each one is carried under.",
-                     *           "version": "3.8.0"
+                     *           "version": "3.9.0"
                      *         }
                      *       ]
                      *     }
@@ -25347,7 +25347,7 @@ export interface operations {
                      *         }
                      *       ],
                      *       "namespace": "com.prusa.connect.",
-                     *       "version": "3.8.0",
+                     *       "version": "3.9.0",
                      *       "vocabulary": "event-types"
                      *     }
                      */
