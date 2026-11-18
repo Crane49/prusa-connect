@@ -105,6 +105,8 @@ const fakes = () => {
   const keyOf = (moved: TransferMoved): string =>
     [moved.deviceId, moved.storage, moved.source, moved.path].join('|');
   const stopped: string[] = [];
+  // Who waits for a file to be on its way, by the stored file's path.
+  const itsWay: { source: string; run: (path: string) => void }[] = [];
   const stopping: string[] = $state([]);
   const running: SendsRunning = {
     get rows() {
@@ -122,6 +124,13 @@ const fakes = () => {
     forget: (moved) => {
       const at = landed.indexOf(keyOf(moved));
       if (at >= 0) landed.splice(at, 1);
+    },
+    whenOnItsWay: (sent, run) => {
+      itsWay.push({ source: sent.source, run });
+    },
+    notOnItsWay: (sent) => {
+      const at = itsWay.findIndex((one) => one.source === sent.source);
+      if (at >= 0) itsWay.splice(at, 1);
     },
     stop: (id) => {
       stopped.push(id);
@@ -205,6 +214,7 @@ const fakes = () => {
     printed,
     sources,
     waiting,
+    itsWay,
     finishUpload: (ok: boolean) => finishUpload?.(ok),
     temporaries,
     // Answers every temporary copy still going up.
@@ -305,6 +315,30 @@ describe('Sends', () => {
     expect(await done).toBe('done');
     expect(sends.rows).toEqual([]);
     expect(sends.active).toBe(false);
+  });
+
+  it('says where the file lands once it is on its way, not when it has landed', async () => {
+    const f = fakes();
+    const sends = sendsOf(f);
+    const paths: string[] = [];
+
+    const done = sends.send(file, 'p1', 'Printer 1', 'local', 'usb', {
+      keep: '',
+      onItsWay: (path) => {
+        paths.push(path);
+      },
+    });
+    f.finishUpload(true);
+    await tick();
+
+    // The store of running transfers runs it from the stream, with the name
+    // the server chose when the person kept both files.
+    expect(f.itsWay.map((one) => one.source)).toEqual(['cube.bgcode']);
+    f.itsWay[0]?.run('usb/cube[1].bgcode');
+    expect(paths).toEqual(['usb/cube[1].bgcode']);
+
+    f.finishSend(true);
+    await done;
   });
 
   it('prints a kept file once it is uploaded, and only sending never prints', async () => {
@@ -557,6 +591,46 @@ describe('Sends', () => {
 
     expect(await done).toBe('failed');
     expect(sends.rows).toEqual([]);
+  });
+
+  it('a send refused before any transfer takes back who waited for it', async () => {
+    const f = fakes();
+    const sends = sendsOf(f);
+
+    const done = sends.send(file, 'p1', 'Printer 1', 'local', 'usb', {
+      keep: '',
+      onItsWay: () => undefined,
+    });
+    f.finishUpload(true);
+    await tick();
+    expect(f.itsWay).toHaveLength(1);
+    f.rows.shift();
+    f.finishSend(false, fault('connector/TRANSFER_BUSY'));
+
+    expect(await done).toBe('failed');
+    expect(f.itsWay).toEqual([]);
+  });
+
+  it('a send that asks about a taken name keeps who waits for it', async () => {
+    const f = fakes();
+    const sends = sendsOf(f);
+
+    const done = sends.send(file, 'p1', 'Printer 1', 'local', 'usb', {
+      keep: '',
+      onItsWay: () => undefined,
+    });
+    f.finishUpload(true);
+    await tick();
+    f.rows.shift();
+    f.waiting.push({
+      storage: 'local',
+      source: 'cube.bgcode',
+      path: 'usb/cube.bgcode',
+    });
+    f.finishSend(false, fault('core.printer/FILE_NAME_TAKEN'));
+
+    expect(await done).toBe('taken');
+    expect(f.itsWay).toHaveLength(1);
   });
 
   it('reports no progress while the printer has not said how long the file is', async () => {

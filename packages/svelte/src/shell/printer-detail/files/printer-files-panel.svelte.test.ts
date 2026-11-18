@@ -1,3 +1,4 @@
+import { createRawSnippet } from 'svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
@@ -522,6 +523,32 @@ describe('PrinterFilesPanel', () => {
     expect(
       document.querySelectorAll('[data-slot="dropdown-menu-item"]'),
     ).toHaveLength(1);
+  });
+
+  // The host draws one menu with the modules' entries beside the panel's own.
+  it('hands the host each file and its own items, and keeps a folder menu its own', async () => {
+    const hosted = createRawSnippet(
+      (file: () => PrinterFileEntry, items: () => unknown) => ({
+        render: () =>
+          `<span data-testid="hosted">${file().name} ${items() === undefined ? 'alone' : 'with items'}</span>`,
+      }),
+    );
+    const none = printer();
+    await render(PrinterFilesPanel, {
+      props: props({
+        device: { ...none, capabilities: ['core.command.start_print'] },
+        files: source({ entries: [FOLDER, PLATE, SETTINGS] }),
+        fileActions: hosted,
+      }),
+    });
+
+    const drawn = page.getByTestId('hosted');
+    await expect
+      .poll(() => drawn.all().map((one) => one.element().textContent))
+      .toEqual([
+        'bracket.bgcode with items',
+        'prusa_printer_settings.ini alone',
+      ]);
   });
 
   // A printer in the middle of a print keeps the act and refuses it.

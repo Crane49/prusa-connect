@@ -459,6 +459,22 @@ const AreaCameraPicture Area = "camera-picture"
 
 AreaCameraPicture is the picture of one camera in a printer's Cameras tab.
 
+#### `AreaDeviceFileActions` {#manifest-areadevicefileactions}
+
+```go
+const AreaDeviceFileActions Area = "device-file-actions"
+```
+
+AreaDeviceFileActions is the action menu of each file on a printer's Files tab, in the list and in the tiles.
+
+#### `AreaDropChoices` {#manifest-areadropchoices}
+
+```go
+const AreaDropChoices Area = "drop-choices"
+```
+
+AreaDropChoices is the list of choices in the question a file dropped on a printer's page asks.
+
 #### `Areas` {#manifest-areas}
 
 ```go
@@ -1547,6 +1563,22 @@ const SlotPrintSection SlotName = "print-section"
 
 SlotPrintSection is a section in the print dialog of a file in a storage.
 
+#### `SlotDeviceFileAction` {#manifest-slotdevicefileaction}
+
+```go
+const SlotDeviceFileAction SlotName = "device-file-action"
+```
+
+SlotDeviceFileAction is an item in the action menu of a file on a printer, on the printer page's Files tab.
+
+#### `SlotDeviceUploadAction` {#manifest-slotdeviceuploadaction}
+
+```go
+const SlotDeviceUploadAction SlotName = "device-upload-action"
+```
+
+SlotDeviceUploadAction is a choice in the question a file dropped on a printer's page asks. The file is copied to the printer, and the action runs on it as soon as the copy is on its way.
+
 #### `SlotFileView` {#manifest-slotfileview}
 
 ```go
@@ -1706,6 +1738,14 @@ const SubjectCamera
 ```
 
 SubjectCamera hands the camera's name, the one its HTTP routes take.
+
+#### `SubjectPrinterFile` {#manifest-subjectprinterfile}
+
+```go
+const SubjectPrinterFile
+```
+
+SubjectPrinterFile hands a printer file reference: the device id, a colon, and the file's path on the printer, such as usb/part.bgcode. A device id never holds a colon, so the first one splits the two, the way it splits a file reference.
 
 #### `Subject.Doc` {#manifest-subject-doc}
 

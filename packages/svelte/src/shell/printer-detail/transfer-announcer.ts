@@ -1,6 +1,6 @@
 // What says a file reached the printer.
 
-import { type PrintEnd, TRANSFER_RUNNING } from '../../data';
+import { type DataFault, type PrintEnd, TRANSFER_RUNNING } from '../../data';
 import { describeFault, t } from '../../i18n';
 import { toast } from '../../primitives';
 import type { PrinterTransferRow } from './status';
@@ -63,6 +63,19 @@ export class TransferAnnouncer {
     }
 
     this.#listed = true;
+  }
+
+  /**
+   * Says a file was not sent, for a send the server refused before any
+   * transfer began, such as a printer that is still fetching another file.
+   * No row exists for such a send, so nothing else says it.
+   */
+  notSent(name: string, fault: DataFault): void {
+    const text = describeFault(fault);
+    const reason = [text.title, text.detail].filter(Boolean).join(': ');
+    toast.error(
+      t('printerDetailFiles.transfers.lostBecause', { name, reason }),
+    );
   }
 
   /**

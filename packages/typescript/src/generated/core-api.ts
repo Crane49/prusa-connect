@@ -7108,10 +7108,14 @@ export interface components {
             device_action?: components["schemas"]["ResourceAction"][] | null;
             /** @description One line on each printer's card in the listing, under its status. Text past one line is cut. */
             device_card?: components["schemas"]["ResourceSection"][] | null;
+            /** @description An item in the action menu of each file on a printer's Files tab. A folder has none. */
+            device_file_action?: components["schemas"]["ResourceAction"][] | null;
             /** @description A section at the foot of a printer's Status tab, after the core's own. */
             device_section?: components["schemas"]["ResourceSection"][] | null;
             /** @description A tab of the module's own on a printer's page, after the core's tabs. */
             device_tab?: components["schemas"]["ResourceSection"][] | null;
+            /** @description A choice in the question a file dropped on a printer's page asks. The action runs once the copy is on its way. */
+            device_upload_action?: components["schemas"]["ResourceAction"][] | null;
             /** @description An item in a file's menu, in the listing and on its page. A primary one is a button on the page. */
             file_action?: components["schemas"]["ResourceAction"][] | null;
             /** @description A tab of the module's own on a file's page, after the core's tabs. */

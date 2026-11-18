@@ -298,6 +298,47 @@ describe('SlotRegistry', () => {
   });
 });
 
+describe('files a module asks to send to a printer', () => {
+  const request = (deviceId: string, action: string) => ({
+    namespace: 'queue',
+    action,
+    deviceId,
+    files: [],
+  });
+
+  it('drops a request for a printer whose page is not open', () => {
+    const registry = new SlotRegistry();
+
+    expect(registry.requestUpload(request('a', 'first'))).toBe(false);
+    registry.openUploads('a');
+
+    expect(registry.uploadFor('a')).toBeUndefined();
+  });
+
+  it('holds every request for an open page, oldest first', () => {
+    const registry = new SlotRegistry();
+    registry.openUploads('a');
+
+    expect(registry.requestUpload(request('a', 'first'))).toBe(true);
+    expect(registry.requestUpload(request('a', 'second'))).toBe(true);
+
+    expect(registry.takeUpload('a')?.action).toBe('first');
+    expect(registry.takeUpload('a')?.action).toBe('second');
+    expect(registry.takeUpload('a')).toBeUndefined();
+  });
+
+  it('drops what waits when the page closes', () => {
+    const registry = new SlotRegistry();
+    const close = registry.openUploads('a');
+    registry.requestUpload(request('a', 'first'));
+
+    close();
+    registry.openUploads('a');
+
+    expect(registry.uploadFor('a')).toBeUndefined();
+  });
+});
+
 describe('describeRefusal', () => {
   it('says why, in one line a settings screen can show', () => {
     expect(

@@ -55,6 +55,8 @@
   "app.palette.modules": "Extension pages",
   "app.palette.pages": "Pages",
   "app.palette.printers": "Printers",
+  "app.printerDetail.undeclaredChoice.note": "An extension asked to send files with a choice it does not offer on this page, so the files stayed where they were.",
+  "app.printerDetail.undeclaredChoice.title": "Nothing was sent to the printer",
   "app.rebuilding": "The screens are written again against the ported design system.",
   "app.session.unknown": "Reading who you are",
   "app.settings.extensions.access.readOnly": "Only an administrator can install, update or remove extensions. You see the extensions installed on this server.",

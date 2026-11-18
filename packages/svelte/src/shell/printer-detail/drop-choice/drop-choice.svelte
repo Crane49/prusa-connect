@@ -1,13 +1,17 @@
 <!--
   The question a file dropped on a printer asks before anything goes up:
   print it now, or only copy it to the printer. Confirm closes it, and the
-  files go on their way where every other send is followed. The two choices
-  are the core's own; adding a file to a queue needs a slot a module can fill
-  here, with a callback and its own availability, which this does not have.
+  files go on their way where every other send is followed. Each action a
+  module adds in the device-upload-action slot, such as Add to queue, is a
+  choice too: the file is copied, and the action runs while it is on its way.
 
   A printer prints one file at a time, so several files are only copied, and a
   printer that cannot start a print now says why, in the words the print
   dialog uses for it. Cancel and closing the dialog send nothing.
+
+  Files a module sent open it with that module's choice picked, and ask here
+  whether to keep a copy in a storage, which the page asks beside its drop
+  zone for a file dropped there.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
@@ -22,10 +26,22 @@
   import AlertDialogTitle from '../../../primitives/alert-dialog/alert-dialog-title.svelte';
   import { Label } from '../../../primitives/label';
   import { RadioGroup, RadioGroupItem } from '../../../primitives/radio-group';
+  import { SaveToStorage } from '../save-to-storage';
   import type { DropChoiceProps } from './types';
 
-  let { names, printer, printTarget, onConfirm, onCancel }: DropChoiceProps =
-    $props();
+  let {
+    names,
+    printer,
+    printTarget,
+    actions = [],
+    preset,
+    keep,
+    onConfirm,
+    onCancel,
+  }: DropChoiceProps = $props();
+
+  const keyOf = (action: { namespace: string; id: string }): string =>
+    `action:${action.namespace}.${action.id}`;
 
   const count = $derived(names?.length ?? 0);
   const printable = $derived(count === 1 && printTarget?.ready === true);
@@ -47,7 +63,11 @@
   let picked = $state<string | undefined>(undefined);
   $effect.pre(() => {
     if (names === undefined || picked !== undefined) return;
-    picked = untrack(() => (printable ? 'print' : 'copy'));
+    picked = untrack(() => {
+      if (preset !== undefined) return keyOf(preset);
+
+      return printable ? 'print' : 'copy';
+    });
   });
   const choice = $derived(picked ?? 'copy');
 
@@ -58,8 +78,9 @@
   const confirm = (): void => {
     if (stale) return;
     const print = choice === 'print';
+    const action = actions.find((one) => keyOf(one) === choice);
     picked = undefined;
-    onConfirm(print);
+    onConfirm(print, action);
   };
 </script>
 
@@ -111,7 +132,26 @@
           </span>
         </span>
       </Label>
+      {#each actions as action (keyOf(action))}
+        <Label variant="option">
+          <RadioGroupItem value={keyOf(action)} class="mt-0.5" />
+          <span
+            class="flex flex-col gap-0.5"
+            data-slot="device-upload-action"
+            data-module={action.namespace}
+            data-section={action.id}
+          >
+            <span>{action.title}</span>
+            <span class="text-sm text-muted-foreground">
+              {t('printerDetailFiles.drop.actionNote')}
+            </span>
+          </span>
+        </Label>
+      {/each}
     </RadioGroup>
+    {#if keep}
+      <SaveToStorage {...keep} />
+    {/if}
     <AlertDialogFooter>
       <AlertDialogCancel size="lg">{t('primitives.cancel')}</AlertDialogCancel>
       <AlertDialogAction size="lg" disabled={stale} onclick={confirm}>

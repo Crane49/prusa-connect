@@ -184,8 +184,8 @@ export class Transfers {
 
   /**
    * The send waiting for the person to say whether to replace the file the
-   * printer holds under its name. They answer through replaceTaken and
-   * keepTaken.
+   * printer holds under its name. They answer through replaceTaken,
+   * bothTaken and keepTaken.
    */
   get taken(): TakenName | undefined {
     return this.#taken[0];
@@ -213,6 +213,29 @@ export class Transfers {
       return this.print(waiting.storage, waiting.source, waiting.path, true);
     }
     await this.send(waiting.storage, waiting.source, waiting.path, true);
+
+    return undefined;
+  }
+
+  /**
+   * Sends the waiting file again under a free name, such as part[1].bgcode,
+   * and leaves the printer's file where it is. It ends as replaceTaken does.
+   */
+  async bothTaken(): Promise<PrintEnd | undefined> {
+    const [waiting, ...rest] = this.#taken;
+    this.#taken = rest;
+    if (waiting === undefined) return undefined;
+
+    if (waiting.print === true) {
+      return this.print(
+        waiting.storage,
+        waiting.source,
+        waiting.path,
+        false,
+        true,
+      );
+    }
+    await this.send(waiting.storage, waiting.source, waiting.path, false, true);
 
     return undefined;
   }
@@ -371,6 +394,7 @@ export class Transfers {
     source: string,
     path: string,
     replace = false,
+    keepBoth = false,
   ): Promise<SentFile | undefined> {
     const resets = this.#resets;
     this.#error = undefined;
@@ -382,6 +406,7 @@ export class Transfers {
         source,
         path,
         replace,
+        keepBoth,
       );
       if (resets !== this.#resets) return undefined;
       const row = rowOf(answered.transfer);
@@ -399,7 +424,7 @@ export class Transfers {
       return answered;
     } catch (thrown) {
       if (resets === this.#resets) {
-        this.#failed(thrown, replace, { storage, source, path });
+        this.#failed(thrown, replace || keepBoth, { storage, source, path });
       }
 
       return undefined;
@@ -421,11 +446,17 @@ export class Transfers {
     source: string,
     path: string,
     replace = false,
+    keepBoth = false,
   ): Promise<PrintEnd | undefined> {
     return this.#printing(
-      { deviceId: this.#deviceId, path, storage, source, replace },
+      { deviceId: this.#deviceId, path, storage, source, replace, keepBoth },
       (thrown) => {
-        this.#failed(thrown, replace, { storage, source, path, print: true });
+        this.#failed(thrown, replace || keepBoth, {
+          storage,
+          source,
+          path,
+          print: true,
+        });
       },
     );
   }
@@ -458,11 +489,11 @@ export class Transfers {
   }
 
   // A send or print the server refused. A name the printer holds waits in
-  // `taken` for the person's answer, unless this send already replaced it;
+  // `taken` for the person's answer, unless this send already carried one;
   // anything else is the store's error.
-  #failed(thrown: unknown, replace: boolean, waiting: TakenName): void {
+  #failed(thrown: unknown, answered: boolean, waiting: TakenName): void {
     const fault = faultOf(thrown);
-    if (fault.code === FILE_NAME_TAKEN && !replace) {
+    if (fault.code === FILE_NAME_TAKEN && !answered) {
       this.#taken = [...this.#taken, waiting];
     } else {
       this.#error = fault;

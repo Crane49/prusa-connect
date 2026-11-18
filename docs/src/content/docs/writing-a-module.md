@@ -972,6 +972,8 @@ Sign in, and the app draws what the manifest declared:
 | `file-tab` | `file_tab` | A tab of the module's own on a file's page, after the core's tabs. |
 | `camera-section` | `camera_section` | A section under each camera in a printer's Cameras tab. A module draws nothing for a camera it does not know. |
 | `camera-view` | `camera_view` | The live view of a camera of a type the module offers, drawn over its picture while a person plays it. |
+| `device-file-action` | `device_file_action` | An item in the action menu of each file on a printer's Files tab. A folder has none. |
+| `device-upload-action` | `device_upload_action` | A choice in the question a file dropped on a printer's page asks. The action runs once the copy is on its way. |
 
 <!-- end generated -->
 
@@ -2708,7 +2710,10 @@ draw no link, because a click there moves the card.
 A card often links to the module's own page. A module does not know the
 namespace it was installed under, so ask the host for the address:
 `host.pageHref('parts')` answers `/m/<namespace>/parts`, and a query such as
-`?part=12` can follow it.
+`?part=12` can follow it. `host.namespace` is the namespace itself, for a
+module that builds the id of its own tab or the address of its own routes.
+`host.self` is the module's own instance as the server's grants name it, such
+as `sink:simple-queue`, for a page that lets the module act by itself.
 
 A few rules keep a wall of cards cheap for the printers and safe for the
 page:

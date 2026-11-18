@@ -445,5 +445,7 @@
   "app.settings.extensions.fault.requiredBy": "Toto rozšíření vyžadují jiná nainstalovaná rozšíření: {requires}",
   "app.settings.extensions.fault.requiredBy.action": "Nejdřív ta rozšíření odeber, nebo je aktualizuj na vydání, která změně vyhovují.",
   "app.settings.extensions.fault.planChanged": "Rozšíření, která instalace přidává, se od chvíle, kdy jsi je četl, změnila. Nyní přidává: {found}",
-  "app.settings.extensions.fault.planChanged.action": "Nic se nenainstalovalo. Otevři instalaci znovu, přečti si, co teď přidává, a schval ji."
+  "app.settings.extensions.fault.planChanged.action": "Nic se nenainstalovalo. Otevři instalaci znovu, přečti si, co teď přidává, a schval ji.",
+  "app.printerDetail.undeclaredChoice.note": "Rozšíření chtělo poslat soubory s volbou, kterou na této stránce nenabízí, takže soubory zůstaly, kde byly.",
+  "app.printerDetail.undeclaredChoice.title": "Na tiskárnu se nic neposlalo"
 }

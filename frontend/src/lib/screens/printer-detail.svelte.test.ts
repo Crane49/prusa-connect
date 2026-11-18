@@ -189,6 +189,271 @@ describe('the upload area on the printer page', () => {
   });
 });
 
+describe('files a module sends to the printer page', () => {
+  const uploads = json(200, {
+    items: [
+      {
+        browse: true,
+        display_name: 'Uploads',
+        download_url: true,
+        move: true,
+        name: 'uploads',
+        ranges: true,
+        write: true,
+      },
+    ],
+  });
+  const drives = json(200, {
+    items: [
+      {
+        free_space: 1024,
+        mountpoint: '/usb',
+        name: 'usb',
+        read_only: false,
+        type: 'USB',
+      },
+    ],
+    reported: true,
+  });
+  const queueing = (): SlotRegistry => {
+    const registry = new SlotRegistry();
+    registry.declare('queue', {
+      device_upload_action: [
+        { id: 'queue', title: 'Add to queue', destructive: false },
+      ],
+    });
+
+    return registry;
+  };
+  const stored = (name: string) => ({ storage: 'uploads', path: name });
+
+  // The server takes one transfer for a printer at a time and refuses a
+  // second with TRANSFER_BUSY, so a second file sent in the same moment would
+  // never reach the printer or the module's choice.
+  it('sends the stored files of one request one after another', async () => {
+    const answers: (() => void)[] = [];
+    const sent: string[] = [];
+    const routes: Routes = {
+      'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),
+      'GET /api/v1/devices/a/files': listing,
+      'GET /api/v1/devices/a/storages': drives,
+      'GET /api/v1/storages': uploads,
+      'POST /api/v1/devices/a/files': (call) =>
+        new Promise<Response>((resolve) => {
+          const body = JSON.parse(call.body ?? '{}') as {
+            source: string;
+            path: string;
+          };
+          sent.push(body.source);
+          answers.push(() => {
+            resolve(
+              json(200, {
+                path: body.path,
+                transfer: {
+                  transfer_id: `t-${body.source}`,
+                  device_id: 'a',
+                  storage: 'uploads',
+                  source: body.source,
+                  path: body.path,
+                  state: 'done',
+                  bytes_sent: 1024,
+                  bytes_total: 1024,
+                  started_at: '2026-11-18T08:00:00Z',
+                },
+              }),
+            );
+          });
+        }),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const registry = queueing();
+
+    await render(WithSlots, {
+      props: {
+        registry,
+        screen: PrinterDetail,
+        ctx: appContext(routes, { params: { id: 'a', tab: 'status' } }),
+      },
+    });
+    registry.requestUpload({
+      namespace: 'queue',
+      action: 'queue',
+      deviceId: 'a',
+      files: [],
+      stored: [stored('one.gcode'), stored('two.gcode')],
+    });
+
+    await vi.waitFor(() => {
+      expect(sent).toEqual(['one.gcode']);
+    });
+    expect(registry.uploadFor('a')).toBeUndefined();
+
+    answers[0]?.();
+    await vi.waitFor(() => {
+      expect(sent).toEqual(['one.gcode', 'two.gcode']);
+    });
+    answers[1]?.();
+  });
+
+  // The page stays when the person opens another printer, so the files of a
+  // request still on their way go to the printer they were sent to.
+  it('sends the rest of a request to its printer after another printer opens', async () => {
+    const answers: (() => void)[] = [];
+    const sent: string[] = [];
+    const sending =
+      (device: string) =>
+      (call: { body?: string | undefined }): Promise<Response> =>
+        new Promise<Response>((resolve) => {
+          const body = JSON.parse(call.body ?? '{}') as {
+            source: string;
+            path: string;
+          };
+          sent.push(`${device}:${body.source}`);
+          answers.push(() => {
+            resolve(
+              json(200, {
+                path: body.path,
+                transfer: {
+                  transfer_id: `t-${device}-${body.source}`,
+                  device_id: device,
+                  storage: 'uploads',
+                  source: body.source,
+                  path: body.path,
+                  state: 'done',
+                  bytes_sent: 1024,
+                  bytes_total: 1024,
+                  started_at: '2026-11-18T08:00:00Z',
+                },
+              }),
+            );
+          });
+        });
+    const routes: Routes = {
+      'GET /api/v1/devices': json(200, {
+        items: [printer('a'), printer('b')],
+        total: 2,
+      }),
+      'GET /api/v1/devices/a/files': listing,
+      'GET /api/v1/devices/b/files': listing,
+      'GET /api/v1/devices/a/storages': drives,
+      'GET /api/v1/devices/b/storages': drives,
+      'GET /api/v1/storages': uploads,
+      'POST /api/v1/devices/a/files': sending('a'),
+      'POST /api/v1/devices/b/files': sending('b'),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const registry = queueing();
+
+    const screen = await render(WithSlots, {
+      props: {
+        registry,
+        screen: PrinterDetail,
+        ctx: appContext(routes, { params: { id: 'a', tab: 'status' } }),
+      },
+    });
+    registry.requestUpload({
+      namespace: 'queue',
+      action: 'queue',
+      deviceId: 'a',
+      files: [],
+      stored: [stored('one.gcode'), stored('two.gcode')],
+    });
+    await vi.waitFor(() => {
+      expect(sent).toEqual(['a:one.gcode']);
+    });
+
+    await screen.rerender({
+      registry,
+      screen: PrinterDetail,
+      ctx: appContext(routes, { params: { id: 'b', tab: 'status' } }),
+    });
+    answers[0]?.();
+
+    await vi.waitFor(() => {
+      expect(sent).toEqual(['a:one.gcode', 'a:two.gcode']);
+    });
+    answers[1]?.();
+  });
+
+  // The module's tab shows no drop zone, so a printer with no drive to write
+  // to would take the request and say nothing.
+  it('says why a printer with no drive takes none of them', async () => {
+    const routes: Routes = {
+      'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),
+      'GET /api/v1/devices/a/files': listing,
+      'GET /api/v1/devices/a/storages': json(200, {
+        items: [],
+        reported: true,
+      }),
+      'GET /api/v1/storages': uploads,
+    };
+    const fetcher = stubFetch(routes);
+    vi.stubGlobal('fetch', fetcher.fetch);
+    const said = vi.spyOn(toast, 'error');
+    const registry = queueing();
+
+    await render(WithSlots, {
+      props: {
+        registry,
+        screen: PrinterDetail,
+        ctx: appContext(routes, { params: { id: 'a', tab: 'status' } }),
+      },
+    });
+    registry.requestUpload({
+      namespace: 'queue',
+      action: 'queue',
+      deviceId: 'a',
+      files: [],
+      stored: [stored('one.gcode')],
+    });
+
+    await vi.waitFor(() => {
+      expect(said).toHaveBeenCalledOnce();
+    });
+    expect(registry.uploadFor('a')).toBeUndefined();
+    expect(fetcher.count('POST /api/v1/devices/a/files')).toBe(0);
+  });
+
+  // A choice the module never declared has nothing to run on the files, so
+  // the page sends none and says so rather than dropping the request.
+  it('says that nothing was sent for a choice the module never declared', async () => {
+    const routes: Routes = {
+      'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),
+      'GET /api/v1/devices/a/files': listing,
+      'GET /api/v1/devices/a/storages': drives,
+      'GET /api/v1/storages': uploads,
+    };
+    const fetcher = stubFetch(routes);
+    vi.stubGlobal('fetch', fetcher.fetch);
+    const said = vi.spyOn(toast, 'error');
+    const registry = queueing();
+
+    await render(WithSlots, {
+      props: {
+        registry,
+        screen: PrinterDetail,
+        ctx: appContext(routes, { params: { id: 'a', tab: 'status' } }),
+      },
+    });
+    registry.requestUpload({
+      namespace: 'queue',
+      action: 'undeclared',
+      deviceId: 'a',
+      files: [],
+      stored: [stored('one.gcode')],
+    });
+
+    await vi.waitFor(() => {
+      expect(said).toHaveBeenCalledWith(
+        'app.printerDetail.undeclaredChoice.title',
+        expect.anything(),
+      );
+    });
+    expect(registry.uploadFor('a')).toBeUndefined();
+    expect(fetcher.count('POST /api/v1/devices/a/files')).toBe(0);
+  });
+});
+
 describe('a module tab on the printer page', () => {
   const routes: Routes = {
     'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),

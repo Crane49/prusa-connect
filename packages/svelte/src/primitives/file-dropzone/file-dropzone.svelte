@@ -138,8 +138,11 @@
   ondrop={drop}
   class={[
     'rounded-md border border-dashed border-border transition-colors',
+    // A compact zone in a narrow box centres its line, and the button under
+    // it takes the whole width; from 24rem up the button sits at the line's
+    // end.
     compact
-      ? 'flex flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2'
+      ? '@container/dropzone flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-3 py-2'
       : 'flex flex-col items-center gap-4 p-6 text-center',
     'state-dragging-over:border-primary state-dragging-over:bg-accent',
     'state-rejected:border-destructive',
@@ -151,7 +154,14 @@
     aria-hidden="true"
     class={['text-muted-foreground', compact ? 'size-4 shrink-0' : 'size-8']}
   />
-  <p class="text-sm text-muted-foreground">{invitation}</p>
+  <p
+    class={[
+      'text-sm text-muted-foreground',
+      compact && 'text-center @sm/dropzone:text-start',
+    ]}
+  >
+    {invitation}
+  </p>
   <label for={inputId} class="sr-only">{inputLabel}</label>
   <input
     bind:this={input}
@@ -169,7 +179,9 @@
     variant="secondary"
     size={compact ? 'sm' : 'md'}
     {disabled}
-    class={compact ? 'ml-auto shrink-0' : undefined}
+    class={compact
+      ? 'w-full shrink-0 @sm/dropzone:ms-auto @sm/dropzone:w-auto'
+      : undefined}
     onclick={() => input?.click()}
   >
     {chooseWords}

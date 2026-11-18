@@ -15,6 +15,7 @@
   args={{
     name: 'Bracket_Left_Reinforced_v4_FINAL.gcode',
     onReplace: () => undefined,
+    onKeepBoth: () => undefined,
     onKeep: () => undefined,
   }}
 />
@@ -26,6 +27,7 @@
     name: 'Bracket_Left_Reinforced_v4_FINAL.gcode',
     print: true,
     onReplace: () => undefined,
+    onKeepBoth: () => undefined,
     onPrintHeld: () => undefined,
     onKeep: () => undefined,
   }}

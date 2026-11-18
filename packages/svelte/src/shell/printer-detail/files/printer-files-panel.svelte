@@ -75,6 +75,7 @@
     keep,
     checkingStorages = false,
     onRecheck,
+    fileActions,
   }: PrinterFilesPanelProps = $props();
 
   /** The entries a confirmed Delete would remove. Empty closes the dialog. */
@@ -479,6 +480,9 @@
     },
     onDelete: (entry) => {
       pending = [entry];
+    },
+    get fileActions() {
+      return fileActions;
     },
   };
 

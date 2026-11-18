@@ -41,6 +41,8 @@ export type SendsRunning = Pick<
   | 'progress'
   | 'landedAt'
   | 'awaitLanding'
+  | 'whenOnItsWay'
+  | 'notOnItsWay'
   | 'forget'
   | 'stop'
   | 'stopping'
@@ -249,6 +251,11 @@ export class Sends {
    * in one request, so the print goes on when the page is closed. A start
    * the printer refuses answers `'refused'` and hands how it ended, with the
    * printer's fault, to `onRefused`.
+   *
+   * `onItsWay` runs once this server is sending the file to the printer,
+   * with the path it lands at, which is another name when the person kept
+   * both files. It does not wait for the landing, and a send that never
+   * starts never runs it.
    */
   async send(
     file: File,
@@ -260,10 +267,12 @@ export class Sends {
       keep,
       print = false,
       onRefused,
+      onItsWay,
     }: {
       keep?: string | undefined;
       print?: boolean;
       onRefused?: (ended: PrintEnd) => void;
+      onItsWay?: ((path: string) => void) | undefined;
     } = {},
   ): Promise<SendOutcome> {
     const resets = this.#resets;
@@ -311,7 +320,23 @@ export class Sends {
     // A landing of the same file to the same place from an earlier send is
     // not this one's.
     this.#running.awaitLanding(movedOf(job));
+    if (onItsWay !== undefined) {
+      this.#running.whenOnItsWay(
+        { deviceId, storage, source: job.source },
+        onItsWay,
+      );
+    }
     this.#put(job);
+
+    // A send that started no transfer takes its wait back, so a later send
+    // of the same file does not run it.
+    const notSent = (end: SendOutcome): SendOutcome => {
+      if (onItsWay !== undefined) {
+        this.#running.notOnItsWay({ deviceId, storage, source: job.source });
+      }
+
+      return end;
+    };
 
     if (job.print) {
       const printed = await transfers.print(
@@ -325,7 +350,7 @@ export class Sends {
       if (printed?.answer !== undefined) {
         onRefused?.(printed);
 
-        return 'refused';
+        return notSent('refused');
       }
     } else {
       const sent = await transfers.send(storage, job.source, job.destination);
@@ -349,7 +374,7 @@ export class Sends {
     // with the parameter `event` set to "stopped", which is not a failure.
     const stopped = transfers.error?.params.event === 'stopped';
 
-    return stopped ? 'cancelled' : 'failed';
+    return notSent(stopped ? 'cancelled' : 'failed');
   }
 
   /**

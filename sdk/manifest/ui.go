@@ -140,7 +140,7 @@ func entryKeys(keys []string, slot Slot) []string {
 	out := slices.Clone(keys)
 
 	switch slot.Subject {
-	case SubjectFile:
+	case SubjectFile, SubjectPrinterFile:
 		out = append(out, "file_types")
 	case SubjectDevice:
 		out = append(out, "devices")

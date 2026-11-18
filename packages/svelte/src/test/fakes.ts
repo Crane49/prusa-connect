@@ -135,7 +135,7 @@ export const fakeLoaderClient = (
           config: {},
           enabled: true,
           generation: 1,
-          kind: 'module',
+          kind: 'sink',
           name: module.namespace,
           namespace: module.namespace,
           required: false,

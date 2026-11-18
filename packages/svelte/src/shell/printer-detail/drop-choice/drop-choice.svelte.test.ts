@@ -36,7 +36,24 @@ describe('DropChoice', () => {
       .toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(true);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(true, undefined);
+  });
+
+  it('offers the action a module runs on a landed file as a choice', async () => {
+    const onConfirm = vi.fn();
+    const action = {
+      namespace: 'simple-queue',
+      id: 'queue',
+      title: 'Add to queue',
+    };
+    await render(DropChoice, {
+      props: props({ onConfirm, actions: [action] }),
+    });
+
+    await page.getByRole('radio', { name: /Add to queue/u }).click();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(false, action);
   });
 
   it('copies only when the person picks it', async () => {
@@ -46,7 +63,7 @@ describe('DropChoice', () => {
     await page.getByRole('radio', { name: /Only copy to printer/u }).click();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(false);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(false, undefined);
   });
 
   it('does not copy a file picked to print when the printer stops being able to', async () => {
@@ -85,7 +102,7 @@ describe('DropChoice', () => {
       .toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
 
-    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(false);
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(false, undefined);
   });
 
   it('only copies several files, because a printer prints one at a time', async () => {
