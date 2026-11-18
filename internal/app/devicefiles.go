@@ -654,6 +654,10 @@ func deviceThumbnail(picture printfile.Thumbnail, size int64, modified int64) ht
 func (d *devices) Send(
 	ctx context.Context, principal string, id string, upload httpapi.DeviceUpload,
 ) (httpapi.DeviceTransfer, error) {
+	if err := httpapi.ValidateUpload(upload); err != nil {
+		return httpapi.DeviceTransfer{}, err
+	}
+
 	return outliveCaller(ctx, d, id, upload.Path, func(relaying context.Context) (httpapi.DeviceTransfer, error) {
 		return d.send(relaying, principal, id, upload, nil, false)
 	})
@@ -724,10 +728,14 @@ func (d *devices) relay(
 
 	// Only asked here. A replace deletes the printer's file below, once every
 	// check that can still refuse the send has passed.
-	replacing, err := d.destination(ctx, entry, id, upload, content, reuse)
+	replacing, at, err := d.destination(ctx, entry, id, upload, content, reuse)
 	if err != nil {
 		return httpapi.DeviceTransfer{}, err
 	}
+
+	// keep_both may have moved the file to a free name. Every step below, the
+	// record and the event stream included, names the path it lands at.
+	upload.Path = at
 
 	// The transfer runs under a context of this plane's own, derived from the
 	// caller's. Cancelling it is how another request stops a transfer: the

@@ -4800,6 +4800,8 @@ export interface components {
             total: number;
         };
         DevicePrint: {
+            /** @description With a storage, send under a free name when the printer holds another file at path, such as usb/part[1].bgcode, keep the printer's file and print the one sent. The answer's path names the file that was started. Refused together with replace. */
+            keep_both?: boolean;
             /** @description The file on the printer, storage-prefixed and relative, such as usb/bracket.bgcode. With a storage it is where the file lands; without one it is the file that is printed. */
             path: string;
             /** @description With a storage, delete the file the printer holds at path before sending this one. Without it any file there other than this server's unchanged copy of the same stored file is refused with core.printer/FILE_NAME_TAKEN, so a page can ask the person first. */
@@ -5016,6 +5018,8 @@ export interface components {
             warning?: string;
         };
         DeviceUpload: {
+            /** @description Send under a free name when the printer already holds a file at path, such as usb/part[1].bgcode, and keep the printer's file. The transfer names the path the file lands at. Refused together with replace. */
+            keep_both?: boolean;
             /** @description Where the file lands on the printer: storage-prefixed and relative, such as usb/part.bgcode. */
             path: string;
             /** @description Delete a file the printer already holds at path before sending this one. Without it such a file is refused with core.printer/FILE_NAME_TAKEN, so a page can ask the person first. */

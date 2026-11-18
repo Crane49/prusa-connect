@@ -390,9 +390,10 @@ func (f moduleFleet) Print(
 	}
 
 	result, err := f.fleet.StartPrint(ctx, who, params.ID, httpapi.DevicePrint{
-		Storage: params.Storage,
-		Source:  params.Source,
-		Path:    params.Path,
+		Storage:  params.Storage,
+		Source:   params.Source,
+		Path:     params.Path,
+		KeepBoth: params.KeepBoth,
 	})
 	if err != nil {
 		return deviceapi.Started{}, f.printRefusal(ctx, err, params.Path)
@@ -403,7 +404,7 @@ func (f moduleFleet) Print(
 			result.Command.FaultCode, result.Command.MachineReason, result.Command.CommandID)
 	}
 
-	started := deviceapi.Started{CommandID: result.Command.CommandID}
+	started := deviceapi.Started{CommandID: result.Command.CommandID, Path: result.Path}
 	if result.Transfer != nil {
 		started.TransferID = result.Transfer.TransferID
 	}

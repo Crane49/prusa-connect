@@ -1145,6 +1145,12 @@ type PrintParams struct {
     Storage string `json:"storage,omitempty"`
     Source  string `json:"source,omitempty"`
     Path    string `json:"path"`
+
+    // KeepBoth sends the file under a free name when the printer holds
+    // another file at Path, such as usb/part[1].bgcode, and keeps the
+    // printer's file. Started.Path names the file that is printed. It needs a
+    // storage.
+    KeepBoth bool `json:"keep_both,omitempty"`
 }
 ```
 
@@ -1222,6 +1228,11 @@ A refused command is a Result with OK false and not a transport error. The call 
 type Started struct {
     TransferID string `json:"transfer_id,omitempty"`
     CommandID  string `json:"command_id,omitempty"`
+
+    // Path is the file on the printer that is printed. With KeepBoth it may
+    // be a numbered name and not the path asked for. A host older than
+    // KeepBoth leaves it empty.
+    Path string `json:"path,omitempty"`
 }
 ```
 

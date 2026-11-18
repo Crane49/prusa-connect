@@ -136,6 +136,9 @@ type DeviceUpload struct {
 	Source  string `json:"source"            doc:"The file's path inside that storage, relative to its root. A path a temporary upload answered (upload-storage-object with temporary=true) names a copy the server deletes once the file has landed or the transfer was stopped. After a failed send it is kept for one hour, so the same source can be sent again." maxLength:"1024"`
 	Path    string `json:"path"              doc:"Where the file lands on the printer: storage-prefixed and relative, such as usb/part.bgcode."                                                                                                                                                                                                                       maxLength:"1024"`
 	Replace bool   `json:"replace,omitempty" doc:"Delete a file the printer already holds at path before sending this one. Without it such a file is refused with core.printer/FILE_NAME_TAKEN, so a page can ask the person first."`
+	// KeepBoth sits after Replace in DevicePrint too, so one converts to the
+	// other.
+	KeepBoth bool `json:"keep_both,omitempty" doc:"Send under a free name when the printer already holds a file at path, such as usb/part[1].bgcode, and keep the printer's file. The transfer names the path the file lands at. Refused together with replace."`
 }
 
 type sendFileInput struct {
