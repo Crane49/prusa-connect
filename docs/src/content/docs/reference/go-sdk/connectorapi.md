@@ -1658,6 +1658,14 @@ const VerbFileUpload Capability = CorePrefix + "feature.file_upload"
 
 VerbFileUpload is the capability a device declares when it can be sent a file. It is a feature, not a command. A driver maps it to its own protocol.
 
+#### `VerbSetPrinterReady` {#connectorapi-verbsetprinterready}
+
+```go
+const VerbSetPrinterReady Capability = CorePrefix + "command.set_printer_ready"
+```
+
+VerbSetPrinterReady is the command that makes a device ready for its next job. A state a transition of this verb leads to is the device's ready state.
+
 #### `ArgumentKey` {#connectorapi-argumentkey}
 
 ```go

@@ -30,7 +30,7 @@ const (
 	VerbPausePrint           = connectorapi.Capability("core.command.pause_print")
 	VerbResumePrint          = connectorapi.Capability("core.command.resume_print")
 	VerbStopPrint            = connectorapi.Capability("core.command.stop_print")
-	VerbSetPrinterReady      = connectorapi.Capability("core.command.set_printer_ready")
+	VerbSetPrinterReady      = connectorapi.VerbSetPrinterReady
 	VerbCancelPrinterReady   = connectorapi.Capability("core.command.cancel_printer_ready")
 	VerbSetIdle              = connectorapi.Capability("core.command.set_idle")
 	VerbResetPrinter         = connectorapi.Capability("core.command.reset_printer")

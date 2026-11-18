@@ -731,6 +731,17 @@ type Device struct {
     Capabilities    []string `json:"capabilities,omitempty"`
     CapabilityEpoch uint64   `json:"capability_epoch,omitempty"`
 
+    // Accepts is the enabled verbs the device takes in the state it is in,
+    // sorted, as its connector declared them. It is nil for a device whose
+    // connector declares no such list, and empty for one that takes nothing,
+    // as a device that is away does. It is a hint for deciding what to offer,
+    // and the device's own answer to a command stays the decision.
+    Accepts []string `json:"accepts"`
+
+    // Ready says a person told the device its bed is clear: it is connected
+    // and in a state `core.command.set_printer_ready` leads to.
+    Ready bool `json:"ready,omitempty"`
+
     // State is the addressable state tree the device last reported, keyed by
     // path. `/state` carries the state machine value.
     //

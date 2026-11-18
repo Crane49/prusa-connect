@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/prusa3d/prusa-connect/internal/app/resourcehost"
 	"github.com/prusa3d/prusa-connect/internal/authz"
 	"github.com/prusa3d/prusa-connect/internal/kernel/admission"
 	"github.com/prusa3d/prusa-connect/internal/kernel/deviceissue"
+	"github.com/prusa3d/prusa-connect/internal/kernel/devicestate"
 	"github.com/prusa3d/prusa-connect/internal/kernel/machinetext"
 	"github.com/prusa3d/prusa-connect/internal/kernel/ref"
 	"github.com/prusa3d/prusa-connect/internal/transport/http/httpapi"
@@ -38,6 +40,9 @@ type moduleFleet struct {
 	// Reading the fleet resolves the principal inside the listing; admitting a
 	// device is a permission of its own and is asked for here.
 	grants httpapi.GrantStore
+	// states is the state set each connector instance declared, and nil
+	// where none declared one.
+	states map[string]connectorapi.StateSet
 	// standing is who a call naming nobody runs as, and what it may do.
 	standing moduleStanding
 	// data is the instance's data directory, and empty when the operator
@@ -70,6 +75,7 @@ type moduleDevices interface {
 // a nil.
 type moduleFleets struct {
 	fleet      moduleDevices
+	states     map[string]connectorapi.StateSet
 	admissions *registrations
 	grants     httpapi.GrantStore
 	log        *refusalLog
@@ -77,6 +83,26 @@ type moduleFleets struct {
 
 // bind fills the holder. It runs once, before any module starts.
 func (m *moduleFleets) bind(fleet moduleDevices) { m.fleet = fleet }
+
+// bindStates fills what says which verbs a device takes in its state. It runs
+// before any module starts, for the reason bind does.
+func (m *moduleFleets) bindStates(installed devicestate.Installed) {
+	m.states = statesByInstance(installed)
+}
+
+// statesByInstance is the declared state sets keyed by connector instance,
+// which is what a device names under driver.
+func statesByInstance(installed devicestate.Installed) map[string]connectorapi.StateSet {
+	out := map[string]connectorapi.StateSet{}
+
+	for _, declaration := range installed.Declarations() {
+		for _, instance := range declaration.Instances {
+			out[instance] = declaration.States
+		}
+	}
+
+	return out
+}
 
 // bindAdmission fills what device.approve needs.
 //
@@ -98,6 +124,7 @@ func (m *moduleFleets) forModule(module resourcehost.Module) deviceapi.Fleet {
 
 	return moduleFleet{
 		fleet:      m.fleet,
+		states:     m.states,
 		admissions: m.admissions,
 		grants:     m.grants,
 		standing:   standingOf(module),
@@ -129,7 +156,7 @@ func (f moduleFleet) List(ctx context.Context, params deviceapi.ListParams) (dev
 
 	items := make([]deviceapi.Device, 0, len(page.Items))
 	for _, item := range page.Items {
-		items = append(items, moduleDevice(item))
+		items = append(items, f.device(item))
 	}
 
 	return deviceapi.Page{
@@ -164,7 +191,7 @@ func (f moduleFleet) Get(ctx context.Context, params deviceapi.GetParams) (devic
 		return deviceapi.Device{}, moduleRefusal(err)
 	}
 
-	return moduleDevice(device), nil
+	return f.device(device), nil
 }
 
 // Command sends one verb to one device.
@@ -718,6 +745,42 @@ func moduleDevice(device httpapi.Device) deviceapi.Device {
 		Dialog:          moduleDialog(device),
 		Retired:         device.Retired != nil,
 	}
+}
+
+// device is one device as a module reads it, with what its connector declared
+// about the state it is in.
+func (f moduleFleet) device(device httpapi.Device) deviceapi.Device {
+	out := moduleDevice(device)
+
+	set, declared := f.states[device.Driver]
+	if !declared {
+		return out
+	}
+
+	state := connectorapi.StateName(jobText(device.State[printerStatePath]))
+	out.Ready = device.Connected && slices.ContainsFunc(set.Transitions, func(move connectorapi.Transition) bool {
+		return move.Verb == connectorapi.VerbSetPrinterReady && move.To == state
+	})
+
+	if !set.Guarded() {
+		return out
+	}
+
+	out.Accepts = []string{}
+
+	if !device.Connected {
+		return out
+	}
+
+	for _, verb := range device.Capabilities {
+		if set.Accepted(state, connectorapi.Capability(verb)) {
+			out.Accepts = append(out.Accepts, verb)
+		}
+	}
+
+	slices.Sort(out.Accepts)
+
+	return out
 }
 
 // moduleIssues is the listing's issues as the contract publishes them.

@@ -422,6 +422,7 @@ func serveOver(
 	// connectors were mounted onto the fleet a moment ago. Nothing that reads
 	// them runs until the Reload below.
 	supervision.fleets.bind(fleet)
+	supervision.fleets.bindStates(states)
 	supervision.fleets.bindAdmission(&admissions, graph)
 
 	// A sink that takes samples is handed the whole tree of each printer it
