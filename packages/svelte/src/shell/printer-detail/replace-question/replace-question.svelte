@@ -9,6 +9,11 @@
   printed has one more: Print the printer's file starts the one already there
   and sends nothing. A file dropped with a module's choice, such as Add to
   queue, has Use the printer's file, which hands that file to the module.
+
+  A file the printer lists read-only cannot be replaced: the printer refuses
+  to delete it, most likely because it is open on its screen or still
+  arriving. The question says so and offers no Replace. Keep both still
+  goes, as it deletes nothing.
 -->
 <script lang="ts">
   import { t } from '../../../i18n';
@@ -16,6 +21,7 @@
   import AlertDialogAction from '../../../primitives/alert-dialog/alert-dialog-action.svelte';
   import AlertDialogCancel from '../../../primitives/alert-dialog/alert-dialog-cancel.svelte';
   import AlertDialogContent from '../../../primitives/alert-dialog/alert-dialog-content.svelte';
+  import AlertDialogDescription from '../../../primitives/alert-dialog/alert-dialog-description.svelte';
   import AlertDialogHeader from '../../../primitives/alert-dialog/alert-dialog-header.svelte';
   import AlertDialogTitle from '../../../primitives/alert-dialog/alert-dialog-title.svelte';
   import type { ReplaceQuestionProps } from './types';
@@ -23,6 +29,7 @@
   let {
     name,
     print,
+    readOnly = false,
     onReplace,
     onKeepBoth,
     onPrintHeld,
@@ -42,8 +49,18 @@
   <AlertDialogContent>
     <AlertDialogHeader>
       <AlertDialogTitle>
-        {t('printerDetailFiles.replace.title', { name: name ?? '' })}
+        {t(
+          readOnly
+            ? 'printerDetailFiles.replace.readOnlyTitle'
+            : 'printerDetailFiles.replace.title',
+          { name: name ?? '' },
+        )}
       </AlertDialogTitle>
+      {#if readOnly}
+        <AlertDialogDescription>
+          {t('printerDetailFiles.replace.readOnly')}
+        </AlertDialogDescription>
+      {/if}
     </AlertDialogHeader>
     <!-- The answers do not fit the footer's row, so they stay stacked at
          every width, the ones that lose nothing on top and Cancel last. The
@@ -58,11 +75,13 @@
           ? t('printerDetailFiles.replace.cancelPrint')
           : t('primitives.cancel')}
       </AlertDialogCancel>
-      <AlertDialogAction variant="secondary" size="lg" onclick={onReplace}>
-        {printing
-          ? t('printerDetailFiles.replace.replacePrint')
-          : t('printerDetailFiles.replace.confirm')}
-      </AlertDialogAction>
+      {#if !readOnly}
+        <AlertDialogAction variant="secondary" size="lg" onclick={onReplace}>
+          {printing
+            ? t('printerDetailFiles.replace.replacePrint')
+            : t('printerDetailFiles.replace.confirm')}
+        </AlertDialogAction>
+      {/if}
       <AlertDialogAction variant="secondary" size="lg" onclick={onKeepBoth}>
         {printing
           ? t('printerDetailFiles.replace.keepBothPrint')

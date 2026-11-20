@@ -73,6 +73,11 @@ export interface TakenName {
   readonly path: string;
   /** True when the file is to be printed once it lands, not only sent. */
   readonly print?: boolean | undefined;
+  /**
+   * True when the printer lists its file under that name read-only and
+   * refuses to delete it, so it cannot be replaced now.
+   */
+  readonly readOnly?: boolean | undefined;
 }
 
 /**
@@ -523,7 +528,8 @@ export class Transfers {
   #failed(thrown: unknown, answered: boolean, waiting: TakenName): void {
     const fault = faultOf(thrown);
     if (fault.code === FILE_NAME_TAKEN && !answered) {
-      this.#taken = [...this.#taken, waiting];
+      const readOnly = fault.params.read_only === true;
+      this.#taken = [...this.#taken, { ...waiting, readOnly }];
     } else {
       this.#error = fault;
     }

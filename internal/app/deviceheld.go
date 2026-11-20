@@ -56,14 +56,14 @@ func (d *devices) destination(
 	if upload.KeepBoth {
 		at, free := freeName(ctx, entry, upload.Path)
 		if !free {
-			return "", "", nameTaken(id, upload.Path)
+			return "", "", nameTaken(id, upload.Path, false)
 		}
 
 		return "", at, nil
 	}
 
 	if !upload.Replace || held.Folder {
-		return "", "", nameTaken(id, upload.Path)
+		return "", "", nameTaken(id, upload.Path, held.ReadOnly)
 	}
 
 	return held.Path, upload.Path, nil
@@ -103,10 +103,15 @@ func numberedName(at string, n int) string {
 	return dir + strings.TrimSuffix(name, extension) + "[" + strconv.Itoa(n) + "]" + extension
 }
 
-func nameTaken(id, at string) error {
+// nameTaken refuses a send onto a name the printer holds. readOnly is the
+// printer listing its file read-only, which it refuses to delete.
+func nameTaken(id, at string, readOnly bool) error {
 	return fault.PrinterFileNameTaken.
 		New("a file of that name is already on the printer").
-		With(fault.StringParam("device_id", id), fault.StringParam("path", at))
+		With(
+			fault.StringParam("device_id", id), fault.StringParam("path", at),
+			fault.BoolParam("read_only", readOnly),
+		)
 }
 
 // refusedAsHeld reports whether a failed transfer is the printer refusing a

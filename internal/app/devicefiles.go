@@ -846,7 +846,7 @@ func (d *devices) relay(
 	}
 
 	if refusedAsHeld(err) {
-		return httpapi.DeviceTransfer{}, nameTaken(id, upload.Path)
+		return httpapi.DeviceTransfer{}, nameTaken(id, upload.Path, false)
 	}
 
 	if err != nil {

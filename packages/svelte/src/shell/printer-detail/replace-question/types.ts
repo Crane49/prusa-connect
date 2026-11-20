@@ -3,6 +3,11 @@ export interface ReplaceQuestionProps {
   name: string | undefined;
   /** True when the file is to be printed once it replaces the other. */
   print?: boolean | undefined;
+  /**
+   * True when the printer lists its file read-only and refuses to delete it,
+   * so the question says why and offers no replace.
+   */
+  readOnly?: boolean | undefined;
   onReplace: () => void;
   /** Sends the file under a free name and leaves the printer's file alone. */
   onKeepBoth: () => void;

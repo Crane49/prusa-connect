@@ -29,6 +29,8 @@
     uploading: 'printerDetail.pendingUpload.uploading',
     waiting: 'printerDetail.pendingUpload.waiting',
     asking: 'printerDetail.pendingUpload.asking',
+    checking: 'printerDetail.pendingUpload.checking',
+    replacing: 'printerDetail.pendingUpload.replacing',
     sending: 'printerDetail.pendingUpload.sending',
   };
 

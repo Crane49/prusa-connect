@@ -36,6 +36,8 @@
     uploading: 'sendsIndicator.uploading',
     waiting: 'sendsIndicator.waiting',
     asking: 'sendsIndicator.asking',
+    checking: 'sendsIndicator.checking',
+    replacing: 'sendsIndicator.replacing',
   };
 
   let { sends }: { sends: SendsSource } = $props();

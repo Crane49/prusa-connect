@@ -39,6 +39,8 @@
   "printerDetailFiles.replace.keepBothPrint": "Beide behalten und drucken",
   "printerDetailFiles.replace.cancelPrint": "Druck abbrechen",
   "printerDetailFiles.replace.printHeld": "Datei auf dem Drucker drucken",
+  "printerDetailFiles.replace.readOnly": "Der Drucker lässt diese Datei gerade nicht ändern. Wenn sie auf dem Bildschirm des Druckers geöffnet ist, schließen Sie sie dort; wenn sie noch ankommt, warten Sie, bis sie da ist. Versuchen Sie es dann erneut.",
+  "printerDetailFiles.replace.readOnlyTitle": "Auf diesem Drucker liegt bereits eine Datei namens {name}, und sie kann nicht ersetzt werden.",
   "printerDetailFiles.replace.replacePrint": "Ersetzen und drucken",
   "printerDetailFiles.transfers.notPrinted": "{name} wurde nicht gedruckt: {reason}",
   "printerDetailFiles.transfers.notStartedBecause": "{name} ist auf dem Drucker, aber der Drucker hat den Druck nicht gestartet: {reason}",

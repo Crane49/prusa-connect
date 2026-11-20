@@ -49,6 +49,8 @@
   "printerDetailFiles.replace.keepBothPrint": "Keep both and print",
   "printerDetailFiles.replace.cancelPrint": "Cancel print",
   "printerDetailFiles.replace.printHeld": "Print the printer's file",
+  "printerDetailFiles.replace.readOnly": "The printer does not let this file be changed now. If it is open on the printer's screen, close it there; if it is still arriving, wait until it is in. Then try again.",
+  "printerDetailFiles.replace.readOnlyTitle": "A file named {name} is already on this printer and cannot be replaced.",
   "printerDetailFiles.replace.replacePrint": "Replace and print",
   "printerDetailFiles.replace.title": "A file named {name} is already on this printer. What should happen?",
   "printerDetailFiles.refresh": "Read the folder again",

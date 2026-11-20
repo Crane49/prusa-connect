@@ -409,6 +409,46 @@ func TestNumberedNameKeepsTheExtension(t *testing.T) {
 	}
 }
 
+// A file the printer lists read-only is one it refuses to delete, so the
+// refusal says so and the page asks without offering a replace.
+func TestANameTakenByAReadOnlyFileSaysSo(t *testing.T) {
+	t.Parallel()
+
+	rig := newStickRig(t)
+	upload := httpapi.DeviceUpload{Storage: "bench", Source: "part.gcode", Path: "usb/part.gcode"}
+
+	_, err := rig.plane.Send(t.Context(), rig.owner, rig.id, upload)
+	require.Falsef(t, readOnlyParam(t, err), "a writable file was said to be read-only: %v", err)
+
+	rig.session.mu.Lock()
+	held := rig.session.files["usb/part.gcode"]
+	held.ReadOnly = true
+	rig.session.files["usb/part.gcode"] = held
+	rig.session.mu.Unlock()
+
+	_, err = rig.plane.Send(t.Context(), rig.owner, rig.id, upload)
+	require.Truef(t, readOnlyParam(t, err), "a read-only file was not said to be: %v", err)
+}
+
+// readOnlyParam is the read_only param of a FILE_NAME_TAKEN, false when it
+// carries none.
+func readOnlyParam(t *testing.T, err error) bool {
+	t.Helper()
+
+	require.Truef(t, isNameTaken(err), "answered %v, want FILE_NAME_TAKEN", err)
+
+	carried, ok := errors.AsType[*fault.Fault](err)
+	require.True(t, ok)
+
+	for _, param := range carried.Params() {
+		if param.Key == "read_only" {
+			return param.Value.String() == "true"
+		}
+	}
+
+	return false
+}
+
 // A replace confirmed while the printer is already fetching another file is
 // refused as busy, and the printer's file is still there afterwards.
 func TestAReplaceRefusedAsBusyKeepsThePrintersFile(t *testing.T) {

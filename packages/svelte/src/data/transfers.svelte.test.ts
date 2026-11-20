@@ -821,6 +821,7 @@ describe('Transfers', () => {
       source: 'a.bgcode',
       path: 'usb/a.bgcode',
       print: true,
+      readOnly: false,
     });
 
     await store.replaceTaken();

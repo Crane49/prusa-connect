@@ -772,6 +772,7 @@
 <ReplaceQuestion
   name={takenName}
   print={transfers.taken?.print}
+  readOnly={transfers.taken?.readOnly === true}
   onPrintHeld={() => {
     // Nothing is sent, so a failed request is said here as well as a refusal.
     const name = takenName ?? '';

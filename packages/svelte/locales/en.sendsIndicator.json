@@ -1,5 +1,7 @@
 {
   "sendsIndicator.asking": "Waiting for your answer",
+  "sendsIndicator.checking": "Checking the printer…",
+  "sendsIndicator.replacing": "Deleting the file on the printer…",
   "sendsIndicator.cancel": "Cancel",
   "sendsIndicator.cancelFor": "Cancel {name}",
   "sendsIndicator.heading": "Files on their way",

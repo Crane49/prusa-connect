@@ -443,7 +443,7 @@ describe('Sends', () => {
     f.endTransfer('t1', 'failed');
     flushSync();
 
-    expect(sends.rows[0]?.step).toBe('sending');
+    expect(sends.rows[0]?.step).toBe('checking');
     expect(sends.rows[0]?.progress).toBeNull();
   });
 
@@ -1120,7 +1120,7 @@ describe('Sends', () => {
     await tick();
     f.rows.shift();
 
-    expect(sends.rows[0]?.step).toBe('sending');
+    expect(sends.rows[0]?.step).toBe('checking');
     expect(sends.rows[0]?.progress).toBeNull();
     expect(sends.rows[0]?.canCancel).toBe(false);
   });
@@ -1245,6 +1245,22 @@ describe('Sends', () => {
       ['job:1', 0.5],
       ['transfer:other', null],
     ]);
+  });
+
+  // The server asks the printer about the name before it opens a transfer,
+  // which takes a printer seconds.
+  it('says the printer is being checked until the transfer is listed', async () => {
+    const f = fakes();
+    const sends = sendsOf(f);
+
+    void sends.send(file, 'p1', 'Printer 1', 'local', 'usb', { keep: '' });
+    f.finishUpload(true);
+    await tick();
+    const opened = f.rows.shift();
+    expect(sends.rows.map((row) => row.step)).toEqual(['checking']);
+
+    if (opened !== undefined) f.rows.push(opened);
+    expect(sends.rows.map((row) => row.step)).toEqual(['sending']);
   });
 
   it('a name the printer holds ends taken', async () => {
@@ -1665,14 +1681,15 @@ describe('Sends and a name the printer holds', () => {
     await tick();
     expect(ran).toEqual([]);
     const row = () => sends.rows.find((one) => one.name === 'a.bgcode');
-    // It waits like any file, and only then reads as on its way.
+    // It waits like any file, and only then reads as deleting the printer's
+    // file to make room.
     expect(row()?.step).toBe('waiting');
     expect(row()?.canCancel).toBe(true);
 
     f.endTransfer('t-tab', 'done');
     flushSync();
     await tick();
-    expect(row()?.step).toBe('sending');
+    expect(row()?.step).toBe('replacing');
     expect(ran).toEqual(['replace']);
     finish();
     await replaced;
@@ -1706,7 +1723,7 @@ describe('Sends and a name the printer holds', () => {
     expect(await copied).toBe('done');
   });
 
-  it('draws the file while the person is asked, and as sending once it is replaced', async () => {
+  it('draws the file while the person is asked, and as replacing once it is replaced', async () => {
     const { f, sends } = await dropWithTakenPrint();
     const stepOf = (name: string) =>
       sends.rows.find((row) => row.name === name)?.step;
@@ -1730,7 +1747,7 @@ describe('Sends and a name the printer holds', () => {
         }),
     );
     await tick();
-    expect(stepOf('a.bgcode')).toBe('sending');
+    expect(stepOf('a.bgcode')).toBe('replacing');
 
     finish();
     await replaced;

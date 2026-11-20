@@ -52,10 +52,14 @@ export type SendsRunning = Pick<
 /**
  * Where one file still going somewhere is: on its way to this server, on this
  * server waiting for its printer to finish the file before it, waiting for the
- * person to answer about a name the printer holds, or on its way from this
- * server to the printer.
+ * person to answer about a name the printer holds, on this server while it
+ * asks the printer about the name or deletes the printer's file to replace
+ * it, or on its way from this server to the printer. A row is `'checking'`
+ * or `'replacing'` while its job is sending and no transfer for it is listed
+ * yet.
  */
-export type SendStep = 'uploading' | 'waiting' | 'asking' | 'sending';
+export type SendStep =
+  'uploading' | 'waiting' | 'asking' | 'checking' | 'replacing' | 'sending';
 
 /**
  * What a send ended with. A job ended by `reset()` answers `'cancelled'`.
@@ -106,6 +110,8 @@ interface Job {
   /** True when the printer starts the file once it lands. */
   readonly print: boolean;
   readonly step: SendStep;
+  /** True once the person chose to replace the printer's file. */
+  readonly replacing?: boolean;
   /** The bytes of a temporary copy sent so far, and of the whole file. */
   readonly sent: number;
   readonly total: number;
@@ -154,7 +160,9 @@ export const pendingSendsOf = (
       (row) =>
         row.deviceId === deviceId &&
         row.id.startsWith('job:') &&
-        (row.step !== 'sending' ||
+        (row.step === 'uploading' ||
+          row.step === 'waiting' ||
+          row.step === 'asking' ||
           !moving.some(
             (one) =>
               onPrinter(one.path) === onPrinter(row.path) &&
@@ -261,6 +269,13 @@ export class Sends {
     const own = this.#jobs.map((job): SendRow => {
       const relay = job.step === 'sending' ? this.#transferOf(job) : undefined;
       if (relay !== undefined) claimed.add(relay.transferId);
+      // Sending, and no transfer opened yet: the server is asking the printer
+      // about the name, or deleting the printer's file to replace it.
+      const opening =
+        job.step === 'sending' &&
+        relay === undefined &&
+        !this.#running.landedAt(movedOf(job));
+      const before = job.replacing === true ? 'replacing' : 'checking';
 
       return {
         id: `job:${String(job.id)}`,
@@ -268,7 +283,7 @@ export class Sends {
         printerName: job.printerName,
         name: job.name,
         path: job.destination,
-        step: job.step,
+        step: opening ? before : job.step,
         progress: this.#progressOf(job, relay),
         mine: true,
         startedBy: undefined,
@@ -641,7 +656,7 @@ export class Sends {
 
         return undefined;
       }
-      this.#put({ ...waiting, step: 'sending' });
+      this.#put({ ...waiting, step: 'sending', replacing: true });
       try {
         return await work();
       } finally {

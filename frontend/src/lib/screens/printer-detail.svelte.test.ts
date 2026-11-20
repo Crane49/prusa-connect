@@ -937,6 +937,35 @@ describe('the landing toasts on the printer page', () => {
     error.mockRestore();
   });
 
+  // The printer refuses to delete a file it lists read-only, and the refusal
+  // says so, so the question offers no Replace.
+  it('offers no replace of a file the printer lists read-only', async () => {
+    const routes: Routes = {
+      'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),
+      'POST /api/v1/devices/a/files': problem(
+        409,
+        'core.printer/FILE_NAME_TAKEN',
+        { read_only: true },
+      ),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    await render(PrinterDetail, { props: { ctx } });
+
+    void ctx.transfers('a').send('local', 'one.gcode', 'usb/one.gcode');
+
+    await expect
+      .element(
+        page.getByText(
+          'A file named one.gcode is already on this printer and cannot be replaced.',
+        ),
+      )
+      .toBeVisible();
+    expect(
+      page.getByRole('button', { name: 'Replace' }).elements(),
+    ).toHaveLength(0);
+  });
+
   // ADR-20261106-xm4 rule 3: the Cameras tab is on the page when the printer
   // has a camera or the person may add one, and never only to say it is empty.
   it.each([

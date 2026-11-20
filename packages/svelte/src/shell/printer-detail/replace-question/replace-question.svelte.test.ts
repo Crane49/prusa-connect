@@ -70,4 +70,62 @@ describe('ReplaceQuestion', () => {
     expect(onReplace).toHaveBeenCalledOnce();
     expect(onKeep).toHaveBeenCalledOnce();
   });
+
+  it('cannot replace a file the printer holds read-only, says why, and still keeps both', async () => {
+    const onKeep = vi.fn();
+    const onKeepBoth = vi.fn();
+    await render(ReplaceQuestion, {
+      props: {
+        name: 'a.bgcode',
+        readOnly: true,
+        onReplace: vi.fn(),
+        onKeepBoth,
+        onKeep,
+      },
+    });
+
+    await expect
+      .element(
+        page.getByText(
+          /a\.bgcode is already on this printer and cannot be replaced/u,
+        ),
+      )
+      .toBeInTheDocument();
+    await expect
+      .element(page.getByText(/does not let this file be changed now/u))
+      .toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: 'Replace' }))
+      .not.toBeInTheDocument();
+    // Keep both deletes nothing, so the printer lets it go.
+    await page.getByRole('button', { name: 'Keep both' }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    expect(onKeepBoth).toHaveBeenCalledOnce();
+    expect(onKeep).toHaveBeenCalledOnce();
+  });
+
+  it('still prints the read-only file the printer holds', async () => {
+    const onPrintHeld = vi.fn();
+    await render(ReplaceQuestion, {
+      props: {
+        name: 'a.bgcode',
+        print: true,
+        readOnly: true,
+        onReplace: vi.fn(),
+        onKeepBoth: vi.fn(),
+        onPrintHeld,
+        onKeep: vi.fn(),
+      },
+    });
+
+    await expect
+      .element(page.getByRole('button', { name: 'Replace and print' }))
+      .not.toBeInTheDocument();
+    await page
+      .getByRole('button', { name: /Print the printer.s file/u })
+      .click();
+
+    expect(onPrintHeld).toHaveBeenCalledOnce();
+  });
 });
