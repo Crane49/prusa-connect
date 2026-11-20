@@ -30,11 +30,12 @@ export interface DropChoiceProps {
    */
   keep?: SaveToStorageProps | undefined;
   /**
-   * Sends the files, and starts the one file once it lands when `print`.
-   * With `action`, each file is copied to the printer and that action runs
-   * on it.
+   * Sends the files. `print` is the place in `names` of the file to start
+   * once it lands, which goes to the printer first, and is undefined when
+   * every file is only copied. With `action`, each file is copied to the
+   * printer and that action runs on it.
    */
-  onConfirm: (print: boolean, action?: DropAction) => void;
+  onConfirm: (print: number | undefined, action?: DropAction) => void;
   /**
    * Closes the dialog without sending anything.
    */

@@ -909,6 +909,34 @@ describe('the landing toasts on the printer page', () => {
     expect(success).not.toHaveBeenCalled();
     success.mockRestore();
   });
+  // A replace fails before a byte moves when the printer will not delete its
+  // file, so no transfer row says it: the page says it from the answer.
+  it('says a replace the printer refused, with the reason', async () => {
+    const error = vi.spyOn(toast, 'error').mockReturnValue('');
+    const routes: Routes = {
+      'GET /api/v1/devices': json(200, { items: [printer('a')], total: 1 }),
+      'GET /api/v1/devices/a/files': listing,
+      'POST /api/v1/devices/a/files': (call) =>
+        call.body?.includes('"replace":true') === true
+          ? problem(409, 'core.printer/STORAGE_REFUSED')
+          : problem(409, 'core.printer/FILE_NAME_TAKEN'),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    await render(PrinterDetail, { props: { ctx } });
+
+    void ctx.transfers('a').send('local', 'one.gcode', 'usb/one.gcode');
+    await page.getByRole('button', { name: 'Replace' }).click();
+
+    await vi.waitFor(() => {
+      expect(String(error.mock.calls[0]?.[0])).toMatch(
+        /^one\.gcode did not reach the printer: /u,
+      );
+    });
+    expect(error).toHaveBeenCalledOnce();
+    error.mockRestore();
+  });
+
   // ADR-20261106-xm4 rule 3: the Cameras tab is on the page when the printer
   // has a camera or the person may add one, and never only to say it is empty.
   it.each([

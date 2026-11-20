@@ -41,12 +41,9 @@
   "printerDetailStatus.stop.confirm": "Stop print",
   "printerDetailStatus.stop.detail": "This stops the print now. Its progress is lost and it cannot be resumed.",
   "printerDetailStatus.stop.title": "Stop the current print?",
-  "printerDetailStatus.transfer.cancelUpload": "Cancel",
-  "printerDetailStatus.transfer.cancelUploadFor": "Cancel the upload of {name}",
   "printerDetailStatus.transfer.heading": "Uploading",
   "printerDetailStatus.transfer.label": "Uploading {name}",
   "printerDetailStatus.transfer.stop": "Stop",
   "printerDetailStatus.transfer.stopFor": "Stop {name}",
-  "printerDetailStatus.transfer.uploading": "Uploading to the server",
   "printerDetailStatus.upload.heading": "Upload a file"
 }

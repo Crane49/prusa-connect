@@ -1,7 +1,8 @@
 <!--
-  The files on their way to a printer: those still going up from the
-  person's browser to this server, and those this server is sending to the
-  printer, each with its progress and the button that stops it. Nothing is
+  The files on their way to a printer: those this server is sending to the
+  printer, then the files this tab is sending behind them, going up to this
+  server or waiting their turn, each with its progress and the button that
+  stops it. Nothing is
   drawn while nothing moves. The Now tab draws it among the files, and a
   module's tab above its own content, so a file a module sent is seen where
   it was sent from.
@@ -10,6 +11,7 @@
   import { formatBytes, formatUnit, t } from '../../../i18n';
   import { Button, ClippedName, Progress } from '../../../primitives';
   import type { SendsIndicatorRow } from '../../sends-indicator';
+  import PendingUpload from '../pending-upload.svelte';
   import type { PrinterTransferRow, PrinterTransferSource } from './types';
 
   let {
@@ -81,42 +83,8 @@
 {/snippet}
 
 {#snippet uploadRow(upload: SendsIndicatorRow)}
-  {@const percent = upload.progress === null ? null : upload.progress * PERCENT}
   <div class="flex flex-col gap-2 rounded-sm bg-surface px-3 py-2">
-    <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-      <ClippedName name={upload.name} class="min-w-0 font-mono text-sm" />
-      <span class="shrink-0 text-xs text-muted-foreground">
-        {t('printerDetailStatus.transfer.uploading')}
-      </span>
-    </div>
-    <div class="flex items-center gap-3">
-      <Progress
-        value={percent}
-        aria-label={t('printerDetailStatus.transfer.label', {
-          name: upload.name,
-        })}
-        size="sm"
-        class="flex-1"
-      />
-      {#if percent !== null}
-        <span
-          class="shrink-0 font-mono text-xs text-muted-foreground tabular-nums"
-        >
-          {formatUnit(Math.round(percent), '%')}
-        </span>
-      {/if}
-      <Button
-        variant="ghost"
-        size="sm"
-        class="shrink-0"
-        aria-label={t('printerDetailStatus.transfer.cancelUploadFor', {
-          name: upload.name,
-        })}
-        onclick={() => onCancelUpload?.(upload.id)}
-      >
-        {t('printerDetailStatus.transfer.cancelUpload')}
-      </Button>
-    </div>
+    <PendingUpload {upload} onCancel={onCancelUpload} />
   </div>
 {/snippet}
 
@@ -125,11 +93,13 @@
     <span class={label}>
       {t('printerDetailStatus.transfer.heading')}
     </span>
-    {#each uploads ?? [] as upload (upload.id)}
-      {@render uploadRow(upload)}
-    {/each}
+    <!-- The file going to the printer first, then the files waiting their
+         turn behind it, in the order they go. -->
     {#each moving as transfer (transfer.transferId)}
       {@render transferRow(transfer)}
+    {/each}
+    {#each uploads ?? [] as upload (upload.id)}
+      {@render uploadRow(upload)}
     {/each}
   </div>
 {/if}

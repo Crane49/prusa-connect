@@ -34,6 +34,8 @@
   const STEP: Record<SendsIndicatorRow['step'], string> = {
     sending: 'sendsIndicator.sending',
     uploading: 'sendsIndicator.uploading',
+    waiting: 'sendsIndicator.waiting',
+    asking: 'sendsIndicator.asking',
   };
 
   let { sends }: { sends: SendsSource } = $props();
@@ -126,7 +128,7 @@
                   {formatUnit(Math.round(percent), '%')}
                 </span>
               {/if}
-              {#if row.canCancel && row.step === 'uploading'}
+              {#if row.canCancel && row.step !== 'sending'}
                 <Button
                   variant="ghost"
                   size="sm"

@@ -75,6 +75,7 @@
   import { client } from '../client';
   import { jobsOfPrinterHref } from '../routes';
   import type { AppContext } from '../screens';
+  import { pendingSendsOf, printFirst } from '../stores/sends.svelte';
 
   let { ctx }: { ctx: AppContext } = $props();
 
@@ -573,8 +574,6 @@
       });
   };
 
-  // Sends what was dropped, and prints it once it lands when `print` is set.
-  // The dialog closes, and the files are followed where every send is.
   // The module's choice each dropped file was sent with, by where it lands.
   // The question about a taken name reads it, to hand the printer's own file
   // to that choice. Nothing draws it. It is kept by printer and path, so one
@@ -583,31 +582,33 @@
   const dropPicks = new Map<string, DropAction>();
   const pickKey = (id: string, path: string): string => `${id}\u0000${path}`;
 
-  // With `action`, each file is copied to the printer as any other, and a
+  // Sends what was dropped, and prints the file at `print` once it lands.
+  // That file goes first, so the print starts before the copies. With
+  // `action`, each file is copied to the printer as any other, and a
   // module's action runs on it as soon as the copy is on its way, such as a
   // queue that takes the file before it has landed. A name the printer holds
   // asks first, and the action runs once the person's answer sends the file.
-  const deliver = (print: boolean, action?: DropAction): void => {
+  const deliver = (print: number | undefined, action?: DropAction): void => {
     const held = dropped;
     dropped = undefined;
     if (held === undefined || intake === undefined) return;
     const id = deviceId;
     const kept = keep && keptStorage !== undefined;
-    for (const file of held.files) {
-      const key = pickKey(id, `${held.directory}/${file.name}`);
+    for (const one of printFirst(held.files, print)) {
+      const key = pickKey(id, `${held.directory}/${one.file.name}`);
       if (action === undefined) dropPicks.delete(key);
       else dropPicks.set(key, action);
       void ctx.sends.send(
-        file,
+        one.file,
         id,
         printerName,
         kept ? keptStorage : intake,
         held.directory,
         {
           keep: kept ? keptFolder : undefined,
-          print,
+          print: one.print,
           onRefused: (ended) => {
-            landings.notPrinted(file.name, ended);
+            landings.notPrinted(one.file.name, ended);
           },
           onItsWay:
             action === undefined
@@ -661,12 +662,10 @@
       : undefined,
   );
 
-  // The files still going from the browser up to this server, for this
-  // printer alone: the shared store also holds every other printer's.
+  // This printer's files still on their way from this tab; the shared store
+  // also holds every other printer's.
   const uploads = $derived(
-    ctx.sends.rows.filter(
-      (row) => row.deviceId === deviceId && row.step === 'uploading',
-    ),
+    pendingSendsOf(ctx.sends.rows, deviceId, transfers.current),
   );
 
   const onCancelUpload = (id: string): void => {
@@ -713,6 +712,12 @@
       source: waiting.source,
     });
   };
+
+  // A file sent again after the person's answer waits for the files dropped
+  // beside it that are on their way to the printer, in the place its send
+  // kept.
+  const inTurn = <T,>(work: () => Promise<T>): Promise<T | undefined> =>
+    ctx.sends.inTurn(deviceId, work);
 
   // Sends the waiting file the way the person answered, and says what no
   // transfer row will: a start the printer refused, and a send the server
@@ -776,10 +781,10 @@
     });
   }}
   onReplace={() => {
-    answerTaken(() => transfers.replaceTaken());
+    answerTaken(() => transfers.replaceTaken(inTurn));
   }}
   onKeepBoth={() => {
-    answerTaken(() => transfers.bothTaken());
+    answerTaken(() => transfers.bothTaken(inTurn));
   }}
   onUseHeld={takenAction === undefined
     ? undefined

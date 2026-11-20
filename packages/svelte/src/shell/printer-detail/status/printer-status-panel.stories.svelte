@@ -551,6 +551,82 @@
   />
 </Story>
 
+<!-- Files dropped together go to the printer one after another: the first
+     on its way before the printer lists its transfer, the next waiting. -->
+<Story name="Waiting for the printer" asChild>
+  <PrinterStatusPanel
+    device={printer('IDLE')}
+    {telemetry}
+    {commands}
+    now={NOW}
+    uploads={[
+      {
+        id: 'job:1',
+        deviceId: 'mk4',
+        printerName: 'MK4 #1',
+        name: 'cube.bgcode',
+        step: 'sending',
+        progress: null,
+        mine: true,
+        startedBy: undefined,
+        canCancel: false,
+        stopping: false,
+      },
+      {
+        id: 'job:2',
+        deviceId: 'mk4',
+        printerName: 'MK4 #1',
+        name: 'benchy.bgcode',
+        step: 'waiting',
+        progress: null,
+        mine: true,
+        startedBy: undefined,
+        canCancel: true,
+        stopping: false,
+      },
+    ]}
+    onCancelUpload={() => undefined}
+  />
+</Story>
+
+<!-- The printer holds a file under the first name, so the person is asked
+     and the next file keeps waiting behind it. -->
+<Story name="Waiting for an answer" asChild>
+  <PrinterStatusPanel
+    device={printer('IDLE')}
+    {telemetry}
+    {commands}
+    now={NOW}
+    uploads={[
+      {
+        id: 'job:1',
+        deviceId: 'mk4',
+        printerName: 'MK4 #1',
+        name: 'cube.bgcode',
+        step: 'asking',
+        progress: null,
+        mine: true,
+        startedBy: undefined,
+        canCancel: false,
+        stopping: false,
+      },
+      {
+        id: 'job:2',
+        deviceId: 'mk4',
+        printerName: 'MK4 #1',
+        name: 'benchy.bgcode',
+        step: 'waiting',
+        progress: null,
+        mine: true,
+        startedBy: undefined,
+        canCancel: true,
+        stopping: false,
+      },
+    ]}
+    onCancelUpload={() => undefined}
+  />
+</Story>
+
 <Story name="Upload a file" asChild>
   <PrinterStatusPanel
     device={printer('IDLE')}

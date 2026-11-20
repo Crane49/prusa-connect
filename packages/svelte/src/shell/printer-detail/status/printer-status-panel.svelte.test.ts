@@ -511,13 +511,61 @@ describe('PrinterStatusPanel', () => {
       .element(page.getByText('Uploading to the server'))
       .toBeVisible();
     await expect
-      .element(page.getByRole('progressbar', { name: 'Uploading cube.bgcode' }))
+      .element(page.getByRole('progressbar', { name: 'cube.bgcode' }))
+      .toHaveAccessibleDescription('Uploading to the server');
+    await expect
+      .element(page.getByRole('progressbar', { name: 'cube.bgcode' }))
       .toHaveAttribute('aria-valuenow', '40');
 
-    await page
-      .getByRole('button', { name: 'Cancel the upload of cube.bgcode' })
-      .click();
+    await page.getByRole('button', { name: 'Cancel cube.bgcode' }).click();
     expect(onCancelUpload).toHaveBeenCalledWith('job:7');
+  });
+
+  it('says a file waits for the printer, and draws no Cancel where the file cannot be stopped', async () => {
+    await render(PrinterStatusPanel, {
+      props: props({
+        device: idle(),
+        uploads: [
+          {
+            id: 'job:8',
+            deviceId: 'p0',
+            printerName: 'MK4S #1042',
+            name: 'a.bgcode',
+            step: 'sending',
+            progress: null,
+            mine: true,
+            startedBy: undefined,
+            canCancel: false,
+            stopping: false,
+          },
+          {
+            id: 'job:9',
+            deviceId: 'p0',
+            printerName: 'MK4S #1042',
+            name: 'b.bgcode',
+            step: 'waiting',
+            progress: null,
+            mine: true,
+            startedBy: undefined,
+            canCancel: true,
+            stopping: false,
+          },
+        ],
+      }),
+    });
+
+    await expect
+      .element(page.getByText('Waiting for the printer'))
+      .toBeVisible();
+    await expect
+      .element(page.getByText('Sending to the printer'))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Cancel b.bgcode' }))
+      .toBeVisible();
+    expect(
+      page.getByRole('button', { name: 'Cancel a.bgcode' }).elements(),
+    ).toHaveLength(0);
   });
 
   it('stops a file on its way to the printer', async () => {
