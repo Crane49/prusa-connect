@@ -89,6 +89,7 @@ func TestTheHostSchemaRecordsEveryOwnersBaselineOnce(t *testing.T) {
 			"dbstore/0001_schema.sql",
 			"dbstore/0002_oidc_subject.sql",
 			"dbstore/0003_scopes_and_app_pairings.sql",
+			"dbstore/20261113T000616_page_session_parent.sql",
 			"devicestore/0001_schema.sql",
 			"devicestore/0002_job_objects.sql",
 			"devicestore/0003_printer_job_by_start.sql",
@@ -109,7 +110,7 @@ func TestTheSchemaVersionCountsTheShippedMigrations(t *testing.T) {
 	forEachEngine(t, func(t *testing.T, e engine) {
 		version, err := migrator(t, e.OpenEmpty(t), e).Version()
 		require.NoError(t, err)
-		require.Equal(t, 11, version)
+		require.Equal(t, 12, version)
 		require.LessOrEqual(t, Schema().Compat, version, "the floor is above what this build understands")
 	})
 }
@@ -347,7 +348,7 @@ func TestConcurrentFirstMigrationsAgainstOneDatabaseAllSurvive(t *testing.T) {
 		running.Wait()
 
 		require.Empty(t, errs, "a concurrent migration refused to bring the process up")
-		require.Len(t, ledgerNames(t, handles[0]), 11,
+		require.Len(t, ledgerNames(t, handles[0]), 12,
 			"the ledger does not hold exactly one row per shipped migration")
 		require.False(t, migrator(t, handles[0], e).MigrationLockHeld(t.Context()),
 			"a finished run left the migration lock held")
