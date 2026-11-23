@@ -22,13 +22,13 @@ import (
 //nolint:gosec // G101: statement text over the credential table, not a credential.
 const (
 	credentialColumns = `public_id, subject, kind, name, digest, issued_at, expires_at, idle_secs, last_seen,
-		minted_by, generation, minter_generation, root_creator, root_generation, scopes, origin`
+		minted_by, generation, minter_generation, root_creator, root_generation, scopes, origin, parent`
 
 	// A lookup reads the current generations of the subject and of the minter
 	// in the same statement, so a request costs no second round trip for them.
 	selectCredentialSQL = `SELECT c.public_id, c.subject, c.kind, c.name, c.digest, c.issued_at,
 		c.expires_at, c.idle_secs, c.last_seen, c.minted_by, c.generation, c.minter_generation,
-		c.root_creator, c.root_generation, c.scopes, c.origin,
+		c.root_creator, c.root_generation, c.scopes, c.origin, c.parent,
 		COALESCE(g.generation, 0), COALESCE(m.generation, 0), COALESCE(r.generation, 0)
 		FROM auth_credential c
 		LEFT JOIN auth_subject_generation g ON g.subject = c.subject
@@ -52,7 +52,7 @@ const (
 	// Save means "write this row", so a caller never has to know which of the
 	// two happens.
 	upsertCredentialSQL = `INSERT INTO auth_credential (` + credentialColumns + `)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (public_id) DO UPDATE SET
 			subject = excluded.subject,
 			kind = excluded.kind,
@@ -68,11 +68,17 @@ const (
 			root_creator = excluded.root_creator,
 			root_generation = excluded.root_generation,
 			scopes = excluded.scopes,
-			origin = excluded.origin`
+			origin = excluded.origin,
+			parent = excluded.parent`
 
 	touchCredentialSQL = `UPDATE auth_credential SET last_seen = ? WHERE public_id = ?`
 
-	deleteCredentialSQL = `DELETE FROM auth_credential WHERE public_id = ?`
+	// A revocation takes the page sessions the credential opened with it.
+	deleteCredentialSQL = `DELETE FROM auth_credential WHERE public_id = ? OR (parent = ? AND parent <> '')`
+
+	// The page sessions one app pairing credential opened, oldest first.
+	selectChildCredentialsSQL = `SELECT ` + credentialColumns +
+		` FROM auth_credential WHERE parent = ? AND parent <> '' ORDER BY issued_at, public_id`
 
 	deleteSubjectCredentialsSQL = `DELETE FROM auth_credential WHERE subject = ?`
 
@@ -159,7 +165,18 @@ func (c *Credentials) Lookup(ctx context.Context, publicID string) (auth.Credent
 
 // ListSubject returns every row held for one subject, oldest first.
 func (c *Credentials) ListSubject(ctx context.Context, subject string) ([]auth.Credential, error) {
-	rows, err := c.db.QueryContext(ctx, c.engine.Q(selectSubjectCredentialsSQL), subject)
+	return c.list(ctx, selectSubjectCredentialsSQL, subject)
+}
+
+// Children returns the page sessions one app pairing credential opened,
+// oldest first.
+func (c *Credentials) Children(ctx context.Context, parent string) ([]auth.Credential, error) {
+	return c.list(ctx, selectChildCredentialsSQL, parent)
+}
+
+// list reads the rows one statement names by one value, in its order.
+func (c *Credentials) list(ctx context.Context, query, subject string) ([]auth.Credential, error) {
+	rows, err := c.db.QueryContext(ctx, c.engine.Q(query), subject)
 	if err != nil {
 		return nil, fmt.Errorf("list the credentials of %q: %w", subject, err)
 	}
@@ -205,7 +222,7 @@ func scanCredential(row scanner, extra ...any) (auth.Credential, error) {
 
 	dest := append([]any{&cred.PublicID, &cred.Subject, &kind, &cred.Name, &digest,
 		&issued, &expires, &idleSecs, &lastSeen, &cred.MintedBy, &cred.Generation, &cred.MinterGeneration,
-		&cred.RootCreator, &cred.RootGeneration, &scopes, &cred.Origin}, extra...)
+		&cred.RootCreator, &cred.RootGeneration, &scopes, &cred.Origin, &cred.Parent}, extra...)
 
 	err := row.Scan(dest...)
 	if err != nil {
@@ -243,7 +260,7 @@ func (c *Credentials) Save(ctx context.Context, cred auth.Credential) error {
 		cred.PublicID, cred.Subject, cred.Kind.String(), cred.Name, hex.EncodeToString(cred.Digest[:]),
 		cred.IssuedAt.UTC(), cred.ExpiresAt.UTC(), int64(cred.Idle/time.Second), cred.LastSeen.UTC(),
 		cred.MintedBy, cred.Generation, cred.MinterGeneration, cred.RootCreator, cred.RootGeneration,
-		joinScopes(cred.Scopes), cred.Origin)
+		joinScopes(cred.Scopes), cred.Origin, cred.Parent)
 	if err != nil {
 		return fmt.Errorf("save the credential %q: %w", cred.PublicID, err)
 	}
@@ -287,7 +304,7 @@ func (c *Credentials) Touch(ctx context.Context, publicID string, seen time.Time
 // Revoke deletes a row. Deleting one that is not there is not an error: the
 // caller wanted it gone and it is gone.
 func (c *Credentials) Revoke(ctx context.Context, publicID string) error {
-	if _, err := c.db.ExecContext(ctx, c.engine.Q(deleteCredentialSQL), publicID); err != nil {
+	if _, err := c.db.ExecContext(ctx, c.engine.Q(deleteCredentialSQL), publicID, publicID); err != nil {
 		return fmt.Errorf("revoke the credential %q: %w", publicID, err)
 	}
 

@@ -82,6 +82,8 @@ func TestAPublishedExampleIsWhatTheHandlerWrites(t *testing.T) {
 //
 //nolint:gochecknoglobals // a lookup table, read-only after init.
 var heldElsewhere = map[string]string{
+	"open-page-session": "it needs an app pairing credential in the Authorization header, which a " +
+		"sample request does not carry. TestAPageSessionStandsInForTheAppsCredential drives it",
 	"stream-events": "the sample is a transcript of three frames, and producing it needs a hub holding " +
 		"a stored event at offset 412 and a telemetry sample in flight. " +
 		"TestTheEventStreamExampleIsAParseableStream holds its shape",

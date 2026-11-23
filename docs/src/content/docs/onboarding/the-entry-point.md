@@ -141,7 +141,7 @@ may see an instance. `openGraph` also runs `graph.Reconcile`, which writes the
 relation vocabulary into the schema; the tuple table's foreign key points at
 that, so no tuple is storable until it has run.
 
-`bootstrapGraph` (`internal/app/app.go:983`) writes the first grant into a
+`bootstrapGraph` (`internal/app/app.go:968`) writes the first grant into a
 graph that holds none: `core.principal` becomes admin of `org:local`. It is a
 write and not a rule about emptiness, so there is no later state in which it is
 consulted again. On a graph that already has tuples it checks whether the
@@ -155,7 +155,7 @@ to put back.
 [goroutine](../glossary.md#goroutine) `Host.Run` owns and waits for the verdict.
 A `Reload` against a [supervision plane](../glossary.md#supervision-plane) that
 is not running would block, so `startPlane` puts `host.Run` on a goroutine
-(`internal/app/plane.go:108`) before anything can reconcile against it. The
+(`internal/app/plane.go:112`) before anything can reconcile against it. The
 plane's context is detached from the caller's (`internal/app/plane.go:59`),
 because every supervised instance is started under it and it has to outlive the
 listeners.

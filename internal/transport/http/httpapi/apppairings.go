@@ -142,6 +142,12 @@ type AppPairings interface {
 	// Collect is one poll of the app. It mints and returns the credential the
 	// first time it is called after an approval.
 	Collect(ctx context.Context, deviceCode string) (IssuedCredential, error)
+	// OpenPageSession trades an app pairing credential for a page session
+	// (ADR-20261112-nay). Anything but a live app pairing credential is
+	// ErrNotAppCredential, or the verifier's own refusal. admit is asked with
+	// the credential's public id once the credential is known to be one, and
+	// a false answer is ErrPageSessionLimited.
+	OpenPageSession(ctx context.Context, token string, admit func(parent string) bool) (PageSession, error)
 }
 
 // AppPairingRequest is what an app asks with.
@@ -218,8 +224,41 @@ type collectAppPairingInput struct {
 	Body collectAppPairingBody
 }
 
+// collectedCredentialBody is the credential a collection answers with, once
+// bare and once in the JWT shape of ADR-20261112-nay. It is spelled out
+// rather than embedding createdCredentialBody, because the schema generator
+// skips an unexported embedded struct.
+type collectedCredentialBody struct {
+	ID          string     `json:"id"                     doc:"The public half of the token, which is what a revocation names."`
+	Name        string     `json:"name"                   doc:"The app name the person approved."`
+	Subject     string     `json:"subject"                doc:"The person who approved, in tuple spelling. The credential speaks for them."`
+	CreatedAt   time.Time  `json:"created_at"             doc:"When it was minted."`
+	ExpiresAt   time.Time  `json:"expires_at"             doc:"When this server stops accepting it."`
+	LastUsedAt  *time.Time `json:"last_used_at,omitempty" doc:"Absent: a credential that has just been minted has not been presented."`
+	Scopes      []string   `json:"scopes"                 doc:"The scopes the person approved."                                                                                                                                                                                                                   nullable:"false" enum:"read,operate,administer"`
+	Origin      string     `json:"origin"                 doc:"Always app_pairing."                                                                                                                                                                                                                                                enum:"app_pairing"`
+	Token       string     `json:"token"                  doc:"The credential, shown once. Present it as Authorization: Bearer <token>. This server keeps only a hash and cannot show it again."`
+	AccessToken string     `json:"access_token"           doc:"The same credential in the shape of a JWT whose third segment is the token. Its payload names sub, iat, exp, iss and jti, and it is not signed. Present it as Authorization: Bearer <access_token>. This server checks it as it checks the token."`
+}
+
+// collectedCredentialOf renders a collected credential with both tokens.
+func collectedCredentialOf(issued IssuedCredential) collectedCredentialBody {
+	return collectedCredentialBody{
+		ID:          issued.ID,
+		Name:        issued.Name,
+		Subject:     issued.Subject,
+		CreatedAt:   issued.CreatedAt,
+		ExpiresAt:   issued.ExpiresAt,
+		LastUsedAt:  issued.LastUsedAt,
+		Scopes:      issued.Scopes,
+		Origin:      issued.Origin,
+		Token:       issued.Token,
+		AccessToken: issued.AccessToken,
+	}
+}
+
 type collectAppPairingOutput struct {
-	Body createdCredentialBody
+	Body collectedCredentialBody
 }
 
 // AppPairingRef is the pairing a path names. It is exported because Huma binds
@@ -267,6 +306,8 @@ func registerAppPairings(api huma.API, cfg Config) {
 	registerGetAppPairing(api, cfg)
 	registerApproveAppPairing(api, cfg)
 	registerDenyAppPairing(api, cfg)
+	registerOpenPageSession(api, cfg,
+		newAddressLimiter(pageSessionsPerCredential, appPairingAddressSpan, appPairingAddressTable))
 }
 
 func registerRequestAppPairing(api huma.API, cfg Config, limiter *addressLimiter) {
@@ -332,7 +373,8 @@ func registerCollectAppPairing(api huma.API, cfg Config) {
 			"credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner " +
 			"than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an " +
 			"approval the next poll answers the credential, once: its token, the scopes the person " +
-			"approved and the person it speaks for. A denial is answered once with " +
+			"approved and the person it speaks for, and the same token in the shape of a JWT as " +
+			"access_token. A denial is answered once with " +
 			"APP_PAIRING_DENIED. After that, and after the credential is collected, the code is " +
 			"unknown.",
 		Tags:     []string{"auth"},
@@ -344,7 +386,7 @@ func registerCollectAppPairing(api huma.API, cfg Config) {
 			return nil, appPairingFault(err, "collect the pairing")
 		}
 
-		return &collectAppPairingOutput{Body: createdCredentialOf(issued)}, nil
+		return &collectAppPairingOutput{Body: collectedCredentialOf(issued)}, nil
 	})
 }
 
@@ -621,4 +663,8 @@ func (noAppPairings) Decide(context.Context, AppPairingDecision) error { return 
 
 func (noAppPairings) Collect(context.Context, string) (IssuedCredential, error) {
 	return IssuedCredential{}, ErrAppPairingUnknown
+}
+
+func (noAppPairings) OpenPageSession(context.Context, string, func(string) bool) (PageSession, error) {
+	return PageSession{}, ErrNotAppCredential
 }

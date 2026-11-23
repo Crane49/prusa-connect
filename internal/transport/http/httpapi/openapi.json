@@ -1465,6 +1465,77 @@
         ],
         "type": "object"
       },
+      "CollectedCredentialBody": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "description": "The same credential in the shape of a JWT whose third segment is the token. Its payload names sub, iat, exp, iss and jti, and it is not signed. Present it as Authorization: Bearer \u003caccess_token\u003e. This server checks it as it checks the token.",
+            "type": "string"
+          },
+          "created_at": {
+            "description": "When it was minted.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "expires_at": {
+            "description": "When this server stops accepting it.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "The public half of the token, which is what a revocation names.",
+            "type": "string"
+          },
+          "last_used_at": {
+            "description": "Absent: a credential that has just been minted has not been presented.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "name": {
+            "description": "The app name the person approved.",
+            "type": "string"
+          },
+          "origin": {
+            "description": "Always app_pairing.",
+            "enum": [
+              "app_pairing"
+            ],
+            "type": "string"
+          },
+          "scopes": {
+            "description": "The scopes the person approved.",
+            "items": {
+              "enum": [
+                "read",
+                "operate",
+                "administer"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "subject": {
+            "description": "The person who approved, in tuple spelling. The credential speaks for them.",
+            "type": "string"
+          },
+          "token": {
+            "description": "The credential, shown once. Present it as Authorization: Bearer \u003ctoken\u003e. This server keeps only a hash and cannot show it again.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subject",
+          "created_at",
+          "expires_at",
+          "scopes",
+          "origin",
+          "token",
+          "access_token"
+        ],
+        "type": "object"
+      },
       "Command": {
         "additionalProperties": false,
         "properties": {
@@ -7973,6 +8044,72 @@
         ],
         "type": "object"
       },
+      "OpenPageSessionOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "cookie": {
+            "$ref": "#/components/schemas/PageSessionCookieBody",
+            "description": "The cookie Set-Cookie sets, for an app that stores it into its web view itself."
+          },
+          "expires_at": {
+            "description": "When the page session ends. It is at most an hour away, and never after the app's credential expires.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expires_at",
+          "cookie"
+        ],
+        "type": "object"
+      },
+      "PageSessionCookieBody": {
+        "additionalProperties": false,
+        "properties": {
+          "expires": {
+            "description": "When the cookie and the page session end.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "http_only": {
+            "description": "Always true: no script on the page may read the cookie.",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "The cookie's name, the session cookie of this server.",
+            "type": "string"
+          },
+          "path": {
+            "description": "The cookie's path.",
+            "type": "string"
+          },
+          "same_site": {
+            "description": "Always Strict.",
+            "enum": [
+              "Strict"
+            ],
+            "type": "string"
+          },
+          "secure": {
+            "description": "True unless this server is reached over plain HTTP.",
+            "type": "boolean"
+          },
+          "value": {
+            "description": "The page session. Store it only in the cookie, never where a page script reads it.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "path",
+          "expires",
+          "http_only",
+          "same_site",
+          "secure"
+        ],
+        "type": "object"
+      },
       "Pairing": {
         "additionalProperties": false,
         "properties": {
@@ -13146,9 +13283,91 @@
         ]
       }
     },
+    "/api/v1/auth/app-pairings/session": {
+      "post": {
+        "description": "An app, such as PrusaSlicer, sends the credential it collected through the app pairing as Authorization: Bearer, bare or in its JWT shape, before it shows a page of this server. The answer sets the session cookie to a page session: an api credential that speaks for the same person with the same scopes, lives at most an hour, and ends when the app's credential is revoked or expires. The cookie is HttpOnly, so no script on the page reads it, and SameSite=Strict. The body carries the same cookie, so an app can put it into its web view itself. The page never holds the credential. Only the header is read: a request that carries the credential in a cookie is refused, so another site cannot open a page session. One credential keeps at most four live page sessions, and opens thirty from one address in ten minutes.",
+        "operationId": "open-page-session",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "cookie": {
+                    "expires": "2026-08-26T10:14:05Z",
+                    "http_only": true,
+                    "name": "pcl_session",
+                    "path": "/",
+                    "same_site": "Strict",
+                    "secure": true,
+                    "value": "pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000"
+                  },
+                  "expires_at": "2026-08-26T10:14:05Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/OpenPageSessionOutputBody"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "description": "The page session, HttpOnly and SameSite=Strict, and Secure unless this server is reached over plain HTTP.",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemError"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemError"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemError"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemError"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Trade an app's credential for a page session cookie",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/auth/app-pairings/token": {
       "post": {
-        "description": "One poll of the device access token request of RFC 8628. It takes no credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an approval the next poll answers the credential, once: its token, the scopes the person approved and the person it speaks for. A denial is answered once with APP_PAIRING_DENIED. After that, and after the credential is collected, the code is unknown.",
+        "description": "One poll of the device access token request of RFC 8628. It takes no credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an approval the next poll answers the credential, once: its token, the scopes the person approved and the person it speaks for, and the same token in the shape of a JWT as access_token. A denial is answered once with APP_PAIRING_DENIED. After that, and after the credential is collected, the code is unknown.",
         "operationId": "collect-app-pairing",
         "requestBody": {
           "content": {
@@ -13168,6 +13387,7 @@
             "content": {
               "application/json": {
                 "example": {
+                  "access_token": "eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ1c2VyOmFsaWNlIiwiaWF0IjoxNzg3NzM1NjQ1LCJleHAiOjE3OTU1MTE2NDUsImlzcyI6InBydXNhLWNvbm5lY3QiLCJqdGkiOiI3S3AybVE5eEx3NG5SdDh2QmMzelllIn0.pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000",
                   "created_at": "2026-08-26T09:14:05Z",
                   "expires_at": "2026-11-24T09:14:05Z",
                   "id": "7Kp2mQ9xLw4nRt8vBc3zYe",
@@ -13180,7 +13400,7 @@
                   "token": "pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000"
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/CreatedCredentialBody"
+                  "$ref": "#/components/schemas/CollectedCredentialBody"
                 }
               }
             },

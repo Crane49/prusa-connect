@@ -120,6 +120,9 @@ type IssuedCredential struct {
 	APICredential
 
 	Token string
+	// AccessToken is Token in the JWT shape of ADR-20261112-nay. Only a
+	// collected app pairing carries it.
+	AccessToken string
 }
 
 // credentialBody is the create body.

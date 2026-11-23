@@ -498,6 +498,10 @@ func serveOver(
 		return err
 	}
 
+	// The credential table is swept while the server runs, and the sweep is
+	// waited for on the way out, before the database closes.
+	defer startCredentialSweep(ctx, who.expired, logger)()
+
 	code, shown, err := newSetupGate(core.Auth.SetupCode, logger, time.Now)
 	if err != nil {
 		return err

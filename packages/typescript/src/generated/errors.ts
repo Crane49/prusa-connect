@@ -40,6 +40,8 @@ export type ErrorCode =
   | "core.auth/LOGIN_LIMITED"
   | "core.auth/LOGIN_REFUSED"
   | "core.auth/MISSING_EPOCH"
+  | "core.auth/PAGE_SESSION_LIMITED"
+  | "core.auth/PAGE_SESSION_REFUSED"
   | "core.auth/PAIRING_EXISTS"
   | "core.auth/SESSION_REQUIRED"
   | "core.auth/SETUP_CLOSED"
@@ -237,6 +239,8 @@ export const errorCodes: Readonly<Record<ErrorCode, ErrorCodeEntry>> = {
   "core.auth/LOGIN_LIMITED": { status: 429, retryable: true, params: ["retry_after_seconds"], summary: "Too many login attempts are waiting from this address", action: "Wait for the time Retry-After gives in seconds, then log in again. Attempts from one address are checked one after another." },
   "core.auth/LOGIN_REFUSED": { status: 401, retryable: false, params: [], summary: "The username or password is wrong", action: "Type the username and the password again. An administrator sets a new password for an account whose password nobody has." },
   "core.auth/MISSING_EPOCH": { status: 500, retryable: false, params: [], summary: "The permissions epoch row is missing", action: "Nothing the caller can do. Quote the trace id when reporting it." },
+  "core.auth/PAGE_SESSION_LIMITED": { status: 429, retryable: true, params: [], summary: "This app opened too many page sessions from this address", action: "Wait ten minutes, then open the page again." },
+  "core.auth/PAGE_SESSION_REFUSED": { status: 403, retryable: false, params: [], summary: "Only an app pairing credential opens a page session", action: "Send the credential an app collected through the app pairing as Authorization: Bearer. A session, a credential a person minted and a page session open none, and a cookie is never read here." },
   "core.auth/PAIRING_EXISTS": { status: 409, retryable: false, params: ["provider", "subject"], summary: "That subject is already paired to a principal on this server", action: "Unpair it at DELETE /api/v1/auth/pairings/{provider}/{subject} first, then pair it again." },
   "core.auth/SESSION_REQUIRED": { status: 403, retryable: false, params: [], summary: "This operation takes a sign-in as a person", action: "Sign in as a person, with your password or with a Prusa Account paired to your account, and repeat the request. An api credential cannot do this, and neither can a Prusa Account token paired to a service account." },
   "core.auth/SETUP_CLOSED": { status: 409, retryable: false, params: [], summary: "First-run setup has already completed on this server", action: "Sign in as an existing user. Setup cannot be reopened over the API." },

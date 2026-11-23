@@ -23,6 +23,7 @@ import (
 type appPairings struct {
 	store       auth.AppPairingStore
 	credentials auth.Store
+	verifier    *auth.Verifier
 	logger      *slog.Logger
 	now         func() time.Time
 }
@@ -32,13 +33,15 @@ var _ httpapi.AppPairings = appPairings{}
 // openAppPairings is the pairing store this process runs with: rows in the
 // host's own database, so a pairing one replica opened can be approved and
 // collected through another.
-func openAppPairings(host hostStore, credentials auth.Store, logger *slog.Logger) (appPairings, error) {
+func openAppPairings(
+	host hostStore, credentials auth.Store, verifier *auth.Verifier, logger *slog.Logger,
+) (appPairings, error) {
 	store, err := dbstore.NewAppPairings(host.db, host.engine)
 	if err != nil {
 		return appPairings{}, fmt.Errorf("open the app pairing store: %w", err)
 	}
 
-	return appPairings{store: store, credentials: credentials, logger: logger, now: time.Now}, nil
+	return appPairings{store: store, credentials: credentials, verifier: verifier, logger: logger, now: time.Now}, nil
 }
 
 // Request opens a pairing.
@@ -122,7 +125,8 @@ func (a appPairings) Decide(ctx context.Context, decision httpapi.AppPairingDeci
 
 // Collect is one poll. After an approval it mints the credential, for the
 // person who approved, with the scopes they approved, at the generations read
-// before their decision.
+// before their decision. The credential is returned bare and in its JWT shape
+// (ADR-20261112-nay).
 func (a appPairings) Collect(ctx context.Context, deviceCode string) (httpapi.IssuedCredential, error) {
 	pairing, err := auth.PollAppPairing(ctx, a.store, deviceCode, a.now())
 	if err != nil {
@@ -155,7 +159,48 @@ func (a appPairings) Collect(ctx context.Context, deviceCode string) (httpapi.Is
 		"audit", true, "app", pairing.AppName, "credential", cred.PublicID, "subject", cred.Subject,
 		"scopes", cred.Scopes, "expires_at", cred.ExpiresAt)
 
-	return httpapi.IssuedCredential{APICredential: apiCredentialOf(cred), Token: string(token)}, nil
+	return httpapi.IssuedCredential{
+		APICredential: apiCredentialOf(cred),
+		Token:         string(token),
+		AccessToken:   string(auth.WrapJWT(token, cred)),
+	}, nil
+}
+
+// OpenPageSession trades an app pairing credential for a page session, an
+// api credential that stands in for it in an HttpOnly cookie
+// (ADR-20261112-nay). The token is checked as any presented token is, and
+// anything but a live app pairing credential is refused.
+func (a appPairings) OpenPageSession(
+	ctx context.Context, token string, admit func(parent string) bool,
+) (httpapi.PageSession, error) {
+	parent, err := a.verifier.Verify(ctx, auth.Token(token), auth.TransportHTTP)
+	if err != nil {
+		return httpapi.PageSession{}, err
+	}
+
+	now := a.now()
+	if auth.OpensPageSession(parent, now) != nil {
+		return httpapi.PageSession{}, httpapi.ErrNotAppCredential
+	}
+
+	if !admit(parent.PublicID) {
+		return httpapi.PageSession{}, httpapi.ErrPageSessionLimited
+	}
+
+	issued, cred, err := auth.IssuePageSession(ctx, a.credentials, parent, now)
+	if errors.Is(err, auth.ErrNotAppCredential) {
+		return httpapi.PageSession{}, httpapi.ErrNotAppCredential
+	}
+
+	if err != nil {
+		return httpapi.PageSession{}, fmt.Errorf("open a page session for %q: %w", parent.PublicID, err)
+	}
+
+	a.logger.InfoContext(ctx, "an app opened a page session",
+		"audit", true, "app", parent.Name, "credential", parent.PublicID, "session", cred.PublicID,
+		"subject", cred.Subject, "expires_at", cred.ExpiresAt)
+
+	return httpapi.PageSession{Token: string(issued), ExpiresAt: cred.ExpiresAt}, nil
 }
 
 // appPairingOf renders a pairing for the person who decides it.

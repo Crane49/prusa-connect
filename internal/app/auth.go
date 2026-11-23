@@ -46,6 +46,9 @@ type identity struct {
 	// people is the list of people a module may ask about while it is not
 	// serving them, and nil on a deployment that keeps no accounts.
 	people *accountPeople
+	// expired is the credential table the sweep keeps short, and nil on a
+	// deployment that stores no credential.
+	expired expiredCredentials
 	// secureCookies says whether a browser reaches this server over https, so
 	// an https deployment marks the cookie Secure and a plain-http one does not
 	// mark a cookie the browser would then never send back.
@@ -104,7 +107,7 @@ func buildIdentity(
 		logger.ErrorContext(ctx, "every sign-in at the identity provider will be refused", "cause", algErr)
 	}
 
-	apps, err := openAppPairings(host, store, logger)
+	apps, err := openAppPairings(host, store, verifier, logger)
 	if err != nil {
 		return identity{}, err
 	}
@@ -125,6 +128,7 @@ func buildIdentity(
 		credentials:   apiCredentials{store: store, verifier: verifier, now: time.Now, resolve: inner.Resolve},
 		pairings:      subjectPairings{store: pairings, generations: store.Generation, now: time.Now},
 		appPairings:   apps,
+		expired:       store,
 		secureCookies: core.SecureCookies(),
 	}, nil
 }
@@ -270,7 +274,7 @@ func buildLocalIdentity(
 
 	local.mode = undecided
 
-	apps, err := openAppPairings(host, store, logger)
+	apps, err := openAppPairings(host, store, verifier, logger)
 	if err != nil {
 		return identity{}, err
 	}
@@ -295,6 +299,7 @@ func buildLocalIdentity(
 		credentials:   apiCredentials{store: store, verifier: verifier, now: time.Now, resolve: inner.Resolve},
 		pairings:      subjectPairings{store: pairings, generations: store.Generation, now: time.Now},
 		appPairings:   apps,
+		expired:       store,
 		secureCookies: core.SecureCookies(),
 	}, nil
 }
@@ -454,7 +459,7 @@ func (s sessions) Revoke(ctx context.Context, r *http.Request) error {
 // gone and there is none, which is the same answer the store gives for a row
 // that is not there.
 func revokeCarried(ctx context.Context, verifier *auth.Verifier, r *http.Request) error {
-	publicID, _, err := auth.Split(session.TokenFrom(r))
+	publicID, _, err := auth.Split(auth.Inner(session.TokenFrom(r)))
 	if err != nil {
 		//nolint:nilerr // text that is not a token this server issued names no
 		// credential to revoke, and reporting that is a refusal for a caller
@@ -511,11 +516,12 @@ func (s localSessions) Revoke(ctx context.Context, r *http.Request) error {
 // that issued them. With credentials kept in memory, a restart would make
 // every operator log in again and would end every script's token.
 //
-// The expired rows are swept once, here, and not by a goroutine. The verifier
-// refuses an expired credential whether or not the row is there. The sweep
-// only stops the table from growing by one row per login, and a restart is
-// often enough for that.
-func openCredentials(ctx context.Context, host hostStore, logger *slog.Logger) (auth.Store, error) {
+// The expired rows are swept once here, and then every hour by
+// sweepCredentials. The verifier refuses an expired credential whether or not
+// the row is there, so the sweep only keeps the table from growing. A page
+// session lives an hour, so an app that opens one per page would grow it far
+// faster than a restart empties it.
+func openCredentials(ctx context.Context, host hostStore, logger *slog.Logger) (*dbstore.Credentials, error) {
 	store, err := dbstore.NewCredentials(host.db, host.engine)
 	if err != nil {
 		return nil, fmt.Errorf("open the credential store: %w", err)
@@ -570,4 +576,62 @@ func checkPrincipal(core config.Core) error {
 	}
 
 	return nil
+}
+
+// credentialSweep is how often the expired credentials are deleted while the
+// server runs.
+const credentialSweep = time.Hour
+
+// expiredCredentials is the part of the credential table the sweep uses.
+type expiredCredentials interface {
+	DeleteExpired(ctx context.Context, now time.Time) (int, error)
+}
+
+// startCredentialSweep runs sweepCredentials until the answer is called, which
+// waits for it to stop. A nil table sweeps nothing.
+func startCredentialSweep(ctx context.Context, table expiredCredentials, logger *slog.Logger) func() {
+	if table == nil {
+		return func() {}
+	}
+
+	sweepCtx, stop := context.WithCancel(ctx)
+	swept := make(chan struct{})
+
+	go func() {
+		defer close(swept)
+
+		sweepCredentials(sweepCtx, table, credentialSweep, logger)
+	}()
+
+	return func() {
+		stop()
+		<-swept
+	}
+}
+
+// sweepCredentials deletes the expired credentials every credentialSweep
+// until the context ends. A failed sweep is logged and tried again at the
+// next tick.
+func sweepCredentials(ctx context.Context, table expiredCredentials, every time.Duration, logger *slog.Logger) {
+	ticker := time.NewTicker(every)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+
+		swept, err := table.DeleteExpired(ctx, time.Now().UTC())
+		if err != nil {
+			logger.WarnContext(ctx, "the expired credentials could not be swept", "error", err.Error())
+
+			continue
+		}
+
+		if swept > 0 {
+			logger.InfoContext(ctx, "expired credentials were swept", "credentials", swept)
+		}
+	}
 }

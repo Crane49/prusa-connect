@@ -20,12 +20,13 @@ var errNoBearerVerifier = errors.New("auth: no bearer verifier is wired")
 
 // IsBearerToken reports whether presented text is shaped like a token another
 // issuer signed, instead of one this server minted. A minted token carries
-// Prefix. A JWS is three base64url segments. The shape only decides which path
-// checks the token: a forged JWS is refused by the bearer path, and rubbish is
-// refused by both.
+// Prefix. A JWS is three base64url segments. A JWS whose third segment carries
+// Prefix is a credential this server shaped as a JWT, and the verifier checks
+// it (IsMintedJWT). The shape only decides which path checks the token:
+// a forged JWS is refused by the bearer path, and rubbish is refused by both.
 func IsBearerToken(token Token) bool {
 	text := string(token)
-	if strings.HasPrefix(text, Prefix) {
+	if strings.HasPrefix(text, Prefix) || IsMintedJWT(token) {
 		return false
 	}
 

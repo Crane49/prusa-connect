@@ -140,6 +140,7 @@ export const operationTable = {
   "list-vocabularies": { id: "list-vocabularies", method: "GET", path: "/api/v1/vocabularies", response: "json", anonymous: true },
   "logout": { id: "logout", method: "POST", path: "/api/v1/auth/logout", response: "none", anonymous: false },
   "move-storage-entry": { id: "move-storage-entry", method: "POST", path: "/api/v1/storages/{storage}/moves", body: "application/json", response: "json", anonymous: false },
+  "open-page-session": { id: "open-page-session", method: "POST", path: "/api/v1/auth/app-pairings/session", response: "json", anonymous: false },
   "password-login": { id: "password-login", method: "POST", path: "/api/v1/auth/login", body: "application/json", response: "json", anonymous: true },
   "plan-module-install": { id: "plan-module-install", method: "POST", path: "/api/v1/modules/plan", body: "application/json", response: "json", anonymous: false },
   "post-storage-object": { id: "post-storage-object", method: "POST", path: "/api/v1/storages/{storage}/content", body: "application/octet-stream", response: "json", anonymous: false, longRunning: true },
@@ -1782,6 +1783,16 @@ export interface Operations {
   ): Promise<operations["move-storage-entry"]["responses"][200]["content"]["application/json"]>;
 
   /**
+   * POST /api/v1/auth/app-pairings/session
+   *
+   * Trade an app's credential for a page session cookie
+   */
+  openPageSession(
+    request?: Record<string, never>,
+    signal?: AbortSignal,
+  ): Promise<operations["open-page-session"]["responses"][200]["content"]["application/json"]>;
+
+  /**
    * POST /api/v1/auth/login
    *
    * Log in with a password
@@ -2571,6 +2582,7 @@ export function bindOperations(transport: Transport): Operations {
     listVocabularies: (request = {}, signal) => transport.call(operationTable["list-vocabularies"], request, signal),
     logout: (request = {}, signal) => transport.call(operationTable["logout"], request, signal),
     moveStorageEntry: (request, signal) => transport.call(operationTable["move-storage-entry"], request, signal),
+    openPageSession: (request = {}, signal) => transport.call(operationTable["open-page-session"], request, signal),
     passwordLogin: (request, signal) => transport.call(operationTable["password-login"], request, signal),
     planModuleInstall: (request, signal) => transport.call(operationTable["plan-module-install"], request, signal),
     postStorageObject: (request, signal) => transport.call(operationTable["post-storage-object"], request, signal),

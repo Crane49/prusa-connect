@@ -37,17 +37,28 @@ func appPairingExamples() map[string]operationExample {
 			},
 		},
 
+		"open-page-session": {
+			Response: map[string]any{
+				"expires_at": exampleTime.Add(time.Hour),
+				"cookie": pageSessionCookieBody{
+					Name: "pcl_session", Value: exampleCredentialToken, Path: "/",
+					Expires: exampleTime.Add(time.Hour), HTTPOnly: true, SameSite: "Strict", Secure: true,
+				},
+			},
+		},
+
 		"collect-app-pairing": {
 			Request: collectAppPairingBody{DeviceCode: exampleDeviceCode},
-			Response: createdCredentialBody{
-				ID:        exampleCredentialID,
-				Name:      exampleAppName,
-				Subject:   exampleSubject,
-				CreatedAt: exampleTime,
-				ExpiresAt: exampleTime.Add(credentialExampleLife),
-				Scopes:    []string{"read"},
-				Origin:    OriginAppPairing,
-				Token:     exampleCredentialToken,
+			Response: collectedCredentialBody{
+				ID:          exampleCredentialID,
+				Name:        exampleAppName,
+				Subject:     exampleSubject,
+				CreatedAt:   exampleTime,
+				ExpiresAt:   exampleTime.Add(credentialExampleLife),
+				Scopes:      []string{"read"},
+				Origin:      OriginAppPairing,
+				Token:       exampleCredentialToken,
+				AccessToken: exampleAccessToken,
 			},
 		},
 

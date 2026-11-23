@@ -21,8 +21,9 @@ const CookieName = "pcl_session"
 // BearerCookieName is the cookie the Prusa Connect web client keeps its Prusa
 // Account token in. It is read only when neither the Authorization header nor
 // the session cookie carries anything, and whatever it holds is judged as a
-// bearer token and never as a session. This server does not set it, so it
-// cannot vouch for its flags.
+// bearer token and never as a session. A credential this server minted is
+// never read from it, in any shape (ADR-20261112-nay). This server does not
+// set it, so it cannot vouch for its flags.
 const BearerCookieName = "auth.access_token" //nolint:gosec // a cookie name, not a credential
 
 // bearerPrefix is the scheme RFC 6750 section 2.1 defines. The comparison is
@@ -171,9 +172,10 @@ const APIKeyHeader = "X-Api-Key" //nolint:gosec // a header name, not a credenti
 // its prefix. A token another issuer signed travels as a bearer token only.
 //
 // The Prusa Account cookie is admitted only for text shaped like a bearer
-// token. This server never sets that cookie, so a minted token found in it was
-// put there by something else. Reading it would accept a session from a cookie
-// that lacks the flags the real session cookie carries.
+// token. A minted token in a cookie this server never set is a token in the
+// wrong place, bare or in its JWT shape: a page script wrote it, so any other
+// script on the page could read it. A page inside an app trades the app's
+// credential for a page session instead (ADR-20261112-nay).
 func TokenFrom(r *http.Request) auth.Token {
 	header := r.Header.Get("Authorization")
 	if len(header) > len(bearerPrefix) && strings.EqualFold(header[:len(bearerPrefix)], bearerPrefix) {

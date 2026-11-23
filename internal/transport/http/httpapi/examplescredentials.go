@@ -16,6 +16,13 @@ const (
 	exampleCredentialToken = "pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000" //nolint:gosec // the shape of a token, not one
 )
 
+// exampleAccessToken is exampleCredentialToken in its JWT shape, with the
+// payload of the collection example: sub user:alice, iat exampleTime, exp
+// ninety days later and jti exampleCredentialID.
+const exampleAccessToken = "eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0." +
+	"eyJzdWIiOiJ1c2VyOmFsaWNlIiwiaWF0IjoxNzg3NzM1NjQ1LCJleHAiOjE3OTU1MTE2NDUsImlzcyI6InBydXNhLWNvbm5lY3QiLCJqdGkiOiI3S3AybVE5eEx3NG5SdDh2QmMzelllIn0." +
+	exampleCredentialToken
+
 // credentialLastUsed is when the listing example's first credential was last
 // presented, a day after it was minted.
 var credentialLastUsed = exampleTime.Add(24 * time.Hour)

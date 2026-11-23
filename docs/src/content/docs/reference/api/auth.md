@@ -192,11 +192,11 @@ The server answers `200`:
 
 `POST /api/v1/auth/app-pairings/token`. Collect the credential a person approved.
 
-One poll of the device access token request of RFC 8628. It takes no credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an approval the next poll answers the credential, once: its token, the scopes the person approved and the person it speaks for. A denial is answered once with APP_PAIRING_DENIED. After that, and after the credential is collected, the code is unknown.
+One poll of the device access token request of RFC 8628. It takes no credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an approval the next poll answers the credential, once: its token, the scopes the person approved and the person it speaks for, and the same token in the shape of a JWT as access_token. A denial is answered once with APP_PAIRING_DENIED. After that, and after the credential is collected, the code is unknown.
 
 - credential: none, the request is sent without a token. The client method is `collectAppPairing`
 - request body: `application/json` (`CollectAppPairingBody`), required
-- response `200`: OK, `application/json` (`CreatedCredentialBody`)
+- response `200`: OK, `application/json` (`CollectedCredentialBody`)
 - errors: `400`, `422`, `500`, each a [problem document](../../error-codes.md)
 
 #### Sample {#sample-collect-app-pairing}
@@ -221,6 +221,7 @@ The server answers `200`:
 
 ```json
 {
+  "access_token": "eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ1c2VyOmFsaWNlIiwiaWF0IjoxNzg3NzM1NjQ1LCJleHAiOjE3OTU1MTE2NDUsImlzcyI6InBydXNhLWNvbm5lY3QiLCJqdGkiOiI3S3AybVE5eEx3NG5SdDh2QmMzelllIn0.pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000",
   "created_at": "2026-08-26T09:14:05Z",
   "expires_at": "2026-11-24T09:14:05Z",
   "id": "7Kp2mQ9xLw4nRt8vBc3zYe",
@@ -962,6 +963,45 @@ Revokes the credential the request carries and expires the cookie. The credentia
 - errors: `401`, `500`, each a [problem document](../../error-codes.md)
 
 This operation has no sample: 204. The answer is the expired cookie, not a body.
+
+### `open-page-session` {#open-page-session}
+
+`POST /api/v1/auth/app-pairings/session`. Trade an app's credential for a page session cookie.
+
+An app, such as PrusaSlicer, sends the credential it collected through the app pairing as Authorization: Bearer, bare or in its JWT shape, before it shows a page of this server. The answer sets the session cookie to a page session: an api credential that speaks for the same person with the same scopes, lives at most an hour, and ends when the app's credential is revoked or expires. The cookie is HttpOnly, so no script on the page reads it, and SameSite=Strict. The body carries the same cookie, so an app can put it into its web view itself. The page never holds the credential. Only the header is read: a request that carries the credential in a cookie is refused, so another site cannot open a page session. One credential keeps at most four live page sessions, and opens thirty from one address in ten minutes.
+
+- credential: bearer token. The client method is `openPageSession`
+- request body: none
+- response `200`: OK, `application/json` (`OpenPageSessionOutputBody`)
+- errors: `401`, `403`, `429`, `500`, each a [problem document](../../error-codes.md)
+
+#### Sample {#sample-open-page-session}
+
+```sh
+curl -X POST "http://127.0.0.1:8080/api/v1/auth/app-pairings/session" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+```ts
+await client.openPageSession();
+```
+
+The server answers `200`:
+
+```json
+{
+  "cookie": {
+    "expires": "2026-08-26T10:14:05Z",
+    "http_only": true,
+    "name": "pcl_session",
+    "path": "/",
+    "same_site": "Strict",
+    "secure": true,
+    "value": "pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000"
+  },
+  "expires_at": "2026-08-26T10:14:05Z"
+}
+```
 
 ### `password-login` {#password-login}
 

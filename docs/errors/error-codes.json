@@ -420,6 +420,24 @@
       "params": []
     },
     {
+      "code": "core.auth/PAGE_SESSION_LIMITED",
+      "status": 429,
+      "summary": "This app opened too many page sessions from this address",
+      "action": "Wait ten minutes, then open the page again.",
+      "retryable": true,
+      "redacted": false,
+      "params": []
+    },
+    {
+      "code": "core.auth/PAGE_SESSION_REFUSED",
+      "status": 403,
+      "summary": "Only an app pairing credential opens a page session",
+      "action": "Send the credential an app collected through the app pairing as Authorization: Bearer. A session, a credential a person minted and a page session open none, and a cookie is never read here.",
+      "retryable": false,
+      "redacted": false,
+      "params": []
+    },
+    {
       "code": "core.auth/PAIRING_EXISTS",
       "status": 409,
       "summary": "That subject is already paired to a principal on this server",

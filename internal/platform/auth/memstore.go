@@ -102,7 +102,43 @@ func (s *MemoryStore) Revoke(_ context.Context, publicID string) error {
 
 	delete(s.rows, publicID)
 
+	for id, row := range s.rows {
+		// A row with no parent is no page session of an empty id.
+		if row.Parent != "" && row.Parent == publicID {
+			delete(s.rows, id)
+		}
+	}
+
 	return nil
+}
+
+// Children returns the rows that name parent, oldest first.
+func (s *MemoryStore) Children(_ context.Context, parent string) ([]Credential, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.fail != nil {
+		return nil, s.fail
+	}
+
+	out := make([]Credential, 0)
+
+	for _, row := range s.rows {
+		if parent != "" && row.Parent == parent {
+			row.Scopes = slices.Clone(row.Scopes)
+			out = append(out, row)
+		}
+	}
+
+	slices.SortFunc(out, func(a, b Credential) int {
+		if c := a.IssuedAt.Compare(b.IssuedAt); c != 0 {
+			return c
+		}
+
+		return strings.Compare(a.PublicID, b.PublicID)
+	})
+
+	return out, nil
 }
 
 // RevokeSubject deletes every row held for one subject and reports how many it

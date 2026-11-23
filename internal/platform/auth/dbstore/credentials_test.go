@@ -86,6 +86,31 @@ func TestARevokedCredentialIsRefusedByTheNextProcess(t *testing.T) {
 	})
 }
 
+// An empty id names no credential. Every row without a parent has an empty
+// parent, so a revoke that matched it would take them all.
+func TestRevokingAnEmptyIDRemovesNothing(t *testing.T) {
+	t.Parallel()
+
+	forEachEngine(t, func(t *testing.T, e engine) {
+		store := newCredentials(t, e)
+		now := time.Date(2026, time.September, 2, 12, 0, 0, 0, time.UTC)
+
+		token, _, err := auth.IssueAPI(
+			t.Context(),
+			store,
+			auth.APISpec{Subject: "user:ada", Name: "script", Scopes: []string{"read"}},
+			now,
+		)
+		require.NoError(t, err)
+
+		require.NoError(t, store.Revoke(t.Context(), ""))
+
+		_, err = auth.NewVerifier(store, func() time.Time { return now }).
+			Verify(t.Context(), token, auth.TransportHTTP)
+		require.NoError(t, err)
+	})
+}
+
 // A password change ends every session the person holds, on every transport at
 // once, and the rows have to go for that to mean anything after a restart.
 func TestRevokingASubjectRemovesEveryRowItHolds(t *testing.T) {
@@ -453,5 +478,47 @@ func TestTheScopesOfACredentialOutliveTheProcess(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, listed, 1)
 		require.Equal(t, []string{"read", "operate"}, listed[0].Scopes)
+	})
+}
+
+// A page session names the app pairing credential it stands in for, on both
+// engines, and the verifier over the table refuses it once that credential is
+// revoked (ADR-20261112-nay).
+func TestAPageSessionKeepsItsParentInTheTable(t *testing.T) {
+	t.Parallel()
+
+	forEachEngine(t, func(t *testing.T, e engine) {
+		store := newCredentials(t, e)
+		now := time.Now().UTC().Truncate(time.Second)
+
+		_, parent, err := auth.IssueAPI(t.Context(), store, auth.APISpec{
+			Subject: "user:ada", Name: "PrusaSlicer", Scopes: []string{"operate"},
+			Origin: auth.OriginAppPairing,
+		}, now)
+		require.NoError(t, err)
+
+		token, child, err := auth.IssuePageSession(t.Context(), store, parent, now)
+		require.NoError(t, err)
+
+		read, err := store.Lookup(t.Context(), child.PublicID)
+		require.NoError(t, err)
+		require.Equal(t, parent.PublicID, read.Parent)
+
+		verifier := auth.NewVerifier(store, nil)
+
+		_, err = verifier.Verify(t.Context(), token, auth.TransportHTTP)
+		require.NoError(t, err)
+
+		children, err := store.Children(t.Context(), parent.PublicID)
+		require.NoError(t, err)
+		require.Len(t, children, 1)
+
+		require.NoError(t, verifier.Revoke(t.Context(), parent.PublicID))
+
+		_, err = verifier.Verify(t.Context(), token, auth.TransportHTTP)
+		require.True(t, auth.Refused(err), "a page session outlived its parent: %v", err)
+
+		_, err = store.Lookup(t.Context(), child.PublicID)
+		require.ErrorIs(t, err, auth.ErrNoCredential, "revoking the parent left the page session's row")
 	})
 }

@@ -48,7 +48,24 @@ func NewVerifier(store Store, now func() time.Time) *Verifier {
 // It is fail-closed: a store that returns an error refuses the request. No
 // configuration admits a credential that cannot be resolved, so
 // session.Require is fail-closed too.
+//
+// A token of the JWT shape an app pairing credential travels in is read from
+// its third segment, and its payload must name the row that segment found
+// (ADR-20261112-nay).
 func (v *Verifier) Verify(ctx context.Context, token Token, on Transport) (Credential, error) {
+	inner, claims, err := unwrapJWT(token)
+	if err != nil {
+		subtle.ConstantTimeCompare(dummyDigest[:], dummyDigest[:])
+
+		return Credential{}, refuse(err)
+	}
+
+	return v.verify(ctx, inner, claims, on)
+}
+
+// verify is Verify over the minted token, with the claims of the JWT shape it
+// arrived in, nil when it arrived bare.
+func (v *Verifier) verify(ctx context.Context, token Token, claims *MintedClaims, on Transport) (Credential, error) {
 	publicID, secret, err := Split(token)
 	if err != nil {
 		// The comparison is charged anyway. A malformed token must not be the
@@ -109,6 +126,16 @@ func (v *Verifier) Verify(ctx context.Context, token Token, on Transport) (Crede
 	// An api credential with no scope would read as one with no limit.
 	if cred.Kind == KindAPI && len(cred.Scopes) == 0 {
 		return Credential{}, refuse(fmt.Errorf("%w: %q", ErrNoScope, publicID))
+	}
+
+	if claims != nil {
+		if matchErr := claims.match(cred); matchErr != nil {
+			return Credential{}, refuse(matchErr)
+		}
+	}
+
+	if parentErr := v.parentLive(ctx, cred, now); parentErr != nil {
+		return Credential{}, refuse(parentErr)
 	}
 
 	// Every kind is touched. For a session the write slides the idle window,

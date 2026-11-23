@@ -46,6 +46,10 @@ const (
 	SessionLifetime = 7 * 24 * time.Hour
 	// APILifetime is the default life of a Bearer credential.
 	APILifetime = 90 * 24 * time.Hour
+	// PageSessionLifetime is the longest a page session lives. It never
+	// outlives the app pairing credential it stands in for
+	// (ADR-20261112-nay).
+	PageSessionLifetime = time.Hour
 	// APIMaxLifetimeDays is the longest life a Bearer credential can ask for,
 	// in days. A leaked token that nobody revokes stops working within a year.
 	APIMaxLifetimeDays = 365
@@ -110,6 +114,10 @@ type Credential struct {
 	// person minted, OriginAppPairing for one an app received through a
 	// pairing a person approved. It is empty for every other kind.
 	Origin string
+	// Parent is the app pairing credential a page session stands in for, by
+	// its public id (ADR-20261112-nay). The verifier refuses the row once the
+	// parent is gone or expired. It is empty for every other row.
+	Parent string
 }
 
 // How an api credential was made. A listing shows the two apart, so a person
@@ -174,6 +182,9 @@ type Store interface {
 	// how many it removed. A password change calls it, so the sessions opened
 	// under the old password end on every transport at once.
 	RevokeSubject(ctx context.Context, subject string) (int, error)
+	// Children returns the page sessions an app pairing credential opened,
+	// oldest first (ADR-20261112-nay). Revoke deletes them with their parent.
+	Children(ctx context.Context, parent string) ([]Credential, error)
 	// ListSubject returns every credential held for one subject, oldest first.
 	// A subject holding none is an empty listing and not an error.
 	ListSubject(ctx context.Context, subject string) ([]Credential, error)

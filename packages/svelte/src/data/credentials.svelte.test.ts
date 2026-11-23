@@ -28,7 +28,12 @@ const stub = (refuse?: StubApiError) => {
       const minted = credentialOf('pk-2', request.body.name);
       held.push(minted);
 
-      return Promise.resolve({ ...minted, token: 'secret-token' });
+      // A mint answers origin mint.
+      return Promise.resolve({
+        ...minted,
+        origin: 'mint',
+        token: 'secret-token',
+      });
     },
     revokeCredential: (request) => {
       if (refuse) throw refuse;
@@ -126,6 +131,7 @@ describe('Credentials reset', () => {
       createCredential: (request) =>
         Promise.resolve({
           ...credentialOf('pk-new', request.body.name),
+          origin: 'mint',
           token: 'secret-token',
         }),
       revokeCredential: () => Promise.resolve(),

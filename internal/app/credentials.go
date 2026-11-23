@@ -225,7 +225,9 @@ func (c apiCredentials) List(ctx context.Context, subject string) ([]httpapi.API
 	items := make([]httpapi.APICredential, 0, len(held))
 
 	for _, cred := range held {
-		if cred.Kind == auth.KindAPI {
+		// A page session stands in for an app pairing credential the listing
+		// already shows (ADR-20261112-nay).
+		if cred.Kind == auth.KindAPI && cred.Parent == "" {
 			items = append(items, apiCredentialOf(cred))
 		}
 	}
@@ -245,7 +247,7 @@ func (c apiCredentials) Get(ctx context.Context, id string) (httpapi.APICredenti
 		return httpapi.APICredential{}, fmt.Errorf("find the credential %q: %w", id, err)
 	}
 
-	if cred.Kind != auth.KindAPI {
+	if cred.Kind != auth.KindAPI || cred.Parent != "" {
 		return httpapi.APICredential{}, httpapi.UnknownCredential(id)
 	}
 

@@ -128,6 +128,7 @@ var unboundGroups = []struct {
 			"list-subject-direct-grants",
 			"list-subject-grants",
 			"logout",
+			"open-page-session",
 			"password-login",
 			"plan-module-install",
 			"prepare-server-upgrade",

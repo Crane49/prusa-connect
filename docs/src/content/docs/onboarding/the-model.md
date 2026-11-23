@@ -200,7 +200,7 @@ machine presents is a `device_credential`, and it holds the `agent` relation on
 exactly one device.
 
 The prefix is applied in exactly one place, `graphPrincipals.Principal`
-(`internal/app/auth.go:322`). An issuer names a subject in its own namespace
+(`internal/app/auth.go:330`). An issuer names a subject in its own namespace
 and knows nothing of the graph's types; only the composition root knows which
 implementation produced an id, so only it can say which type the id belongs to.
 

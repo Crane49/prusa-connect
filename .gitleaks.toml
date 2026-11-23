@@ -20,6 +20,8 @@ regexes = [
   '''^pcl_9f3b21c7ae4d05e8b6f14a72c3d09e5b$''',
   # the authentik container scripts/check-oidc-providers.sh starts
   '''^pcl-authentik-fixture-token$''',
+  # the demo password of extensions/prusaslicer3-connector/scripts/check.sh
+  '''^prusaslicer3-connector-gate$''',
 ]
 
 [[allowlists]]
@@ -32,6 +34,12 @@ regexes = [
   '''^1234567890abcdef1234567890abcdef12345678$''',
   # the idempotency key of the OpenAPI example, copied into every generated file
   '''^01K4C9YF2PS9V4YQF1N5KGH8ZB$''',
+  # the app pairing access_token of the OpenAPI example (examplescredentials.go),
+  # copied into every generated file, the part of it generic-api-key captures,
+  # and its header segment on a line of its own
+  '''^eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0\.eyJzdWIiOiJ1c2VyOmFsaWNlIiwiaWF0IjoxNzg3NzM1NjQ1LCJleHAiOjE3OTU1MTE2NDUsImlzcyI6InBydXNhLWNvbm5lY3QiLCJqdGkiOiI3S3AybVE5eEx3NG5SdDh2QmMzelllIn0\.pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000$''',
+  '''^eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0\.eyJzdWIiOiJ1c2VyOmFsaWNlIiwiaWF0IjoxNzg3NzM1NjQ$''',
+  '''^eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0\.$''',
 ]
 
 [[allowlists]]

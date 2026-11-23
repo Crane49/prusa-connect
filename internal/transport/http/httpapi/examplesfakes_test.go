@@ -68,7 +68,7 @@ func exampleDataServer(t *testing.T) *Server {
 	}
 	cfg.AppPairings = exampleAppPairings{
 		pairing:   sampled[AppPairing](t, "get-app-pairing", ""),
-		collected: sampled[createdCredentialBody](t, "collect-app-pairing", ""),
+		collected: sampled[collectedCredentialBody](t, "collect-app-pairing", ""),
 		issued:    sampled[issuedAppPairingBody](t, "request-app-pairing", ""),
 	}
 	cfg.Pairings = examplePairings{
@@ -877,7 +877,7 @@ func callerOf(sample map[string]any) Account {
 // exampleAppPairings answers the app pairing operations with their samples.
 type exampleAppPairings struct {
 	pairing   AppPairing
-	collected createdCredentialBody
+	collected collectedCredentialBody
 	issued    issuedAppPairingBody
 }
 
@@ -903,8 +903,13 @@ func (p exampleAppPairings) Collect(context.Context, string) (IssuedCredential, 
 			CreatedAt: p.collected.CreatedAt, ExpiresAt: p.collected.ExpiresAt,
 			Scopes: p.collected.Scopes, Origin: p.collected.Origin,
 		},
-		Token: p.collected.Token,
+		Token:       p.collected.Token,
+		AccessToken: p.collected.AccessToken,
 	}, nil
+}
+
+func (exampleAppPairings) OpenPageSession(context.Context, string, func(string) bool) (PageSession, error) {
+	return PageSession{Token: exampleCredentialToken, ExpiresAt: exampleTime.Add(time.Hour)}, nil
 }
 
 func (i exampleInstaller) Plan(context.Context, string, ModuleReleaseRef) (ModulePlan, error) {

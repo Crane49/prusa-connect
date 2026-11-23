@@ -106,3 +106,67 @@ func TestTheBearerCookieCarriesOnlyABearerToken(t *testing.T) {
 	header.Header.Set("Authorization", "Bearer pcl_header")
 	require.Equal(t, auth.Token("pcl_header"), TokenFrom(header), "the header wins over every cookie")
 }
+
+// An app pairing credential in its JWT shape is checked by the verifier in the
+// Authorization header on both transports, and never by the bearer resolver.
+// The auth.access_token cookie never carries it, bare or shaped: a page script
+// wrote that cookie, so another script could read it (ADR-20261112-nay). A
+// revoked or an expired one is refused.
+func TestAnAppPairingCredentialInItsJWTShapeIsCheckedByTheVerifier(t *testing.T) {
+	t.Parallel()
+
+	minted := time.Now()
+	store := auth.NewMemoryStore()
+	bearer := &recordingBearer{}
+	principals := NewPrincipals(auth.NewVerifier(store, nil), nil, streamPath).WithBearer(bearer)
+
+	issue := func() (auth.Token, auth.Credential) {
+		token, cred, err := auth.IssueAPI(t.Context(), store, auth.APISpec{
+			Subject: "user:ada", Name: "PrusaSlicer", MintedBy: "user:ada",
+			Scopes: []string{"operate"}, Origin: auth.OriginAppPairing,
+		}, minted)
+		require.NoError(t, err)
+
+		return token, cred
+	}
+
+	inCookie := func(value auth.Token) *http.Request {
+		r := httptest.NewRequest(http.MethodGet, "/api/v1/devices", nil)
+		r.AddCookie(&http.Cookie{Name: BearerCookieName, Value: string(value)})
+
+		return r
+	}
+
+	token, cred := issue()
+	shaped := auth.WrapJWT(token, cred)
+
+	for name, r := range map[string]*http.Request{
+		"over HTTP": requestWith(t, shaped, false),
+		"on SSE":    requestWith(t, shaped, true),
+	} {
+		resolved, err := principals.Resolve(r)
+		require.NoError(t, err, name)
+		require.Equal(t, cred.PublicID, resolved.PublicID, name)
+		require.Equal(t, "user:ada", resolved.Subject, name)
+	}
+
+	require.Empty(t, bearer.asked, "an app pairing credential reached the bearer resolver")
+
+	for name, value := range map[string]auth.Token{"bare": token, "in its JWT shape": shaped} {
+		require.Empty(t, TokenFrom(inCookie(value)), "the credential %s was read from the cookie", name)
+
+		_, err := principals.Resolve(inCookie(value))
+		require.Error(t, err, "the credential %s in the cookie was admitted", name)
+	}
+
+	expired := NewPrincipals(auth.NewVerifier(store, func() time.Time { return cred.ExpiresAt }), nil, streamPath)
+
+	_, err := expired.Resolve(requestWith(t, shaped, false))
+	require.True(t, auth.Refused(err), "an expired credential was admitted: %v", err)
+
+	revokedToken, revoked := issue()
+	require.NoError(t, auth.NewVerifier(store, nil).Revoke(t.Context(), revoked.PublicID))
+
+	_, err = principals.Resolve(requestWith(t, auth.WrapJWT(revokedToken, revoked), false))
+	require.True(t, auth.Refused(err), "a revoked credential was admitted: %v", err)
+}

@@ -136,6 +136,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/app-pairings/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Trade an app's credential for a page session cookie
+         * @description An app, such as PrusaSlicer, sends the credential it collected through the app pairing as Authorization: Bearer, bare or in its JWT shape, before it shows a page of this server. The answer sets the session cookie to a page session: an api credential that speaks for the same person with the same scopes, lives at most an hour, and ends when the app's credential is revoked or expires. The cookie is HttpOnly, so no script on the page reads it, and SameSite=Strict. The body carries the same cookie, so an app can put it into its web view itself. The page never holds the credential. Only the header is read: a request that carries the credential in a cookie is refused, so another site cannot open a page session. One credential keeps at most four live page sessions, and opens thirty from one address in ten minutes.
+         */
+        post: operations["open-page-session"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/app-pairings/token": {
         parameters: {
             query?: never;
@@ -147,7 +167,7 @@ export interface paths {
         put?: never;
         /**
          * Collect the credential a person approved
-         * @description One poll of the device access token request of RFC 8628. It takes no credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an approval the next poll answers the credential, once: its token, the scopes the person approved and the person it speaks for. A denial is answered once with APP_PAIRING_DENIED. After that, and after the credential is collected, the code is unknown.
+         * @description One poll of the device access token request of RFC 8628. It takes no credential. Until a person decides it answers APP_PAIRING_PENDING, and a poll sooner than the interval answers APP_PAIRING_SLOW_DOWN and adds five seconds to it. After an approval the next poll answers the credential, once: its token, the scopes the person approved and the person it speaks for, and the same token in the shape of a JWT as access_token. A denial is answered once with APP_PAIRING_DENIED. After that, and after the credential is collected, the code is unknown.
          */
         post: operations["collect-app-pairing"];
         delete?: never;
@@ -3881,6 +3901,40 @@ export interface components {
             /** @description The code the request answered with. */
             device_code: string;
         };
+        CollectedCredentialBody: {
+            /** @description The same credential in the shape of a JWT whose third segment is the token. Its payload names sub, iat, exp, iss and jti, and it is not signed. Present it as Authorization: Bearer <access_token>. This server checks it as it checks the token. */
+            access_token: string;
+            /**
+             * Format: date-time
+             * @description When it was minted.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description When this server stops accepting it.
+             */
+            expires_at: string;
+            /** @description The public half of the token, which is what a revocation names. */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Absent: a credential that has just been minted has not been presented.
+             */
+            last_used_at?: string;
+            /** @description The app name the person approved. */
+            name: string;
+            /**
+             * @description Always app_pairing.
+             * @enum {string}
+             */
+            origin: "app_pairing";
+            /** @description The scopes the person approved. */
+            scopes: ("read" | "operate" | "administer")[];
+            /** @description The person who approved, in tuple spelling. The credential speaks for them. */
+            subject: string;
+            /** @description The credential, shown once. Present it as Authorization: Bearer <token>. This server keeps only a hash and cannot show it again. */
+            token: string;
+        };
         Command: {
             /** @description The arguments as the caller sent them. */
             args?: {
@@ -6496,6 +6550,37 @@ export interface components {
             /** @description The address of the other printer's own web page. */
             url: string;
         };
+        OpenPageSessionOutputBody: {
+            /** @description The cookie Set-Cookie sets, for an app that stores it into its web view itself. */
+            cookie: components["schemas"]["PageSessionCookieBody"];
+            /**
+             * Format: date-time
+             * @description When the page session ends. It is at most an hour away, and never after the app's credential expires.
+             */
+            expires_at: string;
+        };
+        PageSessionCookieBody: {
+            /**
+             * Format: date-time
+             * @description When the cookie and the page session end.
+             */
+            expires: string;
+            /** @description Always true: no script on the page may read the cookie. */
+            http_only: boolean;
+            /** @description The cookie's name, the session cookie of this server. */
+            name: string;
+            /** @description The cookie's path. */
+            path: string;
+            /**
+             * @description Always Strict.
+             * @enum {string}
+             */
+            same_site: "Strict";
+            /** @description True unless this server is reached over plain HTTP. */
+            secure: boolean;
+            /** @description The page session. Store it only in the cookie, never where a page script reads it. */
+            value: string;
+        };
         Pairing: {
             /**
              * Format: date-time
@@ -8957,6 +9042,77 @@ export interface operations {
             };
         };
     };
+    "open-page-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cookie": {
+                     *         "expires": "2026-08-26T10:14:05Z",
+                     *         "http_only": true,
+                     *         "name": "pcl_session",
+                     *         "path": "/",
+                     *         "same_site": "Strict",
+                     *         "secure": true,
+                     *         "value": "pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000"
+                     *       },
+                     *       "expires_at": "2026-08-26T10:14:05Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OpenPageSessionOutputBody"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemError"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemError"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemError"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemError"];
+                };
+            };
+        };
+    };
     "collect-app-pairing": {
         parameters: {
             query?: never;
@@ -8983,6 +9139,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "access_token": "eyJhbGciOiJub25lIiwia2lkIjoicGNsIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ1c2VyOmFsaWNlIiwiaWF0IjoxNzg3NzM1NjQ1LCJleHAiOjE3OTU1MTE2NDUsImlzcyI6InBydXNhLWNvbm5lY3QiLCJqdGkiOiI3S3AybVE5eEx3NG5SdDh2QmMzelllIn0.pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000",
                      *       "created_at": "2026-08-26T09:14:05Z",
                      *       "expires_at": "2026-11-24T09:14:05Z",
                      *       "id": "7Kp2mQ9xLw4nRt8vBc3zYe",
@@ -8995,7 +9152,7 @@ export interface operations {
                      *       "token": "pcl_7Kp2mQ9xLw4nRt8vBc3zYe_0000000000000000000000000000000000000000000_000000"
                      *     }
                      */
-                    "application/json": components["schemas"]["CreatedCredentialBody"];
+                    "application/json": components["schemas"]["CollectedCredentialBody"];
                 };
             };
             /** @description Bad Request */

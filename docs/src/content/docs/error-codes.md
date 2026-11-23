@@ -372,6 +372,26 @@ The permissions epoch row is missing.
 - **parameters** none
 - **what to do** Nothing the caller can do. Quote the trace id when reporting it.
 
+### `core.auth/PAGE_SESSION_LIMITED` {#core-auth-page-session-limited}
+
+This app opened too many page sessions from this address.
+
+- **status** `429`
+- **retryable** yes
+- **occurrence detail** shown
+- **parameters** none
+- **what to do** Wait ten minutes, then open the page again.
+
+### `core.auth/PAGE_SESSION_REFUSED` {#core-auth-page-session-refused}
+
+Only an app pairing credential opens a page session.
+
+- **status** `403`
+- **retryable** no
+- **occurrence detail** shown
+- **parameters** none
+- **what to do** Send the credential an app collected through the app pairing as Authorization: Bearer. A session, a credential a person minted and a page session open none, and a cookie is never read here.
+
 ### `core.auth/PAIRING_EXISTS` {#core-auth-pairing-exists}
 
 That subject is already paired to a principal on this server.
