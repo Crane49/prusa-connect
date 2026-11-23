@@ -132,7 +132,9 @@ func (f *demoFleet) signIn(ctx context.Context, opts DemoOptions, login demoLogi
 		return "", fmt.Errorf("hold the demo session: %w", err)
 	}
 
-	session := &demoFleet{client: &http.Client{Timeout: demoRequest, Jar: jar}}
+	client := demoHTTPClient(opts.clientTLS)
+	client.Jar = jar
+	session := &demoFleet{client: client}
 
 	status, err := session.call(ctx, http.MethodPost, opts.baseURL()+"/api/v1/auth/login", login.body(), nil)
 	if err != nil {

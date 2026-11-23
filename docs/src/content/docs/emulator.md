@@ -48,6 +48,7 @@ make demo DEMO_ARGS="-printers 8 -flap 0 -cameras=false"
 | `-dir` | where the configuration and the database go. Default a temporary directory that is removed |
 | `-examples` | where the packed example modules and extensions are. Default `bin/demo-modules`, which `make demo` writes |
 | `-log-level` | `debug`, `info`, `warn` or `error`. Default `error` |
+| `-tls-cert`, `-tls-key` | a certificate and key as `core.api.tls` takes them. With both, the demo serves HTTPS |
 
 ## The two example modules the demo offers
 

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -91,6 +92,15 @@ type DemoOptions struct {
 	Version string
 	// Out is where the run says what it did. Nil is os.Stdout.
 	Out io.Writer
+	// TLSCert and TLSKey are the files core.api.tls takes. With both the
+	// core serves HTTPS, and everything the demo runs trusts the
+	// certificates in TLSCert. Give both or neither.
+	TLSCert string
+	TLSKey  string
+
+	// clientTLS is what the demo's own clients trust, read from TLSCert, and
+	// nil for a plain run.
+	clientTLS *tls.Config
 }
 
 // The demo's defaults. The fleet is three because three different models show
@@ -158,14 +168,9 @@ var errNoPrinters = errors.New("a demo needs at least one printer")
 func Demo(ctx context.Context, opts DemoOptions) error {
 	opts = opts.withDefaults()
 
-	if opts.Printers < 1 {
-		return errNoPrinters
-	}
-
-	if opts.Marketplace != "" {
-		if err := config.ValidRemoteURL(opts.Marketplace); err != nil {
-			return fmt.Errorf("the marketplace %q: %w", opts.Marketplace, err)
-		}
+	opts, err := demoChecked(opts)
+	if err != nil {
+		return err
 	}
 
 	operator, found, err := readOperatorFile(opts.ConfigPath)
@@ -292,8 +297,37 @@ func (o DemoOptions) onLoopback() bool {
 	return err == nil && address.IsLoopback()
 }
 
+// demoChecked refuses options the run cannot start with, before a port is
+// taken, and reads what the demo's clients trust.
+func demoChecked(opts DemoOptions) (DemoOptions, error) {
+	if opts.Printers < 1 {
+		return opts, errNoPrinters
+	}
+
+	if opts.Marketplace != "" {
+		if err := config.ValidRemoteURL(opts.Marketplace); err != nil {
+			return opts, fmt.Errorf("the marketplace %q: %w", opts.Marketplace, err)
+		}
+	}
+
+	clientTLS, err := demoClientTLS(opts)
+	if err != nil {
+		return opts, err
+	}
+
+	opts.clientTLS = clientTLS
+
+	return opts, nil
+}
+
 // baseURL is the server as the fleet and the reader reach it.
-func (o DemoOptions) baseURL() string { return "http://" + o.APIAddr }
+func (o DemoOptions) baseURL() string {
+	if o.servesTLS() {
+		return "https://" + demoDialAddr(o.APIAddr)
+	}
+
+	return "http://" + o.APIAddr
+}
 
 // demoDir is where the configuration, the graph and the records go. A directory
 // the caller named is kept, because they asked for it; one this run made is
@@ -342,7 +376,7 @@ func demoConfig(opts DemoOptions, dir string, local map[string]string, records b
 	return strings.Join([]string{
 		"core:",
 		"  api:",
-		`    addr: "` + opts.APIAddr + `"`,
+		`    addr: "` + opts.APIAddr + `"` + demoTLSConfig(opts),
 		"  log:",
 		"    level: " + opts.LogLevel,
 		"    format: text",

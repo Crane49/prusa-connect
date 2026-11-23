@@ -213,6 +213,7 @@ make demo DEMO_ARGS="-printers 8 -flap 0"
 | `-config` | `config/config.yaml` | the file the demo lays its own settings over, ignored when there is none |
 | `-examples` | `bin/demo-modules` | where the packed example module and extension releases are, which `make demo` writes |
 | `-password` | a new one each run | the demo account's password, at least eight bytes |
+| `-tls-cert`, `-tls-key` | none | a certificate and key as `core.api.tls` takes them. With both, the demo serves HTTPS |
 
 The xBuddy models cycle through CoreOne, MK4S and MINI, so
 `GET /api/v1/devices` shows three different capability sets beside the

@@ -16,6 +16,7 @@ package echodevice
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -87,6 +88,9 @@ type Config struct {
 	// BaseURL is the server as this device reaches it, such as
 	// http://127.0.0.1:8080.
 	BaseURL string
+	// TLS is what the device trusts on an https:// BaseURL. Nil trusts the
+	// system roots.
+	TLS *tls.Config
 	// Connector is the instance name the host mounted the echo driver under.
 	// The routes sit below /connectors/ plus this name.
 	Connector string
@@ -160,7 +164,7 @@ func New(cfg Config) (*Device, error) {
 		root: strings.TrimSuffix(cfg.BaseURL, "/") + "/connectors/" + cfg.Connector,
 		// The timeout is the longest request this device makes, and every call
 		// carries a context of its own below it.
-		client: &http.Client{Timeout: pollBudget},
+		client: clientOf(cfg.TLS),
 	}, nil
 }
 
@@ -465,4 +469,15 @@ func wait(ctx context.Context, stretch time.Duration) {
 	case <-ctx.Done():
 	case <-timer.C:
 	}
+}
+
+// clientOf is the device's HTTP client, trusting tlsConfig on https when it is
+// set and the system roots otherwise.
+func clientOf(tlsConfig *tls.Config) *http.Client {
+	client := &http.Client{Timeout: pollBudget}
+	if tlsConfig != nil {
+		client.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+	}
+
+	return client
 }

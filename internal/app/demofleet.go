@@ -129,6 +129,7 @@ func newDemoFleet(opts DemoOptions) (*demoFleet, error) {
 			Model:     name,
 			Serial:    fmt.Sprintf(demoSerial, i+1),
 			BaseURL:   opts.baseURL(),
+			TLS:       opts.clientTLS,
 			JobFrames: demoJobFramesOf(opts),
 			// An idle fleet is planned by a module that keeps what each
 			// printer holds, which a fixed report would contradict.
@@ -155,6 +156,7 @@ func newDemoFleet(opts DemoOptions) (*demoFleet, error) {
 
 	other, err := echodevice.New(echodevice.Config{
 		BaseURL:   opts.baseURL(),
+		TLS:       opts.clientTLS,
 		Connector: demoEchoConnector,
 		Vendor:    demoEchoVendor,
 		Model:     demoEchoModel,
@@ -166,7 +168,7 @@ func newDemoFleet(opts DemoOptions) (*demoFleet, error) {
 	}
 
 	return &demoFleet{
-		printers: printers, other: other, client: &http.Client{Timeout: demoRequest},
+		printers: printers, other: other, client: demoHTTPClient(opts.clientTLS),
 	}, nil
 }
 
@@ -634,6 +636,12 @@ func (f *demoFleet) banner(
 		"",
 		fmt.Sprintf("%d simulated printers are connected to the core on %s.", len(page.Items), opts.APIAddr),
 		"",
+	}
+
+	if opts.servesTLS() {
+		lines = append(lines[:1], append([]string{
+			"The core serves HTTPS with the certificate " + opts.TLSCert + ".",
+		}, lines[1:]...)...)
 	}
 
 	for _, item := range page.Items {

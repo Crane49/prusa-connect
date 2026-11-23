@@ -81,6 +81,15 @@ func run(args []string) int {
 		"the marketplace whose Connect modules the extensions page lists and installs, such as http://localhost:4455")
 	flags.StringVar(&options.Password, "password", "",
 		"the demo account's password, at least eight bytes, defaulting to a new one printed on every run")
+	flags.StringVar(
+		&options.TLSCert,
+		"tls-cert",
+		"",
+		"a PEM certificate the core serves HTTPS with, as core.api.tls.certificate takes it. The demo's printers trust "+
+			"the certificates in it. Give it with -tls-key",
+	)
+	flags.StringVar(&options.TLSKey, "tls-key", "",
+		"the PEM private key of -tls-cert, as core.api.tls.key takes it")
 
 	if err := flags.Parse(args); err != nil {
 		return exitUsage

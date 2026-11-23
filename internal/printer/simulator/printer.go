@@ -3,6 +3,7 @@ package simulator
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -71,6 +72,9 @@ type Config struct {
 	Firmware string
 	// BaseURL is the server, such as http://localhost:8080.
 	BaseURL string
+	// TLS is what the printer trusts on an https:// BaseURL. Nil trusts the
+	// system roots.
+	TLS *tls.Config
 	// Dial opens the transport. A test passes a net.Pipe dialler, which keeps
 	// the whole session inside a testing/synctest bubble. Nil means a real TCP
 	// socket, which does not.
@@ -297,10 +301,11 @@ func New(cfg Config) (*Printer, error) {
 		emitter:      make(chan struct{}, 1),
 	}
 
-	transport := &http.Transport{DialContext: cfg.Dial}
+	transport := &http.Transport{DialContext: cfg.Dial, TLSClientConfig: cfg.TLS}
 	p.client = &http.Client{Transport: transport}
 	p.dialer = &websocket.Dialer{
 		NetDialContext:   cfg.Dial,
+		TLSClientConfig:  cfg.TLS,
 		Subprotocols:     []string{websocketSubprotocol},
 		HandshakeTimeout: defaultHandshakeTimeout,
 	}
