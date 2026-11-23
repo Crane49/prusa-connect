@@ -118,7 +118,7 @@ func artworkTag(art connectorapi.Artwork) string {
 // send as Last-Modified and is cached on other terms.
 func writeArtworkHeaders(hctx huma.Context, tag string) {
 	hctx.SetHeader("X-Content-Type-Options", "nosniff")
-	hctx.SetHeader("Content-Security-Policy", thumbnailPolicy)
+	hctx.SetHeader("Content-Security-Policy", inertPolicy)
 	hctx.SetHeader("Cache-Control", artworkCacheControl)
 	hctx.SetHeader("ETag", tag)
 }

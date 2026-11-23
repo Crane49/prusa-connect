@@ -135,21 +135,27 @@ func serveDownload(
 		_ = err
 	}
 
+	// The type is set here so ServeContent never sniffs it: a .g file whose
+	// first bytes look like HTML would otherwise be served as text/html and run
+	// as script in this origin. Stored files are anyone-with-upload content, so
+	// they are also sandboxed and never sniffed by the browser either.
+	kind := mime.TypeByExtension(path.Ext(name))
+	if kind == "" {
+		kind = "application/octet-stream"
+	}
+
+	writer.Header().Set("Content-Type", kind)
+
+	writer.Header().Set("X-Content-Type-Options", "nosniff")
+	writer.Header().Set("Content-Security-Policy", inertPolicy)
+	writer.Header().Set("Content-Disposition",
+		mime.FormatMediaType("attachment", map[string]string{"filename": path.Base(name)}))
+
 	// headMiddleware handed this handler a GET. ServeContent answers a HEAD with
-	// the headers alone, but only when it is told it is one, and it sniffs the
-	// type from the first bytes when none is set.
+	// the headers alone, but only when it is told it is one.
 	if headOf(request.Context()) {
 		request = request.Clone(request.Context())
 		request.Method = http.MethodHead
-
-		if writer.Header().Get("Content-Type") == "" {
-			kind := mime.TypeByExtension(path.Ext(name))
-			if kind == "" {
-				kind = "application/octet-stream"
-			}
-
-			writer.Header().Set("Content-Type", kind)
-		}
 	}
 
 	http.ServeContent(writer, request, name, modified, &progressSeeker{

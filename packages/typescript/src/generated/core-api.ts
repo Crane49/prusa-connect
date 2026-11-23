@@ -2862,7 +2862,7 @@ export interface paths {
         };
         /**
          * Download a file from a storage
-         * @description Serves the file's bytes, with a length and a modification time, and answers a Range request so an interrupted download resumes. A storage whose download_url is true serves the file itself: the answer is a 307 redirect to a URL that storage handed out, and a client follows it to read the bytes. It takes read_storage.
+         * @description Serves the file's bytes, with a length and a modification time, and answers a Range request so an interrupted download resumes. A storage whose download_url is true serves the file itself: the answer is a 307 redirect to a URL that storage handed out, and a client follows it to read the bytes. A file this server serves itself is always an attachment, typed from its name and never sniffed. It carries `X-Content-Type-Options: nosniff` and a Content-Security-Policy that lets the browser load and run nothing, so an uploaded page cannot run on this origin. It takes read_storage.
          */
         get: operations["download-storage-object"];
         /**

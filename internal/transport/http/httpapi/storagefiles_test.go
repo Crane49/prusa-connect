@@ -63,9 +63,9 @@ func (s *fakeStorages) Files(context.Context, string, string, string) ([]Storage
 	return nil, nil
 }
 
-func (s *fakeStorages) Open(context.Context, string, string, string) (Object, error) {
+func (s *fakeStorages) Open(_ context.Context, _ string, _ string, path string) (Object, error) {
 	return Object{
-		Name:     "part.gcode",
+		Name:     path,
 		Modified: time.Unix(1_700_000_000, 0),
 		Content:  &countingObject{Reader: strings.NewReader(s.object), closed: &s.closes, read: &s.reads},
 	}, nil

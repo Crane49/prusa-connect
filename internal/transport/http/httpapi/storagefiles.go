@@ -512,7 +512,7 @@ func thumbnailTag(version string) string {
 // nothing is loaded, and nothing runs.
 func writeThumbnailHeaders(hctx huma.Context, stamp time.Time, tag string) {
 	hctx.SetHeader("X-Content-Type-Options", "nosniff")
-	hctx.SetHeader("Content-Security-Policy", thumbnailPolicy)
+	hctx.SetHeader("Content-Security-Policy", inertPolicy)
 	hctx.SetHeader("Cache-Control", thumbnailCacheControl)
 	hctx.SetHeader("Last-Modified", stamp.Format(http.TimeFormat))
 
@@ -521,9 +521,10 @@ func writeThumbnailHeaders(hctx huma.Context, stamp time.Time, tag string) {
 	}
 }
 
-// thumbnailPolicy loads nothing and runs nothing. A picture needs no script, no
-// style and no other document, so the answer says so.
-const thumbnailPolicy = "default-src 'none'; sandbox"
+// inertPolicy loads nothing and runs nothing. It is sent with every stored
+// file and picture this server hands back, because their bytes came from
+// whoever uploaded them. Loosening it lets an upload run script on this origin.
+const inertPolicy = "default-src 'none'; sandbox"
 
 // writeThumbnail renders one stored picture.
 func writeThumbnail(hctx huma.Context, picture StorageThumbnail, stamp time.Time, tag string) {
@@ -693,7 +694,10 @@ func registerDownloadObject(api huma.API, stores Storages) {
 		Description: "Serves the file's bytes, with a length and a modification time, and answers a " +
 			"Range request so an interrupted download resumes. A storage whose download_url is true " +
 			"serves the file itself: the answer is a 307 redirect to a URL that storage handed out, " +
-			"and a client follows it to read the bytes. It takes read_storage.",
+			"and a client follows it to read the bytes. A file this server serves itself is always an " +
+			"attachment, typed from its name and never sniffed. It carries `X-Content-Type-Options: " +
+			"nosniff` and a Content-Security-Policy that lets the browser load and run nothing, so an " +
+			"uploaded page cannot run on this origin. It takes read_storage.",
 		Tags:      []string{"storages"},
 		Errors:    storageErrors,
 		Responses: objectResponses(),

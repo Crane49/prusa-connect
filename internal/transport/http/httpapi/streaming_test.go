@@ -220,3 +220,24 @@ func TestADownloadAnswersARangeAndClosesTheObject(t *testing.T) {
 
 	t.Logf("observed: closed on both paths, %d bytes served as %d", served.closes, rec.Code)
 }
+
+// A stored file whose bytes are HTML is never served as HTML: the type comes
+// from the name and not from sniffing, and the file is a sandboxed attachment,
+// so an uploaded page cannot run script in this origin. A .g has no MIME
+// mapping anywhere, which is what made ServeContent sniff it.
+func TestADownloadOfHTMLBytesIsNotServedAsHTML(t *testing.T) {
+	t.Parallel()
+
+	served := &fakeStorages{object: "<html><script>alert(document.domain)</script>"}
+	handler := serverWithStores(t, served).Handler()
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, httptest.NewRequest(http.MethodGet,
+		storagesPathPrefix+"/bench/content?path=xss.g", nil))
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	require.Equal(t, "application/octet-stream", rec.Header().Get("Content-Type"))
+	require.Equal(t, "nosniff", rec.Header().Get("X-Content-Type-Options"))
+	require.Contains(t, rec.Header().Get("Content-Security-Policy"), "sandbox")
+	require.Equal(t, `attachment; filename=xss.g`, rec.Header().Get("Content-Disposition"))
+}
