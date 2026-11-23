@@ -47,6 +47,11 @@
       "svelte": "./dist/slots/index.js",
       "default": "./dist/esm/slots.js"
     },
+    "./slicer": {
+      "types": "./dist/slicer/index.d.ts",
+      "svelte": "./dist/slicer/index.js",
+      "default": "./dist/esm/slicer.js"
+    },
     "./primitives": {
       "types": "./dist/primitives/index.d.ts",
       "svelte": "./dist/primitives/index.js",

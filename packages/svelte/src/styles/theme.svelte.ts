@@ -66,6 +66,8 @@ export class ThemeStore {
   readonly #storage: ThemeStorage | null;
   // Whether a person on this browser has chosen a side.
   #chosen = $state(false);
+  // Whether the program that shows the page asked for a side.
+  #followed = false;
   readonly #dark = $derived(
     this.#preference === 'dark' ||
       (this.#preference === 'system' && this.#systemDark),
@@ -108,7 +110,19 @@ export class ThemeStore {
 
   /** Takes the theme a deployment configured. */
   useDefault(next: ThemePreference): void {
-    if (this.#chosen || !isPreference(next)) return;
+    if (this.#chosen || this.#followed || !isPreference(next)) return;
+    this.#preference = next;
+  }
+
+  /**
+   * Takes the theme the program that shows this page asks for, such as
+   * PrusaSlicer. It wins over a remembered choice, because the page sits
+   * inside that program's window. It is not a choice, so nothing is written.
+   */
+  follow(next: ThemePreference): void {
+    if (!isPreference(next)) return;
+    // The deployment's default, which may arrive later, does not undo it.
+    this.#followed = true;
     this.#preference = next;
   }
 

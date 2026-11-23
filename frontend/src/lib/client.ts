@@ -1,6 +1,7 @@
 import { ApiError, PrusaConnect } from '@prusa/connect';
 
 import { log } from './log';
+import { slicerBridge } from './slicer/bridge';
 
 const apiLog = log.scope('api');
 
@@ -99,6 +100,9 @@ export const client = new PrusaConnect({
   timeoutMs: REQUEST_TIMEOUT_MS,
   shareEvents: true,
   onUnauthorized: () => {
+    // Inside PrusaSlicer the page session ended, so the page asks the slicer
+    // to open a new one.
+    slicerBridge()?.refused();
     refusalHandler?.();
   },
   onFailure: (failure, operation) => {

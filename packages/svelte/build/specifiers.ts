@@ -62,6 +62,7 @@ const PRUSA = [
   '@prusa/connect-ui/domain',
   '@prusa/connect-ui/data',
   '@prusa/connect-ui/slots',
+  '@prusa/connect-ui/slicer',
   '@prusa/connect-ui/primitives',
   '@prusa/connect-ui/router',
   '@prusa/connect-ui/shell',

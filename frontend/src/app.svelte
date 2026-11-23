@@ -45,6 +45,8 @@
 
   import { client, onRefusal } from './lib/client';
   import { isolateModuleTabs } from './lib/isolation';
+  import { isEmbedded } from './lib/embed';
+  import EmbedFrame from './lib/embed-frame.svelte';
   import FirstRun from './lib/first-run.svelte';
   import { saveBlob } from './lib/download';
   import { entries, log, navigate } from './lib/log';
@@ -60,6 +62,8 @@
   } from './lib/routes';
   import PersonScreen from './lib/person-screen.svelte';
   import { readRestartAccess } from './lib/restart-access';
+  import { slicerBridge } from './lib/slicer/bridge';
+  import SlicerWaiting from './lib/slicer/slicer-waiting.svelte';
   import { AppVersion } from './lib/stores/app-version.svelte';
   import { type AppContext, type AppScreen, screenFor } from './lib/screens';
   import { LiveUpdates } from './lib/stores/live-updates.svelte';
@@ -109,6 +113,9 @@
     router.replace(withoutSignInFailure(router.path, router.search));
   }
   const Screen = $derived(screenFor(router.pattern));
+  // A module page opened with `?embed=1` draws without the sidebar and the
+  // header (ADR-20261112-2eb rule 6).
+  const embedded = $derived(isEmbedded(router.pattern, router.search));
   // The boundary around a screen that failed, kept so moving to another
   // address served by the same screen draws it again. A move to another
   // screen remounts the boundary instead, and this one is dropped.
@@ -162,6 +169,23 @@
       : router.path,
   );
   const session = new Session(client);
+  // Inside PrusaSlicer the slicer signs the person in, so the page waits for
+  // the slicer's page session cookie instead of offering the sign-in form.
+  // The bridge asks the core again each time the slicer calls init.
+  const bridge = slicerBridge();
+  bridge?.watch(
+    () => session.status === 'signed-in',
+    async () => {
+      await session.read();
+
+      return session.status === 'signed-in';
+    },
+  );
+  // The slicer holds nothing this server takes.
+  let slicerStale = $state(bridge?.stale ?? false);
+  bridge?.onStale(() => {
+    slicerStale = true;
+  });
   // The first-run wizard's conversation with the server (ADR-20261015-ejz).
   const setupFlow = new SetupFlow(client);
   // What the signed-in person was allowed to read, forgotten when the person
@@ -534,6 +558,25 @@
   });
 </script>
 
+<!-- The screen, inside the app shell or inside the embed frame. -->
+{#snippet screen()}
+  <!-- A screen that throws leaves the navigation standing, and going to
+       another page draws it afresh. -->
+  {#key Screen}
+    <svelte:boundary onerror={screenFailed}>
+      <PersonScreen
+        person={session.principal?.id}
+        diagnostics={settings.diagnostics}
+      >
+        <Screen {ctx} />
+      </PersonScreen>
+      {#snippet failed()}
+        <div class="mx-auto max-w-md p-8">{@render crashPanel()}</div>
+      {/snippet}
+    </svelte:boundary>
+  {/key}
+{/snippet}
+
 {#snippet crashPanel()}
   <div class="flex flex-col gap-4">
     <h1 class="text-lg font-semibold">{t('app.crash.title')}</h1>
@@ -595,6 +638,8 @@
         await session.read();
       }}
     />
+  {:else if session.status === 'signed-out' && bridge !== undefined}
+    <EmbedFrame><SlicerWaiting stale={slicerStale} /></EmbedFrame>
   {:else if session.status === 'signed-out'}
     <SignInScreen
       {host}
@@ -611,6 +656,8 @@
     />
   {:else if !listed}
     <!-- The listing is in flight. -->
+  {:else if embedded}
+    <EmbedFrame>{@render screen()}</EmbedFrame>
   {:else}
     <AppShell
       productName={settings.title}
@@ -654,21 +701,7 @@
           />
         {/if}
       {/snippet}
-      <!-- A screen that throws leaves the navigation standing, and going to
-           another page draws it afresh. -->
-      {#key Screen}
-        <svelte:boundary onerror={screenFailed}>
-          <PersonScreen
-            person={session.principal?.id}
-            diagnostics={settings.diagnostics}
-          >
-            <Screen {ctx} />
-          </PersonScreen>
-          {#snippet failed()}
-            <div class="mx-auto max-w-md p-8">{@render crashPanel()}</div>
-          {/snippet}
-        </svelte:boundary>
-      {/key}
+      {@render screen()}
     </AppShell>
   {/if}
 

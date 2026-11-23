@@ -457,5 +457,9 @@
   "app.settings.extensions.uploads.asked": "Rozšíření žádá {size} MiB.",
   "app.settings.extensions.uploads.unit": "MiB",
   "app.settings.extensions.uploads.invalid": "Celé číslo MiB od 1 do {max}",
-  "app.settings.extensions.uploads.save": "Uložit limity"
+  "app.settings.extensions.uploads.save": "Uložit limity",
+  "app.slicer.waiting.heading": "Čeká se na PrusaSlicer",
+  "app.slicer.waiting.note": "PrusaSlicer vás přihlásí k tomuto serveru. Stránka se otevře, jakmile to udělá.",
+  "app.slicer.stale.heading": "Přihlaste se znovu v PrusaSliceru",
+  "app.slicer.stale.note": "Tento server už nepřijímá přihlášení, které PrusaSlicer drží. V PrusaSliceru se z tohoto serveru odhlaste a znovu se přihlaste."
 }

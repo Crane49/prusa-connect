@@ -151,6 +151,36 @@ describe('ThemeStore', () => {
     });
   });
 
+  describe('the theme of the program that shows the page', () => {
+    it('wins over a remembered choice and writes nothing', () => {
+      const { map, storage } = fakeStorage('light');
+      const store = new ThemeStore({ storage, media: null });
+
+      store.follow('dark');
+
+      expect(store.preference).toBe('dark');
+      expect(store.dark).toBe(true);
+      expect(map.get(THEME_STORAGE_KEY)).toBe('light');
+    });
+
+    it('is not undone by the deployment default that arrives later', () => {
+      const store = new ThemeStore({ storage: null, media: null });
+
+      store.follow('dark');
+      store.useDefault('light');
+
+      expect(store.preference).toBe('dark');
+    });
+
+    it('refuses a word outside light, dark and system', () => {
+      const store = new ThemeStore({ storage: null, media: null });
+
+      store.follow('sepia' as ThemePreference);
+
+      expect(store.preference).toBe('system');
+    });
+  });
+
   it('themes without storage, and forgets', () => {
     const store = new ThemeStore({ storage: null, media: null });
 

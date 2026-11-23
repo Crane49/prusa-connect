@@ -43,6 +43,7 @@ const PUBLISHED = [
   './domain',
   './data',
   './slots',
+  './slicer',
   './primitives',
   './router',
   './shell',

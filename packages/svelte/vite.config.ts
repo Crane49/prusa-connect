@@ -10,6 +10,7 @@ const entries = {
   data: 'src/data/index.ts',
   i18n: 'src/i18n/index.ts',
   slots: 'src/slots/index.ts',
+  slicer: 'src/slicer/index.ts',
   primitives: 'src/primitives/index.ts',
   router: 'src/router/index.ts',
   shell: 'src/shell/index.ts',

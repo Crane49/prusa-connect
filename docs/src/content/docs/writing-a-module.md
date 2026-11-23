@@ -2466,6 +2466,54 @@ so an open app takes the page out of its sidebar at once. The page's address
 still opens it, so the page itself says that the feature is off. You cannot
 show an entry the operator hid.
 
+### Showing a page inside PrusaSlicer
+
+PrusaSlicer 3 can open a page of this server in its own window. The slicer
+opens a page session and sets its cookie in the window, so your page signs
+its requests through `host.client` as on any other page. The page never
+receives the slicer's credential. ADR-20261112-2eb rules 4 to 6 hold the
+rules.
+
+Open your page with `?embed=1`, as in `/m/<namespace>/spools?embed=1`. The
+app then draws the page without the sidebar and the header. The person still
+has to be signed in. A core page ignores the parameter.
+
+Your page talks to the slicer through `slicer`, from the library:
+
+```ts
+import { slicer } from '@prusa/connect-ui/slicer';
+
+if (slicer.available) {
+  const stop = slicer.on('requestcompatibleprinter', (params) => {
+    pick(params.printerModel, params.nozzleDiameter);
+  });
+  slicer.post({ action: 'WEBAPP_READY', componentName: 'spools' });
+}
+```
+
+| member | what it does |
+| --- | --- |
+| `available` | true when PrusaSlicer shows the page |
+| `post(message)` | sends a message to the slicer, and answers false outside it |
+| `on(name, listener)` | calls `listener` with the data of each event of that name, and answers a function that stops it |
+
+`post` takes the messages the slicer reads:
+`REQUEST_CONFIG`, `SELECT_PRINTER`, `WEBAPP_READY`,
+`REQUEST_OPEN_IN_BROWSER`, `CLOSE_DIALOG`, `REQUEST_FILE_DOWNLOAD` and
+`PRINT`. The type `SlicerMessage` lists the fields of each.
+
+`on` hears the window events the core app sends for each call of the slicer:
+
+| event | the slicer called | the data |
+| --- | --- | --- |
+| `slicerinit` | `init` | the options: `language`, `clientVersion` and `colorMode` |
+| `logout` | `logout` | `null` |
+| `requestcompatibleprinter` | `requestCompatiblePrinter` | the printer the sliced file needs |
+
+The core app already renews the page session, sets the language and the theme, and
+opens a link with `target="_blank"` in the system browser. Your page does
+not do any of these again.
+
 ## Adding to a printer
 
 A module with a browser part can also add to a printer's own page and its

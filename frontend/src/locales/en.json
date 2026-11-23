@@ -457,5 +457,9 @@
   "app.settings.extensions.uploads.save": "Save the limits",
   "app.settings.extensions.request.public": "Answers {route} under its own address for anybody who can reach this server, without signing in.",
   "app.settings.extensions.request.staged": "Takes uploads of up to {size} MiB on {route}, written to its data folder.",
-  "app.settings.extensions.tab.uploads": "Uploads"
+  "app.settings.extensions.tab.uploads": "Uploads",
+  "app.slicer.waiting.heading": "Waiting for PrusaSlicer",
+  "app.slicer.waiting.note": "PrusaSlicer signs you in to this server. The page opens when it has done so.",
+  "app.slicer.stale.heading": "Sign in again from PrusaSlicer",
+  "app.slicer.stale.note": "This server no longer accepts the sign-in PrusaSlicer holds. In PrusaSlicer, sign out of this server and sign in again."
 }
