@@ -10,8 +10,10 @@
   A row says what the module is, how far the marketplace vouches for it, who
   publishes it, which release is on offer and which one runs here, where it
   comes from and what state it is in. The act its state calls for sits at the
-  end of the row. The trust badge sits beside the name, so it is read at every
-  width, in the table and in the stacked rows alike.
+  end of the row. The trust mark is an icon in a column of its own before the
+  name, and its tooltip says what the mark means. In the stacked rows it sits
+  with the other values. The source badges are all as wide as the widest one,
+  so the column reads as one straight line.
 
   The words of a row's switch, such as what the module does now and why the
   switch is locked, sit beside the switch when the state column holds it, and
@@ -34,6 +36,7 @@
   import { translateFor } from '@prusa/connect-ui/i18n';
   import {
     Badge,
+    Button,
     DataRow,
     type DataRowValue,
     RowList,
@@ -46,6 +49,10 @@
     TableHead,
     TableHeader,
     TableRow,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
   } from '@prusa/connect-ui/primitives';
 
   import { APP_NAMESPACE } from '../../i18n';
@@ -84,6 +91,9 @@
 
   const t = translateFor(APP_NAMESPACE);
 
+  /** Which trust tooltip a press holds open, if any. */
+  let trustOpen = $state<string | undefined>(undefined);
+
   // Every key is written out rather than assembled from a value.
   const STATE_KEY = {
     available: 'app.settings.extensions.offer.state.available',
@@ -97,16 +107,11 @@
     community: 'app.settings.extensions.offer.trust.community',
   };
 
-  // The colour says how far the page vouches for a module: green for Prusa
-  // Research's own, blue for a reviewed one, red for one nobody reviewed. The
-  // brand fill stays with Install, the one thing to press on a row. Each
-  // level has its own icon too, so the colour is never the only sign.
-  const TRUST_VARIANT: Readonly<
-    Record<string, 'success' | 'info' | 'destructive'>
-  > = {
-    official: 'success',
-    verified: 'info',
-    community: 'destructive',
+  // What each mark means, said in the tooltip of the trust icon.
+  const TRUST_NOTE_KEY: Readonly<Record<string, string>> = {
+    official: 'app.settings.extensions.offer.trust.officialNote',
+    verified: 'app.settings.extensions.offer.trust.verifiedNote',
+    community: 'app.settings.extensions.offer.trust.communityNote',
   };
 
   // Only an installed module has a detail page to open.
@@ -207,7 +212,7 @@
 {/snippet}
 
 {#snippet sourceBadge(row: ExtensionRow)}
-  <Badge variant="outline" size="plain">
+  <Badge variant="outline" size="plain" class="w-full">
     {#if row.source === 'marketplace'}
       <StoreIcon aria-hidden="true" />
     {:else if row.source === 'local'}
@@ -227,23 +232,64 @@
   {/if}
 {/snippet}
 
-{#snippet trustBadge(row: ExtensionRow)}
+<!-- The mark is a bare icon. Its colour says how far the page vouches for a
+     module: green for Prusa Research's own, blue for a reviewed one, red for
+     one nobody reviewed. Each level has its own icon too, so the colour is
+     never the only sign. Its name is the accessible label, and the tooltip
+     says what the mark means. A touch screen has no hover, so a press opens
+     the tooltip as well, as the role help in account settings does. `place`
+     tells the table's mark from the stacked row's, which share a row key. -->
+{#snippet trustBadge(row: ExtensionRow, place: 'table' | 'stacked')}
   {@const trust = trustOf(row)}
+  {@const noteKey = TRUST_NOTE_KEY[row.trust ?? '']}
+  {@const openKey = `${place}:${row.key}`}
   {#if trust !== undefined}
-    <Badge
-      variant={TRUST_VARIANT[row.trust ?? ''] ?? 'info'}
-      data-part="trust"
-      data-trust={row.trust}
+    <Tooltip
+      bind:open={
+        () => trustOpen === openKey,
+        (open) => {
+          // A press on another mark opens that one first, and this close
+          // comes after it, so it clears only the state that is its own.
+          if (open) trustOpen = openKey;
+          else if (trustOpen === openKey) trustOpen = undefined;
+        }
+      }
+      disableCloseOnTriggerClick
     >
-      {#if row.trust === 'official'}
-        <BadgeCheckIcon aria-hidden="true" />
-      {:else if row.trust === 'verified'}
-        <ShieldCheckIcon aria-hidden="true" />
-      {:else if row.trust === 'community'}
-        <ShieldAlertIcon aria-hidden="true" />
-      {/if}
-      {trust}
-    </Badge>
+      <TooltipTrigger>
+        {#snippet child({ props })}
+          <Button
+            {...props}
+            variant="ghost"
+            size="sm"
+            aria-label={trust}
+            class="size-control-height p-0"
+            data-part="trust"
+            data-trust={row.trust}
+            onclick={() => {
+              trustOpen = openKey;
+            }}
+          >
+            {#if row.trust === 'official'}
+              <BadgeCheckIcon aria-hidden="true" class="size-4 text-success" />
+            {:else if row.trust === 'verified'}
+              <ShieldCheckIcon aria-hidden="true" class="size-4 text-info" />
+            {:else if row.trust === 'community'}
+              <ShieldAlertIcon
+                aria-hidden="true"
+                class="size-4 text-destructive"
+              />
+            {/if}
+          </Button>
+        {/snippet}
+      </TooltipTrigger>
+      <TooltipContent>
+        <span class="font-medium">{trust}</span>
+        {#if noteKey !== undefined}
+          <span class="block">{t(noteKey)}</span>
+        {/if}
+      </TooltipContent>
+    </Tooltip>
   {/if}
 {/snippet}
 
@@ -296,6 +342,10 @@
     </TableCaption>
     <TableHeader>
       <TableRow>
+        <TableHead class="w-px pe-0">
+          <span class="sr-only">{t('app.settings.extensions.facet.trust')}</span
+          >
+        </TableHead>
         {@render heading(
           t('app.settings.extensions.column.module'),
           'title',
@@ -319,7 +369,7 @@
           {@render heading(
             t('app.settings.extensions.column.source'),
             'source',
-            'table-cell w-1/8',
+            'table-cell w-px',
           )}
         {/if}
         {#if shows('state')}
@@ -351,6 +401,9 @@
           class="data-highlighted:bg-accent"
           aria-busy={catalogue.acting === row.module}
         >
+          <TableCell class="w-px pe-0" data-part="trust-cell">
+            {@render trustBadge(row, 'table')}
+          </TableCell>
           <TableCell class="max-w-md">
             <!-- A table cell keeps to one line, and white-space is inherited,
                  so the content says it may wrap. The summary keeps to one line. -->
@@ -370,7 +423,6 @@
                     data-part="module-title">{row.title}</span
                   >
                 {/if}
-                {@render trustBadge(row)}
                 {@render betaBadge(row)}
                 {@render marketplaceLink(row)}
               </span>
@@ -418,7 +470,7 @@
             </TableCell>
           {/if}
           {#if shows('source')}
-            <TableCell class="table-cell">
+            <TableCell class="table-cell w-px">
               {@render sourceBadge(row)}
             </TableCell>
           {/if}
@@ -465,7 +517,7 @@
       {/snippet}
       {#snippet rowTrust()}
         <span class="relative z-10 inline-flex items-center gap-2">
-          {@render trustBadge(row)}
+          {@render trustBadge(row, 'stacked')}
           {@render marketplaceLink(row)}
         </span>
       {/snippet}
@@ -491,11 +543,13 @@
   </RowList>
 {/snippet}
 
-<div class="@container/extensions">
-  {#if view === 'table'}
-    <div class="hidden @3xl/extensions:block">{@render table()}</div>
-    <div class="@3xl/extensions:hidden">{@render stacked()}</div>
-  {:else}
-    {@render stacked()}
-  {/if}
-</div>
+<TooltipProvider delayDuration={300}>
+  <div class="@container/extensions">
+    {#if view === 'table'}
+      <div class="hidden @3xl/extensions:block">{@render table()}</div>
+      <div class="@3xl/extensions:hidden">{@render stacked()}</div>
+    {:else}
+      {@render stacked()}
+    {/if}
+  </div>
+</TooltipProvider>
