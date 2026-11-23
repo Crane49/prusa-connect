@@ -111,6 +111,8 @@
   "error.core.internal/RESOURCE_DEPENDENCY_MISSING.action": "Install and switch on a module that provides the contract named here, or start the one that does. This instance starts by itself once one is serving.",
   "error.core.internal/RESOURCE_DEPENDENCY_UNSERVED": "The module requires something this build of the server does not offer, so it was not started",
   "error.core.internal/RESOURCE_DEPENDENCY_UNSERVED.action": "Run a build of the server that serves the capability or falls in the core range named here, or install a release of the module built for this server.",
+  "error.core.internal/RESOURCE_HEADER_NOT_GRANTED": "The module cannot work without a request header this server did not grant it, so it was not started",
+  "error.core.internal/RESOURCE_HEADER_NOT_GRANTED.action": "Grant the header named here in service.request_headers of the instance, or install the module again with approve.",
   "error.core.internal/RESOURCE_MANIFEST_DISAGREES": "The artefact that answered is not the module the install recorded, so it was not run",
   "error.core.internal/RESOURCE_MANIFEST_DISAGREES.action": "Reinstall the module from the release you want, so the declaration and the artefact name the same module, release and plugin contract.",
   "error.core.internal/RESOURCE_MANIFEST_INVALID": "The module ships a module.yaml the host will not read, so nothing of it was served",

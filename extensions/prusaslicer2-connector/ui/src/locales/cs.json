@@ -1,0 +1,16 @@
+{
+  "prusalink.title": "PrusaSlicer 2 Connector",
+  "prusalink.intro": "PrusaSlicer 2.4 a novější pošle tisk na tuto tiskárnu stejně jako na tiskárnu s PrusaLinkem.",
+  "prusalink.address": "Název hostitele, IP adresa nebo URL",
+  "prusalink.key": "API klíč",
+  "prusalink.create": "Vytvořit API klíč",
+  "prusalink.creating": "Vytvářím API klíč",
+  "prusalink.created": "API klíč si zkopírujte hned. Platí pro každou tiskárnu, kterou smíte ovládat, takže stejný klíč můžete vložit u každé z nich. Server si drží jen jeho otisk a znovu ho neukáže. Najdete ho v Settings, API credentials, kde ho můžete zrušit.",
+  "prusalink.credentialName": "PrusaSlicer 2 Connector ({date})",
+  "prusalink.plainHttp": "Tahle adresa je obyčejné HTTP, takže klíč jde po síti nešifrovaně. Pokud má server HTTPS adresu, vložte do PrusaSliceru raději tu.",
+  "prusalink.steps.title": "V PrusaSliceru",
+  "prusalink.steps.add": "Vedle profilu tiskárny klikněte na Přidat fyzickou tiskárnu.",
+  "prusalink.steps.host": "Typ hostitele nastavte na PrusaLink a adresu vložte do pole Název hostitele, IP adresa nebo URL.",
+  "prusalink.steps.key": "Typ autorizace nastavte na API klíč a vložte API klíč.",
+  "prusalink.steps.test": "Klikněte na Test. Nahrát a tisknout pak pošle soubor na tuto tiskárnu, Nahrát ho uloží na tento server."
+}

@@ -20,6 +20,8 @@ regexes = [
   '''^pcl_9f3b21c7ae4d05e8b6f14a72c3d09e5b$''',
   # the authentik container scripts/check-oidc-providers.sh starts
   '''^pcl-authentik-fixture-token$''',
+  # the demo password of extensions/prusaslicer2-connector/scripts/check.sh
+  '''^prusaslicer2-connector-gate$''',
   # the demo password of extensions/prusaslicer3-connector/scripts/check.sh
   '''^prusaslicer3-connector-gate$''',
 ]

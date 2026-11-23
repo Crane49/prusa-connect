@@ -1,0 +1,528 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "prusaslicer2-connector",
+    "version": "0.1.0",
+    "description": "The PrusaLink routes the prusaslicer2-connector module serves to PrusaSlicer 2, one set for each printer of this server. Every path is relative to the mount the host assigns."
+  },
+  "security": [
+    {
+      "apiKey": []
+    },
+    {
+      "bearer": []
+    },
+    {
+      "session": []
+    }
+  ],
+  "paths": {
+    "/printers/{printer}/api/version": {
+      "get": {
+        "operationId": "linkVersion",
+        "summary": "The PrusaLink version of one printer",
+        "description": "PrusaSlicer's connection test. It reads api and text, and from capabilities whether it sends the file with PUT. The printer is read first, so a wrong address or a credential that cannot see the printer fails the test.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The version.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkVersion"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No API credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer, or the credential may not see it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/printers/{printer}/api/v1/storage": {
+      "get": {
+        "operationId": "linkStorage",
+        "summary": "The storage list of one printer",
+        "description": "One storage, local, which is never read-only and reports no free space.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The storage list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkStorageList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No API credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer, or the credential may not see it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/printers/{printer}/api/v1/files/{storage}/{name}": {
+      "put": {
+        "operationId": "linkPutFile",
+        "summary": "Upload a file, and print it",
+        "description": "The body is the file. With Print-After-Upload: ?1 the printer starts it. A printer that holds a file of that name already gets it under a numbered name. Without the header the file goes into the storage the module's storage setting names, replacing a file of that name, and nothing is printed. The host writes the body to disk first, up to the limit the operator approved.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storage",
+            "in": "path",
+            "required": true,
+            "description": "The storage, local. PrusaSlicer reads it from the storage list.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "local"
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "The file's name, a .gcode or .bgcode file.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Print-After-Upload",
+            "in": "header",
+            "required": false,
+            "description": "?1 starts the print.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "?1",
+                "?0"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "text/x.gcode": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The printer started the file, or the storage keeps it."
+          },
+          "400": {
+            "description": "The file name is not one a printer accepts, or the file is empty.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No API credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The person may not operate the printer, or the credential lacks the operate scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer or storage.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The printer is not ready to print, or refused the file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The file is not a .gcode or .bgcode file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The module is starting, or no storage keeps a file without a print.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/printers/{printer}/api/files/{storage}": {
+      "post": {
+        "operationId": "linkPostFile",
+        "summary": "Upload a file in a form, and print it",
+        "description": "The form PrusaSlicer 2.5 and older send: the file in the part named file, its folder in path and print=true to start it. The rest is as for PUT. A folder is refused.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storage",
+            "in": "path",
+            "required": true,
+            "description": "The storage, local. PrusaSlicer reads it from the storage list.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "local"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The file."
+                  },
+                  "path": {
+                    "type": "string",
+                    "description": "The folder. Only an empty folder is taken."
+                  },
+                  "print": {
+                    "type": "string",
+                    "enum": [
+                      "true",
+                      "false"
+                    ],
+                    "description": "true starts the print."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The printer started the file, or the storage keeps it."
+          },
+          "400": {
+            "description": "The body is not a form with a file, the form names a folder, or the file name is not one a printer accepts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No API credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The person may not operate the printer, or the credential lacks the operate scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer or storage.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The printer is not ready to print, or refused the file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "The file is not a .gcode or .bgcode file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The module is starting, or no storage keeps a file without a print.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key",
+        "description": "An API credential this server issued, as PrusaSlicer sends the API key of a PrusaLink printer."
+      },
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API credential this server issued, sent as a bearer token."
+      },
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "pcl_session",
+        "description": "The session a browser holds after it signs in to this server."
+      }
+    },
+    "schemas": {
+      "LinkError": {
+        "type": "object",
+        "required": [
+          "title",
+          "message"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The HTTP status as text."
+          },
+          "message": {
+            "type": "string",
+            "description": "What went wrong and what to do, in English. PrusaSlicer shows it."
+          }
+        }
+      },
+      "LinkVersion": {
+        "type": "object",
+        "required": [
+          "api",
+          "text",
+          "capabilities"
+        ],
+        "properties": {
+          "api": {
+            "type": "string",
+            "description": "The PrusaLink API version, 2.0.0."
+          },
+          "server": {
+            "type": "string",
+            "description": "The module's version."
+          },
+          "original": {
+            "type": "string",
+            "description": "PrusaLink and the printer's model."
+          },
+          "text": {
+            "type": "string",
+            "description": "PrusaLink. PrusaSlicer refuses a host whose text does not start with it."
+          },
+          "hostname": {
+            "type": "string",
+            "description": "The printer's name."
+          },
+          "capabilities": {
+            "type": "object",
+            "required": [
+              "upload-by-put"
+            ],
+            "properties": {
+              "upload-by-put": {
+                "type": "boolean",
+                "description": "Always true: the file may come with PUT."
+              }
+            }
+          }
+        }
+      },
+      "LinkStorageList": {
+        "type": "object",
+        "required": [
+          "storage_list"
+        ],
+        "properties": {
+          "storage_list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LinkStorage"
+            }
+          }
+        }
+      },
+      "LinkStorage": {
+        "type": "object",
+        "required": [
+          "path",
+          "name",
+          "type",
+          "read_only",
+          "available"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "/local."
+          },
+          "name": {
+            "type": "string",
+            "description": "The printer's name."
+          },
+          "type": {
+            "type": "string",
+            "description": "LOCAL."
+          },
+          "read_only": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

@@ -26,6 +26,7 @@ on:
           - server-slicing
           - materials
           - simple-queue
+          - prusaslicer2-connector
           - prusaslicer3-connector
       channel:
         description: The marketplace channel

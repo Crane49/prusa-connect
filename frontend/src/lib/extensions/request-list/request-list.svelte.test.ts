@@ -34,7 +34,7 @@ describe('RequestList request header', () => {
             required: false,
           },
         ],
-        instance: 'prusaslicer2-compat',
+        instance: 'prusaslicer2-connector',
         label: 'This extension asks for:',
       },
     });
@@ -59,7 +59,7 @@ describe('RequestList request header', () => {
             required: false,
           },
         ],
-        instance: 'prusaslicer2-compat',
+        instance: 'prusaslicer2-connector',
         label: 'This extension asks for:',
       },
     });
@@ -85,7 +85,7 @@ describe('RequestList request header', () => {
             required: true,
           },
         ],
-        instance: 'prusaslicer2-compat',
+        instance: 'prusaslicer2-connector',
         label: 'This extension asks for:',
       },
     });
