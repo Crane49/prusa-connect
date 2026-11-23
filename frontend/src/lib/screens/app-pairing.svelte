@@ -22,12 +22,13 @@
 <div class="flex flex-col">
   <AppPairingScreen
     {review}
+    linked={code !== ''}
     credentialsHref={PATHS.settingsTokens}
     onLookup={(typed: string) => {
       void review.load(typed);
     }}
-    onApprove={(scope: CredentialScope) => {
-      void review.approve([scope]);
+    onApprove={(scopes: readonly CredentialScope[]) => {
+      void review.approve(scopes);
     }}
     onDeny={() => {
       void review.deny();

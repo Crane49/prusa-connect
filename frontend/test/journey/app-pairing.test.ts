@@ -1,5 +1,5 @@
 // An app asks for a credential, a person approves it in the browser, and the
-// token the app collects reaches only what the person approved (ADR-20261025-tpp),
+// token the app collects reaches only the scope it asked for (ADR-20261025-tpp),
 // against a core that is really running.
 //
 // The app is this test, asking with no credential of its own. The person is
@@ -85,7 +85,7 @@ it('approves an app in the browser and its token reaches only its scope', async 
   // ── The app asks ─────────────────────────────────────────────────
   const asked = await asTheApp('POST', '/api/v1/auth/app-pairings', {
     app_name: appName,
-    scopes: ['read', 'operate'],
+    scopes: ['read'],
   });
   expect(asked.status).toBe(201);
   const issued = (await asked.json()) as Issued;
@@ -109,15 +109,19 @@ it('approves an app in the browser and its token reaches only its scope', async 
   await page.getByRole('button', { name: 'Sign in' }).click();
 
   await page
-    .getByRole('heading', { name: `Request from ${appName}` })
+    .getByRole('heading', {
+      name: `${appName} wants to connect to Prusa Connect`,
+    })
     .waitFor({ timeout: 60_000 });
   say('the person signs in and reads which app asks');
 
-  // The app asked to operate. The person gives it less.
-  await page.getByRole('radio', { name: 'Read' }).check();
+  // The link carried the code, so the page asks for no code.
+  expect(await page.getByRole('textbox', { name: 'Code' }).count()).toBe(0);
   await page.getByRole('button', { name: 'Approve' }).click();
-  await page.getByText('Approved', { exact: true }).waitFor();
-  say('the person narrows the scope to read and approves');
+  await page
+    .getByRole('heading', { name: `${appName} is connected` })
+    .waitFor();
+  say('the person approves what the app asked for');
 
   // ── The app collects its token, keeping to the interval ──────────
   const wait = polledAt + issued.interval * 1000 + 200 - Date.now();

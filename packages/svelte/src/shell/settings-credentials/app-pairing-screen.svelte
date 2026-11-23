@@ -1,7 +1,8 @@
 <!--
   The page an app sends a person to. It reads the pairing the app's code names
-  and lets the signed-in person approve it, with the scope the app asked for or
-  a narrower one, or deny it (ADR-20261025-tpp).
+  and lets the signed-in person approve what the app asked for, or deny it
+  (ADR-20261025-tpp). A code the link carried is never shown as a field, so
+  the person is not led to copy it anywhere.
 -->
 <script lang="ts">
   import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
@@ -14,11 +15,9 @@
   import {
     Alert,
     AlertDescription,
-    AlertTitle,
     Button,
     Card,
     CardContent,
-    CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
@@ -26,14 +25,13 @@
     FaultAlert,
     Field,
     Input,
-    KeyValueList,
     ListingSkeleton,
   } from '../../primitives';
-  import ScopeChoice from './scope-choice.svelte';
   import { type AppPairingScreenProps, widestScope } from './types';
 
   let {
     review,
+    linked,
     onLookup,
     onApprove,
     onDeny,
@@ -42,19 +40,46 @@
 
   const headingId = $props.id();
 
+  /** What each scope lets the app do, said about the app. */
+  const CAN: Record<CredentialScope, string> = {
+    read: 'appPairing.can.read',
+    operate: 'appPairing.can.operate',
+    administer: 'appPairing.can.administer',
+  };
+
   // What the person types before a pairing is found. A code the link carried
   // is already looked up, so the field starts with it.
   let typed = $derived(review.code);
 
-  /** The widest scope the app asked for, and every narrower one beside it. */
-  const asked = $derived(widestScope(review.pairing?.scopes));
-  const offered = $derived(
-    CREDENTIAL_SCOPES.slice(0, CREDENTIAL_SCOPES.indexOf(asked) + 1),
+  const name = $derived(review.pairing?.app_name ?? '');
+
+  /** The scopes the app asked for, which an approval sends unchanged. */
+  const asked = $derived.by((): CredentialScope[] => {
+    const named = review.pairing?.scopes ?? [];
+    const known = CREDENTIAL_SCOPES.filter((scope) => named.includes(scope));
+
+    return known.length > 0 ? known : [widestScope(named)];
+  });
+
+  // A link that named a pairing needs no field. One that named nothing, or a
+  // code nothing answers, leaves the field so the person can type it.
+  const askForCode = $derived(
+    !linked || (review.pairing === undefined && !review.loading),
   );
 
-  // The person's choice, the app's own wish until they change it.
-  let chosen = $state<CredentialScope | undefined>(undefined);
-  const scope = $derived(chosen ?? asked);
+  const heading = $derived.by((): string => {
+    if (review.outcome === 'approved') {
+      return t('appPairing.approved.title', { name });
+    }
+    if (review.outcome === 'denied') {
+      return t('appPairing.denied.title', { name });
+    }
+    if (review.pairing !== undefined && !review.loading) {
+      return t('appPairing.asks', { name });
+    }
+
+    return t('appPairing.title');
+  });
 
   const fault = $derived(
     review.error === undefined ? undefined : describeFault(review.error),
@@ -64,7 +89,6 @@
     event.preventDefault();
     const code = typed.trim();
     if (code === '') return;
-    chosen = undefined;
     onLookup(code);
   };
 </script>
@@ -72,20 +96,16 @@
 <Card role="region" aria-labelledby={headingId} class="mx-auto w-full max-w-xl">
   <CardHeader>
     <CardTitle>
-      <h1 id={headingId} class="contents">{t('appPairing.title')}</h1>
+      <h1 id={headingId} class="contents">{heading}</h1>
     </CardTitle>
-    <CardDescription>{t('appPairing.note')}</CardDescription>
   </CardHeader>
 
   <CardContent class="flex flex-col gap-4">
     {#if review.outcome === 'approved'}
       <Alert variant="success">
         <CircleCheckIcon aria-hidden="true" />
-        <AlertTitle>{t('appPairing.approved.title')}</AlertTitle>
         <AlertDescription class="flex flex-col items-start gap-3">
-          {t('appPairing.approved.note', {
-            name: review.pairing?.app_name ?? '',
-          })}
+          {t('appPairing.approved.note', { name })}
           <!-- A link drawn as the button, because the list is somewhere else. -->
           <Button variant="secondary">
             {#snippet child({ props }: { props: Record<string, unknown> })}
@@ -99,39 +119,38 @@
     {:else if review.outcome === 'denied'}
       <Alert>
         <CircleXIcon aria-hidden="true" />
-        <AlertTitle>{t('appPairing.denied.title')}</AlertTitle>
         <AlertDescription>
-          {t('appPairing.denied.note', {
-            name: review.pairing?.app_name ?? '',
-          })}
+          {t('appPairing.denied.note', { name })}
         </AlertDescription>
       </Alert>
     {:else}
-      <form class="flex items-end gap-2" onsubmit={lookup}>
-        <Field
-          class="grow"
-          label={t('appPairing.code')}
-          description={t('appPairing.code.note')}
-          control={Input}
-          controlProps={{
-            value: typed,
-            autocomplete: 'off',
-            autocapitalize: 'characters',
-            spellcheck: false,
-            placeholder: t('appPairing.code.placeholder'),
-            oninput: (event: Event & { currentTarget: HTMLInputElement }) => {
-              typed = event.currentTarget.value;
-            },
-          }}
-        />
-        <Button
-          type="submit"
-          variant="secondary"
-          disabled={typed.trim() === ''}
-        >
-          {t('appPairing.code.find')}
-        </Button>
-      </form>
+      {#if askForCode}
+        <form class="flex items-end gap-2" onsubmit={lookup}>
+          <Field
+            class="grow"
+            label={t('appPairing.code')}
+            description={t('appPairing.code.note')}
+            control={Input}
+            controlProps={{
+              value: typed,
+              autocomplete: 'off',
+              autocapitalize: 'characters',
+              spellcheck: false,
+              placeholder: t('appPairing.code.placeholder'),
+              oninput: (event: Event & { currentTarget: HTMLInputElement }) => {
+                typed = event.currentTarget.value;
+              },
+            }}
+          />
+          <Button
+            type="submit"
+            variant="secondary"
+            disabled={typed.trim() === ''}
+          >
+            {t('appPairing.code.find')}
+          </Button>
+        </form>
+      {/if}
 
       {#if fault !== undefined}
         <FaultAlert {fault} />
@@ -140,47 +159,22 @@
       {#if review.loading}
         <ListingSkeleton label={t('appPairing.loading')} rows={2} />
       {:else if review.pairing !== undefined}
-        <section
-          class="flex flex-col gap-4"
-          aria-labelledby={`${headingId}-app`}
-        >
-          <h2 id={`${headingId}-app`} class="text-lg font-medium">
-            {t('appPairing.asks', { name: review.pairing.app_name })}
-          </h2>
-          <KeyValueList
-            rows={[
-              {
-                id: 'address',
-                label: t('appPairing.address'),
-                value: review.pairing.client_address,
-                mono: true,
-              },
-              {
-                id: 'expires',
-                label: t('appPairing.expires'),
-                value: formatDateTime(review.pairing.expires_at),
-              },
-            ]}
-          />
-          <Alert variant="warning">
-            <TriangleAlertIcon aria-hidden="true" />
-            <AlertTitle>{t('appPairing.trust.title')}</AlertTitle>
-            <AlertDescription>{t('appPairing.trust.note')}</AlertDescription>
-          </Alert>
-          <fieldset class="flex flex-col gap-2">
-            <legend class="text-body font-medium">
-              {t('appPairing.scope')}
-            </legend>
-            <ScopeChoice
-              {offered}
-              value={scope}
-              label={t('appPairing.scope')}
-              onChange={(next: CredentialScope) => {
-                chosen = next;
-              }}
+        <div class="flex flex-col gap-3">
+          <p class="text-body">{t(CAN[widestScope(asked)])}</p>
+          <p class="flex items-start gap-2 text-sm text-warning-text">
+            <TriangleAlertIcon
+              aria-hidden="true"
+              class="mt-0.5 size-4 shrink-0"
             />
-          </fieldset>
-        </section>
+            {t('appPairing.trust', { name })}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {t('appPairing.from', {
+              address: review.pairing.client_address,
+              time: formatDateTime(review.pairing.expires_at),
+            })}
+          </p>
+        </div>
       {:else if !review.loaded}
         <EmptyState
           icon={LinkIcon}
@@ -200,7 +194,7 @@
       <Button
         disabled={review.deciding}
         onclick={() => {
-          onApprove(scope);
+          onApprove(asked);
         }}
       >
         {t('appPairing.approve')}

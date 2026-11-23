@@ -16,7 +16,7 @@
 
   const pairing: AppPairing = {
     user_code: 'BCDF-GHJK',
-    app_name: 'Kitchen display',
+    app_name: 'PrusaSlicer',
     scopes: ['read', 'operate'],
     client_address: '192.0.2.41',
     expires_at: inMinutes(8),
@@ -34,6 +34,7 @@
   });
 
   const ports = {
+    linked: true,
     onLookup: () => undefined,
     onApprove: () => undefined,
     onDeny: () => undefined,
@@ -45,8 +46,9 @@
 <Story
   name="No Code Yet"
   args={{
-    review: source({ code: '', pairing: undefined, loaded: false }),
     ...ports,
+    linked: false,
+    review: source({ code: '', pairing: undefined, loaded: false }),
   }}
 />
 
@@ -58,10 +60,16 @@
   }}
 />
 
-<!-- The app asked to operate, so read and operate are offered and operate is chosen. -->
+<!-- The link carried the code, so the page only asks to approve the app. -->
 <Story name="An App Asks" args={{ review: source(), ...ports }} />
 
-<!-- An app that asks for everything offers every scope. -->
+<!-- A person typed the code the app showed, so the field stays above. -->
+<Story
+  name="An App Asks By A Typed Code"
+  args={{ ...ports, linked: false, review: source() }}
+/>
+
+<!-- An app that asks for everything says so. -->
 <Story
   name="An App Asks To Administer"
   args={{

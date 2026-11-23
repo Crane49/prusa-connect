@@ -30,6 +30,7 @@ const screen = (
   over: Partial<AppPairingScreenProps> = {},
 ): AppPairingScreenProps => ({
   review: source(),
+  linked: true,
   onLookup: () => undefined,
   onApprove: () => undefined,
   onDeny: () => undefined,
@@ -38,34 +39,34 @@ const screen = (
 });
 
 describe('AppPairingScreen', () => {
-  it('names the app, where it asked from and what it asks for', async () => {
+  it('asks only to approve the app a link named', async () => {
     await render(AppPairingScreen, { props: screen() });
 
     await expect
       .element(
         page.getByRole('heading', {
-          name: 'Request from Kitchen display',
+          name: 'Kitchen display wants to connect to Prusa Connect',
         }),
       )
       .toBeVisible();
-    await expect.element(page.getByText('192.0.2.41')).toBeVisible();
     await expect
-      .element(page.getByRole('radio', { name: 'Operate' }))
-      .toBeChecked();
+      .element(page.getByText(/start, pause and stop prints/))
+      .toBeVisible();
+    await expect.element(page.getByText(/192\.0\.2\.41/)).toBeVisible();
     await expect
-      .element(page.getByRole('radio', { name: 'Administer' }))
+      .element(page.getByRole('textbox', { name: 'Code' }))
       .not.toBeInTheDocument();
+    await expect.element(page.getByRole('radio')).not.toBeInTheDocument();
   });
 
-  // The person may give less than the app asked for, never more.
-  it('approves with a narrower scope the person chose', async () => {
+  // The page sends what the app asked for. A narrower scope is the API's.
+  it('approves with exactly the scopes the app asked for', async () => {
     const onApprove = vi.fn();
     await render(AppPairingScreen, { props: screen({ onApprove }) });
 
-    await page.getByRole('radio', { name: 'Read' }).click();
     await page.getByRole('button', { name: 'Approve' }).click();
 
-    expect(onApprove).toHaveBeenCalledWith('read');
+    expect(onApprove).toHaveBeenCalledWith(['read', 'operate']);
   });
 
   it('denies', async () => {
@@ -82,6 +83,7 @@ describe('AppPairingScreen', () => {
     await render(AppPairingScreen, {
       props: screen({
         onLookup,
+        linked: false,
         review: source({ code: '', pairing: undefined, loaded: false }),
       }),
     });
@@ -92,12 +94,27 @@ describe('AppPairingScreen', () => {
     expect(onLookup).toHaveBeenCalledWith('bcdf-ghjk');
   });
 
+  it('keeps the field beside a pairing found by a typed code', async () => {
+    await render(AppPairingScreen, { props: screen({ linked: false }) });
+
+    await expect
+      .element(page.getByRole('textbox', { name: 'Code' }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Approve' }))
+      .toBeVisible();
+  });
+
   it('says it is done once approved, and offers the list', async () => {
     await render(AppPairingScreen, {
       props: screen({ review: source({ outcome: 'approved' }) }),
     });
 
-    await expect.element(page.getByText('Approved')).toBeVisible();
+    await expect
+      .element(
+        page.getByRole('heading', { name: 'Kitchen display is connected' }),
+      )
+      .toBeVisible();
     await expect
       .element(page.getByRole('link', { name: 'See your credentials' }))
       .toHaveAttribute('href', '/settings/tokens');
@@ -119,6 +136,7 @@ describe('AppPairingScreen', () => {
       .toBeDisabled();
   });
 
+  // A code the link carried that nothing answers leaves a field to type one.
   it('draws a code nothing answers by its fault', async () => {
     await render(AppPairingScreen, {
       props: screen({
@@ -131,6 +149,9 @@ describe('AppPairingScreen', () => {
 
     await expect
       .element(page.getByText('No waiting pairing has that code'))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('textbox', { name: 'Code' }))
       .toBeVisible();
   });
 

@@ -92,10 +92,15 @@ export interface AppPairingSource {
 
 export interface AppPairingScreenProps {
   review: AppPairingSource;
+  /**
+   * The code came in the link the app opened. The page then shows no field
+   * for it, so the person is not led to copy it anywhere.
+   */
+  linked: boolean;
   /** The person typed a code and asked for the pairing it names. */
   onLookup: (code: string) => void;
-  /** The person approved the pairing with one scope, the asked one or narrower. */
-  onApprove: (scope: CredentialScope) => void;
+  /** The person approved the pairing, with exactly the scopes the app asked for. */
+  onApprove: (scopes: readonly CredentialScope[]) => void;
   /** The person refused the app its credential. */
   onDeny: () => void;
   /** Where the person's own credentials are listed, the paired apps among them. */
