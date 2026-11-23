@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"os"
 	"path"
@@ -61,12 +62,12 @@ func (s staging) content(ctx context.Context, instance, name string) (connectora
 	}
 
 	if instance == deviceapi.ModuleDataStorage {
-		dir, held := ctx.Value(moduleDataKey{}).(string)
+		data, held := ctx.Value(moduleDataKey{}).(moduleData)
 		if !held {
 			return nil, noSuchStorage(instance, ErrNoSuchStorage)
 		}
 
-		return printFolderContent(ctx, dir, name)
+		return printFolderContent(ctx, data.dir, name)
 	}
 
 	target, err := ref.New(ref.KindStorage, instance)
@@ -97,15 +98,64 @@ func (s staging) content(ctx context.Context, instance, name string) (connectora
 // from under deviceapi.ModuleDataStorage.
 const printFolder = "print"
 
-// moduleDataKey carries the data directory of the module that asked for a
-// print. The calling module is who is asking, as the principal is. Only
+// moduleDataKey carries the moduleData of the module that asked for a print.
+// The calling module is who is asking, as the principal is. Only
 // moduleFleet.Print sets it, so a print over HTTP finds no folder under
 // deviceapi.ModuleDataStorage.
 type moduleDataKey struct{}
 
+// moduleData is the calling module's data directory, and whether its print
+// gives the file away (deviceapi.PrintParams.DeleteSource).
+type moduleData struct {
+	dir          string
+	deleteSource bool
+}
+
 // withModuleData is ctx carrying the calling module's data directory.
-func withModuleData(ctx context.Context, dir string) context.Context {
-	return context.WithValue(ctx, moduleDataKey{}, dir)
+func withModuleData(ctx context.Context, dir string, deleteSource bool) context.Context {
+	return context.WithValue(ctx, moduleDataKey{}, moduleData{dir: dir, deleteSource: deleteSource})
+}
+
+// printSettled deletes the file of the print folder a print named with
+// delete_source, once err says the print leaves nothing to send again. The
+// rule is the one a temporary copy is deleted by (sendSettled), so a failed
+// send keeps the file for the module to print again.
+func printSettled(ctx context.Context, log *slog.Logger, storage, source string, err error) {
+	data, held := ctx.Value(moduleDataKey{}).(moduleData)
+	if !held || !data.deleteSource || storage != deviceapi.ModuleDataStorage || !sendSettled(err) {
+		return
+	}
+
+	if removed := removeFromPrintFolder(data.dir, source); removed != nil {
+		log.WarnContext(ctx, "a printed file of a module's print folder could not be deleted",
+			"path", source, "error", removed.Error())
+	}
+}
+
+// removeFromPrintFolder deletes one file of the print folder, resolved under
+// a directory handle as OpenLocal resolves it. A file already gone is no
+// error.
+func removeFromPrintFolder(data, name string) error {
+	dataRoot, err := os.OpenRoot(data)
+	if err != nil {
+		return fmt.Errorf("open the data directory: %w", err)
+	}
+
+	defer func() { _ = dataRoot.Close() }()
+
+	folder, err := dataRoot.OpenRoot(printFolder)
+	if err != nil {
+		return fmt.Errorf("open the print folder: %w", err)
+	}
+
+	defer func() { _ = folder.Close() }()
+
+	err = folder.Remove(filepath.FromSlash(storageapi.CleanRelPath(name)))
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return fmt.Errorf("delete %s: %w", name, err)
+	}
+
+	return nil
 }
 
 // printFolderFiles is the print folder of one module's data directory, read

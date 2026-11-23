@@ -4,6 +4,7 @@
 // install's answer and a refusal carry them as lines in the server's own
 // words: `permission operate`, `check operate`, `permission check_absent_people`,
 // `permission list_people`, `call <namespace>`,
+// `public <method> <path>`, `upload <method> <path> up to 1024 MiB`,
 // `records 128 MiB`, `memory 192 MiB`, `event <endpoint> as <namespace>.<name>`,
 // `data directory`, `database of its own` and
 // `listen udp 13514 as <name> (<why>)`. A page reads
@@ -15,6 +16,7 @@ import type { components } from '@prusa/connect';
 
 export type ModuleRequests = components['schemas']['ModuleRequests'];
 export type ModuleListen = components['schemas']['ModuleListen'];
+export type ModuleStagedRoute = components['schemas']['ModuleStagedRoute'];
 /** Where an install puts the module's own database (ADR-20261021-bqc rule 5). */
 export type DatabaseChoice = components['schemas']['ModuleDatabaseChoice'];
 type ModuleOffer = components['schemas']['ModuleOffer'];
@@ -35,6 +37,15 @@ export type ModuleRequest =
   | { readonly kind: 'listPeople' }
   // A module whose routes this one calls (ADR-20261027-pq5).
   | { readonly kind: 'call'; readonly namespace: string }
+  // A route anybody may call without signing in (ADR-20261120-xys).
+  | { readonly kind: 'public'; readonly route: string }
+  // A route whose body the server writes to a file, up to a limit (ADR-20261120-xys).
+  | {
+      readonly kind: 'staged';
+      readonly method: string;
+      readonly path: string;
+      readonly mib: number;
+    }
   | { readonly kind: 'records'; readonly mib: number }
   | { readonly kind: 'memory'; readonly mib: number }
   | { readonly kind: 'data' }
@@ -65,6 +76,8 @@ export const requestsOfOffer = (
         check_absent_people: offer.check_absent_people ?? false,
         ...listingPeople(offer.list_people),
         ...callsOf(offer.calls),
+        ...publicOf(offer.public_routes),
+        ...stagedOf(offer.staged_routes),
         records_mib: offer.records_mib ?? 0,
         ...memory(offer.memory_mib),
         ...portsAndData(offer.data, offer.listen, offer.database),
@@ -91,6 +104,60 @@ const callsOf = (
   calls: readonly string[] | null | undefined,
 ): Pick<ModuleRequests, 'calls'> =>
   (calls ?? []).length > 0 ? { calls: [...(calls ?? [])] } : {};
+
+// The public routes, written only when there are some, so a release that
+// has none sends the same expect it always did.
+const publicOf = (
+  routes: readonly string[] | null | undefined,
+): Pick<ModuleRequests, 'public_routes'> =>
+  (routes ?? []).length > 0 ? { public_routes: [...(routes ?? [])] } : {};
+
+// The staged routes, written only when there are some, so a release that
+// has none sends the same expect it always did.
+const stagedOf = (
+  routes: readonly ModuleStagedRoute[] | null | undefined,
+): Pick<ModuleRequests, 'staged_routes'> =>
+  (routes ?? []).length > 0
+    ? { staged_routes: (routes ?? []).map((route) => ({ ...route })) }
+    : {};
+
+/** The largest body a staged route may take, in MiB: the core's ceiling. */
+export const MAX_STAGED_MIB = 4096;
+
+/**
+ * The limit a person typed for a staged route, or undefined when it is not
+ * one: a whole number of MiB from 1 to MAX_STAGED_MIB.
+ */
+export const stagedOfText = (text: string): number | undefined => {
+  if (!/^\d{1,4}$/u.test(text.trim())) return undefined;
+  const mib = Number(text.trim());
+
+  return mib >= 1 && mib <= MAX_STAGED_MIB ? mib : undefined;
+};
+
+/** Whether two staged routes name one method and one path. */
+export const sameRoute = (
+  a: Pick<ModuleStagedRoute, 'method' | 'path'>,
+  b: Pick<ModuleStagedRoute, 'method' | 'path'>,
+): boolean => a.method === b.method && a.path === b.path;
+
+// Each route once, with the larger limit where both name it.
+const mergeStaged = (
+  a: readonly ModuleStagedRoute[],
+  b: readonly ModuleStagedRoute[],
+): ModuleStagedRoute[] => {
+  const out: ModuleStagedRoute[] = [];
+
+  for (const route of [...a, ...b]) {
+    const index = out.findIndex((held) => sameRoute(held, route));
+    const held = out[index];
+    if (held === undefined) out.push({ ...route });
+    else
+      out[index] = { ...held, max_mib: Math.max(held.max_mib, route.max_mib) };
+  }
+
+  return out;
+};
 
 // The memory recommendation, written only when there is one, so a release
 // that makes none sends the same expect it always did.
@@ -201,6 +268,8 @@ const LISTEN = /^listen (udp|tcp) (\d+) as (\S+) \((.*)\)$/u;
 const EVENT = /^event (\S+) as (\S+)$/u;
 const CALL = /^call (\S+)$/u;
 const CHECK = /^check (\S+)$/u;
+const PUBLIC = /^public (\S+ \S+)$/u;
+const STAGED = /^upload (\S+) (\S+) up to (\d+) MiB$/u;
 
 /** One line of the server's, read back into a request. */
 export const requestOfLine = (
@@ -223,6 +292,23 @@ export const requestOfLine = (
 
   const call = CALL.exec(text);
   if (call?.[1] !== undefined) return { kind: 'call', namespace: call[1] };
+
+  const route = PUBLIC.exec(text);
+  if (route?.[1] !== undefined) return { kind: 'public', route: route[1] };
+
+  const staged = STAGED.exec(text);
+  if (
+    staged?.[1] !== undefined &&
+    staged[2] !== undefined &&
+    staged[3] !== undefined
+  ) {
+    return {
+      kind: 'staged',
+      method: staged[1],
+      path: staged[2],
+      mib: Number(staged[3]),
+    };
+  }
 
   if (text === DATA) return { kind: 'data' };
   if (text === DATABASE) return { kind: 'database' };
@@ -282,6 +368,8 @@ export const requestsOfLines = (
       | 'list_people'
       | 'database'
       | 'calls'
+      | 'public_routes'
+      | 'staged_routes'
       | 'checks'
       | 'memory_mib'
     >
@@ -295,6 +383,8 @@ export const requestsOfLines = (
   let listPeople = false;
   let database = false;
   const calls: string[] = [];
+  const routes: string[] = [];
+  let staged: ModuleStagedRoute[] = [];
   const checks: string[] = [];
   let memoryMiB = 0;
   const listen: ModuleListen[] = [];
@@ -321,6 +411,14 @@ export const requestsOfLines = (
         break;
       case 'call':
         if (!calls.includes(request.namespace)) calls.push(request.namespace);
+        break;
+      case 'public':
+        if (!routes.includes(request.route)) routes.push(request.route);
+        break;
+      case 'staged':
+        staged = mergeStaged(staged, [
+          { method: request.method, path: request.path, max_mib: request.mib },
+        ]);
         break;
       case 'records':
         out.records_mib = Math.max(out.records_mib, request.mib);
@@ -354,6 +452,8 @@ export const requestsOfLines = (
     ...checksOf(checks),
     ...listingPeople(listPeople),
     ...callsOf(calls),
+    ...publicOf(routes),
+    ...stagedOf(staged),
     ...memory(memoryMiB),
     ...portsAndData(data, listen, database),
   };
@@ -373,6 +473,10 @@ export const mergeRequests = (
     (a.check_absent_people ?? false) || (b.check_absent_people ?? false),
   ...listingPeople((a.list_people ?? false) || (b.list_people ?? false)),
   ...callsOf([...new Set([...(a.calls ?? []), ...(b.calls ?? [])])]),
+  ...publicOf([
+    ...new Set([...(a.public_routes ?? []), ...(b.public_routes ?? [])]),
+  ]),
+  ...stagedOf(mergeStaged(a.staged_routes ?? [], b.staged_routes ?? [])),
   records_mib: Math.max(a.records_mib ?? 0, b.records_mib ?? 0),
   ...memory(Math.max(a.memory_mib ?? 0, b.memory_mib ?? 0)),
   ...portsAndData(
@@ -387,7 +491,7 @@ export const mergeRequests = (
   ),
 });
 
-/** The requests as a list to draw, in a fixed order: permissions, checks, events, people, the list of people, room, memory, directory, database, ports. */
+/** The requests as a list to draw, in a fixed order: permissions, checks, events, people, the list of people, calls, public routes, staged routes, room, memory, directory, database, ports. */
 export const listRequests = (requests: ModuleRequests): ModuleRequest[] => [
   ...(requests.permissions ?? []).map((permission): ModuleRequest => ({
     kind: 'permission',
@@ -409,6 +513,16 @@ export const listRequests = (requests: ModuleRequests): ModuleRequest[] => [
   ...(requests.calls ?? []).map((namespace): ModuleRequest => ({
     kind: 'call',
     namespace,
+  })),
+  ...(requests.public_routes ?? []).map((route): ModuleRequest => ({
+    kind: 'public',
+    route,
+  })),
+  ...(requests.staged_routes ?? []).map((route): ModuleRequest => ({
+    kind: 'staged',
+    method: route.method,
+    path: route.path,
+    mib: route.max_mib,
   })),
   ...((requests.records_mib ?? 0) > 0
     ? [

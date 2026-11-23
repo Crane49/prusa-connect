@@ -1,9 +1,13 @@
 package app
 
 import (
+	"errors"
+	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -444,4 +448,69 @@ func TestModuleDataIsNoStorage(t *testing.T) {
 
 	_, err = plane.Files(t.Context(), printingModule, deviceapi.ModuleDataStorage, "")
 	require.ErrorIs(t, err, fault.StorageNotFound.New(""))
+}
+
+// A print that gives its file away deletes it from the print folder once the
+// file has landed, and leaves the rest of the data directory alone.
+func TestAPrintThatGivesItsFileAwayDeletesItOnceSent(t *testing.T) {
+	t.Parallel()
+
+	rig := newStickRig(t)
+	require.NoError(t, rig.plane.graph.Write(t.Context(),
+		tuple(t, authz.TypeDevice, rig.id, authz.RelOperator, printingModule)))
+	require.NoError(t, rig.plane.graph.Write(t.Context(),
+		tuple(t, authz.TypeResourceKind, "storage", authz.RelViewer, printingModule)))
+
+	fleet := modulePrinting(t, rig.plane.graph, rig.plane,
+		authz.ActionObserve, authz.ActionOperate, authz.ActionReadStorage)
+	fleet.data = dataHolding(t)
+
+	params := fromData(rig.id, "copy.gcode")
+	params.DeleteSource = true
+
+	_, err := fleet.Print(t.Context(), params)
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		_, statErr := os.Stat(filepath.Join(fleet.data, "print", "copy.gcode"))
+
+		return errors.Is(statErr, fs.ErrNotExist)
+	}, 5*time.Second, 10*time.Millisecond)
+	require.FileExists(t, filepath.Join(fleet.data, "outside.gcode"))
+}
+
+// The file is deleted only when the print leaves nothing to send again and
+// the module asked for it. A failed send keeps it for another print, and a
+// name that climbs out of the print folder deletes nothing.
+func TestOnlyASettledPrintThatGaveItsFileAwayDeletesIt(t *testing.T) {
+	t.Parallel()
+
+	failed := errors.New("the printer went away")
+	cases := map[string]struct {
+		give   bool
+		source string
+		err    error
+		gone   bool
+	}{
+		"given and landed":         {give: true, source: "copy.gcode", gone: true},
+		"given and failed":         {give: true, source: "copy.gcode", err: failed},
+		"kept and landed":          {source: "copy.gcode"},
+		"given, out of the folder": {give: true, source: "../outside.gcode"},
+		"given and already held":   {give: true, source: "copy.gcode", err: errHeldSame, gone: true},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			dir := dataHolding(t)
+			ctx := withModuleData(t.Context(), dir, c.give)
+
+			printSettled(ctx, slog.New(slog.DiscardHandler), deviceapi.ModuleDataStorage, c.source, c.err)
+
+			_, err := os.Stat(filepath.Join(dir, "print", "copy.gcode"))
+			require.Equal(t, c.gone, errors.Is(err, fs.ErrNotExist))
+			require.FileExists(t, filepath.Join(dir, "outside.gcode"))
+		})
+	}
 }

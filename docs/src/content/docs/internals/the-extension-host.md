@@ -128,10 +128,13 @@ sequenceDiagram
 
 1. The router asks `Host.Module` in `internal/app/resourcehost/modules.go`
    which running instance serves the namespace. The API has already
-   authenticated the caller and checked the permission.
-2. `moduleHandler.ServeHTTP` reads the body up to `routesapi.MaxModuleBody`,
-   records in `flights` that this module is serving this person, and calls
-   `supervisor.Call`.
+   authenticated the caller and checked the permission, except on a public
+   route the operator approved, which takes no caller (ADR-20261120-xys).
+2. `moduleHandler.ServeHTTP` reads the body up to `routesapi.MaxModuleBody`.
+   On a staged route it writes the body to the module's data folder instead,
+   up to the route's limit. It records in `flights` that this module is
+   serving this person, and calls `supervisor.CallWithin`, which gives a
+   staged request the budget of its route.
 3. `CallVoid` in `internal/extension/supervisor/call.go` does the shared work.
    `acquire` refuses the call when the instance is not serving. `begin` asks
    the circuit breaker, takes one of the instance's call slots and sets the

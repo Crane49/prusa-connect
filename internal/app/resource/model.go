@@ -365,9 +365,10 @@ func (s Spec) installMode() string {
 		declaredData(s.Service.Data), declaredGrants(s.Service))
 }
 
-// declaredGrants renders the permissions, the people and call grants and the
-// record limit into the digest, each list sorted, and nothing for a module
-// granted none.
+// declaredGrants renders the permissions, the people and call grants, the
+// public and staged routes and the record limit into the digest, each list
+// sorted, and nothing for a module granted none. A changed staged limit
+// changes the digest, so the module restarts and learns it.
 func declaredGrants(service *install.Service) string {
 	var out string
 
@@ -385,6 +386,19 @@ func declaredGrants(service *install.Service) string {
 
 	if len(service.Calls) > 0 {
 		out += "\x00calls=" + strings.Join(slices.Sorted(slices.Values(service.Calls)), ",")
+	}
+
+	if len(service.PublicRoutes) > 0 {
+		out += "\x00public=" + strings.Join(slices.Sorted(slices.Values(routeLines(service.PublicRoutes))), ",")
+	}
+
+	if len(service.StagedRoutes) > 0 {
+		lines := make([]string, 0, len(service.StagedRoutes))
+		for _, route := range service.StagedRoutes {
+			lines = append(lines, route.String())
+		}
+
+		out += "\x00staged=" + strings.Join(slices.Sorted(slices.Values(lines)), ",")
 	}
 
 	if service.CheckAbsentPeople {

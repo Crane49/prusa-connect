@@ -20,6 +20,7 @@ import (
 	"github.com/prusa3d/prusa-connect/internal/app/resourcehost"
 	"github.com/prusa3d/prusa-connect/internal/authz"
 	"github.com/prusa3d/prusa-connect/internal/transport/http/httpapi"
+	"github.com/prusa3d/prusa-connect/sdk/deviceapi"
 	"github.com/prusa3d/prusa-connect/sdk/fault"
 	"github.com/prusa3d/prusa-connect/sdk/storageapi"
 )
@@ -39,6 +40,9 @@ type moduleStorage struct {
 	// handle the host made for this instance.
 	raw     stores
 	handles *fileHandles
+	// data is the instance's data directory, and empty when the operator
+	// granted none. Move reads its print folder and no other.
+	data string
 }
 
 var _ storageapi.Files = moduleStorage{}
@@ -75,6 +79,7 @@ func (m *moduleStorages) forModule(module resourcehost.Module) storageapi.Files 
 
 	return moduleStorage{
 		stores: m.stores, standing: standingOf(module), log: m.log, raw: m.raw, handles: m.handles,
+		data: module.Data,
 	}
 }
 
@@ -114,6 +119,49 @@ func (m moduleStorage) Write(
 		}
 
 		return storageapi.Written{}, m.refusal(ctx, err)
+	}
+
+	return storageapi.Written{Path: saved.Path, Size: saved.Size, SHA256: saved.SHA256}, nil
+}
+
+// Move publishes a file of the module's print folder through the storage
+// plane, under the permission and the confinement Write takes, and then
+// deletes it from the folder. The host reads the file from the disk, so no
+// byte of it crosses the wire. A move that fails leaves the source.
+//
+// shortcut: the storage plane copies the file and the source is deleted after
+// it, so a large file is on the disk twice while it is copied. A rename when the
+// storage shares the disk needs an optional interface on the storage provider.
+func (m moduleStorage) Move(
+	ctx context.Context, params storageapi.MoveParams,
+) (storageapi.Written, error) {
+	who, err := m.asFor(params.Principal, authz.ActionWriteStorage)
+	if err != nil {
+		return storageapi.Written{}, err
+	}
+
+	if m.data == "" {
+		return storageapi.Written{}, fmt.Errorf("%w: %s was granted no data directory, so it has no print folder",
+			storageapi.ErrDenied, m.standing.principal)
+	}
+
+	file, err := printFolderFiles(m.data).OpenLocal(ctx, params.Source)
+	if err != nil {
+		return storageapi.Written{}, m.refusal(ctx,
+			stagingFault(deviceapi.ModuleDataStorage, params.Source, "open", err))
+	}
+
+	saved, err := m.stores.Save(ctx, who, params.Storage, params.Path, file)
+	_ = file.Close() // a read-only handle; the error of the save is the one to report
+
+	if err != nil {
+		return storageapi.Written{}, m.refusal(ctx, err)
+	}
+
+	// The file is published. A source that stays is the module's to delete,
+	// and the move still answers what landed.
+	if removed := removeFromPrintFolder(m.data, params.Source); removed != nil {
+		m.logs().refused(ctx, "a moved file stayed in a module's print folder", m.standing.principal, removed)
 	}
 
 	return storageapi.Written{Path: saved.Path, Size: saved.Size, SHA256: saved.SHA256}, nil

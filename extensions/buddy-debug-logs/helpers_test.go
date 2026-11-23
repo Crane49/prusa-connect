@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -85,6 +86,12 @@ func configuredRig(t *testing.T, grants wirerpc.Grants) rig {
 // call makes one routes.serve call and reads the answer back.
 func (r rig) call(t *testing.T, request routesapi.Request) routesapi.Response {
 	t.Helper()
+
+	// A case writes its query into the path, as a person types it. The host
+	// sends the two apart, and the SDK does not split them again.
+	if path, query, found := strings.Cut(request.Path, "?"); found {
+		request.Path, request.Query = path, query
+	}
 
 	params, err := json.Marshal(request)
 	if err != nil {

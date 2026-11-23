@@ -289,6 +289,14 @@ const MaxWriteBytes int64 = 4 << 30
 
 MaxWriteBytes is the largest file one write puts into a storage.
 
+### `MethodMove` {#storageapi-methodmove}
+
+```go
+const MethodMove wirerpc.Method = "storage.move"
+```
+
+MethodMove puts one file of the calling module's print folder into a storage, replaces any file of that name there, and deletes the file from the print folder. The print folder is print/ in the module's data directory, the folder a print from module:data reads.
+
 ### `MethodWrite` {#storageapi-methodwrite}
 
 ```go
@@ -640,6 +648,14 @@ func (c *Client) List(ctx context.Context, params ListParams) (Listing, error)
 
 List returns one page of one folder, at most MaxListEntries entries in the order of their names. Pass Listing.Next back as ListParams.Cursor until Next is empty. It needs the same permission as Stat. An unknown storage, a missing folder and a path that leaves the storage all report ErrNoFile.
 
+#### `Client.Move` {#storageapi-client-move}
+
+```go
+func (c *Client) Move(ctx context.Context, params MoveParams) (Written, error)
+```
+
+Move puts a file of the module's print folder into a storage and returns when the storage has published it. It needs the write\_storage permission, as Write does, and a data directory. A source that is not in the print folder is ErrNoFile. A failed move leaves the source where it was.
+
 #### `Client.Open` {#storageapi-client-open}
 
 ```go
@@ -816,6 +832,9 @@ type Files interface {
     // bytes and fails when the stream had fewer or more. Publish only when
     // body ends without an error.
     Write(ctx context.Context, params WriteParams, body io.Reader) (Written, error)
+    // Move publishes a file of the module's print folder under params.Path
+    // and then deletes it from the folder.
+    Move(ctx context.Context, params MoveParams) (Written, error)
 }
 ```
 
@@ -918,6 +937,34 @@ type LocalWriter interface {
 ```
 
 LocalWriter is an open handle to an object a filesystem-backed provider created inside its root. Always check the error of Close: on some media out of space is reported only there.
+
+### `MoveParams` {#storageapi-moveparams}
+
+```go
+type MoveParams struct {
+    // Principal is who the call is made for, and empty for the module's own
+    // work.
+    Principal string `json:"principal,omitempty"`
+
+    // Source is the file to move, relative to the print folder.
+    Source string `json:"source"`
+
+    Storage string `json:"storage"`
+    // Path is where the file lands, relative to the storage's root. Missing
+    // parent folders are created.
+    Path string `json:"path"`
+}
+```
+
+MoveParams is the parameters of MethodMove.
+
+#### `MoveParams.Validate` {#storageapi-moveparams-validate}
+
+```go
+func (p MoveParams) Validate() error
+```
+
+Validate checks one move against the limits of this contract.
 
 ### `Opener` {#storageapi-opener}
 

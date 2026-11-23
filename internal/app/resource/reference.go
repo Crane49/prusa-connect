@@ -89,6 +89,14 @@ var Keys = map[string]config.Key{
 		Doc: "The namespaces of the other modules whose routes this module may call. A call in a " +
 			"person's name is held to that person's permissions. When absent, it may call none.",
 	},
+	"resources.<kind>.<name>.service.public_routes": {
+		Doc: "The routes anybody may call on this module without signing in, each a method and a path " +
+			"such as POST /hooks/announce/. When absent, there are none.",
+	},
+	"resources.<kind>.<name>.service.staged_routes": {
+		Doc: "The routes whose request body the server writes into the module's data directory, each with " +
+			"a method, a path and the largest body in MiB, from 1 to 4096.",
+	},
 	"resources.<kind>.<name>.service.records_mib": {
 		Doc: "The room this module's records may take, in MiB, from 1 to 1024. When absent, the module " +
 			"holds 8 MiB. Its files are in a storage and do not count.",
@@ -228,6 +236,14 @@ var Keys = map[string]config.Key{
 	},
 	"resources.<kind>.<name>.module.asked.calls": {
 		Doc: "The modules the manifest asked to call when the operator approved the install. An " +
+			"approved update leaves out each one the operator removed from the service block.",
+	},
+	"resources.<kind>.<name>.module.asked.public_routes": {
+		Doc: "The routes the manifest asked to serve without a caller when the operator approved the " +
+			"install. An approved update leaves out each one the operator removed from the service block.",
+	},
+	"resources.<kind>.<name>.module.asked.staged_routes": {
+		Doc: "The staged routes the manifest asked for when the operator approved the install. An " +
 			"approved update leaves out each one the operator removed from the service block.",
 	},
 	"resources.<kind>.<name>.module.asked.listen": {

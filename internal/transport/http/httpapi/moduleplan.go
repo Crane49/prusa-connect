@@ -11,9 +11,18 @@ import (
 // install's expect carries.
 func (o ModuleOffer) Requests() ModuleRequests {
 	return ModuleRequests{
-		Permissions: o.Permissions, Checks: o.Checks, Events: o.Events, CheckAbsentPeople: o.CheckAbsentPeople,
-		ListPeople: o.ListPeople, Calls: o.Calls, RecordsMiB: o.RecordsMiB, Listen: o.Listen,
-		Data: o.Data, Database: o.Database,
+		Permissions:       o.Permissions,
+		Checks:            o.Checks,
+		Events:            o.Events,
+		CheckAbsentPeople: o.CheckAbsentPeople,
+		ListPeople:        o.ListPeople,
+		Calls:             o.Calls,
+		PublicRoutes:      o.PublicRoutes,
+		StagedRoutes:      o.StagedRoutes,
+		RecordsMiB:        o.RecordsMiB,
+		Listen:            o.Listen,
+		Data:              o.Data,
+		Database:          o.Database,
 	}
 }
 

@@ -214,6 +214,10 @@ func (s *Store) validate(
 		return Spec{}, err
 	}
 
+	if spec.Service, err = withStaged(spec, desired.StagedRoutes); err != nil {
+		return Spec{}, err
+	}
+
 	if err = s.refuseSwitchingOn(current, exists, spec); err != nil {
 		return Spec{}, err
 	}
@@ -426,6 +430,50 @@ func withMemory(spec Spec, desired httpapi.ResourceSpec) (*install.Service, erro
 	service.MemoryMiB = memoryMiB
 	service.OnOverMemory = onOverMemory
 	service.SwitchOff = switchOff
+
+	return &service, nil
+}
+
+// withStaged is the service block carrying the limits a write sets for the
+// staged routes the operator approved at install (ADR-20261120-xys rule 5).
+// A write changes a limit and never which routes are staged, so a route the
+// body leaves out keeps its limit, and a route the declaration does not stage
+// is refused. The block is copied, because the spec it came from is the
+// declaration still in force.
+func withStaged(spec Spec, desired []httpapi.ModuleStagedRoute) (*install.Service, error) {
+	if len(desired) == 0 {
+		return spec.Service, nil
+	}
+
+	if spec.Runtime != install.RuntimeService || spec.Service == nil {
+		return nil, httpfault.RequestInvalid("body.staged_routes",
+			"no key, because only a service module has staged routes",
+			"this instance runs no process of its own")
+	}
+
+	service := *spec.Service
+	service.StagedRoutes = slices.Clone(spec.Service.StagedRoutes)
+
+	for index, route := range desired {
+		key := "body.staged_routes[" + strconv.Itoa(index) + "]"
+
+		held := slices.IndexFunc(service.StagedRoutes, func(granted install.StagedRoute) bool {
+			return granted.Method == route.Method && granted.Path == route.Path
+		})
+		if held < 0 {
+			return nil, httpfault.RequestInvalid(key,
+				"a route the install approved under routes.staged",
+				route.Method+" "+route.Path+" is not a staged route of this module. Approve it by "+
+					"installing the module again")
+		}
+
+		if err := install.CheckStagedMiB(key+".max_mib", route.MaxMiB); err != nil {
+			return nil, httpfault.RequestInvalid(key+".max_mib",
+				"a limit in MiB from 1 to "+strconv.Itoa(manifest.MaxStagedMiB), err.Error())
+		}
+
+		service.StagedRoutes[held].MaxMiB = route.MaxMiB
+	}
 
 	return &service, nil
 }

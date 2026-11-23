@@ -460,6 +460,17 @@ func (v vouchedStorage) Write(
 	return v.inner.Write(ctx, params, body)
 }
 
+func (v vouchedStorage) Move(
+	ctx context.Context, params storageapi.MoveParams,
+) (storageapi.Written, error) {
+	ctx, err := v.vouch(ctx, params.Principal)
+	if err != nil {
+		return storageapi.Written{}, err
+	}
+
+	return v.inner.Move(ctx, params)
+}
+
 // vouch is vouchedFleet.vouch with storageapi.ErrDenied as the refusal.
 func (v vouchedStorage) vouch(ctx context.Context, principal string) (context.Context, error) {
 	if principal == "" {

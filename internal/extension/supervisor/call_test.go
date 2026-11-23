@@ -3,6 +3,7 @@ package supervisor_test
 import (
 	"context"
 	"errors"
+	"strconv"
 	"sync/atomic"
 	"testing"
 	"testing/synctest"
@@ -72,6 +73,64 @@ func TestPerCallTimeoutIsTheHostsAndNotTheResources(t *testing.T) {
 
 		h.stop()
 	})
+}
+
+// A call given a budget of its own waits that long, and the timeout names that
+// budget. A budget below the policy's is the policy's, so CallWithin never
+// makes a call tighter.
+func TestCallWithinTakesTheLongerBudget(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range []struct {
+		name         string
+		budget, want time.Duration
+	}{
+		{"a longer budget", time.Minute, time.Minute},
+		{"a shorter budget", time.Second, supervisor.DefaultCallTimeout},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			synctest.Test(t, func(t *testing.T) {
+				h := newHarness(t, supervisor.Config[*target]{
+					Ref:    testRef(t, "slow-store"),
+					Type:   "fake",
+					Policy: testPolicy(),
+					Start: func(context.Context, supervisor.Handle) (*target, error) {
+						return &target{do: func(ctx context.Context) error {
+							<-ctx.Done()
+
+							return ctx.Err()
+						}}, nil
+					},
+				})
+
+				h.run(t)
+				synctest.Wait()
+
+				ctx, cancel := bubbleContext()
+				defer cancel()
+
+				started := time.Now()
+				_, err := supervisor.CallWithin(ctx, h.inst, "serve", tc.budget,
+					func(callCtx context.Context, t *target) (struct{}, error) {
+						return struct{}{}, t.do(callCtx)
+					})
+
+				require.Error(t, err)
+				assert.Equal(t, tc.want, time.Since(started))
+
+				carried, ok := errors.AsType[*fault.Fault](err)
+				require.True(t, ok, "got %v", err)
+				assert.Equal(t, supervisor.CodeTimeout(), carried.Code())
+
+				named, _ := carried.Params().Get("timeout_ms")
+				assert.Equal(t, strconv.FormatInt(tc.want.Milliseconds(), 10), named.String())
+
+				h.stop()
+			})
+		})
+	}
 }
 
 func TestCallerDeadlineWinsWhenItIsTighter(t *testing.T) {

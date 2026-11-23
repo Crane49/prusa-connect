@@ -447,5 +447,15 @@
   "app.settings.extensions.fault.planChanged": "Rozšíření, která instalace přidává, se od chvíle, kdy jsi je četl, změnila. Nyní přidává: {found}",
   "app.settings.extensions.fault.planChanged.action": "Nic se nenainstalovalo. Otevři instalaci znovu, přečti si, co teď přidává, a schval ji.",
   "app.printerDetail.undeclaredChoice.note": "Rozšíření chtělo poslat soubory s volbou, kterou na této stránce nenabízí, takže soubory zůstaly, kde byly.",
-  "app.printerDetail.undeclaredChoice.title": "Na tiskárnu se nic neposlalo"
+  "app.printerDetail.undeclaredChoice.title": "Na tiskárnu se nic neposlalo",
+  "app.settings.extensions.request.public": "Odpovídá na {route} pod svou adresou komukoli, kdo se k tomuto serveru dostane, bez přihlášení.",
+  "app.settings.extensions.request.staged": "Přijímá nahrávané soubory do {size} MiB na {route} a ukládá je do své datové složky.",
+  "app.settings.extensions.tab.uploads": "Nahrávání",
+  "app.settings.extensions.uploads.title": "Největší nahrávané soubory",
+  "app.settings.extensions.uploads.note": "Největší soubor, který každá cesta tohoto rozšíření přijme, nejvýše {max} MiB. Soubor se uloží do datové složky rozšíření a větší soubor server odmítne dřív, než ho rozšíření uvidí. Uložení rozšíření restartuje.",
+  "app.settings.extensions.uploads.label": "Největší nahrávaný soubor na {route}",
+  "app.settings.extensions.uploads.asked": "Rozšíření žádá {size} MiB.",
+  "app.settings.extensions.uploads.unit": "MiB",
+  "app.settings.extensions.uploads.invalid": "Celé číslo MiB od 1 do {max}",
+  "app.settings.extensions.uploads.save": "Uložit limity"
 }

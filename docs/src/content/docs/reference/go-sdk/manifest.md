@@ -247,6 +247,22 @@ const MaxRecordsMiB = 1024
 
 MaxRecordsMiB is the most room records\_mib may ask for, in mebibytes. It equals stateapi.MaxGrantedNamespaceBytes.
 
+### `MaxRoutes` {#manifest-maxroutes}
+
+```go
+const MaxRoutes = 32
+```
+
+MaxRoutes is how many entries one list under routes may hold.
+
+### `MaxStagedMiB` {#manifest-maxstagedmib}
+
+```go
+const MaxStagedMiB = 4096
+```
+
+MaxStagedMiB is the largest body a staged route may ask the host to write to disk, in MiB.
+
 ### `MaxUIExports` {#manifest-maxuiexports}
 
 ```go
@@ -905,6 +921,10 @@ type Manifest struct {
     // data directory. It is a request like Permissions, and a port takes an
     // approval of its own.
     Needs Needs
+    // Routes is the routes the host serves without a caller and the routes
+    // whose body it writes to a file. A public or staged route is a request
+    // like Permissions, and the operator approves each one.
+    Routes Routes
     // Options is the settings this module reads, each with its type, its
     // sentence and its default. The host applies every default and writes the
     // operator's config block over it. A key outside the list is refused.
@@ -1183,6 +1203,70 @@ func (r Requirement) Dependency() Dependency
 ```
 
 Dependency is the module half of the requirement.
+
+### `Route` {#manifest-route}
+
+```go
+type Route struct {
+    // Method is the HTTP method in upper case, such as POST.
+    Method string
+    // Path is the path pattern, such as /hooks/announce/ or /files/{id}.
+    Path string
+}
+```
+
+Route is one method and one path under the module's mount.
+
+The path starts with a slash and is relative to the mount, as routesapi.Request.Path is. A segment written {name} matches any one non-empty segment. Every other segment matches itself, and a trailing slash is part of the path.
+
+#### `ParseRoute` {#manifest-parseroute}
+
+```go
+func ParseRoute(line string) (Route, error)
+```
+
+ParseRoute reads a route written as Route.String writes it, and holds it to the rules the manifest holds a route to.
+
+#### `Route.Matches` {#manifest-route-matches}
+
+```go
+func (r Route) Matches(method, path string) bool
+```
+
+Matches reports whether a request with method and a path relative to the mount is on this route.
+
+#### `Route.Overlaps` {#manifest-route-overlaps}
+
+```go
+func (r Route) Overlaps(other Route) bool
+```
+
+Overlaps reports whether one request could be on both routes: the same method, as many segments, and each pair of segments equal or one of them a placeholder that the other could fill. A placeholder never matches an empty segment, so /a/{id} and /a/ do not overlap.
+
+#### `Route.String` {#manifest-route-string}
+
+```go
+func (r Route) String() string
+```
+
+String is the route as one line, such as "POST /hooks/announce/". An install lists a public route in this shape, and ParseRoute reads it back.
+
+### `Routes` {#manifest-routes}
+
+```go
+type Routes struct {
+    // Public is the routes the host sends to the module without resolving a
+    // caller, so the module reads an empty principal there. It is a request
+    // like Permissions: the operator approves each route at install.
+    Public []Route
+    // Staged is the routes whose request body the host writes into the
+    // module's data directory, and the module reads the file instead of the
+    // body. A staged route needs needs.data.
+    Staged []StagedRoute
+}
+```
+
+Routes is the routes block: the routes the host treats differently from the module's other routes (ADR-20261120-xys). Every other route is reached as ADR-20260827-wmv rule 13 says, by a caller the host authorized.
 
 ### `Screen` {#manifest-screen}
 
@@ -1705,6 +1789,20 @@ func (s Stability) String() string
 ```
 
 String is the stability as Composer writes it.
+
+### `StagedRoute` {#manifest-stagedroute}
+
+```go
+type StagedRoute struct {
+    Route
+
+    // MaxMiB is the largest body the host accepts on the route, in MiB, from
+    // 1 to MaxStagedMiB.
+    MaxMiB int
+}
+```
+
+StagedRoute is a route whose body the host writes to a file.
 
 ### `Subject` {#manifest-subject}
 

@@ -7,15 +7,19 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 
 	"github.com/prusa3d/prusa-connect/internal/authz"
 	"github.com/prusa3d/prusa-connect/internal/kernel/ref"
 	"github.com/prusa3d/prusa-connect/sdk/fault"
+	"github.com/prusa3d/prusa-connect/sdk/manifest"
 )
 
 // The namespace and the instance every case here uses. The namespace is the
@@ -42,6 +46,10 @@ type fakeModulePlane struct {
 	modulesOff bool
 	// safeMode makes the held prefix a safe-mode one.
 	safeMode bool
+	// public is the routes the operator approved to answer with no caller.
+	public []manifest.Route
+	// staged is the routes the operator approved to stage, with their limits.
+	staged []manifest.StagedRoute
 }
 
 func (p fakeModulePlane) Module(namespace string) (ModuleSurface, bool) {
@@ -49,7 +57,10 @@ func (p fakeModulePlane) Module(namespace string) (ModuleSurface, bool) {
 		return ModuleSurface{}, false
 	}
 
-	return ModuleSurface{Instance: p.instance, Handler: p.handler, OpenAPI: p.openapi, Mount: p.mount}, true
+	return ModuleSurface{
+		Instance: p.instance, Handler: p.handler, OpenAPI: p.openapi, Mount: p.mount, Public: p.public,
+		Staged: p.staged,
+	}, true
 }
 
 func (p fakeModulePlane) Root(path string) (ModuleSurface, bool) {
@@ -67,7 +78,10 @@ func (p fakeModulePlane) Root(path string) (ModuleSurface, bool) {
 		}, true
 	}
 
-	return ModuleSurface{Instance: p.instance, Handler: p.handler, OpenAPI: p.openapi, Mount: p.mount}, true
+	return ModuleSurface{
+		Instance: p.instance, Handler: p.handler, OpenAPI: p.openapi, Mount: p.mount, Public: p.public,
+		Staged: p.staged,
+	}, true
 }
 
 // fakeModuleAccess is the graph as this mount reads it: it permits one action
@@ -497,4 +511,301 @@ func TestTheMountHoldsTheNamespaceGrammarBeforeAnythingIsAsked(t *testing.T) {
 	served := ask(t, server, http.MethodGet, "/api/v1/modules/"+moduleNamespace+"/spools", "")
 	require.Equal(t, http.StatusOK, served.Code, served.Body.String())
 	require.Equal(t, []string{moduleNamespace}, plane.asked)
+}
+
+// TestAPublicRouteReachesTheModuleWithNoPrincipal is the gate ADR-20261120-xys
+// rules 1 to 3 owe. A route the operator approved under routes.public is
+// reached by a caller who presents nothing, the graph is never asked, and the
+// module reads an empty principal even when the caller is signed in. Every
+// other route of the same module still refuses that caller, and the mount's
+// path checks still hold on the public one.
+func TestAPublicRouteReachesTheModuleWithNoPrincipal(t *testing.T) {
+	t.Parallel()
+
+	instance, err := ref.Parse(moduleInstance)
+	require.NoError(t, err)
+
+	token := manifest.Route{Method: http.MethodPost, Path: "/hooks/announce/"}
+	group := "/api/v1/modules/" + moduleNamespace
+
+	for _, mount := range []string{"", "/connect"} {
+		prefix := group
+		if mount != "" {
+			prefix = mount
+		}
+
+		t.Run("mounted at "+prefix, func(t *testing.T) {
+			t.Parallel()
+
+			var reached int
+
+			plane := fakeModulePlane{
+				namespace: moduleNamespace, instance: instance, mount: mount, public: []manifest.Route{token},
+				handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					reached++
+					moduleEcho().ServeHTTP(w, r)
+				}),
+			}
+
+			access := &fakeModuleAccess{
+				who: "user:operator", instance: instance,
+				actions: []authz.Action{authz.ActionViewResource, authz.ActionOperateResource},
+			}
+
+			for _, who := range []string{"", "user:operator"} {
+				server := moduleServer(t, plane, access, who)
+
+				answered := ask(t, server, http.MethodPost, prefix+"/hooks/announce/", "grant_type=x")
+				require.Equal(t, http.StatusOK, answered.Code, answered.Body.String())
+
+				var echoed map[string]string
+				require.NoError(t, json.Unmarshal(answered.Body.Bytes(), &echoed))
+				require.Equal(t, "/hooks/announce/", echoed["path"])
+				require.Empty(t, echoed["principal"], "a public route resolved a caller for %q", who)
+			}
+
+			require.Equal(t, 2, reached)
+			require.Empty(t, access.asked, "a public route asked the graph")
+
+			// The same server with no caller, on everything that is not the
+			// public route: another method, another path, and a path that
+			// leaves the mount on the way to the public one.
+			server := moduleServer(t, plane, access, "")
+
+			for _, refused := range []struct{ method, path string }{
+				{http.MethodGet, "/hooks/announce/"},
+				{http.MethodPost, "/hooks/announce"},
+				{http.MethodPost, "/hooks/announce/extra"},
+				{http.MethodPost, "/spools"},
+			} {
+				answered := ask(t, server, refused.method, prefix+refused.path, "")
+				require.Equal(t, http.StatusUnauthorized, answered.Code, "%s %s", refused.method, refused.path)
+			}
+
+			escaped := ask(t, server, http.MethodPost, prefix+"/x/../hooks/announce/", "")
+			require.Equal(t, http.StatusNotFound, escaped.Code, escaped.Body.String())
+
+			require.Equal(t, 2, reached, "the module ran on a route that is not public")
+		})
+	}
+}
+
+// TestAnEncodedPathCannotTurnAPublicRouteIntoAnother sends, with no caller,
+// paths that match a public route as the host decodes them and another route
+// once they are parsed again: an encoded ? or # cuts the path short there, and
+// an encoded % is decoded twice. The host refuses every one before the module
+// runs, so no route that needs a caller is reached without one.
+func TestAnEncodedPathCannotTurnAPublicRouteIntoAnother(t *testing.T) {
+	t.Parallel()
+
+	instance, err := ref.Parse(moduleInstance)
+	require.NoError(t, err)
+
+	announce := manifest.Route{Method: http.MethodPost, Path: "/hooks/{device}/announce"}
+	group := "/api/v1/modules/" + moduleNamespace
+
+	for _, mount := range []string{"", "/connect"} {
+		prefix := group
+		if mount != "" {
+			prefix = mount
+		}
+
+		t.Run("mounted at "+prefix, func(t *testing.T) {
+			t.Parallel()
+
+			var reached []string
+
+			plane := fakeModulePlane{
+				namespace: moduleNamespace, instance: instance, mount: mount, public: []manifest.Route{announce},
+				handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					reached = append(reached, r.URL.Path)
+					moduleEcho().ServeHTTP(w, r)
+				}),
+			}
+
+			access := &fakeModuleAccess{
+				who: "user:operator", instance: instance,
+				actions: []authz.Action{authz.ActionViewResource, authz.ActionOperateResource},
+			}
+			server := moduleServer(t, plane, access, "")
+
+			answered := ask(t, server, http.MethodPost, prefix+"/hooks/x/announce", "")
+			require.Equal(t, http.StatusOK, answered.Code, answered.Body.String())
+
+			for _, path := range []string{
+				"/hooks/x%3F/announce",
+				"/hooks/x%23/announce",
+				"/hooks/x%253F/announce",
+				"/hooks/x%25/announce",
+				"/hooks/x%00/announce",
+				"/hooks/x%0A/announce",
+			} {
+				refused := ask(t, server, http.MethodPost, prefix+path, "")
+				require.Equal(t, http.StatusNotFound, refused.Code, "%s: %s", path, refused.Body.String())
+			}
+
+			require.Equal(t, []string{"/hooks/x/announce"}, reached, "the module ran on an encoded path")
+			require.Empty(t, access.asked, "a public route asked the graph")
+		})
+	}
+}
+
+// TestALargeBodyReachesAModuleThroughTheServer sends a body over the document
+// bound through the whole server, middleware included, to a staged route of a
+// module under its namespace and under a root prefix. The route's approved
+// limit is above the body, so the server's document bound must not cut it
+// off first (ADR-20261120-xys rule 6).
+func TestALargeBodyReachesAModuleThroughTheServer(t *testing.T) {
+	t.Parallel()
+
+	instance, err := ref.Parse(moduleInstance)
+	require.NoError(t, err)
+
+	body := strings.Repeat("G", 3<<20)
+
+	for _, mount := range []string{"", "/connect"} {
+		prefix := "/api/v1/modules/" + moduleNamespace
+		if mount != "" {
+			prefix = mount
+		}
+
+		var got int
+
+		plane := fakeModulePlane{
+			namespace: moduleNamespace,
+			instance:  instance,
+			mount:     mount,
+			staged: []manifest.StagedRoute{
+				{Route: manifest.Route{Method: http.MethodPut, Path: "/files/{name}"}, MaxMiB: 4},
+			},
+			handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				read, readErr := io.ReadAll(r.Body)
+				if readErr != nil {
+					http.Error(w, readErr.Error(), http.StatusUnprocessableEntity)
+
+					return
+				}
+
+				got = len(read)
+
+				w.WriteHeader(http.StatusOK)
+			}),
+		}
+
+		access := &fakeModuleAccess{
+			who: "user:operator", instance: instance,
+			actions: []authz.Action{authz.ActionViewResource, authz.ActionOperateResource},
+		}
+
+		answered := ask(t, moduleServer(t, plane, access, "user:operator"), http.MethodPut, prefix+"/files/raw", body)
+		require.Equal(t, http.StatusOK, answered.Code, "%s: %s", prefix, answered.Body.String())
+		require.Equal(t, len(body), got, "%s: the module read a cut body", prefix)
+	}
+}
+
+// TestABodyOverItsModuleLimitIsRefusedBeforeTheModuleRuns sends a body over
+// the approved limit of a staged route, and the same body to a route that is
+// not staged and so takes the document bound. The server refuses both with
+// BODY_TOO_LARGE, naming the limit, and the module never runs
+// (ADR-20261120-xys rule 6).
+func TestABodyOverItsModuleLimitIsRefusedBeforeTheModuleRuns(t *testing.T) {
+	t.Parallel()
+
+	instance, err := ref.Parse(moduleInstance)
+	require.NoError(t, err)
+
+	body := strings.Repeat("G", 3<<20)
+
+	for _, tc := range []struct {
+		name, mount, method, path string
+		limit                     int64
+	}{
+		{"staged under the namespace", "", http.MethodPut, "/files/raw", 2 << 20},
+		{"staged under a root prefix", "/connect", http.MethodPut, "/files/raw", 2 << 20},
+		{"not staged", "", http.MethodPost, "/files/raw", 1 << 20},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			prefix := "/api/v1/modules/" + moduleNamespace
+			if tc.mount != "" {
+				prefix = tc.mount
+			}
+
+			var ran atomic.Bool
+
+			plane := fakeModulePlane{
+				namespace: moduleNamespace,
+				instance:  instance,
+				mount:     tc.mount,
+				staged: []manifest.StagedRoute{
+					{Route: manifest.Route{Method: http.MethodPut, Path: "/files/{name}"}, MaxMiB: 2},
+				},
+				handler: http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+					ran.Store(true)
+					w.WriteHeader(http.StatusOK)
+				}),
+			}
+
+			access := &fakeModuleAccess{
+				who: "user:operator", instance: instance,
+				actions: []authz.Action{authz.ActionViewResource, authz.ActionOperateResource},
+			}
+
+			answered := ask(t, moduleServer(t, plane, access, "user:operator"), tc.method, prefix+tc.path, body)
+			require.Equal(t, http.StatusRequestEntityTooLarge, answered.Code, answered.Body.String())
+			require.Contains(t, answered.Body.String(), "BODY_TOO_LARGE")
+			require.Contains(t, answered.Body.String(), strconv.FormatInt(tc.limit, 10))
+			require.False(t, ran.Load(), "the module ran on a refused body")
+		})
+	}
+}
+
+// TestNoStagedRouteWidensACoreOperation walks every operation the core serves
+// under a module's namespace, such as PUT .../state/{key}, for a module whose
+// staged routes match any path of one or two segments. The body bound runs
+// before chi routes, and a staged limit there would let up to 4 GiB into an
+// operation that reads its body into memory.
+func TestNoStagedRouteWidensACoreOperation(t *testing.T) {
+	t.Parallel()
+
+	instance, err := ref.Parse(moduleInstance)
+	require.NoError(t, err)
+
+	plane := fakeModulePlane{namespace: moduleNamespace, instance: instance}
+	for _, method := range []string{http.MethodPut, http.MethodPost, http.MethodPatch, http.MethodGet} {
+		for _, path := range []string{"/{a}", "/{a}/{b}"} {
+			plane.staged = append(plane.staged,
+				manifest.StagedRoute{Route: manifest.Route{Method: method, Path: path}, MaxMiB: 4096})
+		}
+	}
+
+	under := ModuleMount("{"+namespaceParam+"}") + "/"
+
+	var core []string
+
+	err = chi.Walk(newTestServer(t).mux,
+		func(method, pattern string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {
+			if !strings.HasPrefix(pattern, under) || pattern == modulesRoutePattern {
+				return nil
+			}
+
+			core = append(core, method+" "+pattern)
+
+			path := concretePath(strings.Replace(pattern, "{"+namespaceParam+"}", moduleNamespace, 1))
+			req := httptest.NewRequest(method, path, strings.NewReader("{}"))
+
+			if _, _, toModule := moduleTarget(req, plane); toModule {
+				t.Errorf("%s %s takes a module's staged limit", method, pattern)
+			}
+
+			return nil
+		})
+	require.NoError(t, err)
+	require.NotEmpty(t, core, "this gate walked no core operation under a module's namespace")
+
+	// The module's own paths still reach it.
+	req := httptest.NewRequest(http.MethodPut, ModuleMount(moduleNamespace)+"/files/raw", strings.NewReader("{}"))
+	_, _, toModule := moduleTarget(req, plane)
+	require.True(t, toModule)
 }

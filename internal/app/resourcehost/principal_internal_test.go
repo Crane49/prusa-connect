@@ -604,6 +604,12 @@ func (r *recordingFiles) Write(
 	return storageapi.Written{}, nil
 }
 
+func (r *recordingFiles) Move(_ context.Context, p storageapi.MoveParams) (storageapi.Written, error) {
+	r.saw = append(r.saw, p.Principal)
+
+	return storageapi.Written{}, nil
+}
+
 func (r *recordingFiles) List(_ context.Context, p storageapi.ListParams) (storageapi.Listing, error) {
 	r.saw = append(r.saw, p.Principal)
 

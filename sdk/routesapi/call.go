@@ -130,9 +130,18 @@ func isControl(r rune) bool { return r < 0x20 || r == 0x7f }
 // Request is the call as the other module receives it on routes.serve, for
 // the principal the host decided. Its headers pass through RequestHeaders, so
 // a credential of one module never reaches another.
+//
+// The path is unescaped once, because Request.Path is the decoded path a
+// person's request reaches a module with. A path Validate accepts unescapes
+// cleanly; one it would refuse is passed on as it came.
 func (p CallParams) Request(principal string) Request {
+	path := p.Path
+	if unescaped, err := url.PathUnescape(p.Path); err == nil {
+		path = unescaped
+	}
+
 	return Request{
-		Method: p.Method, Path: p.Path, Query: p.Query, Headers: RequestHeaders(p.Headers), Body: p.Body,
+		Method: p.Method, Path: path, Query: p.Query, Headers: RequestHeaders(p.Headers), Body: p.Body,
 		Principal: principal,
 	}
 }

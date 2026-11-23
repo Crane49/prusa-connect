@@ -559,3 +559,108 @@ func TestAModuleCannotListOutsideTheStorage(t *testing.T) {
 	_, err := files.List(t.Context(), storageapi.ListParams{Storage: "shelf"})
 	require.ErrorIs(t, err, storageapi.ErrNoFile)
 }
+
+// writingModule is storageForModule with write_storage granted, over a data
+// directory holding print/copy.gcode, and the storage's root.
+func writingModule(t *testing.T) (moduleStorage, string) {
+	t.Helper()
+
+	root := t.TempDir()
+	files, graph := storageOver(t, root, authz.ActionWriteStorage)
+	require.NoError(t, graph.Write(t.Context(),
+		tuple(t, authz.TypeResourceKind, "storage", authz.RelOperator, readingModule)))
+
+	files.data = dataHolding(t)
+
+	return files, root
+}
+
+// A move publishes the file of the print folder in the storage and deletes it
+// from the folder. The rest of the data directory stays.
+func TestAModuleMovesAFileOfItsPrintFolderIntoAStorage(t *testing.T) {
+	t.Parallel()
+
+	files, root := writingModule(t)
+
+	written, err := files.Move(t.Context(),
+		storageapi.MoveParams{Source: "copy.gcode", Storage: "bench", Path: "kept/copy.gcode"})
+	require.NoError(t, err)
+	require.Equal(t, storageapi.Written{
+		Path: "kept/copy.gcode", Size: 4,
+		SHA256: "8080cd1d636d28b227689516fdadfd2aaed94e57b113db13523a38b51d0d09e9",
+	}, written)
+
+	moved, err := os.ReadFile(filepath.Join(root, "kept", "copy.gcode"))
+	require.NoError(t, err)
+	require.Equal(t, "G28\n", string(moved))
+	require.NoFileExists(t, filepath.Join(files.data, "print", "copy.gcode"))
+	require.FileExists(t, filepath.Join(files.data, "outside.gcode"))
+}
+
+// A move takes write_storage as a write does, and one that is refused, or that
+// the storage refuses, leaves the source where it was.
+func TestAMoveThatFailsLeavesTheSource(t *testing.T) {
+	t.Parallel()
+
+	cases := map[string]struct {
+		files  func(t *testing.T) moduleStorage
+		params storageapi.MoveParams
+		want   error
+	}{
+		"outside the ceiling": {
+			files: func(t *testing.T) moduleStorage {
+				t.Helper()
+
+				files, _ := storageForModule(t, authz.ActionReadStorage)
+				files.data = dataHolding(t)
+
+				return files
+			},
+			params: storageapi.MoveParams{Source: "copy.gcode", Storage: "bench", Path: "copy.gcode"},
+			want:   storageapi.ErrDenied,
+		},
+		"into the folder of temporary copies": {
+			files: func(t *testing.T) moduleStorage {
+				t.Helper()
+
+				files, _ := writingModule(t)
+
+				return files
+			},
+			params: storageapi.MoveParams{Source: "copy.gcode", Storage: "bench", Path: ".pcl-incoming/copy.gcode"},
+			want:   storageapi.ErrNoFile,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			files := c.files(t)
+
+			_, err := files.Move(t.Context(), c.params)
+			require.ErrorIs(t, err, c.want)
+			require.FileExists(t, filepath.Join(files.data, "print", "copy.gcode"))
+		})
+	}
+}
+
+// A move reads the print folder and nothing beside it, and a module with no
+// data directory has no folder to move from.
+func TestAMoveTakesOnlyAFileOfThePrintFolder(t *testing.T) {
+	t.Parallel()
+
+	files, root := writingModule(t)
+
+	_, err := files.Move(t.Context(),
+		storageapi.MoveParams{Source: "../outside.gcode", Storage: "bench", Path: "outside.gcode"})
+	require.ErrorIs(t, err, storageapi.ErrNoFile)
+	require.FileExists(t, filepath.Join(files.data, "outside.gcode"))
+	require.NoFileExists(t, filepath.Join(root, "outside.gcode"))
+
+	files.data = ""
+
+	_, err = files.Move(t.Context(),
+		storageapi.MoveParams{Source: "copy.gcode", Storage: "bench", Path: "copy.gcode"})
+	require.ErrorIs(t, err, storageapi.ErrDenied)
+}

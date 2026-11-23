@@ -221,6 +221,10 @@ type ResourceSpec struct {
 	// OnOverMemory is what the host does when a service module's process goes
 	// over its budget. Empty is stop.
 	OnOverMemory string `json:"on_over_memory,omitempty" enum:"stop,warn" doc:"What the host does when a service module's process goes over its memory budget: stop kills the process and counts towards switching the module off, warn keeps it running and marks the status over_budget. Omitted is stop. Only a service module takes it. The write replaces the whole spec, so a client that leaves it out resets it to stop."`
+	// StagedRoutes is the limit of each staged route the operator approved
+	// at install. A write changes the limits and never which routes are
+	// staged (ADR-20261120-xys rule 5).
+	StagedRoutes []ModuleStagedRoute `json:"staged_routes,omitempty" maxItems:"32" doc:"For a service module, each route whose request body the server writes into the module's data directory, with the largest body it takes, from 1 to 4096 MiB. The operator approves each route at install, and a write may change only the limit of a route listed here: a route it does not list keeps its limit, and a route the install did not approve is refused. Changing a limit restarts the module."`
 	// SwitchOff is the operator's own switch-off for a service module. Nil
 	// follows the server's core.modules_switch_off.
 	SwitchOff *ResourceSwitchOffPolicy `json:"switch_off,omitempty" doc:"When the host switches a service module off because it keeps failing. A key left out follows the server's core.modules_switch_off. Only a service module takes it. The write replaces the whole spec, so a client that leaves it out returns the module to the server's setting."`

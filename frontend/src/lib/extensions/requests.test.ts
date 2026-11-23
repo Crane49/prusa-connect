@@ -139,6 +139,74 @@ describe('a call to another module', () => {
   });
 });
 
+describe('a public route', () => {
+  it('reads from its line, draws as one request and goes back as expect', () => {
+    const requests = requestsOfLines(
+      ['public POST /hooks/announce/', 'permission write_storage'],
+      undefined,
+    );
+
+    expect(requests.public_routes).toEqual(['POST /hooks/announce/']);
+    expect(listRequests(requests)).toContainEqual({
+      kind: 'public',
+      route: 'POST /hooks/announce/',
+    });
+    expect(
+      requestsOfOffer(offer({ public_routes: ['POST /hooks/announce/'] })),
+    ).toMatchObject({ public_routes: ['POST /hooks/announce/'] });
+    expect(
+      mergeRequests(requests, { public_routes: ['GET /a'] }).public_routes,
+    ).toEqual(['POST /hooks/announce/', 'GET /a']);
+  });
+});
+
+describe('a staged route', () => {
+  const upload = {
+    method: 'PUT',
+    path: '/connect/app/teams/{team}/files/raw',
+    max_mib: 1024,
+  };
+
+  it('reads from its line, draws as one request and goes back as expect', () => {
+    const requests = requestsOfLines(
+      [
+        'upload PUT /connect/app/teams/{team}/files/raw up to 1024 MiB',
+        'permission write_storage',
+      ],
+      undefined,
+    );
+
+    expect(requests.staged_routes).toEqual([upload]);
+    expect(listRequests(requests)).toContainEqual({
+      kind: 'staged',
+      method: 'PUT',
+      path: '/connect/app/teams/{team}/files/raw',
+      mib: 1024,
+    });
+    expect(requestsOfOffer(offer({ staged_routes: [upload] }))).toMatchObject({
+      staged_routes: [upload],
+    });
+    expect('staged_routes' in (requestsOfOffer(offer()) ?? {})).toBe(false);
+  });
+
+  it('holds each route once, with the larger limit, when two sets meet', () => {
+    expect(
+      mergeRequests(
+        { staged_routes: [upload] },
+        {
+          staged_routes: [
+            { ...upload, max_mib: 2048 },
+            { method: 'POST', path: '/a', max_mib: 8 },
+          ],
+        },
+      ).staged_routes,
+    ).toEqual([
+      { ...upload, max_mib: 2048 },
+      { method: 'POST', path: '/a', max_mib: 8 },
+    ]);
+  });
+});
+
 describe('two sets of requests together', () => {
   it('hold everything either holds, once', () => {
     expect(
@@ -325,6 +393,8 @@ describe('every kind of ask', () => {
     check_absent_people: true,
     list_people: true,
     calls: ['com.github.aux.other'],
+    public_routes: ['POST /hooks/announce/'],
+    staged_routes: [{ method: 'PUT', path: '/files/{name}', max_mib: 1024 }],
     records_mib: 16,
     memory_mib: 256,
     data: true,
@@ -350,6 +420,8 @@ describe('every kind of ask', () => {
       'permission check_absent_people',
       'permission list_people',
       'call com.github.aux.other',
+      'public POST /hooks/announce/',
+      'upload PUT /files/{name} up to 1024 MiB',
       'records 16 MiB',
       'memory 256 MiB',
       'data directory',

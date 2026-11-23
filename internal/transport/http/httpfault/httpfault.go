@@ -425,6 +425,22 @@ var (
 			fault.ShowDetail,
 		))
 
+	moduleUploadsBusy = fault.Register(
+		fault.DomainInternal(), "MODULE_UPLOADS_BUSY", http.StatusServiceUnavailable, fault.Document(
+			"The module is receiving as many large bodies at once as the server allows it",
+			"Wait for the number of seconds in Retry-After and send the body again.",
+			fault.RetryAllowed,
+			fault.ShowDetail,
+		))
+
+	moduleStorageFull = fault.Register(
+		fault.DomainInternal(), "MODULE_STORAGE_FULL", http.StatusInsufficientStorage, fault.Document(
+			"The disk that holds the module's data has no room for the request body",
+			"Send a smaller body, or ask the operator to free space on the server's disk and then send it again.",
+			fault.RetryAllowed,
+			fault.ShowDetail,
+		))
+
 	unexpected = fault.Register(
 		fault.DomainInternal(), "UNEXPECTED", http.StatusInternalServerError, fault.Document(
 			"The server failed in a way it does not describe",
@@ -688,6 +704,24 @@ func AppFileBusy(others int) *fault.Fault {
 
 // CodeAppFileBusy names a client without gzip that must wait for a slot.
 func CodeAppFileBusy() fault.Code { return appFileBusy.Code() }
+
+// ModuleUploadsBusy reports a large body refused because the module already
+// receives slots of them.
+func ModuleUploadsBusy(slots int) *fault.Fault {
+	return moduleUploadsBusy.New(strconv.Itoa(slots) + " bodies are being received by this module already")
+}
+
+// CodeModuleUploadsBusy names a large body that must wait for a place.
+func CodeModuleUploadsBusy() fault.Code { return moduleUploadsBusy.Code() }
+
+// ModuleStorageFull reports a large body refused because the disk of the
+// module's data has no room for it.
+func ModuleStorageFull() *fault.Fault {
+	return moduleStorageFull.New("the server's disk has no room for the body")
+}
+
+// CodeModuleStorageFull names a large body the disk has no room for.
+func CodeModuleStorageFull() fault.Code { return moduleStorageFull.Code() }
 
 // Unexpected reports a failure with no better description, and redacts: the
 // cause reaches an operator through the log line the trace id keys, never

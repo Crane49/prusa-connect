@@ -235,7 +235,7 @@ func (s *Server) rootModules(cfg Config, fallback http.Handler) http.Handler {
 			return
 		}
 
-		caller, allowed := s.allowModule(w, r, cfg, surface)
+		caller, allowed := s.moduleCaller(w, r, inner, cfg, surface)
 		if !allowed {
 			return
 		}

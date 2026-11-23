@@ -397,7 +397,7 @@ single-tenant appliance is the deployment they are assessed against.
 
 Every call into a supervised resource goes through the
 [supervisor](../glossary.md#supervisor)'s `Call` or `CallVoid`
-(`internal/extension/supervisor/call.go:42`), and everything cross-cutting
+(`internal/extension/supervisor/call.go:53`), and everything cross-cutting
 happens there and nowhere else: the state gate, the circuit breaker, the
 bulkhead, the per-call deadline, panic recovery, the outcome classification and
 the metrics.

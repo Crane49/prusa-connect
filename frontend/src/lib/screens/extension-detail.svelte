@@ -49,6 +49,7 @@
     ExtensionVisibility,
   } from '../extensions/extension-visibility';
   import { ExtensionSwitch } from '../extensions/extension-switch';
+  import { ExtensionUploads } from '../extensions/extension-uploads';
   import { describeExtensionFault } from '../extensions/fault';
   import { RequestList } from '../extensions/request-list';
   import { listRequests } from '../extensions/requests';
@@ -110,6 +111,9 @@
   );
   const options = $derived(row?.instance?.module?.options ?? []);
   const askedPorts = $derived(row?.instance?.module?.asked?.listen ?? []);
+  // The routes whose body is written to the module's folder, with the limit
+  // the operator approved (ADR-20261120-xys rule 5).
+  const stagedRoutes = $derived(row?.instance?.staged_routes ?? []);
   // The modules it depends on and the installed ones that require it
   // (ADR-20261027-e6k rule 29).
   const dependencies = $derived(dependenciesOfInstance(row?.instance));
@@ -132,6 +136,15 @@
             id: 'ports',
             label: t('app.settings.extensions.tab.ports'),
             panel: portsPanel,
+          },
+        ]
+      : []),
+    ...(stagedRoutes.length > 0
+      ? [
+          {
+            id: 'uploads',
+            label: t('app.settings.extensions.tab.uploads'),
+            panel: uploadsPanel,
           },
         ]
       : []),
@@ -411,6 +424,27 @@
         />
       </div>
     </SettingsPane>
+  {/if}
+{/snippet}
+
+{#snippet uploadsPanel()}
+  {#if row?.instance}
+    {@const instance = row.instance}
+    <ExtensionUploads
+      routes={stagedRoutes}
+      asked={instance.module?.asked?.staged_routes ?? []}
+      locked={lockedReason}
+      saving={catalogue.writing !== undefined}
+      fault={writeFor === 'uploads' ? catalogue.writeError : undefined}
+      conflict={writeFor === 'uploads' && catalogue.writeConflict}
+      onsave={(next: { method: string; path: string; max_mib: number }[]) =>
+        catalogue
+          .writeInstance(instance, { staged_routes: next })
+          .then(async (written) => {
+            if (written) await ctx.modules.load();
+            return written;
+          })}
+    />
   {/if}
 {/snippet}
 

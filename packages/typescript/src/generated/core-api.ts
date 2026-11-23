@@ -6131,6 +6131,8 @@ export interface components {
             platforms?: string[] | null;
             /** @description Whether the release runs a process of its own. False for a UI-only module, which has no memory budget. */
             process: boolean;
+            /** @description The routes the release's manifest asks to answer without a signed-in caller, each a method and a path under its mount. */
+            public_routes?: string[] | null;
             /**
              * Format: int64
              * @description The room the release's manifest asks for its records, in MiB. Absent is the default room.
@@ -6144,6 +6146,8 @@ export interface components {
             sha256?: string;
             /** @description Where that release's bytes are, which an install passes back as from. */
             source: string;
+            /** @description The routes whose request body the release's manifest asks the server to write into its data directory, each with the largest body it asks for. */
+            staged_routes?: components["schemas"]["ModuleStagedRoute"][] | null;
             /** @description The modules the release works better with, each with the reason. A suggestion installs nothing. */
             suggests?: components["schemas"]["ResourceRequirement"][] | null;
             /** @description The name a person reads, where the row has one beside the manifest's short name. */
@@ -6267,6 +6271,8 @@ export interface components {
             platforms?: string[] | null;
             /** @description Whether the release runs a process of its own. False for a UI-only module, which has no memory budget. */
             process: boolean;
+            /** @description The routes the release's manifest asks to answer without a signed-in caller, each a method and a path under its mount. */
+            public_routes?: string[] | null;
             /**
              * Format: int64
              * @description The room the release's manifest asks for its records, in MiB. Absent is the default room.
@@ -6282,6 +6288,8 @@ export interface components {
             sha256?: string;
             /** @description Where that release's bytes are, which an install passes back as from. */
             source: string;
+            /** @description The routes whose request body the release's manifest asks the server to write into its data directory, each with the largest body it asks for. */
+            staged_routes?: components["schemas"]["ModuleStagedRoute"][] | null;
             /** @description The modules the release works better with, each with the reason. A suggestion installs nothing. */
             suggests?: components["schemas"]["ResourceRequirement"][] | null;
             /** @description The name a person reads, where the row has one beside the manifest's short name. */
@@ -6402,11 +6410,33 @@ export interface components {
             memory_mib?: number;
             /** @description The actions the module takes as itself. */
             permissions?: string[] | null;
+            /** @description The routes the module answers without a signed-in caller, each a method and a path under its mount, such as POST /hooks/announce/. */
+            public_routes?: string[] | null;
             /**
              * Format: int64
              * @description The room the module asks for its records, in MiB. Zero is the default room.
              */
             records_mib?: number;
+            /** @description The routes whose request body the server writes into the module's data directory, each with the largest body the module asks for. */
+            staged_routes?: components["schemas"]["ModuleStagedRoute"][] | null;
+        };
+        ModuleStagedRoute: {
+            /**
+             * Format: int64
+             * @description The largest request body on the route, in MiB. A larger body is refused with BODY_TOO_LARGE.
+             * @example 1024
+             */
+            max_mib: number;
+            /**
+             * @description The HTTP method of the route.
+             * @example PUT
+             */
+            method: string;
+            /**
+             * @description The path of the route under the module's mount, where a segment written {name} matches any one segment.
+             * @example /files/{name}
+             */
+            path: string;
         };
         ModuleStateBody: {
             /** @description The document to store. */
@@ -7216,6 +7246,8 @@ export interface components {
              * @enum {string}
              */
             source: "file" | "overlay";
+            /** @description For a service module, each route whose request body the server writes into the module's data directory, with the largest body it takes, from 1 to 4096 MiB. The operator approves each route at install, and a write may change only the limit of a route listed here: a route it does not list keeps its limit, and a route the install did not approve is refused. Changing a limit restarts the module. */
+            staged_routes?: components["schemas"]["ModuleStagedRoute"][] | null;
             /** @description What the supervisor has observed of this instance, written by the server and ignored on a write. */
             status: components["schemas"]["ResourceStatus"];
             /** @description When the host switches a service module off because it keeps failing. A key left out follows the server's core.modules_switch_off. Only a service module takes it. The write replaces the whole spec, so a client that leaves it out returns the module to the server's setting. */
@@ -7520,6 +7552,8 @@ export interface components {
             runtime?: string;
             /** @description Read-only. Accepted so a read can be sent back, and ignored. */
             source?: string;
+            /** @description For a service module, each route whose request body the server writes into the module's data directory, with the largest body it takes, from 1 to 4096 MiB. The operator approves each route at install, and a write may change only the limit of a route listed here: a route it does not list keeps its limit, and a route the install did not approve is refused. Changing a limit restarts the module. */
+            staged_routes?: components["schemas"]["ModuleStagedRoute"][] | null;
             /** @description Read-only. Accepted so a read can be sent back, and ignored. */
             status?: components["schemas"]["ResourceStatus"];
             /** @description When the host switches a service module off because it keeps failing. A key left out follows the server's core.modules_switch_off. Only a service module takes it. The write replaces the whole spec, so a client that leaves it out returns the module to the server's setting. */

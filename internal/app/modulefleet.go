@@ -422,7 +422,7 @@ func (f moduleFleet) Print(
 				deviceapi.ErrDenied, f.standing.principal, deviceapi.ModuleDataStorage)
 		}
 
-		ctx = withModuleData(ctx, f.data)
+		ctx = withModuleData(ctx, f.data, params.DeleteSource)
 	}
 
 	result, err := f.fleet.StartPrint(ctx, who, params.ID, httpapi.DevicePrint{

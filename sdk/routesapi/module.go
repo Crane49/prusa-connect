@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -29,15 +30,26 @@ const MaxModuleBody = 1 << 20
 // Request is one HTTP request as a module receives it.
 //
 // Path is relative to the mount: a module writes /spools and is reached at
-// /api/v1/modules/<namespace>/spools. It never includes the mount.
+// /api/v1/modules/<namespace>/spools. It never includes the mount. It is
+// decoded, as net/http's URL.Path is, and HTTP sets it on the request as it
+// is, without parsing it again: the host matched its routes against this exact
+// path.
 //
 // Principal is who the host authorized. The host sets it, not the caller.
+// It is empty on a route the manifest lists under routes.public.
+//
+// BodyFile is set on a route the manifest lists under routes.staged, and Body
+// is then empty. It is the path of the file holding the body, relative to the
+// module's data directory, such as staged/MZXW6YTBOI4DQMZTGQ2TMNZYHE. The host
+// deletes the file once the module answers, so a module that keeps the body
+// moves the file first.
 type Request struct {
 	Method    string              `json:"method"`
 	Path      string              `json:"path"`
 	Query     string              `json:"query,omitempty"`
 	Headers   map[string][]string `json:"headers,omitempty"`
 	Body      []byte              `json:"body,omitempty"`
+	BodyFile  string              `json:"body_file,omitempty"`
 	Principal string              `json:"principal"`
 }
 
@@ -81,22 +93,29 @@ func Serve(handler http.Handler) wirerpc.Handler {
 }
 
 // HTTP renders the request as an *http.Request, for a module that does not
-// use Serve.
+// use Serve. BodyFileOf reads BodyFile back off the request it returns.
 func (r Request) HTTP(ctx context.Context) (*http.Request, error) {
 	if len(r.Body) > MaxModuleBody {
 		return nil, fmt.Errorf("routesapi: the body is %d bytes and the limit is %d",
 			len(r.Body), MaxModuleBody)
 	}
 
-	target := r.Path
-	if r.Query != "" {
-		target += "?" + r.Query
+	if r.BodyFile != "" && !filepath.IsLocal(filepath.FromSlash(r.BodyFile)) {
+		return nil, fmt.Errorf("routesapi: the body file %q is outside the data directory", r.BodyFile)
 	}
 
-	inner, err := http.NewRequestWithContext(ctx, r.Method, target, strings.NewReader(string(r.Body)))
+	inner, err := http.NewRequestWithContext(ctx, r.Method, "/", strings.NewReader(string(r.Body)))
 	if err != nil {
 		return nil, fmt.Errorf("routesapi: build the request: %w", err)
 	}
+
+	// The path and the query are set as they came and not parsed again. The
+	// host matched its routes against this exact path, so a parse that read a
+	// ? or a # in it as the start of a query or a fragment would hand the
+	// handler a route the host never authorized.
+	inner.URL.Path = r.Path
+	inner.URL.RawPath = ""
+	inner.URL.RawQuery = r.Query
 
 	for name, values := range r.Headers {
 		if forwardable(name) {
@@ -106,7 +125,30 @@ func (r Request) HTTP(ctx context.Context) (*http.Request, error) {
 
 	inner.ContentLength = int64(len(r.Body))
 
-	return inner.WithContext(context.WithValue(inner.Context(), principalKey{}, r.Principal)), nil
+	held := context.WithValue(inner.Context(), principalKey{}, r.Principal)
+	if r.BodyFile != "" {
+		held = context.WithValue(held, bodyFileKey{}, r.BodyFile)
+	}
+
+	return inner.WithContext(held), nil
+}
+
+// bodyFileKey is the context key BodyFile rides under.
+type bodyFileKey struct{}
+
+// BodyFileOf returns the file the host wrote the request body into, relative
+// to the module's data directory, and empty for a request whose body is the
+// request's own. The module opens it as
+// filepath.Join(dataDir, filepath.FromSlash(BodyFileOf(r))), where dataDir is
+// the grants.data that wirerpc.ConfigureGranted reads.
+func BodyFileOf(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+
+	file, _ := r.Context().Value(bodyFileKey{}).(string)
+
+	return file
 }
 
 // principalKey is the context key of the principal the host authorized.

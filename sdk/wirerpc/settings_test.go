@@ -217,3 +217,24 @@ func TestAModuleGrantedNothingReadsNoGrants(t *testing.T) {
 		t.Errorf("grants = %+v, want none", grants)
 	}
 }
+
+// TestAStagedGrantIsReadByTheRouteTheManifestWrote: the module looks its
+// limit up by the method and the path pattern of its manifest, and a route
+// the operator did not approve has none (ADR-20261120-xys).
+func TestAStagedGrantIsReadByTheRouteTheManifestWrote(t *testing.T) {
+	t.Parallel()
+
+	grants, err := wirerpc.ReadGrants(json.RawMessage(`{"config":{},"grants":{"data":"/srv/m",` +
+		`"staged":[{"method":"PUT","path":"/files/{name}","max_mib":2048}]}}`))
+	if err != nil {
+		t.Fatalf("read the grants: %v", err)
+	}
+
+	if got, ok := grants.StagedMiB("PUT", "/files/{name}"); !ok || got != 2048 {
+		t.Errorf("StagedMiB(PUT /files/{name}) = %d, %t, want 2048, true", got, ok)
+	}
+
+	if got, ok := grants.StagedMiB("POST", "/files/{name}"); ok {
+		t.Errorf("StagedMiB(POST /files/{name}) = %d, true, want no grant", got)
+	}
+}

@@ -21,9 +21,20 @@ import (
 func Call[T, R any](
 	ctx context.Context, i *Instance[T], op string, fn func(context.Context, T) (R, error),
 ) (R, error) {
+	return CallWithin(ctx, i, op, 0, fn)
+}
+
+// CallWithin is Call with a budget of its own in place of the policy's
+// CallTimeout, for a call whose work grows with what it was handed, such as a
+// request whose body is a file of a gigabyte. A budget shorter than
+// CallTimeout is CallTimeout, so no caller can make a call tighter this way.
+func CallWithin[T, R any](
+	ctx context.Context, i *Instance[T], op string, budget time.Duration,
+	fn func(context.Context, T) (R, error),
+) (R, error) {
 	var out R
 
-	err := CallVoid(ctx, i, op, func(callCtx context.Context, target T) error {
+	err := callVoidWithin(ctx, i, op, budget, func(callCtx context.Context, target T) error {
 		value, callErr := fn(callCtx, target)
 		if callErr != nil {
 			return callErr
@@ -40,12 +51,19 @@ func Call[T, R any](
 // CallVoid runs one operation with no result. It exists because R cannot be
 // inferred from nothing, and an error-only contract method is the common case.
 func CallVoid[T any](ctx context.Context, i *Instance[T], op string, fn func(context.Context, T) error) error {
+	return callVoidWithin(ctx, i, op, 0, fn)
+}
+
+// callVoidWithin is CallVoid under the longer of budget and CallTimeout.
+func callVoidWithin[T any](
+	ctx context.Context, i *Instance[T], op string, budget time.Duration, fn func(context.Context, T) error,
+) error {
 	lv, err := i.acquire()
 	if err != nil {
 		return err
 	}
 
-	sp, callCtx, err := i.begin(ctx, lv, op, i.Policy().CallTimeout)
+	sp, callCtx, err := i.begin(ctx, lv, op, max(budget, i.Policy().CallTimeout))
 	if err != nil {
 		return err
 	}
@@ -207,6 +225,9 @@ type span[T any] struct {
 	// stream says the span also holds a slot of live.streams.
 	stream  bool
 	started time.Time
+	// budget is the deadline the host imposed, as a duration, for the error
+	// that names it.
+	budget time.Duration
 	// hostDeadline is when the budget the host imposed expires, and zero when
 	// it imposed none. Comparing against it tells the host's timeout from the
 	// caller's, without keeping the caller's context alive to ask it.
@@ -271,6 +292,7 @@ func (i *Instance[T]) begin(
 		cancel:       cancel,
 		granted:      granted,
 		started:      time.Now(),
+		budget:       budget,
 		hostDeadline: deadline,
 	}, callCtx, nil
 }
@@ -318,7 +340,7 @@ func (sp *span[T]) finish(err error) error {
 
 	if sp.timedOut(err) {
 		sp.inst.hangEvidence.Store(time.Now().UnixNano())
-		err = sp.inst.timedOut(sp.op, err)
+		err = sp.inst.timedOut(sp.op, sp.budget, err)
 	}
 
 	sp.cancel()
@@ -396,9 +418,7 @@ func deadlineFor(
 
 // timedOut names the budget the host imposed, so an operator reading the error
 // knows whose deadline expired.
-func (i *Instance[T]) timedOut(op string, cause error) error {
-	budget := i.Policy().CallTimeout
-
+func (i *Instance[T]) timedOut(op string, budget time.Duration, cause error) error {
 	return callTimeout.New(fmt.Sprintf("%s timed out in %s after %s", i.instanceRef, op, budget)).
 		Wrap(cause).
 		With(

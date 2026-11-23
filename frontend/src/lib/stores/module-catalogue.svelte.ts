@@ -278,6 +278,8 @@ export interface InstanceChange {
   memory_mib?: number;
   /** The operator's switch-off; null returns to the server default. */
   switch_off?: { failures: number; window_seconds: number } | null;
+  /** The largest body of each staged route the install approved, in MiB. */
+  staged_routes?: { method: string; path: string; max_mib: number }[];
 }
 
 export class ModuleCatalogue {
@@ -317,7 +319,7 @@ export class ModuleCatalogue {
   #writeConflict = $state(false);
   #writeModule = $state<string | undefined>(undefined);
   #writeFor = $state<
-    'switch' | 'settings' | 'visibility' | 'memory' | undefined
+    'switch' | 'settings' | 'visibility' | 'memory' | 'uploads' | undefined
   >(undefined);
   #plans = $state.raw<Readonly<Record<string, InstallPlan>>>({});
   // The plan reads in flight, so a second caller waits for the same answer
@@ -462,7 +464,8 @@ export class ModuleCatalogue {
   }
 
   /** What the last write changed: the module's switch, or its settings. */
-  get writeFor(): 'switch' | 'settings' | 'visibility' | 'memory' | undefined {
+  get writeFor():
+    'switch' | 'settings' | 'visibility' | 'memory' | 'uploads' | undefined {
     return this.#writeFor;
   }
 
@@ -922,6 +925,7 @@ export class ModuleCatalogue {
     this.#writeModule = this.#writing;
     if (change.hidden_contributions !== undefined)
       this.#writeFor = 'visibility';
+    else if (change.staged_routes !== undefined) this.#writeFor = 'uploads';
     else if (
       change.on_over_memory !== undefined ||
       change.memory_mib !== undefined ||
@@ -954,6 +958,11 @@ export class ModuleCatalogue {
           on_over_memory:
             change.on_over_memory ?? instance.on_over_memory ?? 'stop',
           ...(switchOff === undefined ? {} : { switch_off: switchOff }),
+          // A route left out keeps its limit, so a write of another field
+          // sends none.
+          ...(change.staged_routes === undefined
+            ? {}
+            : { staged_routes: change.staged_routes }),
         },
       });
 
@@ -972,8 +981,14 @@ export class ModuleCatalogue {
       return false;
     } finally {
       if (resets === this.#resets) {
-        this.#writing = undefined;
-        await Promise.all([this.#changed(), this.readMemory()]);
+        // The write stays open until the listing is read again. A second
+        // save sooner would send the version from before this one, and the
+        // server would refuse the person's own change as someone else's.
+        try {
+          await Promise.all([this.#changed(), this.readMemory()]);
+        } finally {
+          if (resets === this.#resets) this.#writing = undefined;
+        }
       }
     }
   }

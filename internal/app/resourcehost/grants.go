@@ -10,6 +10,7 @@ import (
 
 	"github.com/prusa3d/prusa-connect/internal/kernel/ref"
 	"github.com/prusa3d/prusa-connect/sdk/fault"
+	"github.com/prusa3d/prusa-connect/sdk/manifest"
 	"github.com/prusa3d/prusa-connect/sdk/wirerpc"
 )
 
@@ -80,6 +81,9 @@ func grantsOf(dataRoot string, instance ref.Ref, spec *serviceSpec) (*wirerpc.Gr
 
 	if spec.service.Data {
 		grants.Data = dir
+		// The module learns the routes the host stages, and not a route the
+		// declaration also names public, whose body goes on the wire.
+		grants.Staged = stagedGrantsOf(stagedApart(spec.service.PublicRoutes, spec.service.StagedRoutes))
 	}
 
 	if sqlite {
@@ -89,6 +93,18 @@ func grantsOf(dataRoot string, instance ref.Ref, spec *serviceSpec) (*wirerpc.Gr
 	}
 
 	return grants, nil
+}
+
+// stagedGrantsOf is each staged route the operator approved, in the shape
+// plugin.configure carries. It is sent only with a data directory, because
+// the host writes a staged body nowhere else (ADR-20261120-xys rule 6).
+func stagedGrantsOf(routes []manifest.StagedRoute) []wirerpc.StagedGrant {
+	var out []wirerpc.StagedGrant
+	for _, route := range routes {
+		out = append(out, wirerpc.StagedGrant{Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB})
+	}
+
+	return out
 }
 
 // sqliteDatabaseFile is the name of a module's SQLite database in its data

@@ -80,6 +80,10 @@ func (h heldFile) Write(context.Context, storageapi.WriteParams, io.Reader) (sto
 	return storageapi.Written{}, storageapi.ErrDenied
 }
 
+func (h heldFile) Move(context.Context, storageapi.MoveParams) (storageapi.Written, error) {
+	return storageapi.Written{}, storageapi.ErrDenied
+}
+
 // List refuses: a held file is one file and no folder.
 func (h heldFile) List(context.Context, storageapi.ListParams) (storageapi.Listing, error) {
 	return storageapi.Listing{}, storageapi.ErrNoFile

@@ -900,7 +900,7 @@ func middlewareStack(cfg Config) []func(http.Handler) http.Handler {
 		// this origin took time over and answered 500 to.
 		servedMiddleware(cfg.Served),
 		recoverMiddleware(),
-		bodyLimitMiddleware(cfg.MaxBodyBytes, cfg.MaxUploadBytes),
+		bodyLimitMiddleware(cfg.MaxBodyBytes, cfg.MaxUploadBytes, cfg.Modules),
 	}
 }
 

@@ -331,6 +331,7 @@ resources:
 | `service.check_absent_people` | whether this instance may ask about a person it is not serving. See [asking about a person who is away](#asking-about-a-person-who-is-away) |
 | `service.list_people` | whether this instance may list the people this server holds. See [listing the people](#listing-the-people) |
 | `service.calls` | the namespaces of the other modules whose routes this instance may call. See [calling another module](#calling-another-module) |
+| `service.public_routes` | the routes anybody may call without signing in, such as `POST /hooks/announce/`. See [a route anybody may call](#a-route-anybody-may-call) |
 | `service.records_mib` | the room this instance's records may take, from 1 to 1024 MiB. Absent means 8 MiB. See [more room for records](#more-room-for-records) |
 | `service.listen` | the ports this instance may listen on, by name, as `udp/<port>` or `tcp/<port>`. See [ports](#ports-and-a-data-directory) |
 | `service.data` | whether this instance gets a writable directory of its own |
@@ -1896,6 +1897,92 @@ starts when the operator approved none of its calls, and each call answers
 
 A `GET` needs `view_resource` on the instance and everything else needs `operate_resource`, decided by the same graph as every other path under `/api/v1`. A caller the graph gives nothing is refused with `core.auth/ACCESS_DENIED` before the module runs. On a fresh server the one subject is administrator of `org:local` and holds both.
 
+### A route anybody may call
+
+Some requests come before a person has a credential, such as a device that
+announces itself before it is paired. A module lists such routes under
+`routes.public` in its manifest, each with a method and a path inside its
+mount:
+
+```yaml
+routes:
+  public:
+    - method: POST
+      path: /hooks/announce/
+    - method: GET
+      path: /devices/{serial}/
+```
+
+A segment written `{name}` matches any one segment. Every other segment
+matches only itself, and a trailing slash counts. On such a route the server
+does not ask who is calling and checks no permission. `routesapi.PrincipalOf`
+answers an empty string, even when the caller is signed in. The server still
+refuses a path with a `.` or `..` segment, passes only the usual headers, and
+holds the body to 1 MiB.
+
+The operator approves each route at install. Without `-approve` the install
+lists it as `public POST /hooks/announce/` among the requests, and the route
+needs a signed-in caller like any other. An approved install writes it to
+`service.public_routes`, and the operator may take one away there. Answer
+nothing on a public route that a person owns. The rules are
+[ADR-20261120-xys](../../../decisions/20261120-xys-a-module-route-may-take-no-caller-or-a-large-body-written.md).
+
+### A request body larger than 1 MiB
+
+A module that takes a file, such as G-code, lists the route under
+`routes.staged` with the largest body it asks for, from 1 to 4096 MiB. A
+staged route needs `needs.data`:
+
+```yaml
+needs:
+  data: true
+routes:
+  staged:
+    - method: PUT
+      path: /files/{name}
+      max_mib: 1024
+```
+
+Each staged route is a request the operator approves, like a public route.
+An install without `-approve` names it `upload PUT /files/{name} up to 1024 MiB`
+and stages nothing, so the body comes on the request, held to 1 MiB. An approved install writes the route and its limit to
+`service.staged_routes`. The operator may change the limit later, from 1 to
+4096 MiB, on the extension's Uploads tab or with `staged_routes` on
+`PUT /api/v1/resources/{kind}/{name}`. A changed limit restarts the module.
+
+The module reads the limit it was granted from `grants.Staged`, and
+`grants.StagedMiB("PUT", "/files/{name}")` answers it for one route, written
+as the manifest writes it. A module that tells a client the largest file it
+takes reads it there and not from a setting of its own. A route the operator
+did not approve has no limit there.
+
+The server writes the body into `staged/` of the module's data directory
+under a random name, and then calls the module. `routesapi.BodyFileOf(r)`
+answers the file's path relative to the data directory, such as
+`staged/MZXW6YTBOI4DQMZTGQ2TMNZYHE`, and the body on the request is empty.
+Open it with `filepath.Join(dataDir, filepath.FromSlash(routesapi.BodyFileOf(r)))`,
+where `dataDir` is `grants.Data` from `wirerpc.ConfigureGranted`. The server
+deletes the file when the module answers, so move it first to keep it. The
+module has 30 seconds and one second for each MiB of the route's limit to
+answer, as long as the server waits for the body. A
+body over the limit is refused with `BODY_TOO_LARGE` before the module is
+called, and no file is left. A body whose `Content-Length` is over the limit
+is refused before the server reads any of it. An instance the operator granted
+no data directory gets the body on the request, held to 1 MiB.
+
+The server holds at most 4 staged bodies of one module at once, from the
+first byte until the module answers. One more is refused with
+`MODULE_UPLOADS_BUSY`, status 503 and `Retry-After`. A body the disk of the
+data directory has no room for, with 64 MiB to spare, is refused with
+`MODULE_STORAGE_FULL`, status 507, before any of it is read. A body that
+states no length needs room for the route's whole limit. A file the module
+keeps stays until the module removes it, so remove each one once it served
+its purpose. Two calls hand the file to the server without reading it again.
+Move it into `print/` and print it with `deviceapi.PrintParams.DeleteSource`,
+and the server deletes it once the print has settled. Or move it into
+`print/` and call `storageapi.Client.Move`, and the server puts it into a
+storage and deletes it from `print/` (ADR-20261123-vvb).
+
 ## Watch it fail
 
 A guide that only shows success proves little. Change one digit of the recorded checksum and restart:
@@ -1922,6 +2009,7 @@ The digest proves the file is the one that was installed. It says nothing about 
 | limit | value |
 | --- | --- |
 | one request or response body through the mount | 1 MiB |
+| one request body on an approved staged route | the limit the operator approved, at most 4096 MiB |
 | one record key | 150 bytes |
 | one record value | 64 KiB |
 | everything one namespace holds | 8 MiB, or what the operator granted |

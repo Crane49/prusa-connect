@@ -48,8 +48,8 @@ func recordsGranted(mib int) string {
 // had no graph to write into, is recorded in the ceiling with no grant behind
 // it, so the module cannot use it and it is withheld.
 //
-// check_absent_people, list_people and the events are given by the
-// declaration itself, which an approved install writes whatever happens to
+// check_absent_people, list_people, the routes and the events are given by
+// the declaration itself, which an approved install writes whatever happens to
 // the grants.
 func approvedOf(declared manifest.Manifest, namespace string, written []authz.Action) ([]string, []string) {
 	var given, withheld []string
@@ -78,6 +78,14 @@ func approvedOf(declared manifest.Manifest, namespace string, written []authz.Ac
 
 	for _, namespace := range declared.Calls {
 		given = append(given, callRequest(namespace))
+	}
+
+	for _, route := range declared.Routes.Public {
+		given = append(given, publicRequest(route.String()))
+	}
+
+	for _, route := range install.StagedRoutesOf(declared.Routes.Staged) {
+		given = append(given, stagedRequest(route))
 	}
 
 	if declared.RecordsMiB > 0 {

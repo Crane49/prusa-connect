@@ -449,6 +449,25 @@ func approvals(m manifest.Manifest) []string {
 		lines = append(lines, "calls to the routes of "+codeList(m.Calls))
 	}
 
+	if len(m.Routes.Public) > 0 {
+		public := make([]string, 0, len(m.Routes.Public))
+		for _, route := range m.Routes.Public {
+			public = append(public, route.String())
+		}
+
+		lines = append(lines, "routes anybody may call without signing in: "+codeList(public))
+	}
+
+	if len(m.Routes.Staged) > 0 {
+		staged := make([]string, 0, len(m.Routes.Staged))
+		for _, route := range m.Routes.Staged {
+			staged = append(staged, fmt.Sprintf("%s up to %d MiB", route.Route, route.MaxMiB))
+		}
+
+		lines = append(lines, "routes whose request body the server writes into its data directory, "+
+			"with the largest body each asks for: "+codeList(staged))
+	}
+
 	return lines
 }
 

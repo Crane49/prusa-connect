@@ -54,6 +54,8 @@ export type ErrorCode =
   | "core.internal/APP_FILE_BUSY"
   | "core.internal/LINK_NOT_ANSWERING"
   | "core.internal/MODULE_INSTALL_FAILED"
+  | "core.internal/MODULE_STORAGE_FULL"
+  | "core.internal/MODULE_UPLOADS_BUSY"
   | "core.internal/RESOURCE_BREAKER_OPEN"
   | "core.internal/RESOURCE_DEPENDENCY_CYCLE"
   | "core.internal/RESOURCE_DEPENDENCY_MISSING"
@@ -249,6 +251,8 @@ export const errorCodes: Readonly<Record<ErrorCode, ErrorCodeEntry>> = {
   "core.internal/APP_FILE_BUSY": { status: 503, retryable: true, params: [], summary: "The server is decompressing files of the web app for as many other clients as it allows", action: "Wait for the number of seconds in Retry-After and ask again, or send Accept-Encoding: gzip to get the file at once. A browser always sends it, so a browser never gets this answer." },
   "core.internal/LINK_NOT_ANSWERING": { status: 503, retryable: true, params: ["resource", "reason"], summary: "The link did not answer this request inside the budget, or answered something this server will not read", action: "Read the instance at /api/v1/resources to see where it stands, and read its log for what the link said. A link that runs as a module is restarted by switching the instance off and on again." },
   "core.internal/MODULE_INSTALL_FAILED": { status: 500, retryable: false, params: ["source"], summary: "This server could not write the release into its modules directory", action: "Check that core.modules names a directory this server can write, such as one on a volume rather than beside a read-only configuration file, then install again." },
+  "core.internal/MODULE_STORAGE_FULL": { status: 507, retryable: true, params: [], summary: "The disk that holds the module's data has no room for the request body", action: "Send a smaller body, or ask the operator to free space on the server's disk and then send it again." },
+  "core.internal/MODULE_UPLOADS_BUSY": { status: 503, retryable: true, params: [], summary: "The module is receiving as many large bodies at once as the server allows it", action: "Wait for the number of seconds in Retry-After and send the body again." },
   "core.internal/RESOURCE_BREAKER_OPEN": { status: 503, retryable: true, params: ["resource", "op"], summary: "The resource is failing and its circuit breaker is open", action: "Retry after the breaker's cooldown, and check the resource for the underlying failure." },
   "core.internal/RESOURCE_DEPENDENCY_CYCLE": { status: 500, retryable: false, params: ["resource", "cycle"], summary: "The instance requires a contract whose provider requires it back, so nothing in the ring could start", action: "Remove one requirement in the ring named here, or take one of its instances out of the configuration." },
   "core.internal/RESOURCE_DEPENDENCY_MISSING": { status: 503, retryable: true, params: ["resource", "requires"], summary: "The module requires a contract that no serving module provides, so it was not started", action: "Install and switch on a module that provides the contract named here, or start the one that does. This instance starts by itself once one is serving." },

@@ -231,12 +231,12 @@ func grantWorkFor(
 	// An approved install records what the module may do as itself, and a
 	// permission recorded with no grant behind it still bounds what the module
 	// asks. checks lets it ask about an action it does not take,
-	// check_absent_people lets it ask about any person, and list_people lets it
-	// list them. All of them are administering the organization, so all need
+	// check_absent_people lets it ask about any person, list_people lets it
+	// list them, and a public route lets anybody reach it. All of them are administering the organization, so all need
 	// the same standing a grant needs, even when no tuple is planned.
 	ceiling := install.request.approve &&
 		(len(asking.Permissions) > 0 || len(asking.Checks) > 0 || asking.CheckAbsentPeople || asking.ListPeople ||
-			len(asking.Calls) > 0)
+			len(asking.Calls) > 0 || len(asking.Routes.Public) > 0)
 
 	if install.request.approve {
 		plan, err := planModuleGrants(instance, asking.Permissions)

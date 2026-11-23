@@ -295,6 +295,9 @@ type Files interface {
 	// bytes and fails when the stream had fewer or more. Publish only when
 	// body ends without an error.
 	Write(ctx context.Context, params WriteParams, body io.Reader) (Written, error)
+	// Move publishes a file of the module's print folder under params.Path
+	// and then deletes it from the folder.
+	Move(ctx context.Context, params MoveParams) (Written, error)
 }
 
 // Caller is the part of a wirerpc session this contract needs.
@@ -462,6 +465,7 @@ func Handlers(files Files) wirerpc.Methods {
 		MethodList:  handle(MethodList, files.List),
 		MethodFetch: fetchHandler(files),
 		MethodWrite: writeHandler(files),
+		MethodMove:  handle(MethodMove, files.Move),
 	}
 }
 

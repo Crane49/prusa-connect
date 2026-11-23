@@ -159,9 +159,11 @@ sequenceDiagram
 ```
 
 1. `moduleRequestOf` in `internal/app/resourcehost/modules.go` builds a
-   `routesapi.Request`. The body is at most `routesapi.MaxModuleBody`, and
-   `Principal` is the person the server authenticated. The path has no mount
-   prefix. `moduleHandler.ServeHTTP` sends it through `supervisor.Call`, which
+   `routesapi.Request`. The body is at most `routesapi.MaxModuleBody`. On a
+   staged route the host writes the body to a file in the module's data
+   folder first, and `BodyFile` names it. `Principal` is the person the
+   server authenticated, and empty on a public route (ADR-20261120-xys). The
+   path has no mount prefix. `moduleHandler.ServeHTTP` sends it through `supervisor.Call`, which
    is on [the extension host](the-extension-host.md).
 2. `Conn.Call` in `sdk/wirerpc/conn.go` opens a stream. The host uses odd
    stream numbers and the module even ones, so neither asks the other first.

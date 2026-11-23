@@ -128,6 +128,11 @@ type Config struct {
 	// not served.
 	People People
 
+	// FreeSpace answers the bytes free on the filesystem that holds path. The
+	// host refuses a staged body the data directory has no room for. Nil
+	// checks no room.
+	FreeSpace func(path string) (int64, error)
+
 	// Feed binds one module instance to the event stream it may observe, as
 	// the person it is serving or as itself, on the rule Fleet states. It is
 	// the subscription half of sdk/busapi, and it is a hub subscription like
@@ -270,6 +275,12 @@ type Host struct {
 	// principal the module names in a call back to the host is checked
 	// against it.
 	flights flights
+
+	// staging counts the staged bodies each instance holds on disk now.
+	staging stagingSlots
+	// swept is each instance whose staged/ this process has emptied, under
+	// mu. It is nil until the first sweep.
+	swept map[ref.Ref]struct{}
 
 	// absent counts each instance's questions about people it is not serving.
 	absent absentBudgets

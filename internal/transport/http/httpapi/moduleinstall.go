@@ -196,19 +196,23 @@ type ModuleRemoval struct {
 
 // ModuleRequests is what a module asks the operator for: the permissions it
 // takes as itself, the events it publishes, whether it may ask about a person
-// it is not serving, the room for its records, its ports and its directory.
+// it is not serving, the routes it answers without a caller, the routes whose
+// body it reads from a file, the room for its records, its ports and its
+// directory.
 type ModuleRequests struct {
-	Permissions       []string          `json:"permissions,omitempty"         doc:"The actions the module takes as itself."`
-	Checks            []string          `json:"checks,omitempty"              doc:"The actions the module asks about for a person it serves, without taking them as itself."`
-	Events            map[string]string `json:"events,omitempty"              doc:"Each endpoint the module publishes on, against the event name after its namespace."`
-	CheckAbsentPeople bool              `json:"check_absent_people,omitempty" doc:"Whether the module may ask about a person it is not serving."`
-	ListPeople        bool              `json:"list_people,omitempty"         doc:"Whether the module may list the people this server holds, with their names."`
-	Calls             []string          `json:"calls,omitempty"               doc:"The namespaces of the other modules whose routes the module calls."`
-	RecordsMiB        int               `json:"records_mib,omitempty"         doc:"The room the module asks for its records, in MiB. Zero is the default room."                                                            minimum:"0" maximum:"1024"`
-	MemoryMiB         int               `json:"memory_mib,omitempty"          doc:"The memory budget the module recommends for its process, in MiB. Zero is no recommendation, and the server default of 128 MiB applies." minimum:"0" maximum:"8192"`
-	Listen            []ModuleListen    `json:"listen,omitempty"              doc:"The ports the module listens on for a protocol of its own. They are approved with approve_listen."`
-	Data              bool              `json:"data,omitempty"                doc:"Whether the module asks for a writable directory of its own."`
-	Database          bool              `json:"database,omitempty"            doc:"Whether the module asks for a database of its own. The operator chooses where it goes with database on the install."`
+	Permissions       []string            `json:"permissions,omitempty"         doc:"The actions the module takes as itself."`
+	Checks            []string            `json:"checks,omitempty"              doc:"The actions the module asks about for a person it serves, without taking them as itself."`
+	Events            map[string]string   `json:"events,omitempty"              doc:"Each endpoint the module publishes on, against the event name after its namespace."`
+	CheckAbsentPeople bool                `json:"check_absent_people,omitempty" doc:"Whether the module may ask about a person it is not serving."`
+	ListPeople        bool                `json:"list_people,omitempty"         doc:"Whether the module may list the people this server holds, with their names."`
+	Calls             []string            `json:"calls,omitempty"               doc:"The namespaces of the other modules whose routes the module calls."`
+	PublicRoutes      []string            `json:"public_routes,omitempty"       doc:"The routes the module answers without a signed-in caller, each a method and a path under its mount, such as POST /hooks/announce/."`
+	StagedRoutes      []ModuleStagedRoute `json:"staged_routes,omitempty"       doc:"The routes whose request body the server writes into the module's data directory, each with the largest body the module asks for."`
+	RecordsMiB        int                 `json:"records_mib,omitempty"         doc:"The room the module asks for its records, in MiB. Zero is the default room."                                                            minimum:"0" maximum:"1024"`
+	MemoryMiB         int                 `json:"memory_mib,omitempty"          doc:"The memory budget the module recommends for its process, in MiB. Zero is no recommendation, and the server default of 128 MiB applies." minimum:"0" maximum:"8192"`
+	Listen            []ModuleListen      `json:"listen,omitempty"              doc:"The ports the module listens on for a protocol of its own. They are approved with approve_listen."`
+	Data              bool                `json:"data,omitempty"                doc:"Whether the module asks for a writable directory of its own."`
+	Database          bool                `json:"database,omitempty"            doc:"Whether the module asks for a database of its own. The operator chooses where it goes with database on the install."`
 }
 
 // ModuleDatabaseChoice is where an operator puts a module's own database.
@@ -228,6 +232,14 @@ func (ModulePort) Schema(huma.Registry) *huma.Schema {
 	first, last := 1.0, 65535.0
 
 	return &huma.Schema{Type: huma.TypeInteger, Format: "int64", Minimum: &first, Maximum: &last}
+}
+
+// ModuleStagedRoute is one route whose request body the server writes into a
+// module's data directory, with the largest body it takes there.
+type ModuleStagedRoute struct {
+	Method string `json:"method"  doc:"The HTTP method of the route."                                                                           example:"PUT"`
+	Path   string `json:"path"    doc:"The path of the route under the module's mount, where a segment written {name} matches any one segment." example:"/files/{name}"`
+	MaxMiB int    `json:"max_mib" doc:"The largest request body on the route, in MiB. A larger body is refused with BODY_TOO_LARGE."            example:"1024"          minimum:"1" maximum:"4096"`
 }
 
 // ModuleListen is one port a module asks to listen on.
@@ -318,17 +330,19 @@ type ModuleOffer struct {
 	Channel          string   `json:"channel,omitempty"           doc:"The marketplace channel of the release on offer. A marketplace row offers the newest stable release, and is never a beta offered as the update of a stable install. Absent on a local row." enum:"stable,beta"`
 	// The requests below complete Permissions, so a page shows exactly what an
 	// install with approve grants and sends the same values back as expect.
-	Checks            []string          `json:"checks,omitempty"              doc:"The actions the release's manifest asks to ask about for a person, without taking them as itself."`
-	Events            map[string]string `json:"events,omitempty"              doc:"The events the release's manifest publishes: each endpoint against the event name after the namespace."`
-	CheckAbsentPeople bool              `json:"check_absent_people,omitempty" doc:"Whether the release's manifest asks to ask about a person the module is not serving."`
-	ListPeople        bool              `json:"list_people,omitempty"         doc:"Whether the release's manifest asks to list the people this server holds, with their names."`
-	Calls             []string          `json:"calls,omitempty"               doc:"The namespaces of the other modules whose routes the release's manifest asks to call."`
-	RecordsMiB        int               `json:"records_mib,omitempty"         doc:"The room the release's manifest asks for its records, in MiB. Absent is the default room."`
-	MemoryMiB         int               `json:"memory_mib,omitempty"          doc:"The memory budget the release's manifest recommends for its process, in MiB. Absent is no recommendation, and the server default of 128 MiB applies."`
-	Process           bool              `json:"process"                       doc:"Whether the release runs a process of its own. False for a UI-only module, which has no memory budget."`
-	Listen            []ModuleListen    `json:"listen,omitempty"              doc:"The ports the release's manifest asks to listen on. An install grants them only with approve_listen."`
-	Data              bool              `json:"data,omitempty"                doc:"Whether the release's manifest asks for a writable directory of its own."`
-	Database          bool              `json:"database,omitempty"            doc:"Whether the release's manifest asks for a database of its own."`
+	Checks            []string            `json:"checks,omitempty"              doc:"The actions the release's manifest asks to ask about for a person, without taking them as itself."`
+	Events            map[string]string   `json:"events,omitempty"              doc:"The events the release's manifest publishes: each endpoint against the event name after the namespace."`
+	CheckAbsentPeople bool                `json:"check_absent_people,omitempty" doc:"Whether the release's manifest asks to ask about a person the module is not serving."`
+	ListPeople        bool                `json:"list_people,omitempty"         doc:"Whether the release's manifest asks to list the people this server holds, with their names."`
+	Calls             []string            `json:"calls,omitempty"               doc:"The namespaces of the other modules whose routes the release's manifest asks to call."`
+	PublicRoutes      []string            `json:"public_routes,omitempty"       doc:"The routes the release's manifest asks to answer without a signed-in caller, each a method and a path under its mount."`
+	StagedRoutes      []ModuleStagedRoute `json:"staged_routes,omitempty"       doc:"The routes whose request body the release's manifest asks the server to write into its data directory, each with the largest body it asks for."`
+	RecordsMiB        int                 `json:"records_mib,omitempty"         doc:"The room the release's manifest asks for its records, in MiB. Absent is the default room."`
+	MemoryMiB         int                 `json:"memory_mib,omitempty"          doc:"The memory budget the release's manifest recommends for its process, in MiB. Absent is no recommendation, and the server default of 128 MiB applies."`
+	Process           bool                `json:"process"                       doc:"Whether the release runs a process of its own. False for a UI-only module, which has no memory budget."`
+	Listen            []ModuleListen      `json:"listen,omitempty"              doc:"The ports the release's manifest asks to listen on. An install grants them only with approve_listen."`
+	Data              bool                `json:"data,omitempty"                doc:"Whether the release's manifest asks for a writable directory of its own."`
+	Database          bool                `json:"database,omitempty"            doc:"Whether the release's manifest asks for a database of its own."`
 	// The modules the release depends on.
 	Requires  []ResourceRequirement `json:"requires,omitempty"  doc:"The release's require: the core constraint, the capabilities, and the modules it cannot run without, each with a constraint in Composer's grammar. An install adds the modules this server does not have; read the plan first."`
 	Suggests  []ResourceRequirement `json:"suggests,omitempty"  doc:"The modules the release works better with, each with the reason. A suggestion installs nothing."`

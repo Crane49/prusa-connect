@@ -566,6 +566,24 @@
       ]
     },
     {
+      "code": "core.internal/MODULE_STORAGE_FULL",
+      "status": 507,
+      "summary": "The disk that holds the module's data has no room for the request body",
+      "action": "Send a smaller body, or ask the operator to free space on the server's disk and then send it again.",
+      "retryable": true,
+      "redacted": false,
+      "params": []
+    },
+    {
+      "code": "core.internal/MODULE_UPLOADS_BUSY",
+      "status": 503,
+      "summary": "The module is receiving as many large bodies at once as the server allows it",
+      "action": "Wait for the number of seconds in Retry-After and send the body again.",
+      "retryable": true,
+      "redacted": false,
+      "params": []
+    },
+    {
       "code": "core.internal/RESOURCE_BREAKER_OPEN",
       "status": 503,
       "summary": "The resource is failing and its circuit breaker is open",

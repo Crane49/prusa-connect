@@ -447,5 +447,15 @@
   "app.settings.extensions.fault.requiredBy": "Other installed extensions require this one: {requires}",
   "app.settings.extensions.fault.requiredBy.action": "Remove those extensions first, or update them to releases that fit the change.",
   "app.settings.extensions.fault.planChanged": "The extensions the install adds changed since you read them. It now adds: {found}",
-  "app.settings.extensions.fault.planChanged.action": "Nothing was installed. Open the install again to read what it adds now, then approve it."
+  "app.settings.extensions.fault.planChanged.action": "Nothing was installed. Open the install again to read what it adds now, then approve it.",
+  "app.settings.extensions.uploads.title": "Largest uploads",
+  "app.settings.extensions.uploads.note": "The largest file each route of this extension takes, up to {max} MiB. The file is written to the extension's data folder, and a larger one is refused before the extension sees it. Saving restarts the extension.",
+  "app.settings.extensions.uploads.label": "Largest upload on {route}",
+  "app.settings.extensions.uploads.asked": "The extension asks for {size} MiB.",
+  "app.settings.extensions.uploads.unit": "MiB",
+  "app.settings.extensions.uploads.invalid": "A whole number of MiB from 1 to {max}",
+  "app.settings.extensions.uploads.save": "Save the limits",
+  "app.settings.extensions.request.public": "Answers {route} under its own address for anybody who can reach this server, without signing in.",
+  "app.settings.extensions.request.staged": "Takes uploads of up to {size} MiB on {route}, written to its data folder.",
+  "app.settings.extensions.tab.uploads": "Uploads"
 }

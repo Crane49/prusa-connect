@@ -514,6 +514,26 @@ This server could not write the release into its modules directory.
 - **parameters** `source`
 - **what to do** Check that core.modules names a directory this server can write, such as one on a volume rather than beside a read-only configuration file, then install again.
 
+### `core.internal/MODULE_STORAGE_FULL` {#core-internal-module-storage-full}
+
+The disk that holds the module's data has no room for the request body.
+
+- **status** `507`
+- **retryable** yes
+- **occurrence detail** shown
+- **parameters** none
+- **what to do** Send a smaller body, or ask the operator to free space on the server's disk and then send it again.
+
+### `core.internal/MODULE_UPLOADS_BUSY` {#core-internal-module-uploads-busy}
+
+The module is receiving as many large bodies at once as the server allows it.
+
+- **status** `503`
+- **retryable** yes
+- **occurrence detail** shown
+- **parameters** none
+- **what to do** Wait for the number of seconds in Retry-After and send the body again.
+
 ### `core.internal/RESOURCE_BREAKER_OPEN` {#core-internal-resource-breaker-open}
 
 The resource is failing and its circuit breaker is open.

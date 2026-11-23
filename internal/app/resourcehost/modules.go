@@ -9,6 +9,8 @@ import (
 	"log/slog"
 	"maps"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/prusa3d/prusa-connect/internal/app/config/install"
 	"github.com/prusa3d/prusa-connect/internal/app/resource"
@@ -459,12 +461,20 @@ func (h *Host) surfaceOf(instance ref.Ref, running *instance) (httpapi.ModuleSur
 		return httpapi.ModuleSurface{}, false
 	}
 
-	return httpapi.ModuleSurface{
+	surface := httpapi.ModuleSurface{
 		Instance: instance,
 		Handler:  h.handlerFor(instance, running),
 		OpenAPI:  moduleDocumentOf(running.runner),
 		Mount:    moduleMountOf(running.declaration),
-	}, true
+	}
+
+	if spec := serviceOf(running.declaration); spec != nil {
+		surface.Public = spec.service.PublicRoutes
+	}
+
+	_, surface.Staged = h.stagedOf(running.declaration)
+
+	return surface, true
 }
 
 // handlerFor is the handler under one module's namespace: its own routes, and
@@ -626,16 +636,19 @@ func (m *moduleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, err := moduleRequestOf(r)
+	request, staged, err := m.requestOf(w, r)
 	if err != nil {
-		refusal := httpfault.RequestInvalid("body", "unreadable", "the request body could not be read")
-		if errors.Is(err, errBodyTooLarge) {
-			refusal = httpfault.BodyTooLarge(routesapi.MaxModuleBody)
+		if errors.Is(err, errStagingBusy) {
+			w.Header().Set("Retry-After", strconv.Itoa(int(stagedRetryAfter.Seconds())))
 		}
 
-		httpapi.WriteProblem(w, r, refusal)
+		httpapi.WriteProblem(w, r, m.bodyFault(r, err))
 
 		return
+	}
+
+	if staged != nil {
+		defer staged.remove(m.host.cfg.Logger)
 	}
 
 	// The request is recorded for as long as the call is open. A fleet call
@@ -647,8 +660,15 @@ func (m *moduleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// supervisor.Call applies the state gate, the breaker, the bulkhead, the
 	// call deadline and the panic recovery. A module that has not reported
 	// ready is refused here and the call never leaves the host. A module that
-	// dies during a request fails only its own instance.
-	answered, err := supervisor.Call(r.Context(), supervised, string(routesapi.MethodServe),
+	// dies during a request fails only its own instance. A staged request
+	// takes the longer budget of its route, so a module reading a large file
+	// is not timed out and counted against its breaker.
+	var budget time.Duration
+	if staged != nil {
+		budget = staged.budget
+	}
+
+	answered, err := supervisor.CallWithin(r.Context(), supervised, string(routesapi.MethodServe), budget,
 		func(callCtx context.Context, target any) (routesapi.Response, error) {
 			return serveThroughChild(callCtx, target, request)
 		})
@@ -664,6 +684,94 @@ func (m *moduleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err = answered.Write(w); err != nil {
 		m.host.cfg.Logger.WarnContext(r.Context(), "writing a module's answer",
 			"resource", m.instance.String(), "error", err.Error())
+	}
+}
+
+// requestOf is the request as the wire carries it. On a staged route the body
+// is written to a file first, and the caller removes it once the module
+// answered.
+func (m *moduleHandler) requestOf(w http.ResponseWriter, r *http.Request) (routesapi.Request, *stagedBody, error) {
+	route, isStaged := m.host.stagedFor(m.instance, r.Method, r.URL.Path)
+	if !isStaged {
+		request, err := moduleRequestOf(r)
+
+		return request, nil, err
+	}
+
+	// The server's deadlines are sized for a document, and a staged body may
+	// be a gigabyte. The write deadline runs from the same start as the read
+	// one, so it moves too, past the module's own budget, or the answer could
+	// not be written after a long upload. A writer that cannot move them is a
+	// test recorder.
+	control := http.NewResponseController(w)
+	read := time.Now().Add(route.readBudget())
+	_ = control.SetReadDeadline(read)
+	_ = control.SetWriteDeadline(read.Add(route.readBudget() + stagedAnswer))
+
+	slot, free := m.host.staging.take(m.instance)
+	if !free {
+		return routesapi.Request{}, nil, errStagingBusy
+	}
+
+	reservation, err := m.host.room(r, route)
+	if err != nil {
+		slot()
+
+		return routesapi.Request{}, nil, err
+	}
+
+	// Once the body is on disk, the disk's free space shows it, so the room
+	// it was let in for is given back then and not counted twice.
+	body, err := stage(r, route)
+	reservation()
+
+	if err != nil {
+		slot()
+
+		return routesapi.Request{}, nil, err
+	}
+
+	body.release = slot
+	body.budget = route.readBudget()
+
+	request := wireRequestOf(r, nil)
+	request.BodyFile = body.file
+
+	return request, &body, nil
+}
+
+// bodyFault is the refusal of a body the host would not take. A body over a
+// staged route's limit names that limit, and any other the wire's.
+//
+// The server's body limit wraps every request in http.MaxBytesReader at the
+// same limit, so a chunked body over it fails there, as a
+// *http.MaxBytesError, before the host's own count sees the extra byte. That
+// is the same refusal.
+func (m *moduleHandler) bodyFault(r *http.Request, err error) *fault.Fault {
+	var overServerLimit *http.MaxBytesError
+
+	switch {
+	case errors.Is(err, errBodyTooLarge), errors.As(err, &overServerLimit):
+		limit := int64(routesapi.MaxModuleBody)
+		if route, isStaged := m.host.stagedFor(m.instance, r.Method, r.URL.Path); isStaged {
+			limit = route.limit
+		}
+
+		return httpfault.BodyTooLarge(limit)
+	case errors.Is(err, errStagingBusy):
+		return httpfault.ModuleUploadsBusy(stagedSlots)
+	case errors.Is(err, errStagingFull):
+		m.host.cfg.Logger.WarnContext(r.Context(), "a staged request body was refused for want of disk space",
+			"resource", m.instance.String(), "error", err.Error())
+
+		return httpfault.ModuleStorageFull()
+	case errors.Is(err, errStageWrite):
+		m.host.cfg.Logger.ErrorContext(r.Context(), "staging a request body",
+			"resource", m.instance.String(), "error", err.Error())
+
+		return httpfault.Unexpected("the request body could not be stored")
+	default:
+		return httpfault.RequestInvalid("body", "unreadable", "the request body could not be read")
 	}
 }
 
@@ -756,6 +864,11 @@ func moduleRequestOf(r *http.Request) (routesapi.Request, error) {
 		return routesapi.Request{}, err
 	}
 
+	return wireRequestOf(r, body), nil
+}
+
+// wireRequestOf is the request with the body the caller read.
+func wireRequestOf(r *http.Request, body []byte) routesapi.Request {
 	return routesapi.Request{
 		Method: r.Method,
 		Path:   r.URL.Path,
@@ -765,5 +878,5 @@ func moduleRequestOf(r *http.Request) (routesapi.Request, error) {
 		Headers:   routesapi.RequestHeaders(r.Header),
 		Body:      body,
 		Principal: httpapi.ModulePrincipalOf(r.Context()),
-	}, nil
+	}
 }

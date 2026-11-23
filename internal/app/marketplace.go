@@ -80,29 +80,31 @@ const (
 // are what the release's manifest asks for, as the marketplace reviewed it.
 // An approved install is refused when the downloaded manifest asks for more.
 type marketplaceRelease struct {
-	Version           string              `json:"version"`
-	PublishedAt       string              `json:"published_at"`
-	Channel           string              `json:"channel"`
-	Trust             string              `json:"trust"`
-	Core              string              `json:"core"`
-	Kind              string              `json:"kind"`
-	Platforms         []string            `json:"platforms"`
-	Permissions       []string            `json:"permissions"`
-	Checks            []string            `json:"checks"`
-	RecordsMiB        int                 `json:"records_mib"`
-	MemoryMiB         int                 `json:"memory_mib"`
-	Events            map[string]string   `json:"events"`
-	CheckAbsentPeople bool                `json:"check_absent_people"`
-	ListPeople        bool                `json:"list_people"`
-	Calls             []string            `json:"calls"`
-	Listen            []install.ListenAsk `json:"listen"`
-	Data              bool                `json:"data"`
-	Database          bool                `json:"database"`
-	HasUI             bool                `json:"has_ui"`
-	Size              int64               `json:"size"`
-	Sha256            string              `json:"sha256"`
-	DownloadURL       string              `json:"download_url"`
-	Changelog         string              `json:"changelog"`
+	Version           string                `json:"version"`
+	PublishedAt       string                `json:"published_at"`
+	Channel           string                `json:"channel"`
+	Trust             string                `json:"trust"`
+	Core              string                `json:"core"`
+	Kind              string                `json:"kind"`
+	Platforms         []string              `json:"platforms"`
+	Permissions       []string              `json:"permissions"`
+	Checks            []string              `json:"checks"`
+	RecordsMiB        int                   `json:"records_mib"`
+	MemoryMiB         int                   `json:"memory_mib"`
+	Events            map[string]string     `json:"events"`
+	CheckAbsentPeople bool                  `json:"check_absent_people"`
+	ListPeople        bool                  `json:"list_people"`
+	Calls             []string              `json:"calls"`
+	PublicRoutes      []string              `json:"public_routes"`
+	StagedRoutes      []install.StagedRoute `json:"staged_routes"`
+	Listen            []install.ListenAsk   `json:"listen"`
+	Data              bool                  `json:"data"`
+	Database          bool                  `json:"database"`
+	HasUI             bool                  `json:"has_ui"`
+	Size              int64                 `json:"size"`
+	Sha256            string                `json:"sha256"`
+	DownloadURL       string                `json:"download_url"`
+	Changelog         string                `json:"changelog"`
 	// The release manifest's require, suggest and conflict, in Composer's
 	// shape, as the marketplace read them.
 	Require  map[string]string `json:"require"`
@@ -206,6 +208,8 @@ func (r marketplaceRelease) asks() install.ModuleAsks {
 		CheckAbsentPeople: r.CheckAbsentPeople,
 		ListPeople:        r.ListPeople,
 		Calls:             slices.Clone(r.Calls),
+		PublicRoutes:      slices.Clone(r.PublicRoutes),
+		StagedRoutes:      slices.Clone(r.StagedRoutes),
 		RecordsMiB:        r.RecordsMiB,
 		MemoryMiB:         r.MemoryMiB,
 		Listen:            slices.Clone(r.Listen),
@@ -582,6 +586,8 @@ func (c *marketplaceCatalogue) offerOf(row marketplaceModule) (httpapi.ModuleOff
 		CheckAbsentPeople: row.Latest.CheckAbsentPeople,
 		ListPeople:        row.Latest.ListPeople,
 		Calls:             row.Latest.Calls,
+		PublicRoutes:      row.Latest.PublicRoutes,
+		StagedRoutes:      resource.StagedRoutesOf(row.Latest.StagedRoutes),
 		Listen:            resource.RequestsOf(row.Latest.asks()).Listen,
 		Data:              row.Latest.Data,
 		Database:          row.Latest.Database,

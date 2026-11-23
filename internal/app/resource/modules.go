@@ -303,6 +303,8 @@ func serviceEntryOf(service *install.Service, typeName string) *install.ServiceE
 		CheckAbsentPeople: service.CheckAbsentPeople,
 		ListPeople:        service.ListPeople,
 		Calls:             service.Calls,
+		PublicRoutes:      routeLines(service.PublicRoutes),
+		StagedRoutes:      slices.Clone(service.StagedRoutes),
 		RecordsMiB:        service.RecordsMiB,
 		MemoryMiB:         service.MemoryMiB,
 		OnOverMemory:      service.OnOverMemory,
@@ -323,6 +325,21 @@ func serviceEntryOf(service *install.Service, typeName string) *install.ServiceE
 	}
 
 	return entry
+}
+
+// routeLines writes each route as the declaration spells it, and nil for
+// none.
+func routeLines(routes []manifest.Route) []string {
+	if len(routes) == 0 {
+		return nil
+	}
+
+	out := make([]string, 0, len(routes))
+	for _, route := range routes {
+		out = append(out, route.String())
+	}
+
+	return out
 }
 
 // assetEntryOf renders a bundle as the overlay carries it, and nil for a
@@ -350,6 +367,27 @@ func listenEntryOf(granted map[string]install.ListenPort) map[string]string {
 	return out
 }
 
+// StagedRoutesOf is each staged route in the API's spelling, and nil for none.
+func StagedRoutesOf(routes []install.StagedRoute) []httpapi.ModuleStagedRoute {
+	var out []httpapi.ModuleStagedRoute
+	for _, route := range routes {
+		out = append(out, httpapi.ModuleStagedRoute{Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB})
+	}
+
+	return out
+}
+
+// stagedAsksOf is the API's spelling of staged routes read back into the one
+// the declaration records.
+func stagedAsksOf(routes []httpapi.ModuleStagedRoute) []install.StagedRoute {
+	var out []install.StagedRoute
+	for _, route := range routes {
+		out = append(out, install.StagedRoute{Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB})
+	}
+
+	return out
+}
+
 // RequestsOf converts a recorded ask to the type the API returns.
 func RequestsOf(asked install.ModuleAsks) httpapi.ModuleRequests {
 	out := httpapi.ModuleRequests{
@@ -359,6 +397,8 @@ func RequestsOf(asked install.ModuleAsks) httpapi.ModuleRequests {
 		CheckAbsentPeople: asked.CheckAbsentPeople,
 		ListPeople:        asked.ListPeople,
 		Calls:             asked.Calls,
+		PublicRoutes:      asked.PublicRoutes,
+		StagedRoutes:      StagedRoutesOf(asked.StagedRoutes),
 		RecordsMiB:        asked.RecordsMiB,
 		MemoryMiB:         asked.MemoryMiB,
 		Data:              asked.Data,
@@ -384,6 +424,8 @@ func AsksOf(requests httpapi.ModuleRequests) install.ModuleAsks {
 		CheckAbsentPeople: requests.CheckAbsentPeople,
 		ListPeople:        requests.ListPeople,
 		Calls:             requests.Calls,
+		PublicRoutes:      requests.PublicRoutes,
+		StagedRoutes:      stagedAsksOf(requests.StagedRoutes),
 		RecordsMiB:        requests.RecordsMiB,
 		MemoryMiB:         requests.MemoryMiB,
 		Data:              requests.Data,

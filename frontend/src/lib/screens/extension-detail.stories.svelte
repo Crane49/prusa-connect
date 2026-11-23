@@ -171,10 +171,31 @@
       json(200, { items: [...resources.items, spools] }),
     'GET /api/v1/modules/index': () => json(200, { items: [offer] }),
   };
+
+  // Spools as it takes a file on a staged route, with the limit the operator
+  // raised above what it asked for (ADR-20261120-xys rule 5).
+  const upload = { method: 'PUT', path: '/files/{name}', max_mib: 1024 };
+  const servedUploads = {
+    ...served,
+    'GET /api/v1/resources': () =>
+      json(200, {
+        items: [
+          ...resources.items,
+          instanceOf({
+            ...spools,
+            staged_routes: [{ ...upload, max_mib: 2048 }],
+            module: {
+              ...spools.module,
+              asked: { ...spools.module?.asked, staged_routes: [upload] },
+            },
+          }),
+        ],
+      }),
+  };
 </script>
 
 <!--
-  States the screen branches on: the first tab, the Ports, Memory, Dependencies and
+  States the screen branches on: the first tab, the Ports, Uploads, Memory, Dependencies and
   Permissions tabs
   through PATHS.extensionDetailTab, an extension that is gone, modules
   switched off, and the installed listing failed, where the page keeps its
@@ -190,6 +211,10 @@
 
 <Story name="Ports Tab">
   <AppAt path={at('ports')} overrides={served} />
+</Story>
+
+<Story name="Uploads Tab">
+  <AppAt path={at('uploads')} overrides={servedUploads} />
 </Story>
 
 <Story name="Memory Tab">

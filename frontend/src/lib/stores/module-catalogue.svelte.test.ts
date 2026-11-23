@@ -853,6 +853,34 @@ describe('a write to an installed module', () => {
     expect(changed).toHaveBeenCalledOnce();
   });
 
+  it('stays writing until the module is read again', async () => {
+    // The version the page holds comes from that read. A second save before
+    // it would send the old version and be refused with 412 as someone
+    // else's change.
+    let reloaded: () => void = () => undefined;
+    const changed = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          reloaded = resolve;
+        }),
+    );
+    const { client } = stubClient({
+      'PUT /api/v1/resources/asset/spools': json(200, spools),
+    });
+    const store = new ModuleCatalogue(client, changed);
+
+    const written = store.writeInstance(spools, { enabled: false });
+    await vi.waitFor(() => {
+      expect(changed).toHaveBeenCalledOnce();
+    });
+    expect(store.writing).toBe(spools.namespace);
+
+    reloaded();
+
+    expect(await written).toBe(true);
+    expect(store.writing).toBeUndefined();
+  });
+
   it('sends the spec it was shown with the change', async () => {
     const changed = vi.fn();
     const { client, calls } = stubClient({
@@ -932,6 +960,29 @@ describe('a write to an installed module', () => {
       'switch_off',
     );
     expect(store.writeFor).toBe('memory');
+  });
+
+  it('sends the staged limits only on a write that changes them', async () => {
+    const { client, calls } = stubClient({
+      'PUT /api/v1/resources/asset/spools': json(200, spools),
+    });
+    const store = new ModuleCatalogue(client, vi.fn());
+    const upload = { method: 'PUT', path: '/files/{name}', max_mib: 1024 };
+    const staged = { ...spools, staged_routes: [upload] };
+
+    await store.writeInstance(staged, { enabled: false });
+    expect(JSON.parse(put(calls)?.body ?? '{}')).not.toHaveProperty(
+      'staged_routes',
+    );
+
+    await store.writeInstance(staged, {
+      staged_routes: [{ ...upload, max_mib: 2048 }],
+    });
+    expect(JSON.parse(put(calls)?.body ?? '{}')).toMatchObject({
+      enabled: true,
+      staged_routes: [{ ...upload, max_mib: 2048 }],
+    });
+    expect(store.writeFor).toBe('uploads');
   });
 
   it('a write reads the memory pool again', async () => {

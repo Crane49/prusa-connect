@@ -80,6 +80,10 @@ func (s *Store) project(
 	}
 
 	withBudget(&instance, declared.Spec, s.switchOff)
+
+	if declared.Spec.Service != nil {
+		instance.StagedRoutes = StagedRoutesOf(declared.Spec.Service.StagedRoutes)
+	}
 	s.withSwitchOff(&instance, declared)
 
 	return instance

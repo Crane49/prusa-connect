@@ -84,6 +84,10 @@ type Manifest struct {
 	// data directory. It is a request like Permissions, and a port takes an
 	// approval of its own.
 	Needs Needs
+	// Routes is the routes the host serves without a caller and the routes
+	// whose body it writes to a file. A public or staged route is a request
+	// like Permissions, and the operator approves each one.
+	Routes Routes
 	// Options is the settings this module reads, each with its type, its
 	// sentence and its default. The host applies every default and writes the
 	// operator's config block over it. A key outside the list is refused.
@@ -151,7 +155,7 @@ const MaxRecordsMiB = 1024
 var manifestKeys = []string{
 	"name", "kind", "version", "license", "contract_major", "require", "suggest", "conflict",
 	"permissions", "checks", "check_absent_people", "list_people", "records_mib", "events", "calls", "needs",
-	"options", "egress",
+	"routes", "options", "egress",
 	"openapi", "platforms", "build",
 	"title", "summary", "codeowner", "issue_tracker", "lifecycle", "ui", "file_analysis", "camera_types",
 }
@@ -223,6 +227,12 @@ func FromTree(tree map[string]any) (Manifest, error) {
 	if held.FileAnalysis != nil && held.ContractMajor == 0 {
 		return Manifest{}, fmt.Errorf("%w: file_analysis is set and contract_major is not, and the core "+
 			"asks a module's process to read a file", ErrInvalid)
+	}
+
+	// A route is answered by the module's process.
+	if (len(held.Routes.Public) > 0 || len(held.Routes.Staged) > 0) && held.ContractMajor == 0 {
+		return Manifest{}, fmt.Errorf("%w: routes is set and contract_major is not, and only a module's "+
+			"process answers a route", ErrInvalid)
 	}
 
 	if err = holdDependencies(held); err != nil {
@@ -378,6 +388,10 @@ func readRequests(tree map[string]any, held *Manifest) error {
 	}
 
 	if held.Needs, err = readNeeds(tree); err != nil {
+		return err
+	}
+
+	if held.Routes, err = readRoutes(tree, held.Needs); err != nil {
 		return err
 	}
 

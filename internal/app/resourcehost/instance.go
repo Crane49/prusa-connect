@@ -236,6 +236,8 @@ func (h *Host) start(ctx context.Context, declared resource.Declaration) error {
 		return claimErr
 	}
 
+	h.sweepStaged(ctx, declared)
+
 	running := &instance{declaration: declared, generation: declared.Generation}
 	running.adopt(declared)
 

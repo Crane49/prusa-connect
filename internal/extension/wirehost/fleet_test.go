@@ -258,6 +258,10 @@ func (storageFake) List(context.Context, storageapi.ListParams) (storageapi.List
 	return storageapi.Listing{}, nil
 }
 
+func (storageFake) Move(context.Context, storageapi.MoveParams) (storageapi.Written, error) {
+	return storageapi.Written{}, storageapi.ErrDenied
+}
+
 func (f *fleetFake) Read(_ context.Context, p storageapi.ReadParams) (storageapi.Chunk, error) {
 	if err := f.note(storageapi.MethodRead, p.Principal); err != nil {
 		return storageapi.Chunk{}, fmt.Errorf("%w: %s is not a principal this host handed the module",
@@ -372,9 +376,14 @@ func serve(t *testing.T, child *wirehost.Child, principal, method, path string) 
 func serveBody(t *testing.T, child *wirehost.Child, principal, method, path string, body []byte) (int, string) {
 	t.Helper()
 
+	// A case writes its query into the path. The host sends the two apart,
+	// and the SDK does not split them again.
+	path, query, _ := strings.Cut(path, "?")
+
 	raw, err := child.Conn().Call(t.Context(), routesapi.MethodServe, routesapi.Request{
 		Method:    method,
 		Path:      path,
+		Query:     query,
 		Principal: principal,
 		Body:      body,
 	})

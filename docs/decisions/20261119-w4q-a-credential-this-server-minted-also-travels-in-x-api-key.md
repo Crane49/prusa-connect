@@ -49,4 +49,4 @@ it send an API credential of this server in `X-Api-Key`.
 |---|---|
 | HTTP Digest with a user name and a password | the server would keep a password for each program, and a token already says who is asking and what it may do |
 | any value of `X-Api-Key`, whatever its shape | a token another issuer signed would gain a second way in that its issuer never offered |
-| a module that reads the key itself on a public route | a module holds no secret it could check a token with, and a public route takes no staged body (ADR-20261112-2eb rule 7) |
+| a module that reads the key itself on a public route | a module holds no secret it could check a token with, and a public route takes no staged body (ADR-20261120-xys rule 4) |

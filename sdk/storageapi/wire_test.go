@@ -23,6 +23,8 @@ type filesFake struct {
 	sawStat  storageapi.StatParams
 	sawRead  storageapi.ReadParams
 	sawList  storageapi.ListParams
+	sawMove  storageapi.MoveParams
+	moved    storageapi.Written
 	statCall int
 	readCall int
 }
@@ -72,6 +74,12 @@ func (f *filesFake) Write(
 	_ context.Context, _ storageapi.WriteParams, _ io.Reader,
 ) (storageapi.Written, error) {
 	return storageapi.Written{}, f.err
+}
+
+func (f *filesFake) Move(_ context.Context, params storageapi.MoveParams) (storageapi.Written, error) {
+	f.sawMove = params
+
+	return f.moved, f.err
 }
 
 // answer installs the method set over one fake and runs one call through it,
@@ -354,5 +362,30 @@ func TestAListIsHeldToTheBounds(t *testing.T) {
 				t.Fatalf("the params were held to be %v, want %v", err, held.want)
 			}
 		})
+	}
+}
+
+// A move crosses as it was written and answers what landed. One naming no
+// source, or a source over the bound, is refused before the host's storages.
+func TestAMoveCrossesTheWireAndIsHeldToTheBounds(t *testing.T) {
+	t.Parallel()
+
+	files := &filesFake{moved: storageapi.Written{Path: "kept/part.gcode", Size: 4}}
+	params := storageapi.MoveParams{Source: "part.gcode", Storage: "bench", Path: "kept/part.gcode"}
+
+	got, err := answer(t, files, storageapi.MethodMove, params)
+	if err != nil || got != files.moved || files.sawMove != params {
+		t.Fatalf("the move answered %v, %v and the host saw %+v", got, err, files.sawMove)
+	}
+
+	refused := map[storageapi.MoveParams]error{
+		{Storage: "bench", Path: "part.gcode"}:                                                         storageapi.ErrNoFile,
+		{Source: strings.Repeat("a", storageapi.MaxPathBytes+1), Storage: "bench", Path: "part.gcode"}: storageapi.ErrInvalidPath,
+	}
+
+	for over, want := range refused {
+		if refusal := over.Validate(); !errors.Is(refusal, want) {
+			t.Fatalf("the client held the move to be %v, want %v", refusal, want)
+		}
 	}
 }

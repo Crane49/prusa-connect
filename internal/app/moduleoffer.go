@@ -9,8 +9,8 @@ import (
 // statesRequests reports whether the row states any request of the release.
 func (row moduleIndexRow) statesRequests() bool {
 	return row.Permissions != nil || row.Checks != nil || row.Events != nil || row.CheckAbsentPeople != nil ||
-		row.ListPeople != nil || row.Calls != nil || row.RecordsMiB != nil || row.MemoryMiB != nil ||
-		row.Listen != nil || row.Data != nil || row.Database != nil
+		row.ListPeople != nil || row.Calls != nil || row.PublicRoutes != nil ||
+		row.StagedRoutes != nil || row.RecordsMiB != nil || row.MemoryMiB != nil || row.Listen != nil || row.Data != nil || row.Database != nil
 }
 
 // calls is the modules the row says the release calls, and nil for none.
@@ -57,6 +57,8 @@ func withAsks(offer *httpapi.ModuleOffer, asked install.ModuleAsks) {
 	offer.CheckAbsentPeople = asked.CheckAbsentPeople
 	offer.ListPeople = asked.ListPeople
 	offer.Calls = asked.Calls
+	offer.PublicRoutes = asked.PublicRoutes
+	offer.StagedRoutes = resource.StagedRoutesOf(asked.StagedRoutes)
 	offer.RecordsMiB = asked.RecordsMiB
 	offer.MemoryMiB = asked.MemoryMiB
 	offer.Listen = resource.RequestsOf(asked).Listen
@@ -110,4 +112,12 @@ func (row moduleIndexRow) fill(offer *httpapi.ModuleOffer) {
 	}
 
 	offer.Calls = row.calls()
+
+	if row.PublicRoutes != nil {
+		offer.PublicRoutes = *row.PublicRoutes
+	}
+
+	if row.StagedRoutes != nil {
+		offer.StagedRoutes = resource.StagedRoutesOf(*row.StagedRoutes)
+	}
 }

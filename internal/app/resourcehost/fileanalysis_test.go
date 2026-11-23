@@ -48,6 +48,10 @@ func (d demoFile) Write(context.Context, storageapi.WriteParams, io.Reader) (sto
 	return storageapi.Written{}, errors.New("this module only reads")
 }
 
+func (d demoFile) Move(context.Context, storageapi.MoveParams) (storageapi.Written, error) {
+	return storageapi.Written{}, errors.New("this module only reads")
+}
+
 func (d demoFile) List(context.Context, storageapi.ListParams) (storageapi.Listing, error) {
 	return storageapi.Listing{}, storageapi.ErrNoFile
 }

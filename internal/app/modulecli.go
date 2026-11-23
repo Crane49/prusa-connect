@@ -636,6 +636,8 @@ func writeDeclaration(
 			entry.Service.CheckAbsentPeople = held.manifest.CheckAbsentPeople
 			entry.Service.ListPeople = held.manifest.ListPeople
 			entry.Service.Calls = held.manifest.Calls
+			entry.Service.PublicRoutes = routeLines(held.manifest.Routes.Public)
+			entry.Service.StagedRoutes = install.StagedRoutesOf(held.manifest.Routes.Staged)
 			entry.Service.RecordsMiB = held.manifest.RecordsMiB
 			entry.Service.Listen = declaredListen(held.manifest.Needs.Listen)
 			entry.Service.Data = held.manifest.Needs.Data

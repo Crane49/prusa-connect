@@ -19,6 +19,9 @@ func TestAPrintNamingHalfASourceIsRefused(t *testing.T) {
 		"a path inside no storage":         {ID: "p1", Source: "part.bgcode", Path: "usb/part.bgcode"},
 		"no file on the printer":           {ID: "p1", Storage: "bench", Source: "part.bgcode"},
 		"keep_both with no storage":        {ID: "p1", Path: "usb/part.bgcode", KeepBoth: true},
+		"delete_source outside the module's folder": {
+			ID: "p1", Storage: "bench", Source: "part.bgcode", Path: "usb/part.bgcode", DeleteSource: true,
+		},
 	}
 
 	for name, params := range cases {
@@ -42,6 +45,10 @@ func TestAWholePrintRequestPasses(t *testing.T) {
 			ID: "p1", Storage: "bench", Source: "part.bgcode", Path: "usb/part.bgcode",
 		},
 		"a file the printer already holds": {ID: "p1", Path: "usb/part.bgcode"},
+		"a file of the module's folder it gives away": {
+			ID: "p1", Storage: deviceapi.ModuleDataStorage, Source: "part.bgcode",
+			Path: "usb/part.bgcode", DeleteSource: true,
+		},
 	}
 
 	for name, params := range cases {

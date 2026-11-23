@@ -515,6 +515,12 @@ type Grants struct {
     // Database is the module's own database, and nil for a module that asked
     // for none or was not granted one.
     Database *DatabaseGrant `json:"database,omitempty"`
+    // Staged is each staged route the operator approved, with the largest
+    // body the host takes on it now. The operator may set a limit above or
+    // below the max_mib the manifest asked for. A route the manifest lists
+    // under routes.staged and the operator did not approve is absent, and
+    // its body arrives on the wire, held to routesapi.MaxModuleBody.
+    Staged []StagedGrant `json:"staged,omitempty"`
 }
 ```
 
@@ -526,7 +532,15 @@ Grants is what the operator approved of a manifest's needs block.
 func ReadGrants(params json.RawMessage) (Grants, error)
 ```
 
-ReadGrants decodes the grants of one MethodConfigure call. No grants is the zero value: no port, no data directory and no database.
+ReadGrants decodes the grants of one MethodConfigure call. No grants is the zero value: no port, no data directory, no database and no staged route.
+
+#### `Grants.StagedMiB` {#wirerpc-grants-stagedmib}
+
+```go
+func (g Grants) StagedMiB(method, path string) (int, bool)
+```
+
+StagedMiB is the limit the operator approved for the staged route written as method and path in the manifest, and false when that route is not approved.
 
 ### `Handler` {#wirerpc-handler}
 
@@ -550,7 +564,7 @@ Configure builds the handler a child answers MethodConfigure with. It decodes th
 func ConfigureGranted[T any](take func(ctx context.Context, held T, grants Grants) error) Handler
 ```
 
-ConfigureGranted is Configure for a module that also reads its grants: the ports it may listen on, its data directory and its database.
+ConfigureGranted is Configure for a module that also reads its grants: the ports it may listen on, its data directory, its database and the limits of its staged routes.
 
 #### `ConfigureReporting` {#wirerpc-configurereporting}
 
@@ -772,13 +786,30 @@ type Settings struct {
     // operator wrote nothing for and whose manifest declares no default.
     Config json.RawMessage `json:"config"`
     // Grants is what the operator granted the module beyond the API: its
-    // ports, its data directory and its database. It is absent for a module
-    // granted none of them.
+    // ports, its data directory, its database and the limits of its staged
+    // routes. It is absent for a module granted none of them.
     Grants *Grants `json:"grants,omitempty"`
 }
 ```
 
 Settings is the params of MethodConfigure: the manifest's defaults with the operator's config block written over them, as one JSON object. The host has already refused a key the manifest does not declare.
+
+### `StagedGrant` {#wirerpc-stagedgrant}
+
+```go
+type StagedGrant struct {
+    // Method is the HTTP method, as the manifest wrote it.
+    Method string `json:"method"`
+    // Path is the path pattern, exactly as the manifest wrote it, such as
+    // /files/{name}.
+    Path string `json:"path"`
+    // MaxMiB is the largest body the host writes to disk on the route, in
+    // MiB. A larger body is refused before the module is called.
+    MaxMiB int `json:"max_mib"`
+}
+```
+
+StagedGrant is one staged route the operator approved, and its limit.
 
 ### `Stream` {#wirerpc-stream}
 

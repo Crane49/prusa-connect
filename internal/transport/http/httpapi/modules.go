@@ -13,6 +13,7 @@ import (
 	"github.com/prusa3d/prusa-connect/internal/transport/http/httpfault"
 	"github.com/prusa3d/prusa-connect/sdk/extension"
 	"github.com/prusa3d/prusa-connect/sdk/fault"
+	"github.com/prusa3d/prusa-connect/sdk/manifest"
 )
 
 // modulesPathPrefix is the subtree every module's own surface is served under.
@@ -75,6 +76,19 @@ type ModuleSurface struct {
 	// SafeMode says the key is safe mode, so the prefix answers SAFE_MODE
 	// instead of MODULES_DISABLED.
 	SafeMode bool
+	// Public is the routes the operator approved from the manifest's
+	// routes.public. A request on one reaches the module with no caller
+	// resolved and no permission checked, and with an empty principal
+	// (ADR-20261120-xys rules 1 to 3). Every other route is held to the
+	// instance's grants.
+	Public []manifest.Route
+	// Staged is the routes whose request body the host writes into the
+	// module's data directory, each with the limit the operator approved. It
+	// is empty for a module granted no data directory, whose bodies go on the
+	// wire. The body limit middleware holds a request on one of them to that
+	// limit, and every other module request to the document bound
+	// (ADR-20261120-xys rule 6).
+	Staged []manifest.StagedRoute
 }
 
 // ModulePlane answers which module claims one namespace. It is the seam between
@@ -180,7 +194,7 @@ func (s *Server) moduleHandler(cfg Config) http.Handler {
 			return
 		}
 
-		caller, allowed := s.allowModule(w, r, cfg, surface)
+		caller, allowed := s.moduleCaller(w, r, inner, cfg, surface)
 		if !allowed {
 			return
 		}
@@ -191,6 +205,27 @@ func (s *Server) moduleHandler(cfg Config) http.Handler {
 		// limits what the module asks for on this person's behalf to them.
 		surface.Handler.ServeHTTP(w, inner.WithContext(withCaller(inner.Context(), caller)))
 	})
+}
+
+// moduleCaller is who the module serves on this request: nobody on a public
+// route, and the caller allowModule resolved on any other. inner is the
+// request with the mount taken off, which is the path a route names.
+//
+// A public route resolves no caller at all, so a session cookie or a token
+// the request carries changes nothing there and the module reads an empty
+// principal. Answering a public route as the person who happens to be signed
+// in would let a module tell two callers apart on a route the operator
+// approved as one that knows nobody.
+func (s *Server) moduleCaller(
+	w http.ResponseWriter, r, inner *http.Request, cfg Config, surface ModuleSurface,
+) (Caller, bool) {
+	for _, route := range surface.Public {
+		if route.Matches(inner.Method, inner.URL.Path) {
+			return Caller{}, true
+		}
+	}
+
+	return s.allowModule(w, r, cfg, surface)
 }
 
 // allowModule resolves the caller and asks the graph, writing the refusal
@@ -247,7 +282,9 @@ func (s *Server) allowModule(
 // Nothing is cleaned or rewritten. A dot segment in the remainder is refused
 // and not resolved, because a module handler may map a path onto a file name,
 // and a traversal that never reaches the module cannot trick it. chi matches
-// literal segments, so such a path reaches no other route here either.
+// literal segments, so such a path reaches no other route here either. A path
+// plainPath refuses is not served either, because the module could read it
+// as another route than the one the host authorized.
 func mountedRequest(prefix string, r *http.Request) (*http.Request, bool) {
 	rest := strings.TrimPrefix(r.URL.Path, prefix)
 	if rest == r.URL.Path {
@@ -268,6 +305,10 @@ func mountedRequest(prefix string, r *http.Request) (*http.Request, bool) {
 		}
 	}
 
+	if !plainPath(rest) {
+		return nil, false
+	}
+
 	// Clone deep-copies the URL, so the rewrite below is on this request alone
 	// and the address the outer layers logged is the one the caller sent.
 	inner := r.Clone(r.Context())
@@ -275,6 +316,18 @@ func mountedRequest(prefix string, r *http.Request) (*http.Request, bool) {
 	inner.URL.RawPath = ""
 
 	return inner, true
+}
+
+// plainPath reports whether a decoded path reads the same when it is parsed
+// as a URL again. The host matches public and staged routes against this path,
+// and a module built with an older SDK parses it again before its router sees
+// it. A ? or # the caller sent encoded would start a query or a fragment
+// there, a % would be decoded a second time, and a control character is
+// refused by the parse. Any of them lets the host and the module read two
+// different routes, so a path that holds one reaches no module at all.
+func plainPath(path string) bool {
+	return !strings.ContainsAny(path, "?#%") &&
+		!strings.ContainsFunc(path, func(r rune) bool { return r < ' ' || r == '\x7f' })
 }
 
 // moduleFault renders what the graph reported. A refusal the graph raised

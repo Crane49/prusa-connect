@@ -30,6 +30,15 @@ func checkRequest(action string) string { return "check " + action }
 // callRequest is the request line of a call to another module's routes.
 func callRequest(namespace string) string { return "call " + namespace }
 
+// publicRequest is the request line of a route the module answers without a
+// caller, such as "public POST /hooks/announce/" (ADR-20261120-xys rule 2).
+func publicRequest(route string) string { return "public " + route }
+
+// stagedRequest is the request line of a route whose body the host writes to
+// a file, such as "upload PUT /files/{name} up to 1024 MiB" (ADR-20261120-xys
+// rule 5).
+func stagedRequest(route install.StagedRoute) string { return "upload " + route.String() }
+
 // asksOf is what a manifest asks for, before anything is decided about it.
 func asksOf(declared manifest.Manifest) install.ModuleAsks {
 	return install.ModuleAsks{
@@ -39,6 +48,8 @@ func asksOf(declared manifest.Manifest) install.ModuleAsks {
 		CheckAbsentPeople: declared.CheckAbsentPeople,
 		ListPeople:        declared.ListPeople,
 		Calls:             slices.Clone(declared.Calls),
+		PublicRoutes:      routeLines(declared.Routes.Public),
+		StagedRoutes:      install.StagedRoutesOf(declared.Routes.Staged),
 		RecordsMiB:        declared.RecordsMiB,
 		MemoryMiB:         declared.Needs.MemoryMiB,
 		Listen:            listenAsksOf(declared.Needs.Listen),
@@ -70,6 +81,8 @@ func beyondAsks(asked, ceiling install.ModuleAsks, namespace string) []string {
 	}
 
 	out = append(out, callsBeyond(asked.Calls, ceiling.Calls)...)
+	out = append(out, linesBeyond(asked.PublicRoutes, ceiling.PublicRoutes, publicRequest)...)
+	out = append(out, stagedBeyond(asked.StagedRoutes, ceiling.StagedRoutes)...)
 
 	if asked.RecordsMiB > ceiling.RecordsMiB {
 		out = append(out, recordsRequest(asked.RecordsMiB))
@@ -396,6 +409,9 @@ func decidedAsks(
 	}
 
 	given.Calls, added = keptCalls(asked.Calls, before.Calls, held.Calls, added)
+	given.PublicRoutes, added = keptLines(asked.PublicRoutes, before.PublicRoutes,
+		routeLines(held.PublicRoutes), added, publicRequest)
+	given.StagedRoutes, added = keptStaged(asked.StagedRoutes, before.StagedRoutes, held.StagedRoutes, added)
 
 	given.RecordsMiB, added = keptRoom(request, asked, *before, held, given.RecordsMiB, added)
 
@@ -451,6 +467,10 @@ func grantAsks(declared *manifest.Manifest, given install.ModuleAsks) {
 	declared.CheckAbsentPeople = given.CheckAbsentPeople
 	declared.ListPeople = given.ListPeople
 	declared.Calls = given.Calls
+	declared.Routes.Public = slices.DeleteFunc(declared.Routes.Public, func(route manifest.Route) bool {
+		return !slices.Contains(given.PublicRoutes, route.String())
+	})
+	declared.Routes.Staged = stagedGiven(declared.Routes.Staged, given.StagedRoutes)
 	declared.RecordsMiB = given.RecordsMiB
 	declared.Needs = manifest.Needs{
 		Listen: manifestListen(given.Listen), Data: given.Data, Database: given.Database,
@@ -480,20 +500,120 @@ func linesBeyond(asked, ceiling []string, line func(string) string) []string {
 // ask before did not have, with the lines for the second kind added to added.
 // A call the operator took away from the release before stays away.
 func keptCalls(asked, before, held, added []string) ([]string, []string) {
+	return keptLines(asked, before, held, added, callRequest)
+}
+
+// keptLines is each entry asked that the declaration still holds, or that the
+// ask before did not have, with the request line of the second kind added to
+// added. An entry the operator took away from the release before stays away.
+func keptLines(asked, before, held, added []string, line func(string) string) ([]string, []string) {
 	var kept []string
 
-	for _, namespace := range asked {
-		fresh := !slices.Contains(before, namespace)
+	for _, entry := range asked {
+		fresh := !slices.Contains(before, entry)
 		if fresh {
-			added = append(added, callRequest(namespace))
+			added = append(added, line(entry))
 		}
 
-		if fresh || slices.Contains(held, namespace) {
-			kept = append(kept, namespace)
+		if fresh || slices.Contains(held, entry) {
+			kept = append(kept, entry)
 		}
 	}
 
 	return kept, added
+}
+
+// stagedBeyond is the request line of each staged route asked that the
+// ceiling does not hold, or holds with a smaller limit.
+func stagedBeyond(asked, ceiling []install.StagedRoute) []string {
+	var out []string
+
+	for _, route := range asked {
+		held, found := stagedNamed(ceiling, route)
+		if !found || route.MaxMiB > held.MaxMiB {
+			out = append(out, stagedRequest(route))
+		}
+	}
+
+	return out
+}
+
+// keptStaged is each staged route asked that the declaration still holds, or
+// that the ask before did not have, with the request line of each route new
+// to this release or asking more than before added to added. A route the
+// operator took away stays away. A limit that differs from the ask before is
+// the operator's and stays, as a records room the operator set does (keptRoom).
+// A route that asks for more than before and more than that limit is a new
+// request even then (ADR-20261120-xys rule 5), and approving it gives the new
+// ask.
+func keptStaged(asked, before, held []install.StagedRoute, added []string) ([]install.StagedRoute, []string) {
+	var kept []install.StagedRoute
+
+	for _, route := range asked {
+		previous, wasAsked := stagedNamed(before, route)
+		granted, isHeld := stagedNamed(held, route)
+
+		switch {
+		case !wasAsked:
+			added = append(added, stagedRequest(route))
+			kept = append(kept, route)
+		case !isHeld:
+			continue
+		case granted.MaxMiB != previous.MaxMiB:
+			if route.MaxMiB > previous.MaxMiB && route.MaxMiB > granted.MaxMiB {
+				added = append(added, stagedRequest(route))
+				kept = append(kept, route)
+
+				continue
+			}
+
+			kept = append(kept, granted)
+		default:
+			if route.MaxMiB > previous.MaxMiB {
+				added = append(added, stagedRequest(route))
+			}
+
+			kept = append(kept, route)
+		}
+	}
+
+	return kept, added
+}
+
+// stagedNamed is the route of routes with the method and the path of route.
+func stagedNamed(routes []install.StagedRoute, route install.StagedRoute) (install.StagedRoute, bool) {
+	for _, held := range routes {
+		if held.Route() == route.Route() {
+			return held, true
+		}
+	}
+
+	return install.StagedRoute{}, false
+}
+
+// stagedGiven is each staged route of the manifest that was given, with the
+// limit it was given.
+func stagedGiven(declared []manifest.StagedRoute, given []install.StagedRoute) []manifest.StagedRoute {
+	var out []manifest.StagedRoute
+
+	for _, route := range declared {
+		granted, found := stagedNamed(given, install.StagedRoute{Method: route.Method, Path: route.Path})
+		if found {
+			out = append(out, manifest.StagedRoute{Route: route.Route, MaxMiB: granted.MaxMiB})
+		}
+	}
+
+	return out
+}
+
+// routeLines is each route as a request names it.
+func routeLines(routes []manifest.Route) []string {
+	var out []string
+	for _, route := range routes {
+		out = append(out, route.String())
+	}
+
+	return out
 }
 
 // keptChecks is each check asked that the declaration still holds, or that the

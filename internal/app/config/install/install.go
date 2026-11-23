@@ -156,6 +156,17 @@ type Service struct {
 	// no action: a call in a person's name is held to that person's grants,
 	// and a call as the module runs as the instance.
 	Calls []string
+	// PublicRoutes is the routes the host sends to the module without
+	// resolving a caller. The operator writes each one at install, from the
+	// manifest's routes.public, and may take one away (ADR-20261120-xys rules 1
+	// to 3). A route the list does not hold takes an authorized caller.
+	PublicRoutes []manifest.Route
+	// StagedRoutes is the routes whose request body the host writes into the
+	// module's data directory, each with the largest body it takes. The
+	// operator approves each one at install, from the manifest's
+	// routes.staged, and may change its limit later (ADR-20261120-xys rules 4
+	// to 6). A route the list does not hold gets its body on the wire.
+	StagedRoutes []StagedRoute
 	// RecordsMiB is the room the operator granted the module's record
 	// namespace, in mebibytes. Zero is no grant, and the namespace then holds
 	// stateapi.DefaultNamespaceBytes. The operator writes it at install when
@@ -482,9 +493,11 @@ type ModuleEntry struct {
 
 // ModuleAsks is what a module's manifest asks the operator for: the
 // permissions it takes as itself, the events it publishes, whether it may ask
-// about a person it is not serving, whether it may list the people, the room
-// for its records, the ports it listens on, whether it wants a data directory
-// and whether it wants a database of its own.
+// about a person it is not serving, whether it may list the people, the
+// modules it calls, the routes it answers with no caller, the routes whose
+// body it reads from a file, the room for its records, the ports it listens
+// on, whether it wants a data directory and whether it wants a database of its
+// own.
 type ModuleAsks struct {
 	Permissions       []string          `json:"permissions,omitempty"         yaml:"permissions"`
 	Checks            []string          `json:"checks,omitempty"              yaml:"checks"`
@@ -492,6 +505,8 @@ type ModuleAsks struct {
 	CheckAbsentPeople bool              `json:"check_absent_people,omitempty" yaml:"check_absent_people"`
 	ListPeople        bool              `json:"list_people,omitempty"         yaml:"list_people"`
 	Calls             []string          `json:"calls,omitempty"               yaml:"calls"`
+	PublicRoutes      []string          `json:"public_routes,omitempty"       yaml:"public_routes"`
+	StagedRoutes      []StagedRoute     `json:"staged_routes,omitempty"       yaml:"staged_routes"`
 	RecordsMiB        int               `json:"records_mib,omitempty"         yaml:"records_mib"`
 	MemoryMiB         int               `json:"memory_mib,omitempty"          yaml:"memory_mib"`
 	Listen            []ListenAsk       `json:"listen,omitempty"              yaml:"listen"`
@@ -560,6 +575,8 @@ type ServiceEntry struct {
 	CheckAbsentPeople bool              `json:"check_absent_people,omitempty" yaml:"check_absent_people"`
 	ListPeople        bool              `json:"list_people,omitempty"         yaml:"list_people"`
 	Calls             []string          `json:"calls,omitempty"               yaml:"calls"`
+	PublicRoutes      []string          `json:"public_routes,omitempty"       yaml:"public_routes"`
+	StagedRoutes      []StagedRoute     `json:"staged_routes,omitempty"       yaml:"staged_routes"`
 	RecordsMiB        int               `json:"records_mib,omitempty"         yaml:"records_mib"`
 	MemoryMiB         int               `json:"memory_mib,omitempty"          yaml:"memory_mib"`
 	OnOverMemory      string            `json:"on_over_memory,omitempty"      yaml:"on_over_memory"`
@@ -882,10 +899,9 @@ func serviceOf(mode Runtime, typeName string, declared *ServiceEntry) (Service, 
 		return Service{}, err
 	}
 
-	for _, namespace := range declared.Calls {
-		if err = extension.Namespace(namespace).Validate(); err != nil {
-			return Service{}, fmt.Errorf("service.calls names %q, which is not a module namespace: %w", namespace, err)
-		}
+	public, staged, err := routeGrantsOf(declared)
+	if err != nil {
+		return Service{}, err
 	}
 
 	listen, err := listenOf(declared.Listen)
@@ -920,6 +936,8 @@ func serviceOf(mode Runtime, typeName string, declared *ServiceEntry) (Service, 
 		CheckAbsentPeople: declared.CheckAbsentPeople,
 		ListPeople:        declared.ListPeople,
 		Calls:             slices.Clone(declared.Calls),
+		PublicRoutes:      public,
+		StagedRoutes:      staged,
 		RecordsMiB:        declared.RecordsMiB,
 		MemoryMiB:         declared.MemoryMiB,
 		OnOverMemory:      declared.OnOverMemory,

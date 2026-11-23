@@ -211,6 +211,14 @@ var ErrFragment = errors.New("routesapi: the OpenAPI fragment is refused")
 
 ErrFragment reports an OpenAPI fragment a host will not accept. The message names the path and the operation.
 
+### `BodyFileOf` {#routesapi-bodyfileof}
+
+```go
+func BodyFileOf(r *http.Request) string
+```
+
+BodyFileOf returns the file the host wrote the request body into, relative to the module's data directory, and empty for a request whose body is the request's own. The module opens it as filepath.Join(dataDir, filepath.FromSlash(BodyFileOf(r))), where dataDir is the grants.data that wirerpc.ConfigureGranted reads.
+
 ### `CallHandlers` {#routesapi-callhandlers}
 
 ```go
@@ -296,6 +304,8 @@ func (p CallParams) Request(principal string) Request
 ```
 
 Request is the call as the other module receives it on routes.serve, for the principal the host decided. Its headers pass through RequestHeaders, so a credential of one module never reaches another.
+
+The path is unescaped once, because Request.Path is the decoded path a person's request reaches a module with. A path Validate accepts unescapes cleanly; one it would refuse is passed on as it came.
 
 #### `CallParams.Validate` {#routesapi-callparams-validate}
 
@@ -396,15 +406,18 @@ type Request struct {
     Query     string              `json:"query,omitempty"`
     Headers   map[string][]string `json:"headers,omitempty"`
     Body      []byte              `json:"body,omitempty"`
+    BodyFile  string              `json:"body_file,omitempty"`
     Principal string              `json:"principal"`
 }
 ```
 
 Request is one HTTP request as a module receives it.
 
-Path is relative to the mount: a module writes /spools and is reached at /api/v1/modules/\<namespace>/spools. It never includes the mount.
+Path is relative to the mount: a module writes /spools and is reached at /api/v1/modules/\<namespace>/spools. It never includes the mount. It is decoded, as net/http's URL.Path is, and HTTP sets it on the request as it is, without parsing it again: the host matched its routes against this exact path.
 
-Principal is who the host authorized. The host sets it, not the caller.
+Principal is who the host authorized. The host sets it, not the caller. It is empty on a route the manifest lists under routes.public.
+
+BodyFile is set on a route the manifest lists under routes.staged, and Body is then empty. It is the path of the file holding the body, relative to the module's data directory, such as staged/MZXW6YTBOI4DQMZTGQ2TMNZYHE. The host deletes the file once the module answers, so a module that keeps the body moves the file first.
 
 #### `Request.HTTP` {#routesapi-request-http}
 
@@ -412,7 +425,7 @@ Principal is who the host authorized. The host sets it, not the caller.
 func (r Request) HTTP(ctx context.Context) (*http.Request, error)
 ```
 
-HTTP renders the request as an \*http.Request, for a module that does not use Serve.
+HTTP renders the request as an \*http.Request, for a module that does not use Serve. BodyFileOf reads BodyFile back off the request it returns.
 
 ### `Response` {#routesapi-response}
 

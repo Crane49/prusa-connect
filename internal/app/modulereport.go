@@ -5,9 +5,11 @@ import (
 	"io"
 	"slices"
 
+	"github.com/prusa3d/prusa-connect/internal/app/config/install"
 	"github.com/prusa3d/prusa-connect/internal/app/resource"
 	"github.com/prusa3d/prusa-connect/internal/authz"
 	"github.com/prusa3d/prusa-connect/internal/kernel/ref"
+	"github.com/prusa3d/prusa-connect/sdk/manifest"
 )
 
 // moduleReport is what one install prints: where the files landed, what the
@@ -58,6 +60,11 @@ type moduleReport struct {
 	listsPeople bool
 	// calls is each module the install lets this one call the routes of.
 	calls []string
+	// public is each route the install lets anybody reach, with no caller.
+	public []string
+	// staged is each route whose body the install lets the host write to a
+	// file, with its limit.
+	staged []install.StagedRoute
 	// checks is each action the install lets this one ask about for a person
 	// without taking it as itself.
 	checks []string
@@ -101,6 +108,22 @@ type moduleReport struct {
 	databaseBack bool
 }
 
+// peopleRequests is the request line of each permission about people a
+// manifest asks for: asking about the absent and listing them.
+func peopleRequests(declared manifest.Manifest) []string {
+	var out []string
+
+	if declared.CheckAbsentPeople {
+		out = append(out, "permission "+checkAbsentPeople)
+	}
+
+	if declared.ListPeople {
+		out = append(out, "permission "+listPeople)
+	}
+
+	return out
+}
+
 // reportOf gathers what the install did, so the printing is one function with
 // no decisions left in it.
 func reportOf(
@@ -142,6 +165,8 @@ func reportOf(
 
 	if approve {
 		out.calls = held.manifest.Calls
+		out.public = routeLines(held.manifest.Routes.Public)
+		out.staged = install.StagedRoutesOf(held.manifest.Routes.Staged)
 		out.checks = held.manifest.Checks
 	}
 
@@ -174,16 +199,18 @@ func reportOf(
 		out.requests = append(out.requests, checkRequest(action))
 	}
 
-	if held.manifest.CheckAbsentPeople {
-		out.requests = append(out.requests, "permission "+checkAbsentPeople)
-	}
-
-	if held.manifest.ListPeople {
-		out.requests = append(out.requests, "permission "+listPeople)
-	}
+	out.requests = append(out.requests, peopleRequests(held.manifest)...)
 
 	for _, namespace := range held.manifest.Calls {
 		out.requests = append(out.requests, callRequest(namespace))
+	}
+
+	for _, route := range held.manifest.Routes.Public {
+		out.requests = append(out.requests, publicRequest(route.String()))
+	}
+
+	for _, route := range install.StagedRoutesOf(held.manifest.Routes.Staged) {
+		out.requests = append(out.requests, stagedRequest(route))
 	}
 
 	if held.manifest.RecordsMiB > 0 {
@@ -273,6 +300,14 @@ func report(out io.Writer, held moduleReport) {
 
 	for _, namespace := range held.calls {
 		fmt.Fprintf(out, "  may call    the routes of %s (calls)\n", namespace)
+	}
+
+	for _, route := range held.public {
+		fmt.Fprintf(out, "  public      %s, answered without a signed-in caller (routes.public)\n", route)
+	}
+
+	for _, route := range held.staged {
+		fmt.Fprintf(out, "  upload      %s, up to %d MiB (routes.staged)\n", route.Route(), route.MaxMiB)
 	}
 
 	if held.recordsMiB > 0 {

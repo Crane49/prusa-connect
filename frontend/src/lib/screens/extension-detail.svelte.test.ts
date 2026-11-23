@@ -469,6 +469,65 @@ describe('the page of one extension', () => {
     await expect.element(page.getByLabelText('Shelf size')).toHaveValue('9');
   });
 
+  it('changes the largest upload of a staged route on its own tab', async () => {
+    const upload = { method: 'PUT', path: '/files/{name}', max_mib: 1024 };
+    const puts: Call[] = [];
+    await open(
+      new SlotRegistry(),
+      [
+        {
+          ...instance,
+          ui: undefined,
+          version: 1,
+          config: {},
+          staged_routes: [upload],
+          module: {
+            ...instance.module,
+            asked: { permissions: ['observe'], staged_routes: [upload] },
+          },
+        },
+      ],
+      { namespace: NAMESPACE, tab: 'uploads' },
+      {
+        'PUT /api/v1/resources/sink/spools': (call) => {
+          puts.push(call);
+          return json(200, { ...instance, staged_routes: [upload] });
+        },
+      },
+    );
+
+    const field = page.getByRole('spinbutton', {
+      name: 'Largest upload on PUT /files/{name}',
+    });
+    await expect
+      .element(page.getByRole('tab', { name: 'Uploads' }))
+      .toBeVisible();
+    await expect.element(field).toHaveValue(1024);
+
+    await field.fill('2048');
+    await page.getByRole('button', { name: 'Save the limits' }).click();
+
+    await expect.poll(() => puts.length).toBe(1);
+    expect(puts[0]?.ifMatch).toBe('"1"');
+    expect(
+      (JSON.parse(puts[0]?.body ?? '{}') as { staged_routes: unknown })
+        .staged_routes,
+    ).toEqual([{ ...upload, max_mib: 2048 }]);
+  });
+
+  it('has no Uploads tab for a module with no staged route', async () => {
+    await open(new SlotRegistry(), [{ ...instance, ui: undefined }], {
+      namespace: NAMESPACE,
+    });
+
+    await expect
+      .element(page.getByRole('tab', { name: 'Permissions' }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('tab', { name: 'Uploads' }))
+      .not.toBeInTheDocument();
+  });
+
   describe('where it shows', () => {
     interface Sent {
       hidden_contributions: string[];

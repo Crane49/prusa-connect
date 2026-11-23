@@ -221,6 +221,8 @@ func (d *devices) StartPrint(
 			printed <- result
 		}
 
+		printSettled(relaying, d.log, request.Storage, request.Source, err)
+
 		if err != nil {
 			failed <- err
 

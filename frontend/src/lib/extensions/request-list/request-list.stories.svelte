@@ -17,6 +17,13 @@
       { kind: 'permission', permission: 'printers.read' },
       { kind: 'event', endpoint: 'spool.low', name: 'low' },
       { kind: 'absentPeople' },
+      { kind: 'public', route: 'POST /hooks/announce/' },
+      {
+        kind: 'staged',
+        method: 'PUT',
+        path: '/connect/app/teams/{team}/files/raw',
+        mib: 1024,
+      },
       { kind: 'records', mib: 64 },
       { kind: 'memory', mib: 192 },
       { kind: 'data' },

@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"runtime/debug"
+	"slices"
 	"strings"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 	"github.com/prusa3d/prusa-connect/internal/authz"
 	"github.com/prusa3d/prusa-connect/internal/transport/http/httpfault"
+	"github.com/prusa3d/prusa-connect/sdk/extension"
 	"github.com/prusa3d/prusa-connect/sdk/fault"
 )
 
@@ -253,12 +255,29 @@ func recoverMiddleware() func(http.Handler) http.Handler {
 // It is the only enforcer of the bound. Huma's per-operation limiter is
 // switched off at registration, because it defaults to 1 MiB whatever the
 // configured limit is and reports the breach with no limit in it.
-func bodyLimitMiddleware(documents, uploads int64) func(http.Handler) http.Handler {
+//
+// A request on a staged module route is held to the limit the operator
+// approved for that route, and every other module request to the document
+// bound. The module host holds a staged body to the same limit
+// (ADR-20261120-xys rule 6). A module request whose Content-Length is over
+// its limit is refused here, before a byte of the body is read.
+func bodyLimitMiddleware(documents, uploads int64, modules ModulePlane) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			limit := documents
+
 			if carriesAFile(r) {
 				limit = uploads
+			} else if surface, inner, toModule := moduleTarget(r, modules); toModule {
+				if staged, isStaged := stagedLimit(surface, r.Method, inner); isStaged {
+					limit = staged
+				}
+
+				if r.ContentLength > limit {
+					writeProblem(w, r, httpfault.BodyTooLarge(limit))
+
+					return
+				}
 			}
 
 			r.Body = http.MaxBytesReader(w, r.Body, limit)
@@ -266,6 +285,97 @@ func bodyLimitMiddleware(documents, uploads int64) func(http.Handler) http.Handl
 			next.ServeHTTP(w, r.WithContext(withBodyLimit(r.Context(), limit)))
 		})
 	}
+}
+
+// moduleTarget is the module surface a request reaches and its path under
+// the module's mount: under the modules group, or under a root prefix a
+// module claims. Like carriesAFile it runs before chi has matched a route, so
+// the path is matched by hand. A request with no body takes no bound, so the
+// plane is not asked for one.
+func moduleTarget(r *http.Request, modules ModulePlane) (ModuleSurface, string, bool) {
+	if modules == nil || r.ContentLength == 0 {
+		return ModuleSurface{}, "", false
+	}
+
+	if rest, under := strings.CutPrefix(r.URL.Path, modulesPathPrefix+"/"); under {
+		// The plane is asked only for a namespace a module could have been
+		// given, as the mount asks it (moduleHandler).
+		namespace, _, _ := strings.Cut(rest, "/")
+		if extension.Namespace(namespace).Validate() != nil {
+			return ModuleSurface{}, "", false
+		}
+
+		surface, claimed := modules.Module(namespace)
+		if !claimed || surface.Mount != "" {
+			return ModuleSurface{}, "", false
+		}
+
+		inner := innerPath(r.URL.Path, ModuleMount(namespace))
+		if servedByCore(inner) {
+			return ModuleSurface{}, "", false
+		}
+
+		return surface, inner, true
+	}
+
+	if rootReserved(r.URL.Path) {
+		return ModuleSurface{}, "", false
+	}
+
+	surface, claimed := modules.Root(r.URL.Path)
+	if !claimed || surface.Mount == "" {
+		return ModuleSurface{}, "", false
+	}
+
+	return surface, innerPath(r.URL.Path, surface.Mount), true
+}
+
+// coreUnderMount is the first segment of every path under a module's
+// namespace that the core serves itself: the module's state, its OpenAPI
+// document and its UI files. chi routes them before the module's mount, so a
+// module's staged route never reaches them and must not widen their body
+// bound. TestNoStagedRouteWidensACoreOperation walks the router against it.
+var coreUnderMount = func() []string {
+	under := ModuleMount("{" + namespaceParam + "}")
+	own := []string{}
+
+	for _, path := range []string{moduleStatePath, moduleStateKeyPath, moduleOpenAPIPath, moduleUIFamilyPath} {
+		own = append(own, rootOf(strings.TrimPrefix(path, under)))
+	}
+
+	return own
+}()
+
+// servedByCore reports whether a path under a module's namespace is one the
+// core serves.
+func servedByCore(inner string) bool {
+	return slices.Contains(coreUnderMount, rootOf(inner))
+}
+
+// innerPath is the path with the mount taken off, as a module's route names
+// it.
+func innerPath(path, mount string) string {
+	rest := strings.TrimPrefix(path, mount)
+	if rest == "" {
+		return "/"
+	}
+
+	return rest
+}
+
+// mebibyte is one MiB in bytes, the unit a staged route's limit is written in.
+const mebibyte = 1 << 20
+
+// stagedLimit is the limit in bytes of the staged route a request is on, and
+// false for a request on any other route.
+func stagedLimit(surface ModuleSurface, method, inner string) (int64, bool) {
+	for _, route := range surface.Staged {
+		if route.Matches(method, inner) {
+			return int64(route.MaxMiB) * mebibyte, true
+		}
+	}
+
+	return 0, false
 }
 
 // carriesAFile reports whether this request's body is a file and not a

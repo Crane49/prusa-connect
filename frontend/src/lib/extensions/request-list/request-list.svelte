@@ -1,7 +1,9 @@
 <!--
   What a module asks for, one line each, in words a person reads: each
   permission, each event it publishes, whether it may ask about people it is
-  not serving, the room it wants for its records, the memory it recommends
+  not serving, each route anybody may call without signing in, each route
+  whose body the server writes to a file with its largest body, the room it
+  wants for its records, the memory it recommends
   for its process, a directory of its own, a
   database of its own and each network port it listens on. An empty list says so,
   because "asks for nothing" is something the person is agreeing to as well.
@@ -54,6 +56,15 @@
       case 'call':
         return t('app.settings.extensions.request.call', {
           namespace: request.namespace,
+        });
+      case 'public':
+        return t('app.settings.extensions.request.public', {
+          route: request.route,
+        });
+      case 'staged':
+        return t('app.settings.extensions.request.staged', {
+          route: `${request.method} ${request.path}`,
+          size: formatNumber(request.mib),
         });
       case 'records':
         return t('app.settings.extensions.request.records', {

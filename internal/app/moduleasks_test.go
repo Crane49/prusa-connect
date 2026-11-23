@@ -179,6 +179,8 @@ func TestEveryAskSurvivesEveryHop(t *testing.T) {
 		CheckAbsentPeople: true,
 		ListPeople:        true,
 		Calls:             []string{"user:spools"},
+		PublicRoutes:      []string{"POST /hooks/announce/"},
+		StagedRoutes:      []install.StagedRoute{{Method: "PUT", Path: "/files/{name}", MaxMiB: 1024}},
 		RecordsMiB:        16,
 		MemoryMiB:         128,
 		Listen:            []install.ListenAsk{{Name: "web", Network: "tcp", Port: 8080, Why: "serves the page"}},

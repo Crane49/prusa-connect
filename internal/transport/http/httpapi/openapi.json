@@ -7002,6 +7002,16 @@
             "description": "Whether the release runs a process of its own. False for a UI-only module, which has no memory budget.",
             "type": "boolean"
           },
+          "public_routes": {
+            "description": "The routes the release's manifest asks to answer without a signed-in caller, each a method and a path under its mount.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "records_mib": {
             "description": "The room the release's manifest asks for its records, in MiB. Absent is the default room.",
             "format": "int64",
@@ -7028,6 +7038,16 @@
           "source": {
             "description": "Where that release's bytes are, which an install passes back as from.",
             "type": "string"
+          },
+          "staged_routes": {
+            "description": "The routes whose request body the release's manifest asks the server to write into its data directory, each with the largest body it asks for.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleStagedRoute"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "suggests": {
             "description": "The modules the release works better with, each with the reason. A suggestion installs nothing.",
@@ -7352,6 +7372,16 @@
             "description": "Whether the release runs a process of its own. False for a UI-only module, which has no memory budget.",
             "type": "boolean"
           },
+          "public_routes": {
+            "description": "The routes the release's manifest asks to answer without a signed-in caller, each a method and a path under its mount.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "records_mib": {
             "description": "The room the release's manifest asks for its records, in MiB. Absent is the default room.",
             "format": "int64",
@@ -7388,6 +7418,16 @@
           "source": {
             "description": "Where that release's bytes are, which an install passes back as from.",
             "type": "string"
+          },
+          "staged_routes": {
+            "description": "The routes whose request body the release's manifest asks the server to write into its data directory, each with the largest body it asks for.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleStagedRoute"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "suggests": {
             "description": "The modules the release works better with, each with the reason. A suggestion installs nothing.",
@@ -7716,14 +7756,69 @@
               "null"
             ]
           },
+          "public_routes": {
+            "description": "The routes the module answers without a signed-in caller, each a method and a path under its mount, such as POST /hooks/announce/.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "records_mib": {
             "description": "The room the module asks for its records, in MiB. Zero is the default room.",
             "format": "int64",
             "maximum": 1024,
             "minimum": 0,
             "type": "integer"
+          },
+          "staged_routes": {
+            "description": "The routes whose request body the server writes into the module's data directory, each with the largest body the module asks for.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleStagedRoute"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           }
         },
+        "type": "object"
+      },
+      "ModuleStagedRoute": {
+        "additionalProperties": false,
+        "properties": {
+          "max_mib": {
+            "description": "The largest request body on the route, in MiB. A larger body is refused with BODY_TOO_LARGE.",
+            "examples": [
+              1024
+            ],
+            "format": "int64",
+            "maximum": 4096,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "method": {
+            "description": "The HTTP method of the route.",
+            "examples": [
+              "PUT"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "description": "The path of the route under the module's mount, where a segment written {name} matches any one segment.",
+            "examples": [
+              "/files/{name}"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "path",
+          "max_mib"
+        ],
         "type": "object"
       },
       "ModuleStateBody": {
@@ -9572,6 +9667,17 @@
             ],
             "type": "string"
           },
+          "staged_routes": {
+            "description": "For a service module, each route whose request body the server writes into the module's data directory, with the largest body it takes, from 1 to 4096 MiB. The operator approves each route at install, and a write may change only the limit of a route listed here: a route it does not list keeps its limit, and a route the install did not approve is refused. Changing a limit restarts the module.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleStagedRoute"
+            },
+            "maxItems": 32,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "status": {
             "$ref": "#/components/schemas/ResourceStatus",
             "description": "What the supervisor has observed of this instance, written by the server and ignored on a write."
@@ -10260,6 +10366,17 @@
           "source": {
             "description": "Read-only. Accepted so a read can be sent back, and ignored.",
             "type": "string"
+          },
+          "staged_routes": {
+            "description": "For a service module, each route whose request body the server writes into the module's data directory, with the largest body it takes, from 1 to 4096 MiB. The operator approves each route at install, and a write may change only the limit of a route listed here: a route it does not list keeps its limit, and a route the install did not approve is refused. Changing a limit restarts the module.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleStagedRoute"
+            },
+            "maxItems": 32,
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "status": {
             "$ref": "#/components/schemas/ResourceStatus",

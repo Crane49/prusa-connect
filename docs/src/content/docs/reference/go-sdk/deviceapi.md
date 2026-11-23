@@ -1183,6 +1183,14 @@ type PrintParams struct {
     // printer's file. Started.Path names the file that is printed. It needs a
     // storage.
     KeepBoth bool `json:"keep_both,omitempty"`
+
+    // DeleteSource has the host delete Source from the module's print folder
+    // once the print leaves nothing to send again: the file landed, the
+    // printer already held it, or a person stopped the transfer. A send that
+    // failed keeps the file, so the module can print it again. It needs
+    // ModuleDataStorage. A second call naming the same file before this print
+    // settles may find it gone.
+    DeleteSource bool `json:"delete_source,omitempty"`
 }
 ```
 

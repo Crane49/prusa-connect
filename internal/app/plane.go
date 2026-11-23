@@ -176,6 +176,7 @@ func startPlane(
 		// Beside the modules directory and never inside it: an update and a
 		// removal delete a module's folder there.
 		ModuleData: moduleData,
+		FreeSpace:  availableDisk,
 		ModulesOff: modulesOff,
 		SafeMode:   safe,
 		SwitchOff:  switchOff,
