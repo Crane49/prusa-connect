@@ -10,6 +10,9 @@
     sortOf,
     stateFilter,
   } from '../../test/fakes';
+  import LayersIcon from '@lucide/svelte/icons/layers';
+
+  import { Button } from '../../primitives';
   import PrintersScreen from './printers-screen.svelte';
 
   const { Story } = defineMeta({
@@ -105,6 +108,24 @@
 
 <Story name="Fleet" asChild>
   <PrintersScreen listing={listingOf(12)} printerCount={12} {store} {onAdd} />
+</Story>
+
+<!-- What a module draws in the device-row slot (ADR-20261112-62y): one small
+     control on every printer, in every view. -->
+{#snippet rowEnd(deviceId: string)}
+  <Button variant="ghost" size="icon-sm" label={`Set ${deviceId} as current`}>
+    <LayersIcon aria-hidden="true" />
+  </Button>
+{/snippet}
+
+<Story name="With A Module Control On Each Printer" asChild>
+  <PrintersScreen
+    listing={listingOf(6)}
+    printerCount={6}
+    {store}
+    {onAdd}
+    {rowEnd}
+  />
 </Story>
 
 <Story name="More Than One Page" asChild>

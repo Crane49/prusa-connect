@@ -50,6 +50,14 @@ const (
 	// SlotCameraView is the live view of a camera of a module's type, drawn
 	// by that module when a person presses play (ADR-20261106-km2).
 	SlotCameraView SlotName = "camera-view"
+	// SlotDeviceHeader is a place on a printer's page under its header and
+	// telemetry, above its tabs, drawn only for what a bundle registers
+	// (ADR-20261112-62y).
+	SlotDeviceHeader SlotName = "device-header"
+	// SlotDeviceRow is a place at the trailing edge of each printer in every
+	// view of the listing, drawn only for what a bundle registers
+	// (ADR-20261112-62y).
+	SlotDeviceRow SlotName = "device-row"
 )
 
 // Key is the list under ui.contributes that declares the slot's entries. It is
@@ -174,6 +182,12 @@ const (
 	// AreaDropChoices is the list of choices in the question a file dropped on
 	// a printer's page asks.
 	AreaDropChoices Area = "drop-choices"
+	// AreaHeaderFoot is the part of a printer's page under its header and
+	// telemetry, above its tab strip.
+	AreaHeaderFoot Area = "header-foot"
+	// AreaRowEnd is the trailing edge of each printer in the listing, in the
+	// cards, the rows, the table and the camera frames.
+	AreaRowEnd Area = "row-end"
 )
 
 // Areas is every area.
@@ -182,6 +196,7 @@ func Areas() []Area {
 		AreaPage, AreaPanes, AreaCardLine, AreaStatusFoot, AreaTabs, AreaHeaderActions, AreaGrid,
 		AreaFileActions, AreaPrintOptions, AreaFileBody, AreaFileTabs, AreaCameraFoot, AreaCameraPicture,
 		AreaDeviceFileActions, AreaDropChoices,
+		AreaHeaderFoot, AreaRowEnd,
 	}
 }
 
@@ -412,6 +427,24 @@ var slots = []Slot{
 		Subject: SubjectPrinterFile,
 		Where:   "A choice in the question a file dropped on a printer's page asks. The action runs once the copy is on its way.",
 		Offer:   "a choice for a file dropped on a printer, run while it is copied there",
+	},
+	{
+		Name:    SlotDeviceHeader,
+		Screen:  ScreenPrinterDetail,
+		Area:    AreaHeaderFoot,
+		Form:    FormSection,
+		Subject: SubjectDevice,
+		Where:   "A place under a printer's header and telemetry, above its tabs, with no frame or heading of the host's.",
+		Offer:   "a control under the header of each printer's page",
+	},
+	{
+		Name:    SlotDeviceRow,
+		Screen:  ScreenPrinters,
+		Area:    AreaRowEnd,
+		Form:    FormSection,
+		Subject: SubjectDevice,
+		Where:   "A small control at the end of each printer in every view of the listing, with no frame of the host's.",
+		Offer:   "a small control on each printer in the listing",
 	},
 }
 

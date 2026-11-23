@@ -1,3 +1,4 @@
+import { createRawSnippet } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 import { page } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
@@ -71,6 +72,26 @@ describe('PrinterDetailScreen', () => {
         }),
       )
       .not.toBeInTheDocument();
+  });
+
+  // ADR-20261112-62y: the device-header slot sits under the header and its
+  // telemetry and above the tabs, where a person looks first.
+  it('draws what sits below the header between the header and the tabs', async () => {
+    const belowHeader = createRawSnippet(() => ({
+      render: () => '<p data-testid="below-header">module control</p>',
+    }));
+    await render(PrinterDetailScreen, { props: props({ belowHeader }) });
+
+    const below = page.getByTestId('below-header').element();
+    const heading = page.getByRole('heading', { level: 1 }).element();
+    const tabs = page.getByRole('tablist').element();
+
+    expect(
+      heading.compareDocumentPosition(below) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      below.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('names the printer as the page heading and the trail leads back', async () => {

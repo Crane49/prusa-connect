@@ -975,6 +975,8 @@ Sign in, and the app draws what the manifest declared:
 | `camera-view` | `camera_view` | The live view of a camera of a type the module offers, drawn over its picture while a person plays it. |
 | `device-file-action` | `device_file_action` | An item in the action menu of each file on a printer's Files tab. A folder has none. |
 | `device-upload-action` | `device_upload_action` | A choice in the question a file dropped on a printer's page asks. The action runs once the copy is on its way. |
+| `device-header` | `device_header` | A place under a printer's header and telemetry, above its tabs, with no frame or heading of the host's. |
+| `device-row` | `device_row` | A small control at the end of each printer in every view of the listing, with no frame of the host's. |
 
 <!-- end generated -->
 
@@ -2505,6 +2507,23 @@ registers `run(deviceId)` for it instead of a component. The host draws the
 title and icon from the manifest before the bundle loads, disables the item
 while `run` is pending, and shows a rejection as a toast. It asks no
 confirmation of its own.
+
+### A control that shows only sometimes
+
+Two more slots draw a small control of yours and nothing of the host's:
+no frame, no heading and no gap. ADR-20261112-62y holds the rules.
+
+| key | where the component sits |
+| --- | --- |
+| `contributes.device_header` | on the printer's page, under the header and its readings, above the tabs |
+| `contributes.device_row` | at the end of each printer in the listing, in the cards, the camera frames, the rows and the table |
+
+The host draws only what your bundle registers. Declare the entry in the
+manifest, and call `host.register.deviceHeader` or `host.register.deviceRow`
+only when the control applies. A module that registers nothing, or a
+component that draws nothing, leaves the page as it was. On the listing, keep
+the control to one icon button with a `label`: it sits beside the printer's
+state on a card and in the last column of the table.
 
 See the [module slots reference](./reference/module-slots.md) for every
 slot's area, form and a YAML example of its own.

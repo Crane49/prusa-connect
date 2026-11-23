@@ -869,6 +869,7 @@
   }}
   moduleTabs={tabsForModules}
   actions={headerActions}
+  {belowHeader}
 />
 
 {#snippet status()}
@@ -1076,6 +1077,13 @@
     class={ABOVE_ROW_LINK}
     {items}
   />
+{/snippet}
+
+<!-- A module's control for this printer, under the header and its
+     telemetry, above the tabs (ADR-20261112-62y). It draws nothing until a
+     module registers one. -->
+{#snippet belowHeader()}
+  <SlotOutlet screen="printer-detail" name="device-header" {deviceId} />
 {/snippet}
 
 {#snippet headerActions()}

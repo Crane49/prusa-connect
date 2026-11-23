@@ -3,6 +3,8 @@
   The narrow tier beside it draws the same facts stacked.
 -->
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   import { FileCodeCornerIcon } from '@lucide/svelte';
 
   import SortableTableHead from '../../primitives/table/sortable-table-head.svelte';
@@ -43,6 +45,7 @@
     sortField,
     sortOrder,
     onSort,
+    rowEnd,
   }: {
     rows: readonly PrinterRow[];
     sortField?: string | undefined;
@@ -56,6 +59,8 @@
         >
       | undefined;
     shows: (field: PrinterFieldId) => boolean;
+    /** The device-row slot's outlet (ADR-20261112-62y). */
+    rowEnd?: Snippet<[deviceId: string]> | undefined;
   } = $props();
   const preview = filamentPreview();
 </script>
@@ -229,7 +234,8 @@
             {/if}
           </TableCell>
         {/if}
-        <TableCell></TableCell>
+        <!-- A module's control for this printer (ADR-20261112-62y). -->
+        <TableCell>{@render rowEnd?.(row.id)}</TableCell>
       </TableRow>
     {/each}
   </TableBody>

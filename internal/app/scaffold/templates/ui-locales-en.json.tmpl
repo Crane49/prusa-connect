@@ -57,6 +57,12 @@
 {{- else if eq .Slot "device-upload-action"}},
 
   "{{$.Name}}.deviceUploadAction.absent": "This is not a file on its way to a printer in the fleet this page read."
+{{- else if eq .Slot "device-header"}},
+
+  "{{$.Name}}.deviceHeader.body": "{{.Title}} is drawing under this device's header."
+{{- else if eq .Slot "device-row"}},
+
+  "{{$.Name}}.deviceRow.body": "{{.Title}}"
 {{- end}}
 {{- end}}
 }

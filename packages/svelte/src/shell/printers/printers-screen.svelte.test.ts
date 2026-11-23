@@ -610,6 +610,50 @@ describe('PrintersScreen', () => {
     }
   });
 
+  // ADR-20261112-62y: the device-row slot is on every printer in every
+  // view. The table view keeps its narrow tier in the DOM too, so each
+  // printer is drawn twice there and one of the two is hidden.
+  it('draws the row end on every printer in every view', async () => {
+    const rowEnd = createRawSnippet((deviceId: () => string) => ({
+      render: () => `<button data-testid="row-end">${deviceId()}</button>`,
+    }));
+
+    for (const [view, each] of [
+      ['cards', 1],
+      ['frames', 1],
+      ['table', 2],
+    ] as const) {
+      const viewStore = {
+        read: () => JSON.stringify({ view }),
+        write: () => undefined,
+      };
+      const { unmount } = await render(PrintersScreen, {
+        props: { ...propsOf(3), store: viewStore, rowEnd },
+      });
+
+      await expect
+        .poll(() =>
+          page
+            .getByTestId('row-end')
+            .elements()
+            .map((element) => element.textContent)
+            .sort(),
+        )
+        .toEqual(
+          ['p0', 'p1', 'p2']
+            .flatMap((id) => Array<string>(each).fill(id))
+            .sort(),
+        );
+      await unmount();
+    }
+  });
+
+  it('draws no row end where the host passes none', async () => {
+    await render(PrintersScreen, { props: propsOf(2) });
+
+    await expect.element(page.getByTestId('row-end')).not.toBeInTheDocument();
+  });
+
   it('has nothing axe refuses', async () => {
     const { container } = await render(PrintersScreen, {
       props: propsOf(

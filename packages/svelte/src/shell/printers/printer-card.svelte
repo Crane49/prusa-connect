@@ -55,6 +55,7 @@
     picture: Picture,
     line,
     onMenuOpenChange,
+    rowEnd,
   }: PrinterCardProps = $props();
 
   const PAUSE_PRINT = capabilityFor('pause_print');
@@ -171,6 +172,15 @@
               >
                 {stateLabel}
               </Badge>
+            {/if}
+            <!-- A module's control for this printer (ADR-20261112-62y). A
+                 sibling of the stretched link, lifted above it. A module
+                 that registers nothing leaves the span empty, and an empty
+                 span takes no room. -->
+            {#if rowEnd}
+              <span class={[ABOVE_ROW_LINK, 'flex items-center empty:hidden']}
+                >{@render rowEnd(row.id)}</span
+              >
             {/if}
             <!-- A sibling of the stretched link and lifted above it. A
                  retired printer takes no command. -->

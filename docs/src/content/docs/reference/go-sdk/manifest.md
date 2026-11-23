@@ -491,6 +491,22 @@ const AreaDropChoices Area = "drop-choices"
 
 AreaDropChoices is the list of choices in the question a file dropped on a printer's page asks.
 
+#### `AreaHeaderFoot` {#manifest-areaheaderfoot}
+
+```go
+const AreaHeaderFoot Area = "header-foot"
+```
+
+AreaHeaderFoot is the part of a printer's page under its header and telemetry, above its tab strip.
+
+#### `AreaRowEnd` {#manifest-arearowend}
+
+```go
+const AreaRowEnd Area = "row-end"
+```
+
+AreaRowEnd is the trailing edge of each printer in the listing, in the cards, the rows, the table and the camera frames.
+
 #### `Areas` {#manifest-areas}
 
 ```go
@@ -1701,6 +1717,22 @@ const SlotCameraView SlotName = "camera-view"
 ```
 
 SlotCameraView is the live view of a camera of a module's type, drawn by that module when a person presses play (ADR-20261106-km2).
+
+#### `SlotDeviceHeader` {#manifest-slotdeviceheader}
+
+```go
+const SlotDeviceHeader SlotName = "device-header"
+```
+
+SlotDeviceHeader is a place on a printer's page under its header and telemetry, above its tabs, drawn only for what a bundle registers (ADR-20261112-62y).
+
+#### `SlotDeviceRow` {#manifest-slotdevicerow}
+
+```go
+const SlotDeviceRow SlotName = "device-row"
+```
+
+SlotDeviceRow is a place at the trailing edge of each printer in every view of the listing, drawn only for what a bundle registers (ADR-20261112-62y).
 
 #### `SlotName.Field` {#manifest-slotname-field}
 

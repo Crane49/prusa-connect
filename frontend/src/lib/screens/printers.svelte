@@ -13,7 +13,7 @@
     NearbyPrintersPanel,
     PrintersScreen,
   } from '@prusa/connect-ui/shell';
-  import { SlotOutlet } from '@prusa/connect-ui/slots';
+  import { getSlotContext, SlotOutlet } from '@prusa/connect-ui/slots';
   import { onMount } from 'svelte';
 
   import { watchCameras } from '../cameras';
@@ -22,6 +22,17 @@
   import type { AppContext } from '../screens';
 
   let { ctx }: { ctx: AppContext } = $props();
+
+  // The listing draws a device-row outlet only once a module registered one,
+  // so a row has no empty box beside its link (ADR-20261112-62y). Nothing
+  // then mounts an outlet to load the bundles, so the screen asks itself.
+  const slots = getSlotContext();
+  onMount(() => {
+    void slots?.loader?.activate();
+  });
+  const rowRegistered = $derived(
+    (slots?.registry.sections('device-row').length ?? 0) > 0,
+  );
 
   const fleet = $derived(ctx.fleet);
 
@@ -114,6 +125,10 @@
   };
 </script>
 
+{#snippet rowEnd(deviceId: string)}
+  <SlotOutlet screen="printers" name="device-row" {deviceId} />
+{/snippet}
+
 <!-- The device's record decides whether a line with a devices selector is
      drawn on this card (ADR-20261110-5np). -->
 {#snippet cardLine(deviceId: string)}
@@ -149,5 +164,6 @@
   }}
   {actions}
   {cardLine}
+  {...rowRegistered ? { rowEnd } : {}}
   nearby={nearbyPanel}
 />

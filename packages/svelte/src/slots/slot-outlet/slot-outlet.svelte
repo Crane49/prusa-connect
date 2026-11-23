@@ -19,7 +19,7 @@
 
   // The layout of each section slot is a closed record: a new section slot is
   // a type error here until someone decides how it draws.
-  type Layout = 'pane' | 'section' | 'line' | 'tab' | 'bare';
+  type Layout = 'pane' | 'section' | 'line' | 'tab' | 'bare' | 'inline';
   const LAYOUT = {
     settings: 'pane',
     'device-card': 'line',
@@ -30,6 +30,11 @@
     'file-tab': 'tab',
     'camera-section': 'bare',
     'camera-view': 'bare',
+    // No frame and no heading of the host's: the component is the whole
+    // box, so a module that draws nothing leaves nothing on the screen
+    // (ADR-20261112-62y).
+    'device-header': 'inline',
+    'device-row': 'inline',
   } as const satisfies Record<SectionSlot, Layout>;
 
   // An entry that names file types is drawn only for a file of one of them
@@ -117,6 +122,17 @@
            component alone. -->
       <div
         class={['flex flex-col gap-2', props.class]}
+        data-slot={props.name}
+        data-module={row.namespace}
+        data-section={row.id}
+      >
+        <Row {...subject} />
+      </div>
+    {:else if LAYOUT[props.name] === 'inline'}
+      <!-- `contents` draws no box, so the component's own root is the item
+           of whatever layout the screen puts the outlet in. -->
+      <div
+        class="contents"
         data-slot={props.name}
         data-module={row.namespace}
         data-section={row.id}

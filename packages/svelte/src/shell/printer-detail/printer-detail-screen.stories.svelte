@@ -2,6 +2,7 @@
   import { defineMeta } from '@storybook/addon-svelte-csf';
 
   import { fakeDevice } from '../../test/fakes';
+  import { Button } from '../../primitives';
   import PrinterDetailScreen from './printer-detail-screen.svelte';
   import type { PrinterAdministration } from './info/types';
   import type { TelemetrySource } from './types';
@@ -119,6 +120,13 @@
   <p class="rounded-sm border border-border p-4 text-sm">
     The printer is asking whether the first layer went down cleanly.
   </p>
+{/snippet}
+
+<!-- What a module draws in the device-header slot (ADR-20261112-62y). -->
+{#snippet belowHeader()}
+  <div>
+    <Button variant="secondary" size="sm">Set as current</Button>
+  </div>
 {/snippet}
 
 <Story name="Default" asChild>
@@ -246,6 +254,21 @@
     tab="status"
     {onTabChange}
     {prompt}
+    panels={{ status: statusPanel }}
+    printersHref="/printers"
+  />
+</Story>
+
+<Story name="With A Module Control Under The Header" asChild>
+  <PrinterDetailScreen
+    deviceId={printer.id}
+    device={printer}
+    {telemetry}
+    {commands}
+    printerCount={1}
+    tab="status"
+    {onTabChange}
+    {belowHeader}
     panels={{ status: statusPanel }}
     printersHref="/printers"
   />

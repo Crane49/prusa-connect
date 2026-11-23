@@ -35,4 +35,8 @@ type ResourceContributes struct {
 	DeviceFileAction []ResourceAction `json:"device_file_action,omitempty" doc:"An item in the action menu of each file on a printer's Files tab. A folder has none."`
 	// DeviceUploadAction is the device-upload-action slot.
 	DeviceUploadAction []ResourceAction `json:"device_upload_action,omitempty" doc:"A choice in the question a file dropped on a printer's page asks. The action runs once the copy is on its way."`
+	// DeviceHeader is the device-header slot.
+	DeviceHeader []ResourceSection `json:"device_header,omitempty" doc:"A place under a printer's header and telemetry, above its tabs, with no frame or heading of the host's."`
+	// DeviceRow is the device-row slot.
+	DeviceRow []ResourceSection `json:"device_row,omitempty" doc:"A small control at the end of each printer in every view of the listing, with no frame of the host's."`
 }

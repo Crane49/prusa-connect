@@ -8,6 +8,8 @@
   72rem is where the eight columns stop fitting without wrapping a cell.
 -->
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   import PrintersRows from './printers-rows.svelte';
   import PrintersTable from './printers-table.svelte';
   import type { PrinterFieldId, PrinterRow } from './types';
@@ -18,6 +20,7 @@
     sortField,
     sortOrder,
     onSort,
+    rowEnd,
   }: {
     rows: readonly PrinterRow[];
     sortField?: string | undefined;
@@ -31,14 +34,16 @@
         >
       | undefined;
     shows: (field: PrinterFieldId) => boolean;
+    /** The device-row slot's outlet (ADR-20261112-62y). */
+    rowEnd?: Snippet<[deviceId: string]> | undefined;
   } = $props();
 </script>
 
 <div class="@container/printer-listing">
   <div class="hidden @4xl/printer-listing:block">
-    <PrintersTable {rows} {shows} {sortField} {sortOrder} {onSort} />
+    <PrintersTable {rows} {shows} {sortField} {sortOrder} {onSort} {rowEnd} />
   </div>
   <div class="@4xl/printer-listing:hidden">
-    <PrintersRows {rows} {shows} />
+    <PrintersRows {rows} {shows} {rowEnd} />
   </div>
 </div>

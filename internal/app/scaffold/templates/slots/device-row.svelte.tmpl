@@ -1,0 +1,27 @@
+<script lang="ts">
+  import { Badge } from '@prusa/connect-ui/primitives';
+
+  import { heldHost } from './host';
+
+  interface Props {
+    /** The device this control is about. It is the only prop it receives. */
+    deviceId: string;
+  }
+
+  let { deviceId }: Props = $props();
+
+  // The fleet is already on the host: the app reads it once and keeps it
+  // current from the event stream, and a module receives it read-only.
+  const host = heldHost();
+  const fleet = host.fleet;
+  const t = host.t;
+
+  const device = $derived(fleet.device(deviceId));
+</script>
+
+<!-- The host draws this at the end of each printer in every view of the
+     listing, with no frame of its own, so keep it to one small control.
+     Draw nothing when there is nothing to say. -->
+{#if device !== undefined}
+  <Badge variant="secondary">{t('{{$.Name}}.deviceRow.body')}</Badge>
+{/if}

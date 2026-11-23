@@ -106,6 +106,11 @@ export interface PrinterDetailScreenProps {
   filamentPositions?: Snippet<[Snippet]> | undefined;
   /** The printer's own question, drawn under the subject block. */
   prompt?: Snippet | undefined;
+  /**
+   * Drawn under the header and its telemetry, above the tabs: the
+   * device-header slot's outlet (ADR-20261112-62y).
+   */
+  belowHeader?: Snippet | undefined;
   /** What the server refused with. Rendered by `describeFault`. */
   fault?: unknown;
   loading?: boolean | undefined;

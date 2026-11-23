@@ -84,12 +84,16 @@ export interface PrinterCardProps {
   line?: Snippet<[deviceId: string]>;
   /** Told each time the card's actions menu opens or shuts. */
   onMenuOpenChange?: ((open: boolean) => void) | undefined;
+  /** The device-row slot's outlet, drawn beside the state, above the card's link. */
+  rowEnd?: Snippet<[deviceId: string]> | undefined;
 }
 
 export interface PrinterFrameProps {
   row: PrinterRow;
   /** This printer's camera with its live view, or `undefined` for a printer with no camera. */
   camera?: CameraFeed | undefined;
+  /** The device-row slot's outlet, drawn beside the state, above the frame's link. */
+  rowEnd?: Snippet<[deviceId: string]> | undefined;
 }
 
 /**
@@ -160,6 +164,11 @@ export interface PrintersScreenProps {
   store?: ListingStore;
   /** The device-card slot's outlet, drawn on each card in the cards view. */
   cardLine?: Snippet<[deviceId: string]>;
+  /**
+   * The device-row slot's outlet, drawn on every printer in every view: the
+   * cards, the frames, the rows and the table (ADR-20261112-62y).
+   */
+  rowEnd?: Snippet<[deviceId: string]>;
   /**
    * Drawn under the listing, and under the empty fleet too: the printers on
    * the network that are not on this server yet.

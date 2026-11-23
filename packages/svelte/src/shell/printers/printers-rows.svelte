@@ -3,8 +3,9 @@
   eight columns without wrapping every cell.
 -->
 <script lang="ts">
-  import { PRINTER_STATE_LABEL_KEY } from '../../domain';
   import type { Snippet } from 'svelte';
+
+  import { PRINTER_STATE_LABEL_KEY } from '../../domain';
   import { formatUnit, t } from '../../i18n';
   import {
     Badge,
@@ -18,9 +19,12 @@
   let {
     rows,
     shows,
+    rowEnd,
   }: {
     rows: readonly PrinterRow[];
     shows: (field: PrinterFieldId) => boolean;
+    /** The device-row slot's outlet (ADR-20261112-62y). */
+    rowEnd?: Snippet<[deviceId: string]> | undefined;
   } = $props();
 
   const stateOf = (row: PrinterRow): string | undefined => {
@@ -63,6 +67,10 @@
           reported={row.model}
           class="size-14 shrink-0"
         />
+      {/snippet}
+      {#snippet actions()}
+        <!-- A module's control for this printer (ADR-20261112-62y). -->
+        {@render rowEnd?.(row.id)}
       {/snippet}
     </DataRow>
   {/each}

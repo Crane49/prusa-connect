@@ -13,15 +13,16 @@ enough to build with it. It talks to the core only through
 | `./tokens.css` | the theme: every colour in OKLCH, light and dark, radii, the type and spacing rhythm, durations, easings              |
 | `./primitives` | the small parts every screen is built from, named under [the primitives](#the-primitives)                             |
 | `./data`       | the stores over the SDK: the fleet, a printer, registrations, accounts, storage, transfers, links, cameras, telemetry |
-| `./slots`      | the ten slots, the registry, the host object and the module loader                                                    |
+| `./slots`      | the slots, the registry, the host object and the module loader                                                        |
+| `./slicer`     | the page protocol of PrusaSlicer 3: what a page in the slicer's webview sends it and the calls it hears               |
 | `./i18n`       | every text as a key: `t`, the locale store, `describeFault`, and the `Intl` formatters                                |
 | `./domain`     | plain TypeScript rules: lifecycle, heating, notification, printer state                                               |
 | `./router`     | the route matcher: pattern matching, history and the current match, with no route table or path literal in it         |
 | `./shell`      | whole screens, and the frame they sit in: header, rail, phone bar, footer and the toggles between them                |
 
 The root export re-exports `./domain`, `./i18n`, `./primitives`, `./data` and
-`./slots`, and carries the theme store as well. `./router` and
-`./shell` are each imported from their own subpath.
+`./slots`, and carries the theme store and `applySkin` as well. `./router`,
+`./shell` and `./slicer` are each imported from their own subpath.
 
 ## The primitives
 
@@ -112,8 +113,8 @@ moves to the SDK, so a module written against it will not need to change.
 
 ## The slots
 
-`./slots` is how a module adds to the interface. A module can fill any of
-ten slots; the core's resources listing says what each module may register
+`./slots` is how a module adds to the interface. A module can fill any of the
+slots; the core's resources listing says what each module may register
 (ADR-20260911-4p6). The host reads `GET /api/v1/resources`
 and checks each module's `library` range against `LIBRARY_VERSION`. It
 imports the module's entry file the first time one of its slots or routes is

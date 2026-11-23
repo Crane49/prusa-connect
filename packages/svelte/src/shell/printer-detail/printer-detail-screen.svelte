@@ -62,6 +62,7 @@
     filamentPositions,
     actions,
     prompt,
+    belowHeader,
     fault,
     loading = false,
     administration,
@@ -216,6 +217,8 @@
     {/if}
 
     {#if prompt}{@render prompt()}{/if}
+
+    {#if belowHeader && !retired}{@render belowHeader()}{/if}
 
     <DetailTabs
       class={device && !retired ? 'mt-section-gap' : undefined}

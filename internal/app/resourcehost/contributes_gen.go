@@ -27,5 +27,7 @@ func contributesOf(declared manifest.Contributes) httpapi.ResourceContributes {
 		CameraView:         sectionsOf(declared.Sections[manifest.SlotCameraView]),
 		DeviceFileAction:   actionsOf(declared.Actions[manifest.SlotDeviceFileAction]),
 		DeviceUploadAction: actionsOf(declared.Actions[manifest.SlotDeviceUploadAction]),
+		DeviceHeader:       sectionsOf(declared.Sections[manifest.SlotDeviceHeader]),
+		DeviceRow:          sectionsOf(declared.Sections[manifest.SlotDeviceRow]),
 	}
 }

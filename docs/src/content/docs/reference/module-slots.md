@@ -65,6 +65,7 @@ cards:
 | `camera-view` | `camera-picture` | a component | the camera's name, as `camera` | The live view of a camera of a type the module offers, drawn over its picture while a person plays it. |
 | `device-file-action` | `device-file-actions` | a `run` function | the printer file reference `<device id>:<path>`, as `printerFileRef` | An item in the action menu of each file on a printer's Files tab. A folder has none. |
 | `device-upload-action` | `drop-choices` | a `run` function | the printer file reference `<device id>:<path>`, as `printerFileRef` | A choice in the question a file dropped on a printer's page asks. The action runs once the copy is on its way. |
+| `device-header` | `header-foot` | a component | the device id, as `deviceId` | A place under a printer's header and telemetry, above its tabs, with no frame or heading of the host's. |
 
 `device-section`
 
@@ -129,11 +130,20 @@ device_upload_action:
     destructive: false
 ```
 
+`device-header`
+
+```yaml
+device_header:
+  - id: my-device-header
+    title: My device header
+```
+
 ## The printer listing
 
 | slot | area | what the bundle registers | what it is handed | where |
 | --- | --- | --- | --- | --- |
 | `device-card` | `card-line` | a component | the device id, as `deviceId` | One line on each printer's card in the listing, under its status. Text past one line is cut. |
+| `device-row` | `row-end` | a component | the device id, as `deviceId` | A small control at the end of each printer in every view of the listing, with no frame of the host's. |
 
 `device-card`
 
@@ -141,6 +151,14 @@ device_upload_action:
 device_card:
   - id: my-device-card
     title: My device card
+```
+
+`device-row`
+
+```yaml
+device_row:
+  - id: my-device-row
+    title: My device row
 ```
 
 ## The settings screen

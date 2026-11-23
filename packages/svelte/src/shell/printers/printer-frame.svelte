@@ -16,6 +16,7 @@
   } from '../../domain';
   import { t } from '../../i18n';
   import {
+    ABOVE_ROW_LINK,
     AspectRatio,
     Badge,
     Card,
@@ -29,7 +30,7 @@
   import { cardToneOf, stateBadgeVariant } from './presentation';
   import type { PrinterFrameProps } from './types';
 
-  let { row, camera }: PrinterFrameProps = $props();
+  let { row, camera, rowEnd }: PrinterFrameProps = $props();
 
   const titleId = $props.id();
 
@@ -103,9 +104,18 @@
           </a>
         </h2>
       </CardTitle>
-      <Badge variant={stateBadgeVariant(row.state)} class="shrink-0">
-        {t(PRINTER_STATE_LABEL_KEY[row.state])}
-      </Badge>
+      <span class="flex shrink-0 items-center gap-1">
+        <!-- A module's control for this printer (ADR-20261112-62y), lifted
+             above the frame's link. Empty, it takes no room. -->
+        {#if rowEnd}
+          <span class={[ABOVE_ROW_LINK, 'flex items-center empty:hidden']}
+            >{@render rowEnd(row.id)}</span
+          >
+        {/if}
+        <Badge variant={stateBadgeVariant(row.state)} class="shrink-0">
+          {t(PRINTER_STATE_LABEL_KEY[row.state])}
+        </Badge>
+      </span>
     </div>
 
     {#if row.jobName === undefined}

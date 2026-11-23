@@ -7225,6 +7225,10 @@ export interface components {
             device_card?: components["schemas"]["ResourceSection"][] | null;
             /** @description An item in the action menu of each file on a printer's Files tab. A folder has none. */
             device_file_action?: components["schemas"]["ResourceAction"][] | null;
+            /** @description A place under a printer's header and telemetry, above its tabs, with no frame or heading of the host's. */
+            device_header?: components["schemas"]["ResourceSection"][] | null;
+            /** @description A small control at the end of each printer in every view of the listing, with no frame of the host's. */
+            device_row?: components["schemas"]["ResourceSection"][] | null;
             /** @description A section at the foot of a printer's Status tab, after the core's own. */
             device_section?: components["schemas"]["ResourceSection"][] | null;
             /** @description A tab of the module's own on a printer's page, after the core's tabs. */

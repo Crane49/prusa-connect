@@ -510,4 +510,53 @@ describe('SlotOutlet', () => {
         .toBeInTheDocument();
     });
   });
+
+  // ADR-20261112-62y: device-header and device-row draw no frame and no
+  // heading of the host's, so a module that registers nothing, or draws
+  // nothing, leaves nothing that takes room.
+  describe('a slot drawn bare', () => {
+    const bare: ModuleContributes = {
+      device_header: [{ id: 'current', title: 'Set as current' }],
+      device_row: [{ id: 'current', title: 'Set as current' }],
+    };
+
+    it('draws nothing when the module registers nothing', async () => {
+      const { container } = await render(SlotOutlet, {
+        props: {
+          screen: 'printer-detail',
+          name: 'device-header',
+          deviceId: 'printer-1',
+          registry: registryFor(bare),
+        },
+      });
+
+      expect(container.querySelector('[data-slot]')).toBeNull();
+      expect(container.textContent.trim()).toBe('');
+    });
+
+    it('draws the component with no heading, in a box-less wrapper', async () => {
+      const registry = registryFor(bare);
+      registry.registerSection('spools', 'device-row', 'current', PlainSection);
+
+      const { container } = await render(SlotOutlet, {
+        props: {
+          screen: 'printers',
+          name: 'device-row',
+          deviceId: 'printer-1',
+          registry,
+        },
+      });
+
+      await expect
+        .element(page.getByText('plain section for printer-1'))
+        .toBeInTheDocument();
+      const wrapper = container.querySelector('[data-slot="device-row"]');
+      expect(wrapper).not.toBeNull();
+      expect(wrapper === null ? '' : getComputedStyle(wrapper).display).toBe(
+        'contents',
+      );
+      expect(container.querySelector('h3')).toBeNull();
+      expect(wrapper?.getAttribute('role')).toBeNull();
+    });
+  });
 });

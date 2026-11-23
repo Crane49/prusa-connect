@@ -62,6 +62,7 @@
     actions,
     store = browserStore(),
     cardLine,
+    rowEnd,
     issues,
     nearby,
   }: PrintersScreenProps = $props();
@@ -370,6 +371,7 @@
         }}
         {...actions === undefined ? {} : { actions }}
         {...cardLine === undefined ? {} : { line: cardLine }}
+        {rowEnd}
       />
     {/each}
   </div>
@@ -561,6 +563,7 @@
           <PrintersListing
             rows={listingState.page}
             {shows}
+            {rowEnd}
             sortField={shownField}
             sortOrder={shownOrder}
             onSort={{
@@ -575,7 +578,7 @@
         {:else if listingState.view.value === 'frames'}
           <div class={FRAME_GRID}>
             {#each listingState.page as row (row.id)}
-              <PrinterFrame {row} camera={cameras?.feedFor(row.id)} />
+              <PrinterFrame {row} camera={cameras?.feedFor(row.id)} {rowEnd} />
             {/each}
           </div>
         {:else}
