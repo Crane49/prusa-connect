@@ -223,6 +223,7 @@ func moduleFactsOf(spec Spec) *httpapi.ResourceModule {
 			Module:     required.Module,
 			Version:    required.Version,
 			Since:      required.Since,
+			Header:     required.Header,
 		})
 	}
 
@@ -305,6 +306,7 @@ func serviceEntryOf(service *install.Service, typeName string) *install.ServiceE
 		Calls:             service.Calls,
 		PublicRoutes:      routeLines(service.PublicRoutes),
 		StagedRoutes:      slices.Clone(service.StagedRoutes),
+		RequestHeaders:    slices.Clone(service.RequestHeaders),
 		RecordsMiB:        service.RecordsMiB,
 		MemoryMiB:         service.MemoryMiB,
 		OnOverMemory:      service.OnOverMemory,
@@ -388,6 +390,30 @@ func stagedAsksOf(routes []httpapi.ModuleStagedRoute) []install.StagedRoute {
 	return out
 }
 
+// RequestHeadersOf is each request header in the API's spelling, and nil for
+// none.
+func RequestHeadersOf(headers []install.RequestHeader) []httpapi.ModuleRequestHeader {
+	var out []httpapi.ModuleRequestHeader
+	for _, header := range headers {
+		out = append(out, httpapi.ModuleRequestHeader{
+			Name: header.Name, Reason: header.Reason, Required: header.Required,
+		})
+	}
+
+	return out
+}
+
+// headerAsksOf is the API's spelling of request headers read back into the
+// one the declaration records.
+func headerAsksOf(headers []httpapi.ModuleRequestHeader) []install.RequestHeader {
+	var out []install.RequestHeader
+	for _, header := range headers {
+		out = append(out, install.RequestHeader{Name: header.Name, Reason: header.Reason, Required: header.Required})
+	}
+
+	return out
+}
+
 // RequestsOf converts a recorded ask to the type the API returns.
 func RequestsOf(asked install.ModuleAsks) httpapi.ModuleRequests {
 	out := httpapi.ModuleRequests{
@@ -399,6 +425,7 @@ func RequestsOf(asked install.ModuleAsks) httpapi.ModuleRequests {
 		Calls:             asked.Calls,
 		PublicRoutes:      asked.PublicRoutes,
 		StagedRoutes:      StagedRoutesOf(asked.StagedRoutes),
+		RequestHeaders:    RequestHeadersOf(asked.RequestHeaders),
 		RecordsMiB:        asked.RecordsMiB,
 		MemoryMiB:         asked.MemoryMiB,
 		Data:              asked.Data,
@@ -426,6 +453,7 @@ func AsksOf(requests httpapi.ModuleRequests) install.ModuleAsks {
 		Calls:             requests.Calls,
 		PublicRoutes:      requests.PublicRoutes,
 		StagedRoutes:      stagedAsksOf(requests.StagedRoutes),
+		RequestHeaders:    headerAsksOf(requests.RequestHeaders),
 		RecordsMiB:        requests.RecordsMiB,
 		MemoryMiB:         requests.MemoryMiB,
 		Data:              requests.Data,

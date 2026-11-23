@@ -651,6 +651,18 @@
       ]
     },
     {
+      "code": "core.internal/RESOURCE_HEADER_NOT_GRANTED",
+      "status": 500,
+      "summary": "The module cannot work without a request header this server did not grant it, so it was not started",
+      "action": "Grant the header named here in service.request_headers of the instance, or install the module again with approve.",
+      "retryable": false,
+      "redacted": false,
+      "params": [
+        "resource",
+        "header"
+      ]
+    },
+    {
       "code": "core.internal/RESOURCE_MANIFEST_DISAGREES",
       "status": 500,
       "summary": "The artefact that answered is not the module the install recorded, so it was not run",

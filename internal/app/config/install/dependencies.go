@@ -24,6 +24,10 @@ type Requirement struct {
 	// Since is the contract version that introduced the requirement, and empty
 	// when the module did not say.
 	Since string `json:"since,omitempty" yaml:"since"`
+	// Header is a request header the module marked required in routes.headers
+	// (ADR-20261118-nnm). It is met when the instance's service block grants
+	// the header.
+	Header string `json:"header,omitempty" yaml:"header"`
 }
 
 // Dependency is the module half of the requirement, and the zero Dependency
@@ -40,6 +44,8 @@ func (r Requirement) Subject() string {
 		return r.Capability
 	case r.Module != "":
 		return r.Dependency().String()
+	case r.Header != "":
+		return r.Header
 	}
 
 	return r.Core
@@ -54,6 +60,8 @@ func (r Requirement) Describe() string {
 		return "the module " + r.Dependency().String()
 	case r.Core != "":
 		return "a core version in " + r.Core
+	case r.Header != "":
+		return "the request header " + r.Header
 	}
 
 	return "nothing"

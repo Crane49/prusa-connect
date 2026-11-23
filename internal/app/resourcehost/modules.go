@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"maps"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -616,6 +617,27 @@ func moduleDocumentOf(runner *supervisor.Instance[any]) []byte {
 	return document
 }
 
+// headersFor is the request headers the operator granted the running
+// instance beside the ones every module gets, and nil for none or for an
+// instance that is not running (ADR-20261118-nnm).
+func (h *Host) headersFor(instance ref.Ref) []string {
+	// A reconcile replaces the declaration under mu, so it is read under mu.
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	running, ok := h.running[instance]
+	if !ok {
+		return nil
+	}
+
+	declared := running.declaration.Spec
+	if declared.Runtime != install.RuntimeService || declared.Service == nil {
+		return nil
+	}
+
+	return slices.Clone(declared.Service.RequestHeaders)
+}
+
 // moduleHandler forwards one authorized request into the module's own process
 // and writes back what it answered.
 //
@@ -691,9 +713,11 @@ func (m *moduleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // is written to a file first, and the caller removes it once the module
 // answered.
 func (m *moduleHandler) requestOf(w http.ResponseWriter, r *http.Request) (routesapi.Request, *stagedBody, error) {
+	granted := m.host.headersFor(m.instance)
+
 	route, isStaged := m.host.stagedFor(m.instance, r.Method, r.URL.Path)
 	if !isStaged {
-		request, err := moduleRequestOf(r)
+		request, err := moduleRequestOf(r, granted)
 
 		return request, nil, err
 	}
@@ -734,7 +758,7 @@ func (m *moduleHandler) requestOf(w http.ResponseWriter, r *http.Request) (route
 	body.release = slot
 	body.budget = route.readBudget()
 
-	request := wireRequestOf(r, nil)
+	request := wireRequestOf(r, nil, granted)
 	request.BodyFile = body.file
 
 	return request, &body, nil
@@ -858,24 +882,28 @@ var errBodyTooLarge = errors.New("resourcehost: the request body is over the mod
 // moduleRequestOf is the request as the wire carries it. The host reads the
 // body under the bound, so a caller cannot make this host buffer more than the
 // method may carry before the request is refused.
-func moduleRequestOf(r *http.Request) (routesapi.Request, error) {
+//
+// granted is the request headers the operator granted the module beside the
+// ones every module gets (ADR-20261118-nnm).
+func moduleRequestOf(r *http.Request, granted []string) (routesapi.Request, error) {
 	body, err := readBounded(r, routesapi.MaxModuleBody)
 	if err != nil {
 		return routesapi.Request{}, err
 	}
 
-	return wireRequestOf(r, body), nil
+	return wireRequestOf(r, body, granted), nil
 }
 
 // wireRequestOf is the request with the body the caller read.
-func wireRequestOf(r *http.Request, body []byte) routesapi.Request {
+func wireRequestOf(r *http.Request, body []byte, granted []string) routesapi.Request {
 	return routesapi.Request{
 		Method: r.Method,
 		Path:   r.URL.Path,
 		Query:  r.URL.RawQuery,
-		// Only the headers RequestHeaders passes. The person's Cookie and
-		// Authorization stay here, so the module cannot call the core as them.
-		Headers:   routesapi.RequestHeaders(r.Header),
+		// Only the headers every module gets and the ones the operator
+		// granted this one. The person's Cookie, Authorization and X-Api-Key
+		// stay here, so the module cannot call the core as them.
+		Headers:   routesapi.GrantedRequestHeaders(r.Header, granted),
 		Body:      body,
 		Principal: httpapi.ModulePrincipalOf(r.Context()),
 	}

@@ -7088,6 +7088,16 @@
             "format": "int64",
             "type": "integer"
           },
+          "request_headers": {
+            "description": "The request headers the release's manifest asks the server to pass to its routes, each with the reason it gives.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleRequestHeader"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "requests_known": {
             "description": "Whether permissions, events, check_absent_people, list_people and records_mib are every request of the release. True for a marketplace row, and for a local row whose index entry states them or whose source is a release directory on this server. When false, install without approve first, read requests in the answer, then approve with those as expect.",
             "type": "boolean"
@@ -7458,6 +7468,16 @@
             "format": "int64",
             "type": "integer"
           },
+          "request_headers": {
+            "description": "The request headers the release's manifest asks the server to pass to its routes, each with the reason it gives.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleRequestHeader"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "requests_known": {
             "description": "Whether permissions, events, check_absent_people, list_people and records_mib are every request of the release. True for a marketplace row, and for a local row whose index entry states them or whose source is a release directory on this server. When false, install without approve first, read requests in the answer, then approve with those as expect.",
             "type": "boolean"
@@ -7754,6 +7774,36 @@
         ],
         "type": "object"
       },
+      "ModuleRequestHeader": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "description": "The name of the header.",
+            "examples": [
+              "Print-After-Upload"
+            ],
+            "maxLength": 64,
+            "type": "string"
+          },
+          "reason": {
+            "description": "Why the module reads it, as its manifest says.",
+            "examples": [
+              "PrusaSlicer 2 says whether to print the file it uploads"
+            ],
+            "maxLength": 200,
+            "type": "string"
+          },
+          "required": {
+            "description": "Whether the module cannot work without the header. An install that would not grant it is refused, and the instance does not start without it.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ],
+        "type": "object"
+      },
       "ModuleRequests": {
         "additionalProperties": false,
         "properties": {
@@ -7843,6 +7893,16 @@
             "maximum": 1024,
             "minimum": 0,
             "type": "integer"
+          },
+          "request_headers": {
+            "description": "The request headers the server passes to the module's routes beside the ones every module gets, each with the reason the module gives.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleRequestHeader"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "staged_routes": {
             "description": "The routes whose request body the server writes into the module's data directory, each with the largest body the module asks for.",
@@ -10309,6 +10369,13 @@
             "description": "The range of server versions this module runs on.",
             "examples": [
               "\u003e=1.2.0"
+            ],
+            "type": "string"
+          },
+          "header": {
+            "description": "A request header the module marked required. The instance does not start while its service block does not grant it.",
+            "examples": [
+              "Print-After-Upload"
             ],
             "type": "string"
           },

@@ -65,6 +65,9 @@ type moduleReport struct {
 	// staged is each route whose body the install lets the host write to a
 	// file, with its limit.
 	staged []install.StagedRoute
+	// headers is each request header the install lets the host pass to the
+	// module, with the reason the module gives.
+	headers []manifest.RequestHeader
 	// checks is each action the install lets this one ask about for a person
 	// without taking it as itself.
 	checks []string
@@ -144,7 +147,7 @@ func reportOf(
 		checked:   checked,
 	}
 
-	for _, required := range recordedRequirements(held.manifest.Requires) {
+	for _, required := range recordedRequirements(held.manifest) {
 		out.requires = append(out.requires, required.Describe())
 	}
 
@@ -167,6 +170,7 @@ func reportOf(
 		out.calls = held.manifest.Calls
 		out.public = routeLines(held.manifest.Routes.Public)
 		out.staged = install.StagedRoutesOf(held.manifest.Routes.Staged)
+		out.headers = held.manifest.Routes.Headers
 		out.checks = held.manifest.Checks
 	}
 
@@ -205,13 +209,7 @@ func reportOf(
 		out.requests = append(out.requests, callRequest(namespace))
 	}
 
-	for _, route := range held.manifest.Routes.Public {
-		out.requests = append(out.requests, publicRequest(route.String()))
-	}
-
-	for _, route := range install.StagedRoutesOf(held.manifest.Routes.Staged) {
-		out.requests = append(out.requests, stagedRequest(route))
-	}
+	out.requests = append(out.requests, routeRequests(held.manifest.Routes)...)
 
 	if held.manifest.RecordsMiB > 0 {
 		out.requests = append(out.requests, recordsRequest(held.manifest.RecordsMiB))
@@ -302,13 +300,7 @@ func report(out io.Writer, held moduleReport) {
 		fmt.Fprintf(out, "  may call    the routes of %s (calls)\n", namespace)
 	}
 
-	for _, route := range held.public {
-		fmt.Fprintf(out, "  public      %s, answered without a signed-in caller (routes.public)\n", route)
-	}
-
-	for _, route := range held.staged {
-		fmt.Fprintf(out, "  upload      %s, up to %d MiB (routes.staged)\n", route.Route(), route.MaxMiB)
-	}
+	reportRoutes(out, held)
 
 	if held.recordsMiB > 0 {
 		fmt.Fprintf(out, "  records     %s\n", recordsGranted(held.recordsMiB))
@@ -338,5 +330,41 @@ func report(out io.Writer, held moduleReport) {
 
 	for _, request := range held.requests {
 		fmt.Fprintf(out, "  asks for    %s\n", request)
+	}
+}
+
+// routeRequests is the request line of each route and each header of the
+// routes block: a route with no caller, a staged route and a request header.
+func routeRequests(routes manifest.Routes) []string {
+	var out []string
+
+	for _, route := range routes.Public {
+		out = append(out, publicRequest(route.String()))
+	}
+
+	for _, route := range install.StagedRoutesOf(routes.Staged) {
+		out = append(out, stagedRequest(route))
+	}
+
+	for _, header := range install.RequestHeadersOf(routes.Headers) {
+		out = append(out, headerRequest(header))
+	}
+
+	return out
+}
+
+// reportRoutes writes what an approved install granted of the routes block.
+func reportRoutes(out io.Writer, held moduleReport) {
+	for _, route := range held.public {
+		fmt.Fprintf(out, "  public      %s, answered without a signed-in caller (routes.public)\n", route)
+	}
+
+	for _, route := range held.staged {
+		fmt.Fprintf(out, "  upload      %s, up to %d MiB (routes.staged)\n", route.Route(), route.MaxMiB)
+	}
+
+	for _, header := range held.headers {
+		fmt.Fprintf(out, "  header      %s, passed to the module (%s) (routes.headers)\n",
+			header.Name, header.Reason)
 	}
 }

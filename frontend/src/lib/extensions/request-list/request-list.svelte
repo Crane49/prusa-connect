@@ -2,7 +2,8 @@
   What a module asks for, one line each, in words a person reads: each
   permission, each event it publishes, whether it may ask about people it is
   not serving, each route anybody may call without signing in, each route
-  whose body the server writes to a file with its largest body, the room it
+  whose body the server writes to a file with its largest body, each request
+  header it reads with the reason it gives, the room it
   wants for its records, the memory it recommends
   for its process, a directory of its own, a
   database of its own and each network port it listens on. An empty list says so,
@@ -66,6 +67,18 @@
           route: `${request.method} ${request.path}`,
           size: formatNumber(request.mib),
         });
+      case 'header':
+        // The line ends the sentence, so a reason written as a sentence
+        // does not end it twice.
+        return t(
+          request.required
+            ? 'app.settings.extensions.request.headerRequired'
+            : 'app.settings.extensions.request.header',
+          {
+            name: request.name,
+            reason: request.reason.replace(/\.+$/, ''),
+          },
+        );
       case 'records':
         return t('app.settings.extensions.request.records', {
           size: formatNumber(request.mib),

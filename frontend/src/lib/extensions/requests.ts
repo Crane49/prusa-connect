@@ -5,6 +5,7 @@
 // words: `permission operate`, `check operate`, `permission check_absent_people`,
 // `permission list_people`, `call <namespace>`,
 // `public <method> <path>`, `upload <method> <path> up to 1024 MiB`,
+// `header <name> (<reason>)`, `header <name>, required (<reason>)`,
 // `records 128 MiB`, `memory 192 MiB`, `event <endpoint> as <namespace>.<name>`,
 // `data directory`, `database of its own` and
 // `listen udp 13514 as <name> (<why>)`. A page reads
@@ -17,6 +18,7 @@ import type { components } from '@prusa/connect';
 export type ModuleRequests = components['schemas']['ModuleRequests'];
 export type ModuleListen = components['schemas']['ModuleListen'];
 export type ModuleStagedRoute = components['schemas']['ModuleStagedRoute'];
+export type ModuleRequestHeader = components['schemas']['ModuleRequestHeader'];
 /** Where an install puts the module's own database (ADR-20261021-bqc rule 5). */
 export type DatabaseChoice = components['schemas']['ModuleDatabaseChoice'];
 type ModuleOffer = components['schemas']['ModuleOffer'];
@@ -45,6 +47,14 @@ export type ModuleRequest =
       readonly method: string;
       readonly path: string;
       readonly mib: number;
+    }
+  // A request header the server passes to the module (ADR-20261118-nnm).
+  | {
+      readonly kind: 'header';
+      readonly name: string;
+      readonly reason: string;
+      /** The module does not start without the header. */
+      readonly required: boolean;
     }
   | { readonly kind: 'records'; readonly mib: number }
   | { readonly kind: 'memory'; readonly mib: number }
@@ -78,6 +88,7 @@ export const requestsOfOffer = (
         ...callsOf(offer.calls),
         ...publicOf(offer.public_routes),
         ...stagedOf(offer.staged_routes),
+        ...headersOf(offer.request_headers),
         records_mib: offer.records_mib ?? 0,
         ...memory(offer.memory_mib),
         ...portsAndData(offer.data, offer.listen, offer.database),
@@ -120,6 +131,24 @@ const stagedOf = (
   (routes ?? []).length > 0
     ? { staged_routes: (routes ?? []).map((route) => ({ ...route })) }
     : {};
+
+// The request headers, written only when there are some, so a release that
+// asks for none sends the same expect it always did.
+const headersOf = (
+  headers: readonly ModuleRequestHeader[] | null | undefined,
+): Pick<ModuleRequests, 'request_headers'> =>
+  (headers ?? []).length > 0
+    ? { request_headers: (headers ?? []).map((header) => ({ ...header })) }
+    : {};
+
+// Each header once, by name, the first reason kept.
+const mergeHeaders = (
+  a: readonly ModuleRequestHeader[],
+  b: readonly ModuleRequestHeader[],
+): ModuleRequestHeader[] => [
+  ...a,
+  ...b.filter((header) => !a.some((held) => held.name === header.name)),
+];
 
 /** The largest body a staged route may take, in MiB: the core's ceiling. */
 export const MAX_STAGED_MIB = 4096;
@@ -270,6 +299,7 @@ const CALL = /^call (\S+)$/u;
 const CHECK = /^check (\S+)$/u;
 const PUBLIC = /^public (\S+ \S+)$/u;
 const STAGED = /^upload (\S+) (\S+) up to (\d+) MiB$/u;
+const HEADER = /^header ([^\s,]+)(, required)? \((.*)\)$/u;
 
 /** One line of the server's, read back into a request. */
 export const requestOfLine = (
@@ -307,6 +337,16 @@ export const requestOfLine = (
       method: staged[1],
       path: staged[2],
       mib: Number(staged[3]),
+    };
+  }
+
+  const header = HEADER.exec(text);
+  if (header?.[1] !== undefined && header[3] !== undefined) {
+    return {
+      kind: 'header',
+      name: header[1],
+      reason: header[3],
+      required: header[2] !== undefined,
     };
   }
 
@@ -370,6 +410,7 @@ export const requestsOfLines = (
       | 'calls'
       | 'public_routes'
       | 'staged_routes'
+      | 'request_headers'
       | 'checks'
       | 'memory_mib'
     >
@@ -385,6 +426,7 @@ export const requestsOfLines = (
   const calls: string[] = [];
   const routes: string[] = [];
   let staged: ModuleStagedRoute[] = [];
+  let headers: ModuleRequestHeader[] = [];
   const checks: string[] = [];
   let memoryMiB = 0;
   const listen: ModuleListen[] = [];
@@ -418,6 +460,15 @@ export const requestsOfLines = (
       case 'staged':
         staged = mergeStaged(staged, [
           { method: request.method, path: request.path, max_mib: request.mib },
+        ]);
+        break;
+      case 'header':
+        headers = mergeHeaders(headers, [
+          {
+            name: request.name,
+            reason: request.reason,
+            ...(request.required ? { required: true } : {}),
+          },
         ]);
         break;
       case 'records':
@@ -454,6 +505,7 @@ export const requestsOfLines = (
     ...callsOf(calls),
     ...publicOf(routes),
     ...stagedOf(staged),
+    ...headersOf(headers),
     ...memory(memoryMiB),
     ...portsAndData(data, listen, database),
   };
@@ -477,6 +529,7 @@ export const mergeRequests = (
     ...new Set([...(a.public_routes ?? []), ...(b.public_routes ?? [])]),
   ]),
   ...stagedOf(mergeStaged(a.staged_routes ?? [], b.staged_routes ?? [])),
+  ...headersOf(mergeHeaders(a.request_headers ?? [], b.request_headers ?? [])),
   records_mib: Math.max(a.records_mib ?? 0, b.records_mib ?? 0),
   ...memory(Math.max(a.memory_mib ?? 0, b.memory_mib ?? 0)),
   ...portsAndData(
@@ -491,7 +544,7 @@ export const mergeRequests = (
   ),
 });
 
-/** The requests as a list to draw, in a fixed order: permissions, checks, events, people, the list of people, calls, public routes, staged routes, room, memory, directory, database, ports. */
+/** The requests as a list to draw, in a fixed order: permissions, checks, events, people, the list of people, calls, public routes, staged routes, request headers, room, memory, directory, database, ports. */
 export const listRequests = (requests: ModuleRequests): ModuleRequest[] => [
   ...(requests.permissions ?? []).map((permission): ModuleRequest => ({
     kind: 'permission',
@@ -523,6 +576,12 @@ export const listRequests = (requests: ModuleRequests): ModuleRequest[] => [
     method: route.method,
     path: route.path,
     mib: route.max_mib,
+  })),
+  ...(requests.request_headers ?? []).map((header): ModuleRequest => ({
+    kind: 'header',
+    name: header.name,
+    reason: header.reason,
+    required: header.required === true,
   })),
   ...((requests.records_mib ?? 0) > 0
     ? [

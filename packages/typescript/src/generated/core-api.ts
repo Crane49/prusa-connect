@@ -6192,6 +6192,8 @@ export interface components {
              * @description The room the release's manifest asks for its records, in MiB. Absent is the default room.
              */
             records_mib?: number;
+            /** @description The request headers the release's manifest asks the server to pass to its routes, each with the reason it gives. */
+            request_headers?: components["schemas"]["ModuleRequestHeader"][] | null;
             /** @description Whether permissions, events, check_absent_people, list_people and records_mib are every request of the release. True for a marketplace row, and for a local row whose index entry states them or whose source is a release directory on this server. When false, install without approve first, read requests in the answer, then approve with those as expect. */
             requests_known: boolean;
             /** @description The release's require: the core constraint, the capabilities, and the modules it cannot run without, each with a constraint in Composer's grammar. An install adds the modules this server does not have; read the plan first. */
@@ -6332,6 +6334,8 @@ export interface components {
              * @description The room the release's manifest asks for its records, in MiB. Absent is the default room.
              */
             records_mib?: number;
+            /** @description The request headers the release's manifest asks the server to pass to its routes, each with the reason it gives. */
+            request_headers?: components["schemas"]["ModuleRequestHeader"][] | null;
             /** @description Whether permissions, events, check_absent_people, list_people and records_mib are every request of the release. True for a marketplace row, and for a local row whose index entry states them or whose source is a release directory on this server. When false, install without approve first, read requests in the answer, then approve with those as expect. */
             requests_known: boolean;
             /** @description Who requires this module and with which range, each as module range. */
@@ -6438,6 +6442,20 @@ export interface components {
             /** @description The modules an install added for this one that nothing else requires once it is gone. uninstall-module removes them with with_unused, and leaves them installed without it. */
             unused: components["schemas"]["ModuleUnused"][] | null;
         };
+        ModuleRequestHeader: {
+            /**
+             * @description The name of the header.
+             * @example Print-After-Upload
+             */
+            name: string;
+            /**
+             * @description Why the module reads it, as its manifest says.
+             * @example PrusaSlicer 2 says whether to print the file it uploads
+             */
+            reason: string;
+            /** @description Whether the module cannot work without the header. An install that would not grant it is refused, and the instance does not start without it. */
+            required?: boolean;
+        };
         ModuleRequests: {
             /** @description The namespaces of the other modules whose routes the module calls. */
             calls?: string[] | null;
@@ -6471,6 +6489,8 @@ export interface components {
              * @description The room the module asks for its records, in MiB. Zero is the default room.
              */
             records_mib?: number;
+            /** @description The request headers the server passes to the module's routes beside the ones every module gets, each with the reason the module gives. */
+            request_headers?: components["schemas"]["ModuleRequestHeader"][] | null;
             /** @description The routes whose request body the server writes into the module's data directory, each with the largest body the module asks for. */
             staged_routes?: components["schemas"]["ModuleStagedRoute"][] | null;
         };
@@ -7533,6 +7553,11 @@ export interface components {
              * @example >=1.2.0
              */
             core?: string;
+            /**
+             * @description A request header the module marked required. The instance does not start while its service block does not grant it.
+             * @example Print-After-Upload
+             */
+            header?: string;
             /**
              * @description The release this server has of that module. Absent when it is not installed, or when the caller may not see it.
              * @example 1.4.0

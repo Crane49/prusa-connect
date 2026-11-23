@@ -19,6 +19,7 @@ func (o ModuleOffer) Requests() ModuleRequests {
 		Calls:             o.Calls,
 		PublicRoutes:      o.PublicRoutes,
 		StagedRoutes:      o.StagedRoutes,
+		RequestHeaders:    o.RequestHeaders,
 		RecordsMiB:        o.RecordsMiB,
 		Listen:            o.Listen,
 		Data:              o.Data,

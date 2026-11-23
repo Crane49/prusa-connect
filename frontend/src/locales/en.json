@@ -457,6 +457,8 @@
   "app.settings.extensions.uploads.save": "Save the limits",
   "app.settings.extensions.request.public": "Answers {route} under its own address for anybody who can reach this server, without signing in.",
   "app.settings.extensions.request.staged": "Takes uploads of up to {size} MiB on {route}, written to its data folder.",
+  "app.settings.extensions.request.header": "Reads the {name} header of a request: {reason}.",
+  "app.settings.extensions.request.headerRequired": "Reads the {name} header of a request, and does not start without it: {reason}.",
   "app.settings.extensions.tab.uploads": "Uploads",
   "app.slicer.waiting.heading": "Waiting for PrusaSlicer",
   "app.slicer.waiting.note": "PrusaSlicer signs you in to this server. The page opens when it has done so.",

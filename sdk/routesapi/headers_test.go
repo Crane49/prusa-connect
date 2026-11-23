@@ -103,3 +103,35 @@ func TestACallPassesNoCredentialOn(t *testing.T) {
 		t.Fatalf("the other module received %v", request.Headers)
 	}
 }
+
+// A header the operator granted reaches the module beside the ones every
+// module gets. A granted name that carries a credential still does not.
+func TestAGrantedHeaderReachesAModuleAndACredentialNever(t *testing.T) {
+	t.Parallel()
+
+	headers := http.Header{}
+	headers.Set("Print-After-Upload", "?1")
+	headers.Set("Overwrite", "?1")
+	headers.Set("Content-Type", "text/x.gcode")
+	headers.Set("Cookie", "secret")
+	headers.Set("X-Api-Key", "secret")
+	headers.Set("Authorization", "secret")
+
+	passed := routesapi.GrantedRequestHeaders(headers,
+		[]string{"print-after-upload", "Cookie", "X-Api-Key", "Authorization"})
+
+	want := map[string]string{"Print-After-Upload": "?1", "Content-Type": "text/x.gcode"}
+	if len(passed) != len(want) {
+		t.Fatalf("passed %v, want %v", passed, want)
+	}
+
+	for name, value := range want {
+		if got := passed[name]; len(got) != 1 || got[0] != value {
+			t.Errorf("%s is %v, want %q", name, got, value)
+		}
+	}
+
+	if got := routesapi.RequestHeaders(headers); got["Print-After-Upload"] != nil {
+		t.Errorf("an ungranted header passed: %v", got)
+	}
+}

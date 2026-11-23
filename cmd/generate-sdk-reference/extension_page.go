@@ -468,6 +468,16 @@ func approvals(m manifest.Manifest) []string {
 			"with the largest body each asks for: "+codeList(staged))
 	}
 
+	if len(m.Routes.Headers) > 0 {
+		headers := make([]string, 0, len(m.Routes.Headers))
+		for _, header := range m.Routes.Headers {
+			headers = append(headers, header.Name)
+		}
+
+		lines = append(lines, "request headers the server passes to its routes beyond the usual ones: "+
+			codeList(headers))
+	}
+
 	return lines
 }
 

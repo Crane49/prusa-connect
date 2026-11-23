@@ -79,7 +79,7 @@ func moduleRecordOf(instance ref.Ref, namespace string, held manifest.Manifest, 
 			Runtime: runtime,
 			Module: &install.ModuleEntry{
 				Version:     held.Version,
-				Requires:    recordedRequirements(held.Requires),
+				Requires:    recordedRequirements(held),
 				Suggests:    recordedSuggests(held.Suggests),
 				Conflicts:   recordedConflicts(held.Conflicts),
 				FileTypes:   fileTypesOf(held.FileAnalysis),
@@ -285,17 +285,25 @@ func rootConstraint(asked string, pulled bool) string {
 }
 
 // recordedRequirements is the manifest's requires list in the shape the
-// declaration keeps it. The manifest has already held each entry to exactly one
+// declaration keeps it, and a requirement for each request header the
+// manifest marks required, so the host holds the instance to its grant at
+// every start. The manifest has already held each entry to exactly one
 // subject, so nothing is decided again here.
-func recordedRequirements(declared []manifest.Requirement) []install.Requirement {
-	out := make([]install.Requirement, 0, len(declared))
-	for _, one := range declared {
+func recordedRequirements(declared manifest.Manifest) []install.Requirement {
+	out := make([]install.Requirement, 0, len(declared.Requires))
+	for _, one := range declared.Requires {
 		out = append(out, install.Requirement{
 			Capability: one.Capability,
 			Core:       one.Core,
 			Module:     one.Module,
 			Version:    one.Version,
 		})
+	}
+
+	for _, header := range declared.Routes.Headers {
+		if header.Required {
+			out = append(out, install.Requirement{Header: header.Name})
+		}
 	}
 
 	if len(out) == 0 {

@@ -92,7 +92,7 @@ func (s *stagingTarget) requests() ([]routesapi.Request, [][]byte) {
 func stagingModule(t *testing.T, data bool, keep string) (http.Handler, *stagingTarget, string) {
 	t.Helper()
 
-	return stagingModuleUnder(t, data, keep, supervisor.DefaultPolicy())
+	return grantedModuleUnder(t, data, keep, nil, supervisor.DefaultPolicy())
 }
 
 // stagingModuleUnder is stagingModule under policy.
@@ -101,10 +101,28 @@ func stagingModuleUnder(
 ) (http.Handler, *stagingTarget, string) {
 	t.Helper()
 
+	return grantedModuleUnder(t, data, keep, nil, policy)
+}
+
+// grantedModule is stagingModule granted the request headers named, beside
+// the ones every module gets.
+func grantedModule(t *testing.T, data bool, keep string, headers []string) (http.Handler, *stagingTarget, string) {
+	t.Helper()
+
+	return grantedModuleUnder(t, data, keep, headers, supervisor.DefaultPolicy())
+}
+
+// grantedModuleUnder is grantedModule under policy.
+func grantedModuleUnder(
+	t *testing.T, data bool, keep string, headers []string, policy supervisor.Policy,
+) (http.Handler, *stagingTarget, string) {
+	t.Helper()
+
 	declared := declaredAs(t, ref.KindSink, "uploader", "com.github.acme.uploader/uploader", install.RuntimeService)
 	declared.Spec.Service = &install.Service{
-		Data:         data,
-		StagedRoutes: []install.StagedRoute{{Method: http.MethodPut, Path: "/files/{name}", MaxMiB: 2}},
+		Data:           data,
+		StagedRoutes:   []install.StagedRoute{{Method: http.MethodPut, Path: "/files/{name}", MaxMiB: 2}},
+		RequestHeaders: headers,
 	}
 	declared.Spec.Module = &install.ModuleEntry{}
 
@@ -532,4 +550,45 @@ func TestTheFirstStartRemovesStagedBodiesARunLeft(t *testing.T) {
 
 	host.sweepStaged(t.Context(), declared)
 	require.FileExists(t, inFlight, "a restart removed a body that may be on its way in")
+}
+
+// TestAGrantedHeaderReachesTheModuleOnEveryRoute is the gate ADR-20261118-nnm
+// rules 2 and 3 owe. A header the operator granted reaches the module on a staged
+// route and on any other route. A header nobody granted, and the person's
+// credentials, never do.
+func TestAGrantedHeaderReachesTheModuleOnEveryRoute(t *testing.T) {
+	t.Parallel()
+
+	send := func(handler http.Handler, path string) {
+		request := httptest.NewRequestWithContext(t.Context(), http.MethodPut, path, bytes.NewReader([]byte("G28\n")))
+		request.Header.Set("Print-After-Upload", "?1")
+		request.Header.Set("Overwrite", "?1")
+		request.Header.Set("X-Api-Key", "pcl_secret")
+		request.Header.Set("Cookie", "pcl_session=secret")
+
+		recorder := httptest.NewRecorder()
+		handler.ServeHTTP(recorder, request)
+		require.Equal(t, http.StatusCreated, recorder.Code, recorder.Body.String())
+	}
+
+	granted, target, _ := grantedModule(t, true, "", []string{"Print-After-Upload"})
+	send(granted, "/files/a")
+	send(granted, "/other")
+
+	seen, _ := target.requests()
+	require.Len(t, seen, 2)
+
+	for _, request := range seen {
+		require.Equal(t, []string{"?1"}, request.Headers["Print-After-Upload"])
+		require.NotContains(t, request.Headers, "Overwrite")
+		require.NotContains(t, request.Headers, "X-Api-Key")
+		require.NotContains(t, request.Headers, "Cookie")
+	}
+
+	plain, target, _ := stagingModule(t, true, "")
+	send(plain, "/files/a")
+
+	seen, _ = target.requests()
+	require.Len(t, seen, 1)
+	require.NotContains(t, seen[0].Headers, "Print-After-Upload")
 }

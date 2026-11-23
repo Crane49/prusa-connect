@@ -274,6 +274,35 @@ func TestARelayedCallCarriesNoCredential(t *testing.T) {
 	require.Equal(t, map[string][]string{"Accept": {"application/json"}}, seen[0].Headers)
 }
 
+// A call from another module carries only the headers every module gets,
+// even a header the operator granted the module called. A calling module
+// cannot set Print-After-Upload and start a print in the other module
+// (ADR-20261118-nnm rule 5).
+func TestARelayedCallCarriesNoGrantedHeader(t *testing.T) {
+	t.Parallel()
+
+	host, calls, _ := callingModule(t, "com.github.acme.slicer")
+	target := runningTarget(t, host, "slicer")
+
+	host.mu.Lock()
+	called := host.running[target.instance]
+	called.declaration.Spec.Service = &install.Service{RequestHeaders: []string{"Print-After-Upload"}}
+	host.mu.Unlock()
+
+	require.Equal(t, []string{"Print-After-Upload"}, host.headersFor(target.instance),
+		"the module called holds the grant")
+
+	_, err := calls.Call(t.Context(), routesapi.CallParams{
+		Module: "com.github.acme.slicer", Method: http.MethodPut, Path: "/files/a",
+		Headers: map[string][]string{"Print-After-Upload": {"?1"}, "Content-Type": {"text/x.gcode"}},
+	})
+	require.NoError(t, err)
+
+	seen, _ := target.requests()
+	require.Len(t, seen, 1)
+	require.Equal(t, map[string][]string{"Content-Type": {"text/x.gcode"}}, seen[0].Headers)
+}
+
 // A person's request reaches a module without their session cookie or token
 // (issue #605). The module learns who asks from the principal alone.
 func TestAPersonsCredentialsStayWithTheHost(t *testing.T) {
@@ -285,7 +314,7 @@ func TestAPersonsCredentialsStayWithTheHost(t *testing.T) {
 	r.Header.Set("X-Forwarded-For", "203.0.113.7")
 	r.Header.Set("If-None-Match", `"4"`)
 
-	request, err := moduleRequestOf(r)
+	request, err := moduleRequestOf(r, nil)
 	require.NoError(t, err)
 	require.Equal(t, map[string][]string{"If-None-Match": {`"4"`}}, request.Headers)
 }

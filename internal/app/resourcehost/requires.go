@@ -3,6 +3,7 @@ package resourcehost
 import (
 	"context"
 	"maps"
+	"net/http"
 	"slices"
 	"strings"
 
@@ -40,6 +41,8 @@ import (
 //     met when a module that speaks it is serving, and over direct when one is
 //     declared. An operator can install such a module, so the host retries
 //     only this kind of requirement.
+//   - a request header the module marked required in routes.headers, met
+//     when the service block grants it (ADR-20261118-nnm).
 
 // reasonDependencyMissing is the reason of the DependenciesSatisfied condition
 // while an instance waits for a contract that no module serves.
@@ -145,8 +148,8 @@ func (h *Host) dependenciesMet(
 	return nil
 }
 
-// meets checks one requirement. The field that is set, Capability, Core or
-// Module, selects the check and the error code.
+// meets checks one requirement. The field that is set, Capability, Core,
+// Module or Header, selects the check and the error code.
 func (h *Host) meets(
 	ctx context.Context, declaration resource.Declaration, required install.Requirement, serves wirerpc.Methods,
 ) error {
@@ -167,9 +170,37 @@ func (h *Host) meets(
 		return h.meetsCore(instance, required)
 	case required.Module != "":
 		return h.meetsModule(ctx, instance, required)
+	case required.Header != "":
+		return meetsHeader(declaration, required)
 	}
 
 	return nil
+}
+
+// meetsHeader checks that the service block grants a request header the
+// module marked required (ADR-20261118-nnm). A grant the operator took away,
+// or never wrote, keeps the instance from starting, and the error names the
+// header.
+func meetsHeader(declaration resource.Declaration, required install.Requirement) error {
+	var granted []string
+	if spec := serviceOf(declaration); spec != nil {
+		granted = spec.service.RequestHeaders
+	}
+
+	if slices.Contains(granted, http.CanonicalHeaderKey(required.Header)) {
+		return nil
+	}
+
+	return dependencyError{
+		reason: condition.ReasonDependencyFailed,
+		raised: headerNotGranted.New(
+			"the module requires the request header "+required.Header+
+				", and service.request_headers does not grant it").
+			With(
+				fault.StringParam("resource", declaration.Ref.String()),
+				fault.StringParam("header", required.Header),
+			),
+	}
 }
 
 // meetsCore checks that the version of the running build is in the range the

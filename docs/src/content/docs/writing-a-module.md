@@ -492,6 +492,7 @@ serving, and `GET /api/v1/resources/sink/spools` carries the reason in the
 | a module required that is not serving, or out of range | the instance retries, and starts by itself once that module serves | `RESOURCE_DEPENDENCY_MISSING` |
 | a `state.*` capability while no record backend serves | the instance retries, and starts by itself once a backend under `resources.db` serves | `RESOURCE_RECORDS_UNSERVED` |
 | two modules requiring each other | every instance in the ring stays `failed`, and the message names the ring | `RESOURCE_DEPENDENCY_CYCLE` |
+| a request header marked `required` that `service.request_headers` does not grant | the instance stays `failed` until the operator grants the header | `RESOURCE_HEADER_NOT_GRANTED` |
 
 `module add` prints the list, and refuses to install a module asking for a
 capability this build does not serve or a server version this build is not.
@@ -1985,6 +1986,58 @@ and the server deletes it once the print has settled. Or move it into
 `print/` and call `storageapi.Client.Move`, and the server puts it into a
 storage and deletes it from `print/` (ADR-20261123-vvb).
 
+### A request header the module reads
+
+The host passes a module only the request headers every module gets:
+`Accept`, `Accept-Language`, `Content-Language`, `Content-Type`, the
+`If-*` headers of a conditional request, `Range` and `User-Agent`. A module
+that speaks a protocol with headers of its own lists each one under
+`routes.headers` in its manifest, with a reason the operator reads. It may
+ask only for a header on the list the core keeps, today `Print-After-Upload`:
+
+```yaml
+routes:
+  headers:
+    - name: Print-After-Upload
+      reason: PrusaSlicer 2 says whether to print the file it uploads
+```
+
+A module asks for at most 8 headers, and each reason has at most 200
+characters, with no control or invisible character. The operator approves each header at install. An install
+without `-approve` passes no header and names each one as a request, such as
+`header Print-After-Upload (PrusaSlicer 2 says whether to print the file it uploads)`. An approved install writes
+the name to `service.request_headers`, and the operator may take one away
+there. The module reads a granted header with `r.Header.Get`, under its
+canonical name, on every route, staged ones included. A call from another
+module through `routes.call` carries only the headers every module gets.
+
+A module that cannot work without a header says `required: true` beside
+it. The host then does not start the instance while the operator has not
+granted the header, and the instance's state names it. An install without
+`-approve` lists it as `header Print-After-Upload, required (...)`. Mark a
+header required when answering without it would mislead the client, such as
+a print that is stored and never started.
+
+On a route anybody may call, the value of a granted header comes from an
+anonymous client, so the module trusts it no more than the body.
+
+A header that is not on the list is refused in the manifest. To use another
+one, propose it for the list with a change to the core. The change says
+which program sends the header and why it carries no credential, names no
+person and does not change the request the host authorized. These headers
+never join the list:
+
+| headers | why |
+|---|---|
+| `Authorization`, `Proxy-Authorization`, `Cookie`, `X-Api-Key`, `DPoP`, `X-Setup-Code` | they carry the caller's credential. With it the module could call the core as that person |
+| `Token`, `Fingerprint`, `Code` | they carry a printer's credential on its connection to this server |
+| `Host`, `Connection`, `Keep-Alive`, `Proxy-Connection`, `TE`, `Trailer`, `Transfer-Encoding`, `Upgrade` | they describe one connection |
+| `Forwarded`, `Via`, `X-Forwarded-*`, `X-Real-IP`, `X-Client-IP`, `X-Cluster-Client-IP`, `True-Client-IP`, `CF-Connecting-IP` | the client can write them itself, so they say nothing true about it |
+
+Only request headers are granted this way. The headers of the module's answer
+are held to the same list for every module. The rules are
+[ADR-20261118-nnm](../../../decisions/20261118-nnm-a-module-asks-the-operator-for-the-request-headers-it-reads.md).
+
 ## Watch it fail
 
 A guide that only shows success proves little. Change one digit of the recorded checksum and restart:
@@ -2024,7 +2077,7 @@ A store refusal arrives as a typed error the sdk names, which is what `statusFor
 
 ### The headers a route sees
 
-The host passes a route only the headers it needs to answer: `Accept`, `Accept-Language`, `Content-Language`, `Content-Type`, the `If-*` conditions, `Range` and `User-Agent`. The person's `Cookie` and `Authorization` never reach the module, so a module cannot call the server as that person. `routesapi.PrincipalOf` says who is calling. A call from another module passes the same headers.
+The host passes a route only the headers it needs to answer: `Accept`, `Accept-Language`, `Content-Language`, `Content-Type`, the `If-*` conditions, `Range` and `User-Agent`. It also passes the headers the operator granted the module ([A request header the module reads](#a-request-header-the-module-reads)). The person's `Cookie` and `Authorization` never reach the module, so a module cannot call the server as that person. `routesapi.PrincipalOf` says who is calling. A call from another module passes only the headers every module gets, never the ones the operator granted.
 
 An answer reaches the person with these headers only: `Accept-Ranges`, `Cache-Control`, `Content-Disposition`, `Content-Language`, `Content-Range`, `Content-Type`, `ETag`, `Expires`, `Last-Modified`, `Retry-After`, `Vary` and `X-Content-Type-Options`. The host drops every other header. A cookie, a redirect and the security headers of the server's origin are the server's to set. These include the content security policy, HSTS, CORS and framing.
 

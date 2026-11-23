@@ -395,6 +395,8 @@ type ResourceRequirement struct {
 	Module string `json:"module,omitempty" doc:"Another module this one depends on, by its namespace." example:"com.github.acme.threemf"`
 	// Version is the range of that module's releases.
 	Version string `json:"version,omitempty" doc:"The constraint on that module's releases, in Composer's grammar." example:"^1.2"`
+	// Header is a request header the module cannot work without.
+	Header string `json:"header,omitempty" doc:"A request header the module marked required. The instance does not start while its service block does not grant it." example:"Print-After-Upload"`
 	// Reason is why a module is suggested.
 	Reason string `json:"reason,omitempty" doc:"For a suggestion, why the module is suggested, from the manifest."`
 	// Met says whether the dependency is met.

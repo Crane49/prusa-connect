@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/prusa3d/prusa-connect/internal/app/config/install"
 	"github.com/prusa3d/prusa-connect/internal/transport/http/httpapi"
 )
 
@@ -101,6 +102,42 @@ func TestTheIndexDropsALicenceThatCouldHideWhatItSays(t *testing.T) {
 			}
 		}
 	}
+}
+
+// A request header the catalogue lists with a name no manifest may ask for, or
+// with a reason holding an invisible or control character, is not offered, so
+// the install dialog never shows a line that could hide what it asks. A name
+// the catalogue spells in lower case is offered in its canonical form.
+func TestTheIndexDropsARequestHeaderThatCouldHideWhatItAsks(t *testing.T) {
+	t.Parallel()
+
+	market := newFakeMarketplace(t, archiveBytes(t, bothHalvesManifest()), "1.0.0")
+	market.asks = &marketplaceRelease{
+		Permissions: []string{"observe"},
+		RequestHeaders: []install.RequestHeader{
+			{Name: "print-after-upload", Reason: "PrusaSlicer says whether to print"},
+			{Name: "Cookie", Reason: "a credential"},
+			{Name: "Overwrite", Reason: "PrusaSlicer replaces a file of the same name"},
+			{Name: "Print-After-Upload", Reason: "r\x1b[2K"},
+			{Name: "Print-After-Upload", Reason: "r\u202eevil"},
+			{Name: "Print-After-Upload"},
+		},
+	}
+	installer, _ := marketInstaller(t, market.server.URL)
+
+	index, err := installer.Index(t.Context(), "user:operator")
+	require.NoError(t, err)
+
+	var offer httpapi.ModuleOffer
+	for _, row := range index.Items {
+		if row.Module == theModulePath {
+			offer = row
+		}
+	}
+
+	require.Equal(t, []httpapi.ModuleRequestHeader{
+		{Name: "Print-After-Upload", Reason: "PrusaSlicer says whether to print"},
+	}, offer.RequestHeaders)
 }
 
 // A release on this server is offered with the licence and the egress its own

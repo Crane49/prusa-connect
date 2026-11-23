@@ -241,6 +241,23 @@ var (
 		),
 	)
 
+	// A module that marked a request header required does not start without
+	// the grant. The operator writes the grant, so the host does not retry by
+	// itself: the changed declaration starts the instance again.
+	headerNotGranted = fault.Register(
+		fault.DomainInternal(),
+		"RESOURCE_HEADER_NOT_GRANTED",
+		statusInternal,
+		fault.Document(
+			"The module cannot work without a request header this server did not grant it, so it was not started",
+			"Grant the header named here in service.request_headers of the instance, or install the module "+
+				"again with approve.",
+			fault.RetryNever,
+			fault.ShowDetail,
+			"resource", "header",
+		),
+	)
+
 	// Two modules that each wait for the other never start. Neither is wrong
 	// alone, so both are named and both are refused.
 	dependencyCycle = fault.Register(

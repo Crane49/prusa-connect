@@ -450,6 +450,8 @@
   "app.printerDetail.undeclaredChoice.title": "Na tiskárnu se nic neposlalo",
   "app.settings.extensions.request.public": "Odpovídá na {route} pod svou adresou komukoli, kdo se k tomuto serveru dostane, bez přihlášení.",
   "app.settings.extensions.request.staged": "Přijímá nahrávané soubory do {size} MiB na {route} a ukládá je do své datové složky.",
+  "app.settings.extensions.request.header": "Čte hlavičku {name} požadavku: {reason}.",
+  "app.settings.extensions.request.headerRequired": "Čte hlavičku {name} požadavku a bez ní se nespustí: {reason}.",
   "app.settings.extensions.tab.uploads": "Nahrávání",
   "app.settings.extensions.uploads.title": "Největší nahrávané soubory",
   "app.settings.extensions.uploads.note": "Největší soubor, který každá cesta tohoto rozšíření přijme, nejvýše {max} MiB. Soubor se uloží do datové složky rozšíření a větší soubor server odmítne dřív, než ho rozšíření uvidí. Uložení rozšíření restartuje.",

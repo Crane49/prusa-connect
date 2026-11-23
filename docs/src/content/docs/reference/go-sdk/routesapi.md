@@ -235,6 +235,14 @@ func Describe(info wirerpc.Info, fragment []byte) (wirerpc.Info, error)
 
 Describe declares the routes a module serves on the info it answers plugin.info with. It names MethodServe in Serves and attaches the fragment, and it refuses a fragment the host would refuse. A host mounts a module that names MethodServe only when a fragment comes with it.
 
+### `GrantedRequestHeaders` {#routesapi-grantedrequestheaders}
+
+```go
+func GrantedRequestHeaders(headers map[string][]string, granted []string) map[string][]string
+```
+
+GrantedRequestHeaders is the part of headers a module receives when the operator granted it the headers named in granted as well. A name the manifest never lets a module ask for is left out even when granted names it.
+
 ### `PrincipalOf` {#routesapi-principalof}
 
 ```go

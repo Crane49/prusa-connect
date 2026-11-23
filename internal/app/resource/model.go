@@ -401,6 +401,10 @@ func declaredGrants(service *install.Service) string {
 		out += "\x00staged=" + strings.Join(slices.Sorted(slices.Values(lines)), ",")
 	}
 
+	if len(service.RequestHeaders) > 0 {
+		out += "\x00headers=" + strings.Join(slices.Sorted(slices.Values(service.RequestHeaders)), ",")
+	}
+
 	if service.CheckAbsentPeople {
 		out += "\x00absent"
 	}

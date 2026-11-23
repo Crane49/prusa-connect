@@ -88,6 +88,10 @@ func approvedOf(declared manifest.Manifest, namespace string, written []authz.Ac
 		given = append(given, stagedRequest(route))
 	}
 
+	for _, header := range declared.Routes.Headers {
+		given = append(given, headerRequest(install.RequestHeader(header)))
+	}
+
 	if declared.RecordsMiB > 0 {
 		given = append(given, recordsRequest(declared.RecordsMiB))
 	}

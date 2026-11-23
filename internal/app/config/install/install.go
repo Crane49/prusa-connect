@@ -167,6 +167,11 @@ type Service struct {
 	// routes.staged, and may change its limit later (ADR-20261120-xys rules 4
 	// to 6). A route the list does not hold gets its body on the wire.
 	StagedRoutes []StagedRoute
+	// RequestHeaders is the request headers the host passes to the module
+	// beside the ones every module gets, each in its canonical form. The
+	// operator approves each one at install, from the manifest's
+	// routes.headers, and may take one away (ADR-20261118-nnm).
+	RequestHeaders []string
 	// RecordsMiB is the room the operator granted the module's record
 	// namespace, in mebibytes. Zero is no grant, and the namespace then holds
 	// stateapi.DefaultNamespaceBytes. The operator writes it at install when
@@ -495,8 +500,8 @@ type ModuleEntry struct {
 // permissions it takes as itself, the events it publishes, whether it may ask
 // about a person it is not serving, whether it may list the people, the
 // modules it calls, the routes it answers with no caller, the routes whose
-// body it reads from a file, the room for its records, the ports it listens
-// on, whether it wants a data directory and whether it wants a database of its
+// body it reads from a file, the request headers it reads, the room for its
+// records, the ports it listens on, whether it wants a data directory and whether it wants a database of its
 // own.
 type ModuleAsks struct {
 	Permissions       []string          `json:"permissions,omitempty"         yaml:"permissions"`
@@ -507,6 +512,7 @@ type ModuleAsks struct {
 	Calls             []string          `json:"calls,omitempty"               yaml:"calls"`
 	PublicRoutes      []string          `json:"public_routes,omitempty"       yaml:"public_routes"`
 	StagedRoutes      []StagedRoute     `json:"staged_routes,omitempty"       yaml:"staged_routes"`
+	RequestHeaders    []RequestHeader   `json:"request_headers,omitempty"     yaml:"request_headers"`
 	RecordsMiB        int               `json:"records_mib,omitempty"         yaml:"records_mib"`
 	MemoryMiB         int               `json:"memory_mib,omitempty"          yaml:"memory_mib"`
 	Listen            []ListenAsk       `json:"listen,omitempty"              yaml:"listen"`
@@ -577,6 +583,7 @@ type ServiceEntry struct {
 	Calls             []string          `json:"calls,omitempty"               yaml:"calls"`
 	PublicRoutes      []string          `json:"public_routes,omitempty"       yaml:"public_routes"`
 	StagedRoutes      []StagedRoute     `json:"staged_routes,omitempty"       yaml:"staged_routes"`
+	RequestHeaders    []string          `json:"request_headers,omitempty"     yaml:"request_headers"`
 	RecordsMiB        int               `json:"records_mib,omitempty"         yaml:"records_mib"`
 	MemoryMiB         int               `json:"memory_mib,omitempty"          yaml:"memory_mib"`
 	OnOverMemory      string            `json:"on_over_memory,omitempty"      yaml:"on_over_memory"`
@@ -904,6 +911,11 @@ func serviceOf(mode Runtime, typeName string, declared *ServiceEntry) (Service, 
 		return Service{}, err
 	}
 
+	headers, err := headerGrantsOf(declared.RequestHeaders)
+	if err != nil {
+		return Service{}, err
+	}
+
 	listen, err := listenOf(declared.Listen)
 	if err != nil {
 		return Service{}, err
@@ -938,6 +950,7 @@ func serviceOf(mode Runtime, typeName string, declared *ServiceEntry) (Service, 
 		Calls:             slices.Clone(declared.Calls),
 		PublicRoutes:      public,
 		StagedRoutes:      staged,
+		RequestHeaders:    headers,
 		RecordsMiB:        declared.RecordsMiB,
 		MemoryMiB:         declared.MemoryMiB,
 		OnOverMemory:      declared.OnOverMemory,

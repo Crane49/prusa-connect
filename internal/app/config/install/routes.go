@@ -2,6 +2,7 @@ package install
 
 import (
 	"fmt"
+	"net/http"
 	"slices"
 	"strconv"
 
@@ -116,6 +117,59 @@ func stagedGrantsOf(declared []StagedRoute) ([]StagedRoute, error) {
 		}
 
 		out = append(out, StagedRoute{Method: route.Method, Path: route.Path, MaxMiB: held.MaxMiB})
+	}
+
+	return out, nil
+}
+
+// RequestHeader is one header of routes.headers as a module's ask records it:
+// the name in its canonical form and the reason the operator reads before
+// approving it (ADR-20261118-nnm).
+type RequestHeader struct {
+	Name   string `json:"name"   yaml:"name"`
+	Reason string `json:"reason" yaml:"reason"`
+	// Required says the module cannot work without the header. An approved
+	// install that would not grant it is refused.
+	Required bool `json:"required,omitempty" yaml:"required"`
+}
+
+// RequestHeadersOf is the ask's record of each header of a manifest.
+func RequestHeadersOf(declared []manifest.RequestHeader) []RequestHeader {
+	var out []RequestHeader
+	for _, header := range declared {
+		out = append(out, RequestHeader{Name: header.Name, Reason: header.Reason, Required: header.Required})
+	}
+
+	return out
+}
+
+// RequestHeaderNames is the name of each header.
+func RequestHeaderNames(headers []RequestHeader) []string {
+	var out []string
+	for _, header := range headers {
+		out = append(out, header.Name)
+	}
+
+	return out
+}
+
+// headerGrantsOf reads service.request_headers. It holds each name to the
+// rules the manifest holds it to, so a hand edit cannot pass a header no
+// module ever gets, such as Cookie, and it answers each in its canonical form.
+func headerGrantsOf(declared []string) ([]string, error) {
+	var out []string
+
+	for _, name := range declared {
+		if err := manifest.CheckRequestHeader(name); err != nil {
+			return nil, fmt.Errorf("service.request_headers names %q: %w", name, err)
+		}
+
+		canonical := http.CanonicalHeaderKey(name)
+		if slices.Contains(out, canonical) {
+			return nil, fmt.Errorf("service.request_headers names %q twice", canonical)
+		}
+
+		out = append(out, canonical)
 	}
 
 	return out, nil

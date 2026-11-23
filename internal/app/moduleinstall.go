@@ -679,26 +679,27 @@ type moduleIndexRow struct {
 	// The file types the release claims.
 	fileTypeClaims
 
-	Module            string                 `json:"module"`
-	Name              string                 `json:"name"`
-	Description       string                 `json:"description"`
-	Version           string                 `json:"version"`
-	Source            string                 `json:"source"`
-	Kind              string                 `json:"kind"`
-	Author            string                 `json:"author"`
-	Permissions       *[]string              `json:"permissions,omitempty"`
-	Checks            *[]string              `json:"checks,omitempty"`
-	Events            *map[string]string     `json:"events,omitempty"`
-	CheckAbsentPeople *bool                  `json:"check_absent_people,omitempty"`
-	ListPeople        *bool                  `json:"list_people,omitempty"`
-	Calls             *[]string              `json:"calls,omitempty"`
-	PublicRoutes      *[]string              `json:"public_routes,omitempty"`
-	StagedRoutes      *[]install.StagedRoute `json:"staged_routes,omitempty"`
-	RecordsMiB        *int                   `json:"records_mib,omitempty"`
-	MemoryMiB         *int                   `json:"memory_mib,omitempty"`
-	Listen            *[]install.ListenAsk   `json:"listen,omitempty"`
-	Data              *bool                  `json:"data,omitempty"`
-	Database          *bool                  `json:"database,omitempty"`
+	Module            string                   `json:"module"`
+	Name              string                   `json:"name"`
+	Description       string                   `json:"description"`
+	Version           string                   `json:"version"`
+	Source            string                   `json:"source"`
+	Kind              string                   `json:"kind"`
+	Author            string                   `json:"author"`
+	Permissions       *[]string                `json:"permissions,omitempty"`
+	Checks            *[]string                `json:"checks,omitempty"`
+	Events            *map[string]string       `json:"events,omitempty"`
+	CheckAbsentPeople *bool                    `json:"check_absent_people,omitempty"`
+	ListPeople        *bool                    `json:"list_people,omitempty"`
+	Calls             *[]string                `json:"calls,omitempty"`
+	PublicRoutes      *[]string                `json:"public_routes,omitempty"`
+	StagedRoutes      *[]install.StagedRoute   `json:"staged_routes,omitempty"`
+	RequestHeaders    *[]install.RequestHeader `json:"request_headers,omitempty"`
+	RecordsMiB        *int                     `json:"records_mib,omitempty"`
+	MemoryMiB         *int                     `json:"memory_mib,omitempty"`
+	Listen            *[]install.ListenAsk     `json:"listen,omitempty"`
+	Data              *bool                    `json:"data,omitempty"`
+	Database          *bool                    `json:"database,omitempty"`
 
 	// The release's require, suggest and conflict, in Composer's shape.
 	Require  map[string]string `json:"require,omitempty"`

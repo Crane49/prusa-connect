@@ -80,31 +80,32 @@ const (
 // are what the release's manifest asks for, as the marketplace reviewed it.
 // An approved install is refused when the downloaded manifest asks for more.
 type marketplaceRelease struct {
-	Version           string                `json:"version"`
-	PublishedAt       string                `json:"published_at"`
-	Channel           string                `json:"channel"`
-	Trust             string                `json:"trust"`
-	Core              string                `json:"core"`
-	Kind              string                `json:"kind"`
-	Platforms         []string              `json:"platforms"`
-	Permissions       []string              `json:"permissions"`
-	Checks            []string              `json:"checks"`
-	RecordsMiB        int                   `json:"records_mib"`
-	MemoryMiB         int                   `json:"memory_mib"`
-	Events            map[string]string     `json:"events"`
-	CheckAbsentPeople bool                  `json:"check_absent_people"`
-	ListPeople        bool                  `json:"list_people"`
-	Calls             []string              `json:"calls"`
-	PublicRoutes      []string              `json:"public_routes"`
-	StagedRoutes      []install.StagedRoute `json:"staged_routes"`
-	Listen            []install.ListenAsk   `json:"listen"`
-	Data              bool                  `json:"data"`
-	Database          bool                  `json:"database"`
-	HasUI             bool                  `json:"has_ui"`
-	Size              int64                 `json:"size"`
-	Sha256            string                `json:"sha256"`
-	DownloadURL       string                `json:"download_url"`
-	Changelog         string                `json:"changelog"`
+	Version           string                  `json:"version"`
+	PublishedAt       string                  `json:"published_at"`
+	Channel           string                  `json:"channel"`
+	Trust             string                  `json:"trust"`
+	Core              string                  `json:"core"`
+	Kind              string                  `json:"kind"`
+	Platforms         []string                `json:"platforms"`
+	Permissions       []string                `json:"permissions"`
+	Checks            []string                `json:"checks"`
+	RecordsMiB        int                     `json:"records_mib"`
+	MemoryMiB         int                     `json:"memory_mib"`
+	Events            map[string]string       `json:"events"`
+	CheckAbsentPeople bool                    `json:"check_absent_people"`
+	ListPeople        bool                    `json:"list_people"`
+	Calls             []string                `json:"calls"`
+	PublicRoutes      []string                `json:"public_routes"`
+	StagedRoutes      []install.StagedRoute   `json:"staged_routes"`
+	RequestHeaders    []install.RequestHeader `json:"request_headers"`
+	Listen            []install.ListenAsk     `json:"listen"`
+	Data              bool                    `json:"data"`
+	Database          bool                    `json:"database"`
+	HasUI             bool                    `json:"has_ui"`
+	Size              int64                   `json:"size"`
+	Sha256            string                  `json:"sha256"`
+	DownloadURL       string                  `json:"download_url"`
+	Changelog         string                  `json:"changelog"`
 	// The release manifest's require, suggest and conflict, in Composer's
 	// shape, as the marketplace read them.
 	Require  map[string]string `json:"require"`
@@ -199,6 +200,34 @@ func (r marketplaceRelease) channel() string {
 	return channelStable
 }
 
+// requestHeaders is each request header the marketplace lists for the release
+// that a manifest may ask for, with a reason that may be shown. One that breaks
+// either rule is dropped, so an approved install of a manifest that asks for it
+// is refused instead of approved from a line that could hide what it asks.
+func (r marketplaceRelease) requestHeaders() []install.RequestHeader {
+	return shownRequestHeaders(r.RequestHeaders)
+}
+
+// shownRequestHeaders is each header of a list an index states that a manifest
+// may ask for, with a reason that may be shown, under its canonical name so it
+// compares with the manifest's. A local index row is held to it as well.
+func shownRequestHeaders(headers []install.RequestHeader) []install.RequestHeader {
+	var out []install.RequestHeader
+
+	for _, header := range headers {
+		if manifest.CheckRequestHeader(header.Name) != nil || header.Reason == "" ||
+			!shownText(header.Reason, manifest.MaxHeaderReason) {
+			continue
+		}
+
+		out = append(out, install.RequestHeader{
+			Name: http.CanonicalHeaderKey(header.Name), Reason: header.Reason, Required: header.Required,
+		})
+	}
+
+	return out
+}
+
 // asks is what the marketplace says the release's manifest asks for.
 func (r marketplaceRelease) asks() install.ModuleAsks {
 	return install.ModuleAsks{
@@ -210,6 +239,7 @@ func (r marketplaceRelease) asks() install.ModuleAsks {
 		Calls:             slices.Clone(r.Calls),
 		PublicRoutes:      slices.Clone(r.PublicRoutes),
 		StagedRoutes:      slices.Clone(r.StagedRoutes),
+		RequestHeaders:    r.requestHeaders(),
 		RecordsMiB:        r.RecordsMiB,
 		MemoryMiB:         r.MemoryMiB,
 		Listen:            slices.Clone(r.Listen),
@@ -588,6 +618,7 @@ func (c *marketplaceCatalogue) offerOf(row marketplaceModule) (httpapi.ModuleOff
 		Calls:             row.Latest.Calls,
 		PublicRoutes:      row.Latest.PublicRoutes,
 		StagedRoutes:      resource.StagedRoutesOf(row.Latest.StagedRoutes),
+		RequestHeaders:    resource.RequestHeadersOf(row.Latest.requestHeaders()),
 		Listen:            resource.RequestsOf(row.Latest.asks()).Listen,
 		Data:              row.Latest.Data,
 		Database:          row.Latest.Database,

@@ -39,6 +39,18 @@ func publicRequest(route string) string { return "public " + route }
 // rule 5).
 func stagedRequest(route install.StagedRoute) string { return "upload " + route.String() }
 
+// headerRequest is the request line of a request header the host passes to
+// the module, with the reason the module gives, such as
+// "header Print-After-Upload (PrusaSlicer 2 says whether to print the file it
+// uploads)" (ADR-20261118-nnm).
+func headerRequest(header install.RequestHeader) string {
+	if header.Required {
+		return "header " + header.Name + ", required (" + header.Reason + ")"
+	}
+
+	return "header " + header.Name + " (" + header.Reason + ")"
+}
+
 // asksOf is what a manifest asks for, before anything is decided about it.
 func asksOf(declared manifest.Manifest) install.ModuleAsks {
 	return install.ModuleAsks{
@@ -50,6 +62,7 @@ func asksOf(declared manifest.Manifest) install.ModuleAsks {
 		Calls:             slices.Clone(declared.Calls),
 		PublicRoutes:      routeLines(declared.Routes.Public),
 		StagedRoutes:      install.StagedRoutesOf(declared.Routes.Staged),
+		RequestHeaders:    install.RequestHeadersOf(declared.Routes.Headers),
 		RecordsMiB:        declared.RecordsMiB,
 		MemoryMiB:         declared.Needs.MemoryMiB,
 		Listen:            listenAsksOf(declared.Needs.Listen),
@@ -83,6 +96,7 @@ func beyondAsks(asked, ceiling install.ModuleAsks, namespace string) []string {
 	out = append(out, callsBeyond(asked.Calls, ceiling.Calls)...)
 	out = append(out, linesBeyond(asked.PublicRoutes, ceiling.PublicRoutes, publicRequest)...)
 	out = append(out, stagedBeyond(asked.StagedRoutes, ceiling.StagedRoutes)...)
+	out = append(out, headersBeyond(asked.RequestHeaders, ceiling.RequestHeaders)...)
 
 	if asked.RecordsMiB > ceiling.RecordsMiB {
 		out = append(out, recordsRequest(asked.RecordsMiB))
@@ -412,6 +426,13 @@ func decidedAsks(
 	given.PublicRoutes, added = keptLines(asked.PublicRoutes, before.PublicRoutes,
 		routeLines(held.PublicRoutes), added, publicRequest)
 	given.StagedRoutes, added = keptStaged(asked.StagedRoutes, before.StagedRoutes, held.StagedRoutes, added)
+	given.RequestHeaders, added = keptHeaders(asked.RequestHeaders, before.RequestHeaders, held.RequestHeaders, added)
+
+	if missing := requiredMissing(asked.RequestHeaders, given.RequestHeaders); missing != "" {
+		return install.ModuleAsks{}, nil, fmt.Errorf("%w: the module requires the request header %s, and the "+
+			"operator took it away from service.request_headers. Grant it there again, or remove the module",
+			ErrUsage, missing)
+	}
 
 	given.RecordsMiB, added = keptRoom(request, asked, *before, held, given.RecordsMiB, added)
 
@@ -471,6 +492,10 @@ func grantAsks(declared *manifest.Manifest, given install.ModuleAsks) {
 		return !slices.Contains(given.PublicRoutes, route.String())
 	})
 	declared.Routes.Staged = stagedGiven(declared.Routes.Staged, given.StagedRoutes)
+	granted := install.RequestHeaderNames(given.RequestHeaders)
+	declared.Routes.Headers = slices.DeleteFunc(declared.Routes.Headers, func(header manifest.RequestHeader) bool {
+		return !slices.Contains(granted, header.Name)
+	})
 	declared.RecordsMiB = given.RecordsMiB
 	declared.Needs = manifest.Needs{
 		Listen: manifestListen(given.Listen), Data: given.Data, Database: given.Database,
@@ -521,6 +546,52 @@ func keptLines(asked, before, held, added []string, line func(string) string) ([
 	}
 
 	return kept, added
+}
+
+// keptHeaders is each request header asked that the declaration still holds,
+// or that the ask before did not have, with the request line of the second
+// kind added to added. A header the operator took away stays away.
+func keptHeaders(asked, before []install.RequestHeader, held, added []string) ([]install.RequestHeader, []string) {
+	var kept []install.RequestHeader
+
+	for _, header := range asked {
+		fresh := !slices.Contains(install.RequestHeaderNames(before), header.Name)
+		if fresh {
+			added = append(added, headerRequest(header))
+		}
+
+		if fresh || slices.Contains(held, header.Name) {
+			kept = append(kept, header)
+		}
+	}
+
+	return kept, added
+}
+
+// requiredMissing is the first request header asked that the module marks
+// required and given leaves out, and the empty string when there is none.
+func requiredMissing(asked, given []install.RequestHeader) string {
+	for _, header := range asked {
+		if header.Required && !slices.Contains(install.RequestHeaderNames(given), header.Name) {
+			return header.Name
+		}
+	}
+
+	return ""
+}
+
+// headersBeyond is the request line of each request header asked that the
+// ceiling does not name.
+func headersBeyond(asked, ceiling []install.RequestHeader) []string {
+	var out []string
+
+	for _, header := range asked {
+		if !slices.Contains(install.RequestHeaderNames(ceiling), header.Name) {
+			out = append(out, headerRequest(header))
+		}
+	}
+
+	return out
 }
 
 // stagedBeyond is the request line of each staged route asked that the

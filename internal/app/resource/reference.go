@@ -97,6 +97,10 @@ var Keys = map[string]config.Key{
 		Doc: "The routes whose request body the server writes into the module's data directory, each with " +
 			"a method, a path and the largest body in MiB, from 1 to 4096.",
 	},
+	"resources.<kind>.<name>.service.request_headers": {
+		Doc: "The extra request headers the server passes to this module's routes, such as " +
+			"Print-After-Upload. A credential header such as Cookie is refused. When absent, there are none.",
+	},
 	"resources.<kind>.<name>.service.records_mib": {
 		Doc: "The room this module's records may take, in MiB, from 1 to 1024. When absent, the module " +
 			"holds 8 MiB. Its files are in a storage and do not count.",
@@ -165,8 +169,8 @@ var Keys = map[string]config.Key{
 			"where it is empty.",
 	},
 	"resources.<kind>.<name>.module.requires": {
-		Doc: "The manifest's require: a capability, a constraint on the core, or another module with a " +
-			"constraint on its releases. Each is checked before a start.",
+		Doc: "The manifest's require, each checked before a start: a capability, a core range, another " +
+			"module with a range, or a request header the manifest marks required.",
 	},
 	"resources.<kind>.<name>.module.suggests": {
 		Doc: "The modules this module works better with, each with the reason, from the manifest's suggest. " +
@@ -244,6 +248,10 @@ var Keys = map[string]config.Key{
 	},
 	"resources.<kind>.<name>.module.asked.staged_routes": {
 		Doc: "The staged routes the manifest asked for when the operator approved the install. An " +
+			"approved update leaves out each one the operator removed from the service block.",
+	},
+	"resources.<kind>.<name>.module.asked.request_headers": {
+		Doc: "The request headers the manifest asked for when the operator approved the install. An " +
 			"approved update leaves out each one the operator removed from the service block.",
 	},
 	"resources.<kind>.<name>.module.asked.listen": {

@@ -117,6 +117,7 @@ func (f *fakeMarketplace) release(version string) marketplaceRelease {
 		release.RecordsMiB = f.asks.RecordsMiB
 		release.License = f.asks.License
 		release.Egress = f.asks.Egress
+		release.RequestHeaders = f.asks.RequestHeaders
 	}
 
 	return release

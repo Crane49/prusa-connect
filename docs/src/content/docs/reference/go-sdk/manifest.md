@@ -223,6 +223,22 @@ const MaxFileTypes = 16
 
 MaxFileTypes is how many file types one list may name.
 
+### `MaxHeaderName` {#manifest-maxheadername}
+
+```go
+const MaxHeaderName = 64
+```
+
+MaxHeaderName is the longest header name a module may ask for, the most the API that offers the request carries.
+
+### `MaxHeaderReason` {#manifest-maxheaderreason}
+
+```go
+const MaxHeaderReason = 200
+```
+
+MaxHeaderReason is the longest reason a header request may give, in characters.
+
 ### `MaxLicense` {#manifest-maxlicense}
 
 ```go
@@ -246,6 +262,14 @@ const MaxRecordsMiB = 1024
 ```
 
 MaxRecordsMiB is the most room records\_mib may ask for, in mebibytes. It equals stateapi.MaxGrantedNamespaceBytes.
+
+### `MaxRequestHeaders` {#manifest-maxrequestheaders}
+
+```go
+const MaxRequestHeaders = 8
+```
+
+MaxRequestHeaders is how many headers routes.headers may name.
 
 ### `MaxRoutes` {#manifest-maxroutes}
 
@@ -287,6 +311,19 @@ const PlatformCore = "core"
 
 PlatformCore is the name the core goes by in require, as php does in Composer.
 
+### `DefaultRequestHeaders` {#manifest-defaultrequestheaders}
+
+```go
+var DefaultRequestHeaders = []string{
+    "accept", "accept-language",
+    "content-language", "content-type",
+    "if-match", "if-modified-since", "if-none-match", "if-range", "if-unmodified-since",
+    "range", "user-agent",
+}
+```
+
+DefaultRequestHeaders are the request headers the host passes to every module, in lower case. A module never asks for one of them.
+
 ### `ErrInvalid` {#manifest-errinvalid}
 
 ```go
@@ -294,6 +331,14 @@ var ErrInvalid = errors.New("manifest: invalid module.yaml")
 ```
 
 ErrInvalid reports a manifest this package will not accept. Test for it with errors.Is. The message names the key.
+
+### `CheckRequestHeader` {#manifest-checkrequestheader}
+
+```go
+func CheckRequestHeader(name string) error
+```
+
+CheckRequestHeader refuses a header name a module may not ask for: a name that is not an HTTP token, one of the denied headers, one the host passes to every module already, or one that is not on the list of headers a module may ask for. The host calls it again on every grant it reads, so a hand-edited configuration cannot pass any other header either.
 
 ### `FileTypes` {#manifest-filetypes}
 
@@ -1195,6 +1240,24 @@ func (r Release) String() string
 
 String writes the release.
 
+### `RequestHeader` {#manifest-requestheader}
+
+```go
+type RequestHeader struct {
+    // Name is the header's name in its canonical form, such as
+    // Print-After-Upload.
+    Name string
+    // Reason is the sentence the operator reads before approving the header.
+    Reason string
+    // Required says the module cannot work without the header. An install that
+    // would not grant it is refused, and the host does not start an instance
+    // whose grant lacks it.
+    Required bool
+}
+```
+
+RequestHeader is one request header a module asks the host to pass to its routes, beside the headers every module gets (ADR-20261118-nnm).
+
 ### `Requirement` {#manifest-requirement}
 
 ```go
@@ -1279,6 +1342,10 @@ type Routes struct {
     // module's data directory, and the module reads the file instead of the
     // body. A staged route needs needs.data.
     Staged []StagedRoute
+    // Headers is the request headers the host passes to the module's routes
+    // beside the ones every module gets (ADR-20261118-nnm). It is a request
+    // like Public: the operator approves each header at install.
+    Headers []RequestHeader
 }
 ```
 

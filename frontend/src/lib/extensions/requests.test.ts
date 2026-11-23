@@ -207,6 +207,70 @@ describe('a staged route', () => {
   });
 });
 
+describe('a request header', () => {
+  const printing = {
+    name: 'Print-After-Upload',
+    reason: 'the slicer says whether to print the file (ADR-20261118-nnm)',
+  };
+
+  it('reads from its line with its reason, draws as one request and goes back as expect', () => {
+    const requests = requestsOfLines(
+      [
+        'header Print-After-Upload (the slicer says whether to print the file (ADR-20261118-nnm))',
+      ],
+      undefined,
+    );
+
+    expect(requests.request_headers).toEqual([printing]);
+    expect(listRequests(requests)).toEqual([
+      { kind: 'header', ...printing, required: false },
+    ]);
+    expect(
+      requestsOfOffer(offer({ request_headers: [printing] })),
+    ).toMatchObject({ request_headers: [printing] });
+    expect('request_headers' in (requestsOfOffer(offer()) ?? {})).toBe(false);
+  });
+
+  it('reads a required header from its line and keeps it required', () => {
+    const requests = requestsOfLines(
+      [
+        'header Print-After-Upload, required (the slicer says whether to print)',
+      ],
+      undefined,
+    );
+
+    expect(requests.request_headers).toEqual([
+      {
+        name: 'Print-After-Upload',
+        reason: 'the slicer says whether to print',
+        required: true,
+      },
+    ]);
+    expect(listRequests(requests)).toEqual([
+      {
+        kind: 'header',
+        name: 'Print-After-Upload',
+        reason: 'the slicer says whether to print',
+        required: true,
+      },
+    ]);
+  });
+
+  it('holds each header once, by name, when two sets meet', () => {
+    expect(
+      mergeRequests(
+        { request_headers: [printing] },
+        {
+          request_headers: [
+            { ...printing, reason: 'another' },
+            { name: 'Overwrite', reason: 'replaces a file' },
+          ],
+        },
+      ).request_headers,
+    ).toEqual([printing, { name: 'Overwrite', reason: 'replaces a file' }]);
+  });
+});
+
 describe('two sets of requests together', () => {
   it('hold everything either holds, once', () => {
     expect(
@@ -395,6 +459,7 @@ describe('every kind of ask', () => {
     calls: ['com.github.aux.other'],
     public_routes: ['POST /hooks/announce/'],
     staged_routes: [{ method: 'PUT', path: '/files/{name}', max_mib: 1024 }],
+    request_headers: [{ name: 'Overwrite', reason: 'replaces a file' }],
     records_mib: 16,
     memory_mib: 256,
     data: true,
@@ -422,6 +487,7 @@ describe('every kind of ask', () => {
       'call com.github.aux.other',
       'public POST /hooks/announce/',
       'upload PUT /files/{name} up to 1024 MiB',
+      'header Overwrite (replaces a file)',
       'records 16 MiB',
       'memory 256 MiB',
       'data directory',

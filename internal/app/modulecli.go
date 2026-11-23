@@ -586,7 +586,7 @@ func writeDeclaration(
 			// and there is no manifest on disk to read it from. The modules it
 			// suggests are recorded beside it, because a suggested module
 			// that is installed is held to its range.
-			Requires:  recordedRequirements(held.manifest.Requires),
+			Requires:  recordedRequirements(held.manifest),
 			Suggests:  recordedSuggests(held.manifest.Suggests),
 			Conflicts: recordedConflicts(held.manifest.Conflicts),
 			// The file types the module reads for the core, recorded for
@@ -638,6 +638,8 @@ func writeDeclaration(
 			entry.Service.Calls = held.manifest.Calls
 			entry.Service.PublicRoutes = routeLines(held.manifest.Routes.Public)
 			entry.Service.StagedRoutes = install.StagedRoutesOf(held.manifest.Routes.Staged)
+			entry.Service.RequestHeaders = install.RequestHeaderNames(
+				install.RequestHeadersOf(held.manifest.Routes.Headers))
 			entry.Service.RecordsMiB = held.manifest.RecordsMiB
 			entry.Service.Listen = declaredListen(held.manifest.Needs.Listen)
 			entry.Service.Data = held.manifest.Needs.Data

@@ -181,11 +181,14 @@ func TestEveryAskSurvivesEveryHop(t *testing.T) {
 		Calls:             []string{"user:spools"},
 		PublicRoutes:      []string{"POST /hooks/announce/"},
 		StagedRoutes:      []install.StagedRoute{{Method: "PUT", Path: "/files/{name}", MaxMiB: 1024}},
-		RecordsMiB:        16,
-		MemoryMiB:         128,
-		Listen:            []install.ListenAsk{{Name: "web", Network: "tcp", Port: 8080, Why: "serves the page"}},
-		Data:              true,
-		Database:          true,
+		RequestHeaders: []install.RequestHeader{
+			{Name: "Print-After-Upload", Reason: "prints the file", Required: true},
+		},
+		RecordsMiB: 16,
+		MemoryMiB:  128,
+		Listen:     []install.ListenAsk{{Name: "web", Network: "tcp", Port: 8080, Why: "serves the page"}},
+		Data:       true,
+		Database:   true,
 	}
 
 	allType := reflect.TypeOf(all)

@@ -230,7 +230,8 @@ func FromTree(tree map[string]any) (Manifest, error) {
 	}
 
 	// A route is answered by the module's process.
-	if (len(held.Routes.Public) > 0 || len(held.Routes.Staged) > 0) && held.ContractMajor == 0 {
+	if (len(held.Routes.Public) > 0 || len(held.Routes.Staged) > 0 || len(held.Routes.Headers) > 0) &&
+		held.ContractMajor == 0 {
 		return Manifest{}, fmt.Errorf("%w: routes is set and contract_major is not, and only a module's "+
 			"process answers a route", ErrInvalid)
 	}

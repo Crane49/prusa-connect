@@ -24,6 +24,12 @@
         path: '/connect/app/teams/{team}/files/raw',
         mib: 1024,
       },
+      {
+        kind: 'header',
+        name: 'Print-After-Upload',
+        reason: 'PrusaSlicer 2 says whether to print the file it uploads',
+        required: true,
+      },
       { kind: 'records', mib: 64 },
       { kind: 'memory', mib: 192 },
       { kind: 'data' },

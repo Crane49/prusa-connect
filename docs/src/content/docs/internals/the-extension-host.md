@@ -276,6 +276,7 @@ change is also a log line with the instance name and an event on the stream.
 | the module requires a type no ready instance answers | retries, so installing that module brings it up | `RESOURCE_DEPENDENCY_MISSING`, condition `DependenciesSatisfied` |
 | the module requires a `state.*` capability and no record backend serves | retries, so declaring a backend under `resources.db` brings it up | `RESOURCE_RECORDS_UNSERVED`, condition `DependenciesSatisfied` |
 | two modules require each other | every instance in the ring is `failed`, and the message names the ring | `RESOURCE_DEPENDENCY_CYCLE` |
+| the module marked a request header required and the service block does not grant it | state `failed`, no retry. Granting the header changes the declaration and starts it again | `RESOURCE_HEADER_NOT_GRANTED`, condition `DependenciesSatisfied` |
 | a call arrives while the instance is not serving | refused before it reaches the resource | `RESOURCE_NOT_READY`, status 503 |
 | the queue of an instance is full | one item is dropped according to the drop policy of the queue | `dropped` in the status, `RESOURCE_QUEUE_FULL` |
 | `Stop` does not return within five seconds | the goroutine is abandoned. A module process is killed | condition reason `Wedged`, an error in the log |

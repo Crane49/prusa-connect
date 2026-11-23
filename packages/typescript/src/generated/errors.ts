@@ -62,6 +62,7 @@ export type ErrorCode =
   | "core.internal/RESOURCE_DEPENDENCY_CYCLE"
   | "core.internal/RESOURCE_DEPENDENCY_MISSING"
   | "core.internal/RESOURCE_DEPENDENCY_UNSERVED"
+  | "core.internal/RESOURCE_HEADER_NOT_GRANTED"
   | "core.internal/RESOURCE_MANIFEST_DISAGREES"
   | "core.internal/RESOURCE_MANIFEST_INVALID"
   | "core.internal/RESOURCE_MODULE_DATA_OWNED"
@@ -261,6 +262,7 @@ export const errorCodes: Readonly<Record<ErrorCode, ErrorCodeEntry>> = {
   "core.internal/RESOURCE_DEPENDENCY_CYCLE": { status: 500, retryable: false, params: ["resource", "cycle"], summary: "The instance requires a contract whose provider requires it back, so nothing in the ring could start", action: "Remove one requirement in the ring named here, or take one of its instances out of the configuration." },
   "core.internal/RESOURCE_DEPENDENCY_MISSING": { status: 503, retryable: true, params: ["resource", "requires"], summary: "The module requires a contract that no serving module provides, so it was not started", action: "Install and switch on a module that provides the contract named here, or start the one that does. This instance starts by itself once one is serving." },
   "core.internal/RESOURCE_DEPENDENCY_UNSERVED": { status: 500, retryable: false, params: ["resource", "requires", "serves"], summary: "The module requires something this build of the server does not offer, so it was not started", action: "Run a build of the server that serves the capability or falls in the core range named here, or install a release of the module built for this server." },
+  "core.internal/RESOURCE_HEADER_NOT_GRANTED": { status: 500, retryable: false, params: ["resource", "header"], summary: "The module cannot work without a request header this server did not grant it, so it was not started", action: "Grant the header named here in service.request_headers of the instance, or install the module again with approve." },
   "core.internal/RESOURCE_MANIFEST_DISAGREES": { status: 500, retryable: false, params: ["resource", "path"], summary: "The artefact that answered is not the module the install recorded, so it was not run", action: "Reinstall the module from the release you want, so the declaration and the artefact name the same module, release and plugin contract." },
   "core.internal/RESOURCE_MANIFEST_INVALID": { status: 500, retryable: false, params: ["resource", "path", "reason"], summary: "The module ships a module.yaml the host will not read, so nothing of it was served", action: "Fix the manifest in the module's bundle, record the digest of the bundle as it is now, and restart the instance." },
   "core.internal/RESOURCE_MODULE_DATA_OWNED": { status: 500, retryable: false, params: ["resource", "path"], summary: "The module's data directory was made for another module that was installed under the same name, so the module was not started", action: "Remove the folder the error names, or move it away if its data is still needed, then restart the instance." },

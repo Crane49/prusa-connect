@@ -594,6 +594,16 @@ The module requires something this build of the server does not offer, so it was
 - **parameters** `resource`, `requires`, `serves`
 - **what to do** Run a build of the server that serves the capability or falls in the core range named here, or install a release of the module built for this server.
 
+### `core.internal/RESOURCE_HEADER_NOT_GRANTED` {#core-internal-resource-header-not-granted}
+
+The module cannot work without a request header this server did not grant it, so it was not started.
+
+- **status** `500`
+- **retryable** no
+- **occurrence detail** shown
+- **parameters** `resource`, `header`
+- **what to do** Grant the header named here in service.request_headers of the instance, or install the module again with approve.
+
 ### `core.internal/RESOURCE_MANIFEST_DISAGREES` {#core-internal-resource-manifest-disagrees}
 
 The artefact that answered is not the module the install recorded, so it was not run.

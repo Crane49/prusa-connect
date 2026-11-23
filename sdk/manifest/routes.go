@@ -25,6 +25,10 @@ type Routes struct {
 	// module's data directory, and the module reads the file instead of the
 	// body. A staged route needs needs.data.
 	Staged []StagedRoute
+	// Headers is the request headers the host passes to the module's routes
+	// beside the ones every module gets (ADR-20261118-nnm). It is a request
+	// like Public: the operator approves each header at install.
+	Headers []RequestHeader
 }
 
 // Route is one method and one path under the module's mount.
@@ -208,7 +212,7 @@ func validPlaceholder(name string) bool {
 // routesKeys is every key the routes block may carry.
 //
 //nolint:gochecknoglobals // a closed table read at parse, never written.
-var routesKeys = []string{"public", "staged"}
+var routesKeys = []string{"public", "staged", "headers"}
 
 // routeKeys is every key a public route may carry.
 //
@@ -239,6 +243,10 @@ func readRoutes(tree map[string]any, needs Needs) (Routes, error) {
 	}
 
 	if held.Staged, err = readStaged(block); err != nil {
+		return Routes{}, err
+	}
+
+	if held.Headers, err = readHeaders(block); err != nil {
 		return Routes{}, err
 	}
 
