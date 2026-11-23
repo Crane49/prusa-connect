@@ -1,0 +1,629 @@
+{
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "An API credential this server issued, sent as a bearer token."
+      },
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "pcl_session",
+        "description": "The session a browser holds after it signs in to this server."
+      }
+    },
+    "schemas": {
+      "SlicerPrinters": {
+        "type": "object",
+        "required": [
+          "printers"
+        ],
+        "properties": {
+          "printers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlicerPrinter"
+            }
+          }
+        }
+      },
+      "SlicerPrinter": {
+        "type": "object",
+        "required": [
+          "uuid",
+          "connect_state",
+          "tools"
+        ],
+        "properties": {
+          "uuid": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "connect_state": {
+            "type": "string",
+            "description": "READY, IDLE, PRINTING, OFFLINE and the other states of Prusa Connect."
+          },
+          "legacy_printer_model": {
+            "type": "string",
+            "description": "The model name PrusaSlicer writes, such as MK4S."
+          },
+          "model": {
+            "type": "string"
+          },
+          "base_model": {
+            "type": "string"
+          },
+          "tool_count": {
+            "type": "integer"
+          },
+          "tools": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SlicerTool"
+            },
+            "description": "The tools, keyed by their index from 0."
+          }
+        }
+      },
+      "SlicerTool": {
+        "type": "object",
+        "description": "One tool of the printer, as the Prusa Connect slicer API names it.",
+        "properties": {
+          "class": {
+            "type": "string",
+            "description": "FFF for a filament printer."
+          },
+          "type": {
+            "type": "string",
+            "description": "PRINT_HEAD for a tool that prints."
+          },
+          "features": {
+            "type": "object",
+            "properties": {
+              "nozzle_diameter": {
+                "type": "number",
+                "description": "The nozzle diameter in millimetres."
+              },
+              "nozzle_high_flow": {
+                "type": "boolean",
+                "description": "The nozzle is a high-flow one."
+              },
+              "nozzle_hardened": {
+                "type": "boolean",
+                "description": "The nozzle takes abrasive material."
+              }
+            }
+          },
+          "material_package_instance": {
+            "type": "object",
+            "properties": {
+              "package": {
+                "type": "object",
+                "properties": {
+                  "material": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "description": "The material loaded, such as PLA."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Me": {
+        "type": "object",
+        "required": [
+          "id",
+          "public_username"
+        ],
+        "description": "The person, as the Prusa Account me endpoint answers.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "public_username": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "avatar_small": {
+            "type": "string",
+            "description": "The person's avatar, as a reference relative to the me address, such as avatar.png?i=AS\u0026c=fa6831. Missing when the name holds no letter."
+          }
+        }
+      },
+      "CloudError": {
+        "type": "object",
+        "required": [
+          "message",
+          "code"
+        ],
+        "description": "A refusal in the shape Prusa Connect answers.",
+        "additionalProperties": true,
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "UploadBody": {
+        "type": "object",
+        "required": [
+          "filename",
+          "size"
+        ],
+        "description": "The data object of the PRINT message, with filename and size.",
+        "properties": {
+          "filename": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "printer_uuid": {
+            "type": "string"
+          },
+          "team_id": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
+          "set_ready": {
+            "type": "boolean"
+          },
+          "position": {
+            "type": "integer"
+          },
+          "wait_until": {
+            "type": "integer"
+          },
+          "destination": {
+            "type": "string"
+          }
+        }
+      },
+      "Upload": {
+        "type": "object",
+        "required": [
+          "id",
+          "team_id",
+          "name",
+          "size",
+          "hash",
+          "state",
+          "source",
+          "path"
+        ],
+        "description": "A registered upload.",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "team_id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "set_ready": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UploadedFile": {
+        "type": "object",
+        "description": "The file a finished upload wrote.",
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "upload_id": {
+            "type": "integer"
+          }
+        }
+      },
+      "AccountError": {
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "description": "An error in the shape Prusa Account answers.",
+        "properties": {
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "prusaslicer3-connector",
+    "version": "0.1.0",
+    "description": "The routes the prusaslicer3-connector module serves to PrusaSlicer 3 and to its own pages. Every path is relative to the mount the host assigns."
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/modules/com.github.aux.prusa3d.prusaslicer3-connector/account/api/v1/me/": {
+      "get": {
+        "operationId": "me",
+        "summary": "The person behind the credential",
+        "responses": {
+          "200": {
+            "description": "The person.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No person is signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountError"
+                }
+              }
+            }
+          }
+        },
+        "description": "The person behind the credential PrusaSlicer collected through the app pairing of this server. The reply has the fields PrusaSlicer reads from Prusa Account."
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.prusaslicer3-connector/account/api/v1/me/avatar.png": {
+      "get": {
+        "operationId": "me-avatar",
+        "summary": "A picture of a person's initials",
+        "description": "The picture the avatar_small of the me reply names. PrusaSlicer downloads it with no credential, so the route is public and the operator approves it at install. The query alone decides the picture: a square in the colour c with the initials i in white, 128 by 128 pixels and opaque, which PrusaSlicer rounds itself.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "i",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2
+            },
+            "description": "One or two letters, of any script."
+          },
+          {
+            "name": "c",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fa6831",
+                "2563eb",
+                "0d9488",
+                "7c3aed",
+                "db2777",
+                "16a34a",
+                "b45309",
+                "475569"
+              ]
+            },
+            "description": "The background colour of the square, as six hexadecimal digits."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The picture. The address decides every pixel, so a client may keep it for a year.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The query is not one or two letters and a colour of the list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.prusaslicer3-connector/connect/app/teams/{team}/files/raw": {
+      "put": {
+        "operationId": "upload-file",
+        "summary": "Send the file of a registered upload and print it",
+        "description": "A staged route: the host writes the body into the module's data folder.",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team. This server has one, and takes any number."
+          },
+          {
+            "name": "upload_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "text/x.gcode": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The file, sent to the printer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadedFile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The file is missing or refused.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No person is signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The person may not print on this printer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such upload, or the size differs.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The module is starting, or the host did not answer. PrusaSlicer may try again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.prusaslicer3-connector/connect/app/users/teams/{team}/uploads": {
+      "post": {
+        "operationId": "register-upload",
+        "summary": "Register an upload to a printer",
+        "parameters": [
+          {
+            "name": "team",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The team. This server has one, and takes any number."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The upload.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Upload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The request is refused as Prusa Connect refuses it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No person is signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The person may not print on this printer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "The file is too large.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The module is starting, or the host did not answer. PrusaSlicer may try again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          }
+        },
+        "description": "The body is the data object of the PRINT message. This server has no print queue, so only an immediate print is accepted."
+      }
+    },
+    "/api/v1/modules/com.github.aux.prusa3d.prusaslicer3-connector/connect/slicer/v2/printers": {
+      "get": {
+        "operationId": "list-slicer-printers",
+        "summary": "The printers PrusaSlicer may print on",
+        "description": "The printers the signed-in person may print on, in the shape of the Prusa Connect slicer API.",
+        "responses": {
+          "200": {
+            "description": "The printers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlicerPrinters"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No person is signed in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The module is starting, or the host did not answer. PrusaSlicer may try again.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CloudError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    },
+    {
+      "session": []
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 ---
 title: "ADR-20261112-ej7: The slicing extension is named server-slicing"
-description: "The extension that slices 3MF projects on the server is named server-slicing, in its folder, its module path and its error codes, so its name says what it does next to the prusaslicer3-compat module."
+description: "The extension that slices 3MF projects on the server is named server-slicing, in its folder, its module path and its error codes, so its name says what it does next to the prusaslicer3-connector module."
 date: 2026-11-12
 status: proposed
 supersedes: []
@@ -16,7 +16,7 @@ tags:
 > [!NOTE]
 > Index: [decisions](README.md) | Amends [ADR-20261026-ydf](20261026-ydf-the-slicer-extension-slices-with-the-public-prusaslicer.md), the folder it names and the prefix of every error code in its rules
 
-A module named `prusaslicer3-compat` is planned. It lets the desktop
+A module named `prusaslicer3-connector` is planned. It lets the desktop
 PrusaSlicer 3 talk to this server. Next to it, an extension named `slicer`
 looks like the slicer program, or the link to one. The extension slices
 projects on this server. It runs PrusaSlicer today and may run other
@@ -58,7 +58,7 @@ the program it runs is named in its summary.
 
 | option | why not |
 |---|---|
-| keep the name `slicer` | next to `prusaslicer3-compat`, it looks like the slicer program |
+| keep the name `slicer` | next to `prusaslicer3-connector`, it looks like the slicer program |
 | `prusaslicer` | the extension may run other slicers later |
 | `slicing` | it does not say that the slicing runs on this server, which tells it apart from the desktop slicer |
 | keep the `slicer/` prefix on the error codes | a code then names a module that has another name |

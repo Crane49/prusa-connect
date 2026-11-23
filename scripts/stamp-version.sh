@@ -36,6 +36,7 @@ extensions/buddy-debug-logs com.github.aux.prusa3d.buddy-debug-logs buddy-debug-
 extensions/threemf com.github.aux.prusa3d.threemf threemf-client
 extensions/server-slicing com.github.aux.prusa3d.server-slicing server-slicing-client
 extensions/simple-queue com.github.aux.prusa3d.simple-queue simple-queue-client
+extensions/prusaslicer3-connector com.github.aux.prusa3d.prusaslicer3-connector prusaslicer3-connector-client
 MODULES
 
 # A module client the list above leaves out would keep the old version, and

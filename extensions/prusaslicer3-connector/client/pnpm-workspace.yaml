@@ -1,0 +1,19 @@
+# This package alone. Every JavaScript package in this tree is its own pnpm
+# project.
+packages:
+  - .
+
+# Dependencies must have been public for 3 days before pnpm resolves them,
+# the same window the other JavaScript packages in this tree set.
+minimumReleaseAge: 4320
+
+# Written versions stay exact.
+savePrefix: ''
+
+# No dependency here runs a build script. pnpm 11 refuses every one that
+# allowBuilds does not name, so a new one is refused until it is named here.
+allowBuilds: {}
+
+# Refuse to run a script when node_modules has drifted from the lockfile,
+# instead of failing later with a confusing error.
+verifyDepsBeforeRun: error

@@ -293,6 +293,7 @@ var pagesCitingNothing = []string{
 	"reference/extensions/index.md",
 	"reference/extensions/materials.md",
 	"reference/extensions/parts.md",
+	"reference/extensions/prusaslicer3-connector.md",
 	"reference/extensions/server-slicing.md",
 	"reference/extensions/simple-queue.md",
 	"reference/extensions/threemf.md",

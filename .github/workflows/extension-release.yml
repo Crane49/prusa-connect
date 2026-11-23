@@ -26,6 +26,7 @@ on:
           - server-slicing
           - materials
           - simple-queue
+          - prusaslicer3-connector
       channel:
         description: The marketplace channel
         type: choice
