@@ -247,6 +247,7 @@ core:
     github.com/prusa3d/threemf: /opt/modules/threemf
     github.com/prusa3d/server-slicing: /opt/modules/server-slicing
     github.com/prusa3d/materials: /opt/modules/materials
+    github.com/prusa3d/buddy3d-camera: /opt/modules/buddy3d-camera
     github.com/prusa3d/easyprint: /opt/modules/easyprint
     github.com/prusa3d/fractal-link: /opt/modules/fractal
     github.com/prusa3d/simple-queue: /opt/modules/simple-queue
@@ -291,6 +292,10 @@ open the host's address with the port you published.
 The Prusa printer logs extension, `buddy-debug-logs`, listens on its own UDP ports once you approve
 them: `13514` for log lines and `8514` for metrics, or the ports you chose. Publish them with the
 protocol, as `-p 13514:13514/udp -p 8514:8514/udp`.
+
+The Buddy3D camera extension, `buddy3d-camera`, listens on TCP `9443` for the cameras' pictures
+once you approve it. Publish it, as `-p 9443:9443`. The cameras dial the host's address, so set the extension's
+`address` to it: the container's own address is not one the cameras reach.
 
 Nearby needs host networking. mDNS packets stay on the container's bridge, so
 the printers page lists nearby printers only with `network_mode: host`. The

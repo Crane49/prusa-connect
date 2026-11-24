@@ -12,6 +12,7 @@ either is tested against it before it merges.
 | `threemf/` | 3MF projects: a reader other modules import, file reads for the core, and the project view. See [its README](threemf/README.md) |
 | `buddy-debug-logs/` | Prusa printer logs: what printers send over UDP, with a Go half and a browser half. See [its README](buddy-debug-logs/README.md) |
 | `server-slicing/` | slices 3MF projects into G-code with the PrusaSlicer command line, with a Go half and a browser half. See [its README](server-slicing/README.md) |
+| `buddy3d-camera/` | the server a Buddy3D camera talks to in place of Prusa's cloud, with a Go half and a browser half. See [its README](buddy3d-camera/README.md) |
 | `materials/` | OpenPrintTag materials and the spools kept of them: a Go half and a browser half. See [its README](materials/README.md) |
 | `prusaslicer2-connector/` | PrusaSlicer 2 prints on each printer here as on a printer with PrusaLink. See [its README](prusaslicer2-connector/README.md) |
 | `prusaslicer3-connector/` | lets PrusaSlicer 3 in offline mode use this server as Prusa Connect. See [its README](prusaslicer3-connector/README.md) |

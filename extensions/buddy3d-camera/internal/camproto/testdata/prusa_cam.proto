@@ -1,0 +1,525 @@
+// ===============================================
+// Camera Protocol Schema
+// Version: v 4.4
+// Last modified: 2026-03-04 (YYYY-MM-DD)
+// Author: Miroslav Pivovarsky
+// ===============================================
+
+syntax = "proto3";
+
+package camera_protocol;
+
+// ===================== ENUMS =====================
+
+// Image rotation degrees
+enum ImageRotation {
+    IMAGE_ROTATION_INVALID  = 0;
+    ROTATE_0 = 1;                           // image rotate 0
+    ROTATE_90 = 2;                          // image rotate 90
+    ROTATE_180 = 3;                         // image rotate 180
+    ROTATE_270 = 4;                         // image rotate 270
+}
+
+// Camera movement direction
+enum RotationDirection {
+    ROTATION_DIRECTION_INVALID  = 0;
+	LEFT = 1;                               // camera rotation LEFT
+	RIGHT = 2;                              // camera rotation RIGHT
+    UP = 3;                                 // camera rotation UP
+    DOWN = 4;                               // camera rotation DOWN
+}
+
+// Camera modes
+enum CameraMode {
+    CAMERA_MODE_INVALID  = 0;
+    AUTO = 1;                               // IR mode AUTO
+    DAY = 2;                                // IR mode OFF
+    NIGHT = 3;                              // IR mode ON
+}
+
+// Log levels
+enum LogLevel {
+    LOG_LEVEL_INVALID  = 0;
+	LOG_VERBOSE	= 1;                        // log level verbose
+    LOG_DEBUG = 2;                          // log level debug
+    LOG_INFO = 3;                           // log level info
+    LOG_WARN = 4;                           // log level warning
+    LOG_ERROR = 5;                          // log level error
+    LOG_TRACE = 6;                          // log level trace
+}
+
+// boolean state
+enum BooleanState {
+    INVALID = 0;
+    ENABLE = 1;                             // bool state enable
+    DISABLE = 2;                            // bool state disable
+}
+
+// RTSP server mode
+enum RtspServerMode {
+    RTSP_SERVER_INVALID = 0;
+    RTSP_SERVER_TRIGGER = 1;                // RTSP server trigget ON/OFF
+    RTSP_SERVER_ON = 2;                     // RTSP server ON mode
+    RTSP_SERVER_OFF = 3;                    // RTSP server OFF mode
+}
+
+// video quality mode
+enum VideoQuality {
+    VIDEO_QUALITY_INVALID = 0;
+    VIDEO_QUALITY_SD = 1;                   // video SD  640x480
+    VIDEO_QUALITY_HD = 2;                   // video HD  1280x720
+    VIDEO_QUALITY_FHD = 3;                  // video FHD 1920x1080
+}
+
+enum TimelapseVideoMakeStatus {
+    TIMELAPSE_VIDEO_MAKE_INVALID = 0;
+    TIMELAPSE_VIDEO_MAKE_IDLE = 1;          // Ready to start
+    TIMELAPSE_VIDEO_MAKE_IN_PROGRESS = 2;   // Video make in progress
+    TIMELAPSE_VIDEO_MAKE_DONE = 3;          // video make done
+    TIMELAPSE_VIDEO_MAKE_FAILED = 4;        // video make failed
+}
+
+enum WebrtcMode {
+    WEBRTC_MODE_UNKNOWN = 0;
+    WEBRTC_MODE_ON = 1;                     // WebRTC enabled on the camera
+    WEBRTC_MODE_OFF = 2;                    // WebRTC disabled on the camera
+}
+
+// ===================== COMMON MESSAGES =====================
+
+// Structure for image resolution
+message Resolution {
+    uint32 width = 1;
+    uint32 height = 2;
+}
+
+// ===================== SERVER -> CAMERA (Commands & Settings) =====================
+
+message ImageSettings {
+    uint32 width = 1;                       // image width
+    uint32 height = 2;                      // image height
+    uint32 quality = 3;  					// Image quality (10-100%)
+    ImageRotation rotation = 4; 			// Image rotation degrees (0, 90, 180, 270 degrees)
+}
+
+message VideoSettings {
+    VideoQuality quality = 1;               // video quality. SD/HD
+}
+
+message RotationControl {
+    RotationDirection direction = 1; 		// Pitch/Yaw
+    uint32 angle = 2;      					// Rotation angle in degrees
+}
+
+message CameraFlashSettings {
+    BooleanState enable = 1;    			// on/off flash LED on camera
+    uint32 interval = 2;  					// Flash ON duration in ms
+}
+
+message CameraControl {
+    RotationControl rotation = 1;           // camera rotation
+    BooleanState camera_light = 2; 			// Turn on/off light
+    CameraFlashSettings camera_flash = 3;   // flash on the ESP32-cam
+    CameraMode camera_mode = 4; 			// Auto/Day/Night - for turning on/off IR
+    uint32 snapshot_interval = 5; 			// How often to send a photo to the backend (sec). 255 - off
+    uint32 volume = 7;      				// Speaker volume
+    BooleanState led = 8;         			// Turn on/off LED on camera
+    BooleanState ftp_server = 9;  			// Turn on/off FTP server on camera
+    string printing_job_name = 10;          // Currently print job name
+    RtspServerMode rtsp_server_mode = 11;   // RTSP server mode
+    WebrtcMode webrtc_mode = 12;            // WebRTC mode
+}
+
+message SystemSettings {
+    string camera_name = 1; 				// Camera name setting from connect/app
+    string timezone = 2;                    // camera timezone. for example "UTC+2"
+}
+
+message LogSettings {
+    BooleanState enable = 1;    			// true/false - enable/disable logs
+    LogLevel level = 2; 					// Log level
+}
+
+message TimelapseSettings {
+    uint32 interval = 1;                    // timelapse snapshot interval
+    float video_fps = 2;                    // timelapse video fps
+}
+
+// Main structure for commands sent to the camera
+message ServerToCamera {
+    ImageSettings image = 1;				// Camera photo configuration
+    uint32 timelapse_interval = 2;  		// Camera timelapse interval (seconds)
+    CameraControl control = 3;				// Camera control
+    SystemSettings system = 4;				// Camera system configuration
+    LogSettings logs = 5;					// Camera logs configuration
+    string camera_token = 6;                // camera token
+    string request_id = 7;                  // message request ID
+    VideoSettings video = 8;                // camera video configuration
+    TimelapseSettings timelapse = 9;        // camera timelapse configuration
+}
+
+// ===================== CAMERA -> SERVER (Status & Reports) =====================
+
+message CurrentResolution {
+    uint32 width = 1;
+    uint32 height = 2;
+}
+
+message SupportedResolutions {
+    repeated Resolution resolutions = 1; 			// List of supported resolutions
+}
+
+message ImageStatus {
+    CurrentResolution current_resolution = 1;
+    SupportedResolutions supported_resolutions = 2;	// all supported resolutions
+    uint32 quality = 3;  							// Image quality (10-100%)
+    ImageRotation rotation = 4; 					// Image rotation degrees (0, 90, 180, 270 degrees)
+}
+
+message VideoStatus {
+    VideoQuality quality = 1;                       // video quality. SD/HD
+}
+
+message TimelapseStatus {
+    BooleanState enable = 1;     					// true/false for enabling timelapse
+    uint32 interval = 2;  							// How often to save a photo
+    uint32 file_count = 3;                          // photos file count in the SD card
+    string project_name = 4;                        // project name for timelapse
+    TimelapseVideoMakeStatus video_make_status = 5; // video make status
+    float video_fps = 6;                            // timelapse video fps
+    uint32 video_file_count = 7;                    // timelapse video file count
+}
+
+message CameraFlashStatus {
+    BooleanState enable = 1;    					// on/off flash
+    uint32 interval = 2;  							// Flash ON duration in ms
+}
+
+message CameraControlStatus {
+    BooleanState camera_light = 1; 					// Turn on/off light
+    CameraFlashStatus camera_flash = 2;             // flash on the ESP32
+    CameraMode camera_mode = 3; 					// Auto/Day/Night - for turning on/off IR
+    uint32 snapshot_interval = 4;					// How often to send a photo to the backend
+    BooleanState snapshot_enable = 5;               // enable/disable snapshot
+    uint32 volume = 6;      						// Speaker volume
+}
+
+message WiFiInfo {
+    string ssid = 1;								// WiFi network SSID
+    string mac = 2;									// Camera WiFi MAC
+    string ipv4 = 3;								// Camera IPv4
+    string ipv6 = 4;								// Camera IPv6
+    uint32 signal_quality = 5; 						// % signal quality
+}
+
+message EthernetInfo {
+    string mac = 1;									// Camera ethernet MAC
+    string ipv4 = 2;								// Camera IPv4
+    string ipv6 = 3;								// Camera IPv6
+}
+
+message NetworkInfo {
+    WiFiInfo wifi = 1;                              // wifi interface
+    EthernetInfo ethernet = 2;                      // ethernet interface
+}
+
+message SDCardInfo {
+    BooleanState detected = 1; 						// Info about micro SD card insertion
+    uint32 size = 2;   								// Card size in MB
+    uint32 free = 3;   								// Free space on card in MB
+    uint32 used = 4;                                // used space on card in MB
+    string status = 5;                              // camera status. Error/OK/RO/....
+}
+
+message RtspServerInfo {
+    RtspServerMode mode = 1;                        // RTSP server mode ON/OFF/AUTO
+    BooleanState status = 2;                        // RTSP server staus true/false -> running / not running
+    string url = 3;                                 // stream URl address
+}
+
+message ServerConnections {
+    string img_srv = 1;                             // prusa connect backend
+    string socket_srv = 2;                          // socketio server
+    string ota_srv = 3;                             // ota server
+}
+
+message WebRtcInfo {
+    WebrtcMode mode = 1;                            // WebRTC mode ON/OFF
+    BooleanState status = 2;                        // WebRTC status true/false -> running / not running
+}
+
+message SystemStatus {
+    string fw_version = 1; 							// x.x.x
+    string hw_version = 2;
+    string camera_name = 3; 						// Camera name from connect. esp32 mdns
+    SDCardInfo sd_card = 4;                         // sdcard status
+    BooleanState ftp_server = 5;  					// Turn on/off FTP server
+    RtspServerInfo rtsp_server = 6;                 // RTSP server info
+    LogStatus logs = 7;								// Camera log configuration
+    ErrorStatus error = 8;                          // error code ?
+    ServerConnections connections = 9;              // camera connections server configuration
+    SystemTime system_time = 10;                    // camera system time configuration
+    WebRtcInfo webrtc = 11;                         // WebRTC info
+}
+
+message SystemTime {
+    string timezone = 1;                            // camera timezone "UTC+0"
+    BooleanState timesync = 2;                      // timezone sync status
+}
+
+message LogStatus {
+    BooleanState enable = 1;    					// Enable logs
+    LogLevel level = 2; 							// Log level
+}
+
+message ErrorStatus {
+    uint32 error_code = 1; 							// Error code
+}
+
+message SensorData {
+    float temperature = 1; 							// Temperature in degrees Celsius (external thermometer)
+    uint32 humidity = 2;      						// Humidity % (external hygrometer)
+}
+
+message CameraStatus {
+    float mcu_temperature = 1;                      // camera MCU temperature
+    uint64 uptime_raw = 2;                          // camera uptime, RAW value
+    string uptime = 3;                              // camera uptime, human value
+    string load = 4;                                // camera load 1;5;15; min
+    uint64 totalRam = 5;                            // Total usable main memory size
+    uint64 freeRam = 6;                             // available memory size
+    uint64 sharedRam = 7;                           // Amount of shared memor
+    uint64 bufferRam = 8;                           // Memory used by buffers
+    uint32 procs = 9;                               // Number of current processes
+}
+
+//  Main structure for reports sent by the camera 
+message CameraToServer {
+    ImageStatus image = 1;							// Photo configuration status
+    TimelapseStatus timelapse = 2;					// Timelapse configuration status
+    CameraControlStatus control = 3;				// Camera configuration status
+    NetworkInfo network = 4;						// Network information
+    SystemStatus system = 5;						// Camera system status
+    SensorData sensors = 6;							// External sensors status
+    fixed64 timestamp = 7; 							// Timestamp
+    string camera_token = 8;                        // camera token
+    CameraStatus camera_status = 9;                 // camera status
+    string request_id = 10;                         // message request ID
+    VideoStatus video = 11;                         // video status
+}
+
+// ===================== Camera authentication =======================
+
+message CameraAuthentication {
+    string camera_token = 1;       			        // Token from connect
+    string fingerprint = 2; 						// Unique camera ID
+}
+
+// ========================= Camera features =========================
+message CameraFeatures {
+    //string json_data = 1;                         // json with supported features
+    string camera_token = 2;                        // camera token
+    string fw_version = 3; 							// x.x.x
+    string hw_version = 4;
+    string protobuf_schema_version = 5;             // protobuf schema version
+    string features = 6;                            // json with supported features
+    string fingerprint = 7;                         // Unique camera ID
+}
+
+// ========================== Camera trigger ==========================
+message CameraTrigger {
+    BooleanState get_status = 1;                    // get camera configuration
+    BooleanState get_features = 2;                  // get supported features
+    BooleanState get_snapshot = 3;                  // get snapshot photo do connect backend
+    BooleanState set_snapshot_enable = 4;           // set snapshot enable/disable
+    BooleanState set_timelapse_enable = 5;     		// set enabling timelapse
+    BooleanState start_fw_update = 8;               // start FW update -> WARNING state 6 have issue
+    BooleanState start_device_reboot = 9;           // camera reboot -> WARNING state 7 have issue
+    BooleanState start_rtsp_server = 10;            // RTSP server on the camera
+    string camera_token = 11;                       // camera token
+    BooleanState get_protocol_information = 12;     // get protocol information
+    string request_id = 13;                         // message request ID
+    BooleanState start_timelapse_video = 14;        // start making timelapse video
+    BooleanState get_timelapse_file_list = 15;      // get file/folder list for the timelapse
+}
+
+// ===================== Client authentication =====================
+message ClientAuthentication {
+    string camera_token = 1;                        // camera token from connect
+    string client_type = 2;                         // Unique camera ID
+    string client_jwt_token = 3;                    // client jwt token
+}
+
+// ===================== Protocol information ======================
+message ProtocolInfo {
+    string protobuf_schema_version = 1;             // protobuf schema version
+    string camera_token = 2;                        // camera token
+    string request_id = 3;                          // camera request ID
+    string fingerprint = 4;                         // Unique camera ID
+}
+
+// ==================== Camera ready information ====================
+message CameraReady {
+    string camera_token = 1;                        // camera token
+}
+
+// ================ Camera disconnected information =================
+message CameraDisconnected {
+    string camera_token = 1;                        // camera token
+}
+
+// =========================== File list ============================
+message FileList {
+    string timelapse_file_list = 1;                 // timelapse file/folder list
+    string camera_token = 2;                        // camera token
+    string request_id = 3;                          // request ID
+    string fingerprint = 4;                         // Unique camera ID
+}
+
+// ========================== Client trigger ==========================
+enum FwUpgradeProcess {
+    FW_UPGRADE_PROCESS_UNKNOWN = 0;                 // unknown status
+    FW_UPGRADE_PROCESS_READY = 1;                   // ready to upgrade
+    FW_UPGRADE_PROCESS_DOWNLOADING = 2;             // downloading in progress
+    FW_UPGRADE_PROCESS_REBOOTING = 3;               // camera rebooting, start upgrading FW
+    FW_UPGRADE_PROCESS_DONE = 4;                    // upgrade done
+    FW_UPGRADE_PROCESS_FAIL = 5;                    // downloading update fail
+}
+
+enum ErrorCode {
+    ERROR_UNKNOWN = 0;                              // TYPO! NO ERROR!
+    ERROR_SD_MISSING = 1;                           // ERROR SD card missing
+    ERROR_SD_STORAGE_FULL = 2;                      // ERROR SD card full
+    ERROR_SD_RO = 3;                                // ERROR SD card Read only
+    ERROR_TIMELAPSE_SD_CARD_MISSING = 4;            // ERROR SD card missing in the camera
+    ERROR_OVER_TEMPERATURE = 5;                     // ERROR MCU over temperature
+    ERROR_RTSP_SERVER_START_FAIL = 6;               // ERROR RTSP server start failed
+    ERROR_WEBRTC_START_FAIL = 7;                    // ERROR WebRTC start failed
+}
+
+message ClientTrigger {
+    string camera_token = 1;                        // camera token
+    string request_id = 2;                          // request ID
+    BooleanState timelapse_video_process = 3;       // status timelapse video processing
+    string fingerprint = 4;                         // Unique camera ID
+    FwUpgradeProcess upgrade_process = 5;           // FW upgrade process info
+    ErrorCode error_code = 6;                       // error code
+}
+
+// ========================== WebRTC MSG ==========================
+
+enum WebRtcStreamStatus {
+    WEBRTC_STREAM_STATUS_INVALID = 0;               // invalid
+    WEBRTC_STREAM_STATUS_START = 1;                 // not implemented now
+    WEBRTC_STREAM_STATUS_STOP = 2;                  // stop streaming, and KILL all WebRTC connection
+}
+
+enum WebRtcClientType {
+    WEBRTC_CLIENT_TYPE_UNKNOWN = 0;                 // UNDEFINED
+    WEBRTC_CLIENT_TYPE_CAMERA = 1;                  // WebRTC client type CAMERA
+    WEBRTC_CLIENT_TYPE_CLIENT = 2;                  // WebRTC client type CLIENT/PHONE/BROWSER
+}
+
+enum WebRtcMsgType {
+    WEBRTC_MSG_TYPE_UNKNOWN = 0;                    // UNDEFINED
+    WEBRTC_MSG_TYPE_REQUEST = 1;                    // WebRTC message type REQUEST
+    WEBRTC_MSG_TYPE_ANSWER = 2;                     // WebRTC message type ANSWER
+    WEBRTC_MSG_TYPE_OFFER = 3;                      // WebRTC message type OFFER
+    WEBRTC_MSG_TYPE_CANDIDATE = 4;                  // WebRTC message type CANDIDATE
+}
+
+enum SchemeType {
+    SCHEME_TYPE_UNDEFINED = 0;                      // UNDEFINED
+    SCHEME_TYPE_STUN = 1;                           // STUN
+    SCHEME_TYPE_TURN = 2;                           // TURN
+}
+
+enum TransportProtocol {
+    TRANSPORT_PROTOCOL_UNDEFINED = 0;               // UNDEFINED
+    TRANSPORT_PROTOCOL_UDP = 1;                     // UDP protocol
+    TRANSPORT_PROTOCOL_TCP = 2;                     // TCP protocol
+    TRANSPORT_PROTOCOL_TLS = 3;                     // TLS protocol
+}
+
+enum IceTransportPolicy {
+    POLICY_UNDEFINED = 0;                           // UNDEFINED
+    POLICY_ALL = 1;                                 // STUN OR TURN or LOCAL
+    POLICY_RELAY = 2;                               // Only TURN
+}
+
+enum WebRtcVideoApplyScope {
+    WEBRTC_VIDEO_APPLY_SCOPE_UNSPECIFIED = 0;       // default/fallback
+    WEBRTC_VIDEO_APPLY_SCOPE_TURN = 1;              // relay only
+    WEBRTC_VIDEO_APPLY_SCOPE_STUN = 2;              // direct/srflx path
+    WEBRTC_VIDEO_APPLY_SCOPE_P2P = 3;               // apply p2p
+    WEBRTC_VIDEO_APPLY_SCOPE_TURN_AND_STUN = 4;     // apply for both
+    WEBRTC_VIDEO_APPLY_SCOPE_ANY = 5;               // future-safe: any path (host/stun/turn)
+}
+
+message WebRtcVideoSettings {
+	VideoQuality video_quality = 1;                 // video quality. SD/HD/FHD
+    uint32 video_fps = 2;                           // video FPS
+    uint32 plan_priority = 3;                       // Plan type priority. 1 - worse plan, 3 - better plan
+    uint32 ttl = 4;                                 // video TTL
+    WebRtcVideoApplyScope apply_scope = 5;          // where to apply this video setting
+}
+
+message IceEndpoint {
+    SchemeType scheme_type = 1;                     // STUN / TURN / TURNS
+    string address = 2;                             // URL address
+    uint32 port = 3;                                // server port
+    TransportProtocol transport_protocol = 4;       // protocol
+}
+
+message IceServer {
+    repeated IceEndpoint endpoints = 1;             // List of all ICE candidates
+    string username = 2;                            // username
+    string credential = 3;                          // password
+}
+
+message IceConfiguration {
+    repeated IceServer ice_servers = 1;             // List of all ICE servers
+    IceTransportPolicy ice_transport_policy = 2;    // Transport policy type
+    uint32 ttl = 3;                                 // TTL video stream in seconds. DEPRECATED FROM protobuf version 4.2
+}
+
+message Sdp {
+    string candidate = 1;                           // candidate
+    string mid = 2;                                 // mid
+}
+
+message WebRtc {
+    string camera_token = 1;                        // camera token
+    string request_id = 2;                          // request ID
+    string fingerprint = 3;                         // Unique camera ID
+    Sdp sdp = 4;                                    // SDP message
+    WebRtcMsgType message_type = 5;                 // webrtc message type
+    WebRtcStreamStatus webrtc_stream_status = 6;    // kill all streamer session -> stop
+    WebRtcClientType client_type = 7;               // client type. camera/client
+    IceConfiguration ice_configuration = 8;         // ICE configuration
+    WebRtcVideoSettings video_settings = 9;         // WebRTC TURN video settings
+}
+
+// ========================== WebRTC client status MSG ==========================
+
+enum WebRtcConnectionType {
+    WEBRTC_CONNECTION_TYPE_UNDEFINED = 0;           // undefined
+    WEBRTC_CONNECTION_TYPE_HOST = 1;                // connection type HOST
+    WEBRTC_CONNECTION_TYPE_SERVER_REFLEXIVE = 2;    // connection type SERVER REFLEXIVE
+    WEBRTC_CONNECTION_TYPE_PEER_REFLEXIVE = 3;      // connection type PEER REFLEXIVE
+    WEBRTC_CONNECTION_TYPE_RELAYED = 4;             // connection type RELAYED
+    WEBRTC_CONNECTION_TYPE_UNKNOWN = 5;             // connection type UNKNOWN
+    WEBRTC_CONNECTION_TYPE_FAIL = 6;                // connection type FAIL
+    WEBRTC_CONNECTION_TYPE_P2P = 7;                 // connection type P2P
+}
+
+message WebRtcConnectionInfo {
+    string camera_token = 1;                        // camera token
+    string request_id = 2;                          // request ID
+    string fingerprint = 3;                         // Unique camera ID
+    WebRtcConnectionType remote = 4;                // Remote client WebRTC connection type
+    WebRtcConnectionType local = 5;                 // Local WebRTC connection type 
+    WebRtcClientType client_type = 6;               // client type. camera / client
+}
+
+// EOF

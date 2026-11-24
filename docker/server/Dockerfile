@@ -87,6 +87,9 @@ RUN cd extensions/server-slicing/client && pnpm install --frozen-lockfile && pnp
 COPY extensions/materials ./extensions/materials
 RUN cd extensions/materials/client && pnpm install --frozen-lockfile && pnpm run build && \
     cd ../ui && pnpm install --frozen-lockfile && pnpm run build && test -f dist/ui/index.js
+COPY extensions/buddy3d-camera ./extensions/buddy3d-camera
+RUN cd extensions/buddy3d-camera/client && pnpm install --frozen-lockfile && pnpm run build && \
+    cd ../ui && pnpm install --frozen-lockfile && pnpm run build && test -f dist/ui/index.js
 COPY extensions/simple-queue ./extensions/simple-queue
 RUN cd extensions/simple-queue/client && pnpm install --frozen-lockfile && pnpm run build && \
     cd ../ui && pnpm install --frozen-lockfile && pnpm run build && test -f dist/ui/index.js
@@ -227,6 +230,12 @@ RUN export GOOS="$TARGETOS" GOARCH="$TARGETARCH" GOARM="${TARGETVARIANT#v}" && \
     BINARY="/tmp/simple-queue_$(go env GOOS)_$(go env GOARCH)" && \
     CGO_ENABLED=0 go -C extensions/simple-queue build -o "$BINARY" . && \
     sh extensions/scripts/pack-release.sh extensions/simple-queue/ui/dist "$BINARY" /opt/modules/simple-queue
+
+# The Buddy3D camera release, laid out the same way.
+COPY --from=extensions-builder /app/extensions/buddy3d-camera/ui/dist ./extensions/buddy3d-camera/ui/dist
+RUN BINARY="/tmp/buddy3d-camera_$(go env GOOS)_$(go env GOARCH)" && \
+    CGO_ENABLED=0 go -C extensions/buddy3d-camera build -o "$BINARY" . && \
+    sh extensions/scripts/pack-release.sh extensions/buddy3d-camera/ui/dist "$BINARY" /opt/modules/buddy3d-camera
 
 # The Fractal release. It has no web page, so its bundle is the manifest and
 # the route document alone. Its NATS dependencies are not the core's, so this

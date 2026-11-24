@@ -1,0 +1,936 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "buddy3d-camera",
+    "version": "0.1.0",
+    "description": "The routes the Buddy3D camera module serves. Every path is relative to the mount the host assigns, and the host serves this document rebased under it at <mount>/openapi.json."
+  },
+  "paths": {
+    "/status": {
+      "get": {
+        "operationId": "read-status",
+        "summary": "Where cameras send, and whether the port is open",
+        "responses": {
+          "200": {
+            "description": "The module's camera server",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                }
+              }
+            }
+          }
+        },
+        "description": "The address and port a camera sends to, whether the port is open, and the srv_cfg file that points a camera here. Reading takes view_resource on this module's instance."
+      }
+    },
+    "/cameras": {
+      "get": {
+        "operationId": "list-cameras",
+        "summary": "The paired cameras and what each last reported",
+        "responses": {
+          "200": {
+            "description": "Every paired camera, by name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "items"
+                  ],
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Camera"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Every camera this module paired, with the push camera it feeds, whether it bound its fingerprint and what it last reported. The token is shown only while no camera has used it."
+      },
+      "post": {
+        "operationId": "pair-camera",
+        "summary": "Pair a camera to a push camera of the core",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The token the camera's sdcard_cfg.txt carries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Paired"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Makes a token for a push camera the page declared in the core, or takes the token the camera already holds. The answer carries the token sdcard_cfg.txt holds and the srv_cfg file."
+      }
+    },
+    "/cameras/{name}": {
+      "delete": {
+        "operationId": "remove-camera",
+        "summary": "Forget a camera and its token",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The push camera's name in the core."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Forgotten"
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Forgets a camera and its token and ends its session. The push camera in the core is left for the page to remove."
+      }
+    },
+    "/cameras/{name}/snapshot": {
+      "post": {
+        "operationId": "request-snapshot",
+        "summary": "Ask a connected camera for a picture now",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The push camera's name in the core."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Asked"
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Asks a connected camera over its Socket.IO session to send a picture now. A camera with no open session is refused."
+      }
+    },
+    "/certificate": {
+      "get": {
+        "operationId": "read-certificate",
+        "summary": "The self-signed.pem a camera trusts",
+        "responses": {
+          "200": {
+            "description": "The certificate",
+            "content": {
+              "application/x-pem-file": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "The self-signed certificate this module presents to cameras, which a camera reads from its SD card as self-signed.pem."
+      }
+    },
+    "/cameras/{name}/live": {
+      "post": {
+        "operationId": "start-live",
+        "summary": "Start a live view of a camera",
+        "description": "Asks the camera for a WebRTC offer over its session and answers it with the camera's candidates. The video goes from the camera to the browser and never through the server. A live view already open on the camera is ended.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The camera's name in the core."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "The camera's offer",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Live"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{name}/live/{session}/answer": {
+      "post": {
+        "operationId": "answer-live",
+        "summary": "Hand the camera the browser's answer",
+        "description": "Sends the browser's answer to the camera, and then each of its candidates.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The camera's name in the core."
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The live view the start answered."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LiveAnswer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Handed over"
+          },
+          "400": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{name}/live/{session}": {
+      "delete": {
+        "operationId": "stop-live",
+        "summary": "End a live view",
+        "description": "Tells the camera to end the live view. A page that closes calls it, because nothing else tells the camera the browser went away.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The camera's name in the core."
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The live view the start answered."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Ended"
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{name}/settings": {
+      "put": {
+        "operationId": "update-camera-settings",
+        "summary": "Change what a person chose for a camera",
+        "description": "Keeps the camera's settings and tells a connected camera at once. A camera that is not connected is told when it connects. It takes a person who may operate the camera.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The camera's name in the core."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CameraSettings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The settings kept",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CameraSettings"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cameras/{name}/control": {
+      "post": {
+        "operationId": "control-camera",
+        "summary": "Turn, restart or change a setting of a camera",
+        "description": "Sends one command to a connected camera. A turn or a setting waits for the camera to say whether it did it. A turn is relative, because the camera reports no position, and is followed by a request for a picture. A restart ends the camera's session until it connects again. It takes a person who may operate the camera.",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The camera's name in the core."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CameraControl"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The camera did it"
+          },
+          "400": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Refused, with a code and a sentence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Problem": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Status": {
+        "type": "object",
+        "required": [
+          "ready",
+          "address",
+          "port",
+          "listening",
+          "srv_cfg",
+          "snapshot_interval"
+        ],
+        "properties": {
+          "ready": {
+            "type": "boolean"
+          },
+          "address": {
+            "type": "string",
+            "description": "The host a camera dials, which the certificate names."
+          },
+          "port": {
+            "type": "integer"
+          },
+          "listening": {
+            "type": "boolean"
+          },
+          "problem": {
+            "type": "string"
+          },
+          "srv_cfg": {
+            "type": "string",
+            "description": "The srv_cfg file a camera's SD card holds."
+          },
+          "snapshot_interval": {
+            "type": "integer",
+            "description": "The module's default interval, in seconds, for a camera with none of its own."
+          }
+        }
+      },
+      "CameraStatus": {
+        "type": "object",
+        "properties": {
+          "snapshot_interval": {
+            "type": "integer"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "day",
+              "night"
+            ],
+            "description": "The infrared mode."
+          },
+          "volume": {
+            "type": "integer",
+            "description": "The speaker volume, in percent."
+          },
+          "video_quality": {
+            "type": "string",
+            "enum": [
+              "sd",
+              "hd",
+              "fhd"
+            ]
+          },
+          "timelapse": {
+            "type": "boolean",
+            "description": "Whether the camera keeps a picture on its SD card at each timelapse interval."
+          },
+          "timelapse_interval": {
+            "type": "integer",
+            "description": "In seconds."
+          },
+          "name": {
+            "type": "string",
+            "description": "The name the camera gives itself on the network."
+          },
+          "ssid": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "ipv6": {
+            "type": "string"
+          },
+          "mac": {
+            "type": "string"
+          },
+          "signal_quality": {
+            "type": "integer"
+          },
+          "firmware": {
+            "type": "string"
+          },
+          "hardware": {
+            "type": "string"
+          },
+          "rtsp": {
+            "type": "string"
+          },
+          "sd_card": {
+            "$ref": "#/components/schemas/SDCard"
+          },
+          "temperature": {
+            "type": "number"
+          },
+          "uptime": {
+            "type": "string"
+          }
+        }
+      },
+      "Camera": {
+        "type": "object",
+        "required": [
+          "name",
+          "printer",
+          "bound",
+          "created",
+          "connected",
+          "settings"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "printer": {
+            "type": "string"
+          },
+          "bound": {
+            "type": "boolean",
+            "description": "Whether a camera has used the token and bound its fingerprint."
+          },
+          "token": {
+            "type": "string",
+            "description": "The token, only while no camera has bound it."
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "last_seen": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_frame": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "model": {
+            "type": "string"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What the camera said it supports, such as RotationZ, RotationX and IrMode."
+          },
+          "status": {
+            "$ref": "#/components/schemas/CameraStatus"
+          },
+          "problem": {
+            "type": "string",
+            "description": "Why the last picture did not reach the core."
+          },
+          "settings": {
+            "$ref": "#/components/schemas/CameraSettings"
+          }
+        }
+      },
+      "PairRequest": {
+        "type": "object",
+        "required": [
+          "name",
+          "printer"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "printer": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "The token the camera already holds. Empty makes a new one."
+          }
+        }
+      },
+      "Paired": {
+        "type": "object",
+        "required": [
+          "name",
+          "printer",
+          "token",
+          "srv_cfg"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "printer": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "srv_cfg": {
+            "type": "string"
+          }
+        }
+      },
+      "Live": {
+        "type": "object",
+        "required": [
+          "session",
+          "offer"
+        ],
+        "properties": {
+          "session": {
+            "type": "string",
+            "description": "The live view's id, which the answer and the stop name."
+          },
+          "offer": {
+            "type": "string",
+            "description": "The camera's SDP offer, with its candidates in it."
+          }
+        }
+      },
+      "LiveAnswer": {
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "properties": {
+          "answer": {
+            "type": "string",
+            "description": "The browser's SDP answer, with every candidate of its own."
+          }
+        }
+      },
+      "CameraSettings": {
+        "type": "object",
+        "required": [
+          "snapshot_interval"
+        ],
+        "properties": {
+          "snapshot_interval": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255,
+            "description": "How often the camera sends a picture: 0 for the module's default, 10 to 254 seconds, or 255 for no pictures."
+          },
+          "stream": {
+            "type": "string",
+            "enum": [
+              "webrtc",
+              "rtsp",
+              "off"
+            ],
+            "description": "The one stream the camera runs: webrtc, which the live view needs, rtsp, or off. Absent is webrtc."
+          }
+        }
+      },
+      "CameraControl": {
+        "type": "object",
+        "description": "Exactly one of the properties.",
+        "properties": {
+          "move": {
+            "$ref": "#/components/schemas/CameraMove"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "day",
+              "night"
+            ],
+            "description": "The infrared mode to set."
+          },
+          "volume": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "description": "The speaker volume, in percent."
+          },
+          "timelapse": {
+            "type": "boolean",
+            "description": "Start or stop keeping a picture on the SD card at each timelapse interval."
+          },
+          "timelapse_interval": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3600,
+            "description": "In seconds."
+          },
+          "video_quality": {
+            "type": "string",
+            "enum": [
+              "sd",
+              "hd",
+              "fhd"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 32,
+            "description": "The name the camera gives itself on the network."
+          },
+          "restart": {
+            "type": "boolean",
+            "enum": [
+              true
+            ],
+            "description": "Restart the camera."
+          }
+        }
+      },
+      "CameraMove": {
+        "type": "object",
+        "required": [
+          "direction",
+          "angle"
+        ],
+        "properties": {
+          "direction": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right",
+              "up",
+              "down"
+            ]
+          },
+          "angle": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "description": "How far to turn, in degrees."
+          }
+        }
+      },
+      "SDCard": {
+        "type": "object",
+        "required": [
+          "detected"
+        ],
+        "description": "The camera's SD card. The sizes are in MB.",
+        "properties": {
+          "detected": {
+            "type": "boolean"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "free": {
+            "type": "integer"
+          },
+          "used": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

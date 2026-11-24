@@ -1,0 +1,91 @@
+# The one manifest for both halves of this module: the Go process in main.go
+# and the browser bundle under ui/.
+#
+# This file names no namespace. The host derives the namespace from the module
+# path the operator installed, so a module cannot take the address of another
+# module.
+
+name: buddy3d-camera
+# The two keys an extensions page prints on the card, beside the version.
+title: Buddy3D camera
+summary: Takes the pictures of a Buddy3D camera on your network, without Prusa's cloud, and shows them on its printer.
+codeowner: Prusa Research
+# The kind the one instance is declared under. It offers the service runtime,
+# which a module with a process half needs.
+kind: sink
+version: 0.8.0
+license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
+# The major version of the protocol between this process and the host.
+contract_major: 1
+# Where the fragment describing the routes is, inside this repository.
+openapi: openapi.json
+
+# What this module cannot run without. camera.accept hands each picture to a
+# camera of the core (ADR-20261106-2er), and access.check asks whether a person
+# may see a camera before their live view is started.
+require:
+  core-camera.accept: "*"
+  core-access.check: "*"
+
+# The module hands pictures to cameras as itself, which takes operate, and asks
+# whether a person may see a camera, which takes observe. The core grants it
+# operate on each camera of its type (ADR-20261106-km2), and on no other.
+permissions:
+  - observe
+  - operate
+
+# The camera type a person picks when adding a Buddy3D camera. The core runs it
+# on its generic camera, and this module feeds it (ADR-20261106-km2).
+camera_types:
+  - name: buddy3d
+    title: Buddy3D camera
+
+# The port a camera dials, and a folder for the paired cameras and the
+# certificate. A port is reachable from the network, so the operator approves
+# it apart from the rest, with -approve-listen (ADR-20261019-3ns). It is not
+# 8443, which the core's printer listener takes.
+needs:
+  listen:
+    - name: camera
+      tcp: 9443
+      why: Buddy3D cameras send their pictures and open their sessions here
+  data: true
+
+# The settings this module reads, with the default of each.
+#
+# README.md has the same table. manifest_test.go fails when the two differ.
+options:
+  - key: address
+    type: string
+    default: ""
+    summary: The address a camera dials and the certificate names. Empty is this machine's first IPv4 address.
+  - key: snapshot_interval
+    type: int
+    default: "30"
+    summary: How often a camera sends a picture, in seconds, from 10 to 254.
+
+platforms:
+  - linux_amd64
+  - linux_arm64
+  - darwin_amd64
+  - darwin_arm64
+  - windows_amd64
+
+ui:
+  # The built bundle, relative to the bundle root.
+  entry: ui/index.js
+  # The range of @prusa/connect-ui this bundle was built against.
+  library: ">=0.0.1 <1.0.0"
+  contributes:
+    settings:
+      - id: cameras
+        title: Buddy3D cameras
+    # Under each camera in a printer's Cameras tab (ADR-20261106-xm4).
+    camera_section:
+      - id: buddy3d
+        title: Buddy3D camera
+    # The live view of a Buddy3D camera: a direct WebRTC connection to the
+    # camera, which this module only introduces.
+    camera_view:
+      - id: buddy3d
+        title: Buddy3D camera
