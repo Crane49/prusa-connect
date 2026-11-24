@@ -436,6 +436,7 @@ export {
   createTransfers,
   Transfers,
   type LandedListener,
+  type SendHow,
   type PrintEnd,
   type TakenName,
   type TransfersOptions,

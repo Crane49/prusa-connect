@@ -9,6 +9,8 @@
   printed has one more: Print the printer's file starts the one already there
   and sends nothing. A file dropped with a module's choice, such as Add to
   queue, has Use the printer's file, which hands that file to the module.
+  A firmware image sent to be flashed has Flash the printer's file, which
+  flashes the one already there and sends nothing.
 
   A file the printer lists read-only cannot be replaced: the printer refuses
   to delete it, most likely because it is open on its screen or still
@@ -33,11 +35,20 @@
     onReplace,
     onKeepBoth,
     onPrintHeld,
+    flash = false,
+    onFlashHeld,
     onUseHeld,
     onKeep,
   }: ReplaceQuestionProps = $props();
 
   const printing = $derived(print === true && onPrintHeld !== undefined);
+  const flashing = $derived(!printing && flash && onFlashHeld !== undefined);
+  // The answers' words: plain, or saying the print or the flash that follows.
+  const say = (plain: string, toPrint: string, toFlash: string): string => {
+    if (printing) return t(toPrint);
+
+    return t(flashing ? toFlash : plain);
+  };
 </script>
 
 <AlertDialog
@@ -71,25 +82,35 @@
       class="flex flex-col-reverse gap-2"
     >
       <AlertDialogCancel variant="ghost" size="lg">
-        {printing
-          ? t('printerDetailFiles.replace.cancelPrint')
-          : t('primitives.cancel')}
+        {say(
+          'primitives.cancel',
+          'printerDetailFiles.replace.cancelPrint',
+          'printerDetailFiles.replace.cancelFlash',
+        )}
       </AlertDialogCancel>
       {#if !readOnly}
         <AlertDialogAction variant="secondary" size="lg" onclick={onReplace}>
-          {printing
-            ? t('printerDetailFiles.replace.replacePrint')
-            : t('printerDetailFiles.replace.confirm')}
+          {say(
+            'printerDetailFiles.replace.confirm',
+            'printerDetailFiles.replace.replacePrint',
+            'printerDetailFiles.replace.replaceFlash',
+          )}
         </AlertDialogAction>
       {/if}
       <AlertDialogAction variant="secondary" size="lg" onclick={onKeepBoth}>
-        {printing
-          ? t('printerDetailFiles.replace.keepBothPrint')
-          : t('printerDetailFiles.replace.keepBoth')}
+        {say(
+          'printerDetailFiles.replace.keepBoth',
+          'printerDetailFiles.replace.keepBothPrint',
+          'printerDetailFiles.replace.keepBothFlash',
+        )}
       </AlertDialogAction>
       {#if printing}
         <AlertDialogAction variant="secondary" size="lg" onclick={onPrintHeld}>
           {t('printerDetailFiles.replace.printHeld')}
+        </AlertDialogAction>
+      {:else if flashing}
+        <AlertDialogAction variant="secondary" size="lg" onclick={onFlashHeld}>
+          {t('printerDetailFiles.replace.flashHeld')}
         </AlertDialogAction>
       {:else if onUseHeld !== undefined}
         <AlertDialogAction variant="secondary" size="lg" onclick={onUseHeld}>

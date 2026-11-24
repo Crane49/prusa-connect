@@ -1100,3 +1100,550 @@ describe('the landing toasts on the printer page', () => {
     }
   });
 });
+
+describe('a firmware image dropped to be flashed', () => {
+  const routesFor = (
+    capabilities: string[],
+    commands: string[],
+    state = 'IDLE',
+  ): Routes => ({
+    'GET /api/v1/devices': json(200, {
+      items: [{ ...printer('a'), capabilities, state: { '/state': state } }],
+      total: 1,
+    }),
+    // The server says which states accept a flash, as the xBuddy adapter does.
+    'GET /api/v1/vocabularies/device-states': json(200, {
+      vocabulary: 'device-states',
+      version: '',
+      format: '1.0',
+      items: [
+        {
+          kind: 'printer',
+          namespace: 'core',
+          connector: 'core/xbuddy',
+          connectors: ['xbuddy'],
+          guarded: true,
+          states: [
+            {
+              state: 'IDLE',
+              display_name: 'Idle',
+              accepts: ['core.command.flash'],
+            },
+            { state: 'PRINTING', display_name: 'Printing', accepts: [] },
+          ],
+          transitions: [],
+        },
+      ],
+    }),
+    'GET /api/v1/devices/a/files': json(200, { items: [] }),
+    'GET /api/v1/devices/a/storages': json(200, {
+      items: [
+        {
+          free_space: 1024,
+          mountpoint: '/usb',
+          name: 'usb',
+          read_only: false,
+          type: 'USB',
+        },
+      ],
+      reported: true,
+    }),
+    'GET /api/v1/storages': json(200, {
+      items: [
+        {
+          browse: true,
+          display_name: 'Uploads',
+          download_url: true,
+          move: true,
+          name: 'uploads',
+          ranges: true,
+          write: true,
+        },
+      ],
+    }),
+    'POST /api/v1/devices/a/commands': (call) => {
+      commands.push(call.body ?? '');
+
+      return json(200, { ok: true, command_id: 'c' });
+    },
+  });
+
+  const drop = async (name: string): Promise<void> => {
+    await expect
+      .poll(() => document.querySelector('input[type="file"]'), {
+        timeout: 5000,
+      })
+      .not.toBeNull();
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]');
+    const files = new DataTransfer();
+    files.items.add(new File(['firmware'], name));
+    if (input !== null) {
+      input.files = files.files;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  };
+
+  // The send meets a name the printer holds, as the real one does: the
+  // printer's store keeps it waiting for the person's answer, marked for a
+  // flash when it was dropped to be flashed.
+  const askAboutTheName = (ctx: ReturnType<typeof appContext>) =>
+    vi
+      .spyOn(ctx.sends, 'send')
+      .mockImplementation(
+        async (file, device, _printer, storage, directory, options) => {
+          await ctx
+            .transfers(device)
+            .send(storage, file.name, `${directory}/${file.name}`, false, {
+              flash: options?.flash,
+            });
+
+          return 'taken';
+        },
+      );
+
+  // The flash goes only once the file is whole on the printer, under the
+  // name it landed at.
+  it('flashes the file once it has landed', async () => {
+    const commands: string[] = [];
+    const routes = routesFor(['core.command.flash'], commands);
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    let land: (() => void) | undefined;
+    const send = vi.spyOn(ctx.sends, 'send').mockImplementation(
+      (file, _device, _printer, _storage, directory, options) =>
+        new Promise((resolve) => {
+          options?.onItsWay?.(`${directory}/${file.name}`);
+          land = () => {
+            resolve('done');
+          };
+        }),
+    );
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeChecked();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    await vi.waitFor(() => {
+      expect(send).toHaveBeenCalledOnce();
+    });
+    expect(commands).toEqual([]);
+
+    land?.();
+    await vi.waitFor(() => {
+      expect(commands).toHaveLength(1);
+    });
+    expect(JSON.parse(commands[0] ?? '{}')).toMatchObject({
+      verb: 'core.command.flash',
+      args: { path: 'usb/firmware.bbf' },
+    });
+  });
+
+  it('flashes nothing when the file did not reach the printer', async () => {
+    const commands: string[] = [];
+    const routes = routesFor(['core.command.flash'], commands);
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    const send = vi.spyOn(ctx.sends, 'send').mockResolvedValue('failed');
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeChecked();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    await vi.waitFor(() => {
+      expect(send).toHaveBeenCalledOnce();
+    });
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(commands).toEqual([]);
+  });
+
+  // A name the printer holds asks first. Replacing the printer's file sends
+  // this one, and it is flashed once it has landed.
+  it('flashes the file once a replace of the name the printer held lands', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'POST /api/v1/devices/a/files': (call) => {
+        if (call.body?.includes('"replace":true') !== true) {
+          return problem(409, 'core.printer/FILE_NAME_TAKEN');
+        }
+        const body = JSON.parse(call.body) as { source: string; path: string };
+
+        return json(200, {
+          path: body.path,
+          transfer: {
+            transfer_id: 't-1',
+            device_id: 'a',
+            storage: 'uploads',
+            source: body.source,
+            path: body.path,
+            state: 'done',
+            bytes_sent: 8,
+            bytes_total: 8,
+            started_at: '2026-11-23T08:00:00Z',
+          },
+        });
+      },
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    askAboutTheName(ctx);
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeChecked();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page.getByRole('button', { name: 'Replace and flash' }).click();
+
+    await vi.waitFor(() => {
+      expect(commands).toHaveLength(1);
+    });
+    expect(JSON.parse(commands[0] ?? '{}')).toMatchObject({
+      verb: 'core.command.flash',
+      args: { path: 'usb/firmware.bbf' },
+    });
+  });
+
+  it('flashes nothing when the person keeps the file the printer held', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'POST /api/v1/devices/a/files': problem(
+        409,
+        'core.printer/FILE_NAME_TAKEN',
+      ),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    askAboutTheName(ctx);
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeChecked();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page
+      .getByRole('alertdialog', { name: /already on this printer/u })
+      .getByRole('button', { name: 'Cancel flash' })
+      .click();
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(commands).toEqual([]);
+  });
+
+  // Keep both lands the file under a free name, and the server's answer
+  // says which: that file is flashed, never the one the printer held.
+  it('flashes the file kept beside the printer’s under the name it landed at', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'POST /api/v1/devices/a/files': (call) => {
+        if (call.body?.includes('"keep_both":true') !== true) {
+          return problem(409, 'core.printer/FILE_NAME_TAKEN');
+        }
+        const body = JSON.parse(call.body) as { source: string };
+
+        return json(200, {
+          path: 'usb/firmware[1].bbf',
+          transfer: {
+            transfer_id: 't-1',
+            device_id: 'a',
+            storage: 'uploads',
+            source: body.source,
+            path: 'usb/firmware[1].bbf',
+            state: 'done',
+            bytes_sent: 8,
+            bytes_total: 8,
+            started_at: '2026-11-23T08:00:00Z',
+          },
+        });
+      },
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    askAboutTheName(ctx);
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page.getByRole('button', { name: 'Keep both and flash' }).click();
+
+    await vi.waitFor(() => {
+      expect(commands).toHaveLength(1);
+    });
+    expect(JSON.parse(commands[0] ?? '{}')).toMatchObject({
+      verb: 'core.command.flash',
+      args: { path: 'usb/firmware[1].bbf' },
+    });
+  });
+
+  // A replace waiting for its turn that the person cancels sends nothing, so
+  // nothing is flashed, whatever else starts on the printer meanwhile.
+  it('flashes nothing when the person cancels the replace before its turn', async () => {
+    const commands: string[] = [];
+    const sent: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'POST /api/v1/devices/a/files': (call) => {
+        sent.push(call.body ?? '');
+
+        return problem(409, 'core.printer/FILE_NAME_TAKEN');
+      },
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    askAboutTheName(ctx);
+    vi.spyOn(ctx.sends, 'inTurn').mockResolvedValue(undefined);
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page.getByRole('button', { name: 'Replace and flash' }).click();
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(sent).toHaveLength(1);
+    expect(commands).toEqual([]);
+  });
+
+  // The question reads whether the printer can flash when it opens. A
+  // printer that cannot asks the plain question, and Replace flashes nothing.
+  it('asks the plain question and flashes nothing once the printer cannot flash', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'POST /api/v1/devices/a/files': (call) => {
+        if (call.body?.includes('"replace":true') !== true) {
+          return problem(409, 'core.printer/FILE_NAME_TAKEN');
+        }
+        const body = JSON.parse(call.body) as { source: string; path: string };
+
+        return json(200, {
+          path: body.path,
+          transfer: {
+            transfer_id: 't-1',
+            device_id: 'a',
+            storage: 'uploads',
+            source: body.source,
+            path: body.path,
+            state: 'done',
+            bytes_sent: 8,
+            bytes_total: 8,
+            started_at: '2026-11-23T08:00:00Z',
+          },
+        });
+      },
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    vi.spyOn(ctx.sends, 'send').mockImplementation(
+      async (file, device, _printer, storage, directory, options) => {
+        // The server stops saying which states take a flash before the
+        // printer answers about the name.
+        routes['GET /api/v1/vocabularies/device-states'] = problem(
+          500,
+          'core.internal',
+        );
+        await ctx.deviceStates.read();
+        await ctx
+          .transfers(device)
+          .send(storage, file.name, `${directory}/${file.name}`, false, {
+            flash: options?.flash,
+          });
+
+        return 'taken';
+      },
+    );
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page.getByRole('button', { name: 'Replace', exact: true }).click();
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    expect(commands).toEqual([]);
+  });
+
+  it('offers no flash while the server has not said which states take one', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'GET /api/v1/vocabularies/device-states': problem(500, 'core.internal'),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    await render(PrinterDetail, { props: { ctx } });
+    await ctx.deviceStates.read();
+
+    await drop('firmware.bbf');
+
+    await expect
+      .element(page.getByRole('button', { name: 'Copy to printer' }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .not.toBeInTheDocument();
+  });
+
+  // A flash restarts the printer, so it waits for no other file: it is not
+  // sent while another one is on its way, and the person is told.
+  it('flashes nothing while another file is on its way to the printer', async () => {
+    const commands: string[] = [];
+    const routes = routesFor(['core.command.flash'], commands);
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    let land: (() => void) | undefined;
+    vi.spyOn(ctx.sends, 'send').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          land = () => {
+            resolve('done');
+          };
+        }),
+    );
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await vi.waitFor(() => {
+      expect(land).toBeDefined();
+    });
+    vi.spyOn(ctx.sends, 'rows', 'get').mockReturnValue([
+      {
+        id: 'job:2',
+        deviceId: 'a',
+        printerName: 'a',
+        name: 'next.bgcode',
+        path: 'usb/next.bgcode',
+        step: 'waiting',
+        progress: null,
+        mine: true,
+        startedBy: undefined,
+        canCancel: true,
+        stopping: false,
+      },
+    ]);
+    const warned = vi.spyOn(toast, 'warning');
+    land?.();
+
+    await vi.waitFor(() => {
+      expect(warned).toHaveBeenCalledOnce();
+    });
+    expect(warned).toHaveBeenCalledWith('app.printerDetail.notFlashedBusy');
+    expect(commands).toEqual([]);
+  });
+
+  // A printer flashes only a file at the root of a drive, so the Files tab
+  // sends a firmware image there from any open folder, and offers the flash.
+  it('flashes a firmware image dropped in a folder from the root of the drive', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'GET /api/v1/devices/a/files': json(200, {
+        items: [
+          { folder: true, name: 'usb', path: 'usb', read_only: false, size: 0 },
+          {
+            folder: true,
+            name: 'firmware',
+            path: 'usb/firmware',
+            read_only: false,
+            size: 0,
+          },
+        ],
+      }),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'files' } });
+    const send = vi.spyOn(ctx.sends, 'send').mockResolvedValue('done');
+    await render(PrinterDetail, { props: { ctx } });
+
+    await page
+      .getByRole('button', { name: /^firmware/u })
+      .first()
+      .click();
+    await drop('firmware.bbf');
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeChecked();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    await vi.waitFor(() => {
+      expect(commands).toHaveLength(1);
+    });
+    expect(send.mock.calls[0]?.[4]).toBe('usb');
+    expect(JSON.parse(commands[0] ?? '{}')).toMatchObject({
+      args: { path: 'usb/firmware.bbf' },
+    });
+  });
+
+  it('flashes the file the printer holds without sending one', async () => {
+    const commands: string[] = [];
+    const routes: Routes = {
+      ...routesFor(['core.command.flash'], commands),
+      'POST /api/v1/devices/a/files': problem(
+        409,
+        'core.printer/FILE_NAME_TAKEN',
+      ),
+    };
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    const sent = askAboutTheName(ctx);
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    await page
+      .getByRole('button', { name: /Flash the printer.s file/u })
+      .click();
+
+    await vi.waitFor(() => {
+      expect(commands).toHaveLength(1);
+    });
+    expect(JSON.parse(commands[0] ?? '{}')).toMatchObject({
+      verb: 'core.command.flash',
+      args: { path: 'usb/firmware.bbf' },
+    });
+    expect(sent).toHaveBeenCalledOnce();
+  });
+
+  it('offers no flash while the printer is in a state that refuses one', async () => {
+    const routes = routesFor(['core.command.flash'], [], 'PRINTING');
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    await render(PrinterDetail, { props: { ctx } });
+    await ctx.deviceStates.read();
+
+    await drop('firmware.bbf');
+
+    await expect
+      .element(page.getByRole('button', { name: 'Copy to printer' }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('radio', { name: /Flash/u }))
+      .not.toBeInTheDocument();
+  });
+
+  it('offers no flash on a printer that cannot flash', async () => {
+    const routes = routesFor([], []);
+    vi.stubGlobal('fetch', stubFetch(routes).fetch);
+    const ctx = appContext(routes, { params: { id: 'a', tab: 'status' } });
+    await render(PrinterDetail, { props: { ctx } });
+
+    await drop('firmware.bbf');
+
+    await expect
+      .element(page.getByRole('button', { name: 'Copy to printer' }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('radio', { name: /Flash/u }))
+      .not.toBeInTheDocument();
+  });
+});

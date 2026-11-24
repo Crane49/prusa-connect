@@ -134,6 +134,34 @@ describe('what the server declared', () => {
   });
 });
 
+describe('the states a verb is accepted in', () => {
+  it('names the states whose accepts hold the verb', async () => {
+    const states = new DeviceStates(stub([printer, cutter]).client);
+    await states.read();
+
+    expect(
+      states.statesAccepting(['printer'], 'core.command.start_print'),
+    ).toEqual(['IDLE']);
+    expect(states.statesAccepting(['printer'], 'example.command.cut')).toEqual(
+      [],
+    );
+  });
+
+  it('says nothing for a kind that did not guard its verbs, or before the answer', async () => {
+    const states = new DeviceStates(
+      stub([{ ...printer, guarded: false }]).client,
+    );
+
+    expect(
+      states.statesAccepting(['printer'], 'core.command.start_print'),
+    ).toBeUndefined();
+    await states.read();
+    expect(
+      states.statesAccepting(['printer'], 'core.command.start_print'),
+    ).toBeUndefined();
+  });
+});
+
 describe('one request for one piece of data', () => {
   it('joins a second read to the one in flight', async () => {
     const asked = stub([printer]);

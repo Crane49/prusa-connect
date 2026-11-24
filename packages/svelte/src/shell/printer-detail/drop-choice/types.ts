@@ -20,7 +20,7 @@ export interface DropChoiceProps {
   /**
    * The choice picked when the dialog opens, such as the module's own entry
    * when a module sent the files. Undefined picks Print now on a printer that
-   * can print, and a copy otherwise.
+   * can print, Flash for a firmware image it can flash, and a copy otherwise.
    */
   preset?: DropAction | undefined;
   /**
@@ -36,6 +36,12 @@ export interface DropChoiceProps {
    * printer and that action runs on it.
    */
   onConfirm: (print: number | undefined, action?: DropAction) => void;
+  /**
+   * Copies the one firmware image dropped and flashes it once it lands. It is
+   * offered only for a single firmware image, and undefined, for a printer
+   * that cannot flash now, offers no flash.
+   */
+  onFlash?: (() => void) | undefined;
   /**
    * Closes the dialog without sending anything.
    */

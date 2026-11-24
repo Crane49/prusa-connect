@@ -109,6 +109,8 @@ interface Job {
   readonly destination: string;
   /** True when the printer starts the file once it lands. */
   readonly print: boolean;
+  /** True when the file is a firmware image to be flashed once it lands. */
+  readonly flash?: boolean;
   readonly step: SendStep;
   /** True once the person chose to replace the printer's file. */
   readonly replacing?: boolean;
@@ -354,6 +356,10 @@ export class Sends {
    * the printer refuses answers `'refused'` and hands how it ended, with the
    * printer's fault, to `onRefused`.
    *
+   * `flash` marks a firmware image to be flashed once it lands, so the
+   * question about a name the printer holds offers the flash. The caller
+   * sends the flash.
+   *
    * `onItsWay` runs once this server is sending the file to the printer,
    * with the path it lands at, which is another name when the person kept
    * both files. It does not wait for the landing, and a send that never
@@ -368,11 +374,13 @@ export class Sends {
     {
       keep,
       print = false,
+      flash = false,
       onRefused,
       onItsWay,
     }: {
       keep?: string | undefined;
       print?: boolean;
+      flash?: boolean;
       onRefused?: (ended: PrintEnd) => void;
       onItsWay?: ((path: string) => void) | undefined;
     } = {},
@@ -391,6 +399,7 @@ export class Sends {
       kept,
       destination: `${directory}/${file.name}`,
       print,
+      flash,
       step: queued && !kept ? 'waiting' : 'uploading',
       sent: 0,
       total: file.size,
@@ -598,7 +607,13 @@ export class Sends {
         return notSent('refused');
       }
     } else {
-      const sent = await transfers.send(storage, job.source, job.destination);
+      const sent = await transfers.send(
+        storage,
+        job.source,
+        job.destination,
+        false,
+        { flash: job.flash },
+      );
       if (resets !== this.#resets) return 'cancelled';
       this.#end(job.id);
       if (sent !== undefined) return 'done';

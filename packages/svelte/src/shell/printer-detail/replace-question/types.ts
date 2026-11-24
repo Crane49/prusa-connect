@@ -13,6 +13,10 @@ export interface ReplaceQuestionProps {
   onKeepBoth: () => void;
   /** Prints the file the printer already holds and sends nothing, for a print. */
   onPrintHeld?: (() => void) | undefined;
+  /** True when the file is a firmware image to be flashed once it lands. */
+  flash?: boolean | undefined;
+  /** Flashes the firmware the printer already holds and sends nothing. */
+  onFlashHeld?: (() => void) | undefined;
   /**
    * Hands the file the printer already holds to the module's choice the
    * person picked for the dropped file, such as a queue, and sends nothing.

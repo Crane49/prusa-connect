@@ -80,3 +80,32 @@
     ...handlers,
   }}
 />
+
+<!-- One firmware image on a printer that can flash: the dialog starts on
+     Flash firmware, and the person can pick to only copy it. -->
+<Story
+  name="A Firmware Image To Flash"
+  args={{
+    names: ['MK4_MK4S_MK3.9_MK3.9S_firmware_8.0.2.bbf'],
+    printer: 'MK4 by the window',
+    printTarget: free,
+    onFlash: () => undefined,
+    ...handlers,
+  }}
+/>
+
+<!-- Flash greyed with the reason, after the printer stopped being able to
+     flash while the dialog was open, has no story: it needs the printer to
+     change under an open dialog, which the component's tests drive. -->
+
+<!-- A file that cannot be printed on a printer that cannot flash it: copying
+     is the one choice, so there is nothing to pick. -->
+<Story
+  name="A File That Can Only Be Copied"
+  args={{
+    names: ['MK4_MK4S_MK3.9_MK3.9S_firmware_8.0.2.bbf'],
+    printer: 'MK4 by the window',
+    printTarget: printing,
+    ...handlers,
+  }}
+/>

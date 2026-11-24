@@ -55,6 +55,7 @@
   "app.palette.modules": "Extension pages",
   "app.palette.pages": "Pages",
   "app.palette.printers": "Printers",
+  "app.printerDetail.notFlashedBusy": "{name} is on the printer but was not flashed, because another file is on its way to it. Flash it from Files once that file is in.",
   "app.printerDetail.undeclaredChoice.note": "An extension asked to send files with a choice it does not offer on this page, so the files stayed where they were.",
   "app.printerDetail.undeclaredChoice.title": "Nothing was sent to the printer",
   "app.rebuilding": "The screens are written again against the ported design system.",

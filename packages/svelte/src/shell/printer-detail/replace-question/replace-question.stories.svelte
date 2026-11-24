@@ -33,6 +33,19 @@
   }}
 />
 
+<!-- The same, for a firmware image dropped to be flashed: replace it and flash, or flash the printer's file. -->
+<Story
+  name="Replace And Flash"
+  args={{
+    name: 'MK4_MK4S_MK3.9_MK3.9S_firmware_8.0.2.bbf',
+    flash: true,
+    onReplace: () => undefined,
+    onKeepBoth: () => undefined,
+    onFlashHeld: () => undefined,
+    onKeep: () => undefined,
+  }}
+/>
+
 <!-- The printer lists its file read-only, as a Buddy printer does for a file open on its screen, so it cannot be replaced now. -->
 <Story
   name="The Printer's File Is Read-Only"

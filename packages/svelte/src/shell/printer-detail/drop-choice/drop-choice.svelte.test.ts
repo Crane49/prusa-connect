@@ -140,6 +140,162 @@ describe('DropChoice', () => {
     expect(onConfirm).toHaveBeenCalledExactlyOnceWith(0, undefined);
   });
 
+  it('only asks to copy a firmware image, with nothing to pick', async () => {
+    const onConfirm = vi.fn();
+    await render(DropChoice, {
+      props: props({ names: ['COREONE_firmware_8.0.2.bbf'], onConfirm }),
+    });
+
+    await expect
+      .element(page.getByText('COREONE_firmware_8.0.2.bbf'))
+      .toBeVisible();
+    expect(page.getByRole('radio').elements()).toHaveLength(0);
+    await expect
+      .element(page.getByText(/not printed/u))
+      .not.toBeInTheDocument();
+    await page.getByRole('button', { name: 'Copy to printer' }).click();
+
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(undefined, undefined);
+  });
+
+  it('lets a firmware image be copied or given to a module', async () => {
+    const action = {
+      namespace: 'simple-queue',
+      id: 'queue',
+      title: 'Add to queue',
+    };
+    await render(DropChoice, {
+      props: props({ names: ['firmware.bbf'], actions: [action] }),
+    });
+
+    await expect
+      .element(page.getByRole('radio', { name: /^Copy to printer/u }))
+      .toBeChecked();
+    await expect
+      .element(page.getByRole('radio', { name: /Add to queue/u }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('radio', { name: /Print/u }))
+      .not.toBeInTheDocument();
+  });
+
+  it('starts on Flash for one firmware image on a printer that can flash', async () => {
+    const onConfirm = vi.fn();
+    const onFlash = vi.fn();
+    await render(DropChoice, {
+      props: props({ names: ['firmware.bbf'], onConfirm, onFlash }),
+    });
+
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeChecked();
+    await expect
+      .element(
+        page.getByText('The file is copied to the printer and not flashed.'),
+      )
+      .toBeVisible();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    expect(onFlash).toHaveBeenCalledOnce();
+    expect(onConfirm).not.toHaveBeenCalled();
+  });
+
+  it('copies a firmware image when the person picks the copy', async () => {
+    const onConfirm = vi.fn();
+    const onFlash = vi.fn();
+    await render(DropChoice, {
+      props: props({ names: ['firmware.bbf'], onConfirm, onFlash }),
+    });
+
+    await page.getByRole('radio', { name: /Only copy to printer/u }).click();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(undefined, undefined);
+    expect(onFlash).not.toHaveBeenCalled();
+  });
+
+  it('offers no flash of several files or on a printer that cannot flash', async () => {
+    const onFlash = vi.fn();
+    const screen = await render(DropChoice, {
+      props: props({ names: ['a.bbf', 'b.bbf'], onFlash }),
+    });
+
+    await expect
+      .element(page.getByRole('button', { name: 'Copy to printer' }))
+      .toBeVisible();
+    expect(page.getByRole('radio').elements()).toHaveLength(0);
+
+    await screen.rerender({ names: ['a.bbf', 'bracket.bgcode'] });
+    await expect
+      .element(page.getByRole('radio', { name: /Flash/u }))
+      .not.toBeInTheDocument();
+
+    await screen.rerender({ names: undefined });
+    await screen.rerender({ names: ['a.bbf'], onFlash: undefined });
+    await expect
+      .element(page.getByRole('button', { name: 'Copy to printer' }))
+      .toBeVisible();
+    expect(page.getByRole('radio').elements()).toHaveLength(0);
+  });
+
+  it('does not copy a firmware picked to flash when the printer stops being able to', async () => {
+    const onConfirm = vi.fn();
+    const onFlash = vi.fn();
+    const screen = await render(DropChoice, {
+      props: props({ names: ['firmware.bbf'], onConfirm, onFlash }),
+    });
+
+    await page.getByRole('radio', { name: /Flash firmware/u }).click();
+    await screen.rerender({ onFlash: undefined });
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeDisabled();
+    await expect
+      .element(page.getByText('The printer cannot flash firmware now.'))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: 'Confirm' }))
+      .toBeDisabled();
+    expect(onFlash).not.toHaveBeenCalled();
+
+    // Flash stays in sight, greyed, so the choices do not move under the
+    // person who picks the copy.
+    await page.getByRole('radio', { name: /Only copy to printer/u }).click();
+    await expect
+      .element(page.getByRole('radio', { name: /Flash firmware/u }))
+      .toBeInTheDocument();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(undefined, undefined);
+    expect(onFlash).not.toHaveBeenCalled();
+  });
+
+  it('offers only the print files of several to print', async () => {
+    const onConfirm = vi.fn();
+    await render(DropChoice, {
+      props: props({
+        names: ['firmware.bbf', 'a.bgcode', 'b.gcode'],
+        onConfirm,
+      }),
+    });
+
+    await expect
+      .element(page.getByRole('combobox', { name: 'The file to print' }))
+      .toHaveTextContent('a.bgcode');
+    await page.getByRole('combobox', { name: 'The file to print' }).click();
+    await expect
+      .poll(() =>
+        page
+          .getByRole('option')
+          .elements()
+          .map((one) => one.textContent.trim()),
+      )
+      .toEqual(['a.bgcode', 'b.gcode']);
+    await page.getByRole('option', { name: 'a.bgcode' }).click();
+    await page.getByRole('button', { name: 'Confirm' }).click();
+
+    expect(onConfirm).toHaveBeenCalledExactlyOnceWith(1, undefined);
+  });
+
   it('prints the file the person picks of several', async () => {
     const onConfirm = vi.fn();
     await render(DropChoice, {

@@ -77,6 +77,28 @@ export class DeviceStates {
   }
 
   /**
+   * The states in which the named kinds accept `verb`, as their adapters
+   * declared. Undefined when none of them said which verbs a state accepts,
+   * or before the server has answered: the server then decides alone.
+   */
+  statesAccepting(
+    kinds: readonly string[],
+    verb: string,
+  ): readonly string[] | undefined {
+    const guarded = this.#kinds.filter(
+      (kind) => kinds.includes(kind.kind) && kind.guarded,
+    );
+    if (guarded.length === 0) return undefined;
+    const named = guarded.flatMap((kind) =>
+      (kind.states ?? [])
+        .filter((state) => (state.accepts ?? []).includes(verb))
+        .map((state) => state.state),
+    );
+
+    return named.filter((state, at) => named.indexOf(state) === at);
+  }
+
+  /**
    * Reads the vocabulary. A second call while the first is in flight joins it
    * rather than making a second request (svelte-data.md), and a call after one
    * has landed asks again, because a module installed since would add a kind.

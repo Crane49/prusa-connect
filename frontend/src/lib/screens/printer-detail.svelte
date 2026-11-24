@@ -25,6 +25,7 @@
   } from '@prusa/connect-ui/data';
   import { t } from '@prusa/connect-ui/i18n';
   import {
+    projectCommand,
     STATE_PATH,
     textAt,
     uploadBlockOf,
@@ -635,6 +636,89 @@
     }
   };
 
+  const FLASH = 'core.command.flash';
+
+  // Whether the printer takes a flash now: it declares the verb, the person
+  // may send it, and its state, the live reading first, is one the server
+  // says accepts a flash. A printer whose server has not said which states
+  // those are is offered no flash, as flashing cannot be undone.
+  const flashAllowed = $derived.by((): boolean => {
+    if (device === undefined || port.sending) return false;
+    const states = ctx.deviceStates;
+    if (!states.asked || states.error !== undefined) return false;
+    const live = telemetry.value(STATE_PATH);
+    const state = typeof live === 'string' ? live : textAt(device, STATE_PATH);
+    const projection = projectCommand(FLASH, {
+      capabilities: device.capabilities,
+      transitions: ctx.deviceStates.transitionsOf([device.kind]),
+      state,
+      permitted: device.verbs,
+    });
+    if (projection.kind !== 'available') return false;
+    const accepting = states.statesAccepting([device.kind], FLASH);
+
+    return state !== undefined && accepting?.includes(state) === true;
+  });
+
+  // Flashes the firmware at `path`. A flash restarts the printer, so it is
+  // not sent while another file is on its way to the printer: the person is
+  // told to flash it from Files once that file is in.
+  const flashAt = (store: typeof commands, id: string, path: string): void => {
+    const name = path.split('/').pop() ?? path;
+    const busy = ctx.sends.rows.some(
+      (row) => row.deviceId === id && row.name !== name,
+    );
+    if (busy) {
+      toast.warning(t('app.printerDetail.notFlashedBusy', { name }));
+
+      return;
+    }
+    void store.send(FLASH, { path });
+  };
+
+  // A printer flashes only a file at the root of a drive, such as usb/. The
+  // Files tab sends a firmware image there from any folder; one a module
+  // sends into a folder is offered no flash.
+  const flashHere = $derived(
+    flashAllowed &&
+      dropped !== undefined &&
+      !dropped.directory.replace(/^\/+|\/+$/gu, '').includes('/'),
+  );
+
+  // Copies the one firmware image dropped and flashes it once it has landed,
+  // under the name it landed at. A flash the printer refuses is said as any
+  // other command is. A name the printer holds asks first, and the person's
+  // answer flashes the file once it has landed.
+  const deliverFlash = (): void => {
+    const held = dropped;
+    dropped = undefined;
+    const file = held?.files[0];
+    if (held === undefined || file === undefined || intake === undefined) {
+      return;
+    }
+    const id = deviceId;
+    const store = commands;
+    const kept = keep && keptStorage !== undefined;
+    const destination = `${held.directory}/${file.name}`;
+    dropPicks.delete(pickKey(id, destination));
+    void ctx.sends
+      .send(
+        file,
+        id,
+        printerName,
+        kept ? keptStorage : intake,
+        held.directory,
+        {
+          keep: kept ? keptFolder : undefined,
+          flash: true,
+        },
+      )
+      .then((outcome) => {
+        // A send that met no name the printer holds lands where it was sent.
+        if (outcome === 'done') flashAt(store, id, destination);
+      });
+  };
+
   // The choices modules add to the drop question that fit every dropped
   // file.
   const dropActions = $derived(
@@ -737,10 +821,16 @@
     const id = deviceId;
     const store = transfers;
     const waiting = store.taken;
+    // Read now: the flash goes only when the question offered it.
+    const flash = takenFlash ? commands : undefined;
     const seen = new Set(store.rows.map((row) => row.transferId));
     void answer().then((ended) => {
       const moved = store.rows.some((row) => !seen.has(row.transferId));
       if (!moved) forgetChoice(id, waiting);
+      // Only a file the server says landed is flashed, at the path it says.
+      if (ended?.landed !== undefined && flash !== undefined) {
+        flashAt(flash, id, ended.landed);
+      }
 
       if (ended?.answer !== undefined) {
         landings.notPrinted(name, ended);
@@ -754,6 +844,27 @@
 
   // A file sent onto a name the printer holds waits for the person's answer.
   const takenName = $derived(transfers.taken?.path.split('/').pop());
+  // Whether the question offers to flash the waiting file: it was dropped to
+  // be flashed, and the printer took a flash when the question opened. It is
+  // read once a question, so a printer that changes state while it is open
+  // does not change the answers under the person; the server refuses a
+  // flash the printer no longer takes.
+  let askedFlash = $state.raw<
+    { readonly about: TakenName; readonly flash: boolean } | undefined
+  >(undefined);
+  $effect.pre(() => {
+    const about = transfers.taken;
+    if (about === undefined || askedFlash?.about === about) return;
+    askedFlash = {
+      about,
+      flash: about.flash === true && untrack(() => flashAllowed),
+    };
+  });
+  const takenFlash = $derived(
+    askedFlash !== undefined &&
+      askedFlash.about === transfers.taken &&
+      askedFlash.flash,
+  );
   // The module's choice the waiting file was dropped with, when it had one
   // and is not a print.
   const takenAction = $derived(
@@ -772,6 +883,7 @@
   preset={dropped?.from}
   keep={dropped?.from === undefined ? undefined : keepChoice}
   onConfirm={deliver}
+  onFlash={flashHere ? deliverFlash : undefined}
   onCancel={() => {
     dropped = undefined;
   }}
@@ -789,6 +901,14 @@
     void transfers.printTaken().then((ended) => {
       if (ended !== undefined) landings.notPrinted(name, ended);
     });
+  }}
+  flash={takenFlash}
+  onFlashHeld={() => {
+    // Nothing is sent: the firmware the printer holds is flashed.
+    const path = transfers.taken?.path;
+    forgetChoice(deviceId, transfers.taken);
+    transfers.keepTaken();
+    if (path !== undefined) flashAt(commands, deviceId, path);
   }}
   onReplace={() => {
     answerTaken(() => transfers.replaceTaken(inTurn));

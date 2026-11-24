@@ -1,4 +1,4 @@
-import type { DataFault, TransferMoved } from '@prusa/connect-ui/data';
+import type { DataFault, SendHow, TransferMoved } from '@prusa/connect-ui/data';
 import { flushSync } from 'svelte';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -172,13 +172,22 @@ const fakes = () => {
   const sent: string[] = [];
   const printed: string[] = [];
   const sources: string[] = [];
+  // How each send was asked for, beside where it goes.
+  const hows: (SendHow | boolean | undefined)[] = [];
   let error: DataFault | undefined;
   const waiting: { storage: string; source: string; path: string }[] = $state(
     [],
   );
   const relay =
     (deviceId: string, kind: 'send' | 'print') =>
-    (storage: string, source: string, path: string): Promise<never> => {
+    (
+      storage: string,
+      source: string,
+      path: string,
+      _replace?: boolean,
+      how?: SendHow | boolean,
+    ): Promise<never> => {
+      if (kind === 'send') hows.push(how);
       if (kind === 'print') printed.push(path);
       sent.push(path);
       sources.push(source);
@@ -240,6 +249,7 @@ const fakes = () => {
     sent,
     printed,
     sources,
+    hows,
     waiting,
     itsWay,
     finishUpload: (ok: boolean) => finishUpload?.(ok),
@@ -1285,6 +1295,22 @@ describe('Sends', () => {
     expect(await done).toBe('taken');
     // Drawn until the person answers.
     expect(sends.rows.map((row) => row.step)).toEqual(['asking']);
+  });
+
+  it('marks a firmware image to flash on its send, so a name the printer holds asks about the flash', async () => {
+    const f = fakes();
+    const sends = sendsOf(f);
+
+    const done = sends.send(file, 'p1', 'Printer 1', 'local', 'usb', {
+      keep: '',
+      flash: true,
+    });
+    f.finishUpload(true);
+    await tick();
+    f.finishSend(true);
+    await done;
+
+    expect(f.hows).toEqual([{ flash: true }]);
   });
 
   it('a reset forgets the files this tab is sending', () => {

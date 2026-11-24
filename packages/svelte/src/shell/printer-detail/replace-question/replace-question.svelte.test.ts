@@ -71,6 +71,35 @@ describe('ReplaceQuestion', () => {
     expect(onKeep).toHaveBeenCalledOnce();
   });
 
+  it('offers a flash of the file on the printer, both files, a replace, or neither', async () => {
+    const onReplace = vi.fn();
+    const onKeepBoth = vi.fn();
+    const onFlashHeld = vi.fn();
+    const onKeep = vi.fn();
+    await render(ReplaceQuestion, {
+      props: {
+        name: 'fw.bbf',
+        flash: true,
+        onReplace,
+        onKeepBoth,
+        onFlashHeld,
+        onKeep,
+      },
+    });
+
+    await page
+      .getByRole('button', { name: /Flash the printer.s file/u })
+      .click();
+    await page.getByRole('button', { name: 'Keep both and flash' }).click();
+    await page.getByRole('button', { name: 'Replace and flash' }).click();
+    await page.getByRole('button', { name: 'Cancel flash' }).click();
+
+    expect(onFlashHeld).toHaveBeenCalledOnce();
+    expect(onKeepBoth).toHaveBeenCalledOnce();
+    expect(onReplace).toHaveBeenCalledOnce();
+    expect(onKeep).toHaveBeenCalledOnce();
+  });
+
   it('cannot replace a file the printer holds read-only, says why, and still keeps both', async () => {
     const onKeep = vi.fn();
     const onKeepBoth = vi.fn();

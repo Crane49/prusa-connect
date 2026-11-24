@@ -698,6 +698,45 @@ describe('Transfers', () => {
     expect(bodies.at(-1)?.keep).toBe(true);
   });
 
+  it('answers where a file kept beside the printer’s landed, and keeps its flash', async () => {
+    const { client } = stubClient([]);
+    client.sendDeviceFile = (request) => {
+      if (request.body.keep_both !== true) {
+        throw new StubApiError('core.printer/FILE_NAME_TAKEN', 409);
+      }
+
+      return Promise.resolve({
+        path: 'usb/fw[1].bbf',
+        transfer: {
+          ...transferOf('t-new', 'done', 1024),
+          path: 'usb/fw[1].bbf',
+        },
+      });
+    };
+    const store = createTransfers(client, 'printer-1');
+    await store.send('local', 'fw.bbf', 'usb/fw.bbf', false, { flash: true });
+    expect(store.taken?.flash).toBe(true);
+
+    const ended = await store.bothTaken();
+
+    expect(ended).toEqual({ landed: 'usb/fw[1].bbf' });
+  });
+
+  it('answers no landing for a replace cancelled before its turn', async () => {
+    const { client, calls } = stubClient([]);
+    client.sendDeviceFile = () => {
+      calls.sent.push('one');
+      throw new StubApiError('core.printer/FILE_NAME_TAKEN', 409);
+    };
+    const store = createTransfers(client, 'printer-1');
+    await store.send('local', 'fw.bbf', 'usb/fw.bbf', false, { flash: true });
+
+    const ended = await store.replaceTaken(() => Promise.resolve(undefined));
+
+    expect(ended).toBeUndefined();
+    expect(calls.sent).toHaveLength(1);
+  });
+
   it('prints a file it sent and reports no fault', async () => {
     const { client, calls } = stubClient([]);
     const store = createTransfers(client, 'printer-1');

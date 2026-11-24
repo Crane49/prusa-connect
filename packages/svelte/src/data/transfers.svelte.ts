@@ -73,6 +73,8 @@ export interface TakenName {
   readonly path: string;
   /** True when the file is to be printed once it lands, not only sent. */
   readonly print?: boolean | undefined;
+  /** True when the file is a firmware image to be flashed once it lands. */
+  readonly flash?: boolean | undefined;
   /**
    * True when the printer lists its file under that name read-only and
    * refuses to delete it, so it cannot be replaced now.
@@ -88,7 +90,36 @@ export interface TakenName {
 export interface PrintEnd {
   readonly answer?: PrintOutcome | undefined;
   readonly fault?: DataFault | undefined;
+  /**
+   * Where a file only sent, not printed, landed on the printer, from the
+   * server's answer. Keep both lands it under a free name.
+   */
+  readonly landed?: string | undefined;
 }
+
+/** How a file is sent, beside where it goes. */
+export interface SendHow {
+  /** Lands the file under a free name when the printer holds its name. */
+  readonly keepBoth?: boolean | undefined;
+  /**
+   * Marks the file as a firmware image to flash once it lands, so a name the
+   * printer holds asks about the flash too.
+   */
+  readonly flash?: boolean | undefined;
+}
+
+// How a send the person answered ended: the fault it failed with, or where
+// the file landed when the server says it did. A send cancelled before it
+// went answers nothing.
+const sendEnd = (
+  answered: { sent?: SentFile; fault?: DataFault | undefined } | undefined,
+): PrintEnd | undefined => {
+  if (answered?.fault !== undefined) return { fault: answered.fault };
+  const sent = answered?.sent;
+  if (sent?.transfer.state !== TRANSFER_DONE) return undefined;
+
+  return { landed: sent.path };
+};
 
 /** A listener the store calls with the path a file landed on. */
 export type LandedListener = (path: string) => void;
@@ -229,11 +260,11 @@ export class Transfers {
       );
     }
     const answered = await inTurn(() =>
-      this.#sending(waiting.storage, waiting.source, waiting.path, true),
+      this.#sending(waiting.storage, waiting.source, waiting.path, true, {
+        flash: waiting.flash,
+      }),
     );
-    const fault = answered?.fault;
-
-    return fault === undefined ? undefined : { fault };
+    return sendEnd(answered);
   }
 
   /**
@@ -255,11 +286,12 @@ export class Transfers {
       );
     }
     const answered = await inTurn(() =>
-      this.#sending(waiting.storage, waiting.source, waiting.path, false, true),
+      this.#sending(waiting.storage, waiting.source, waiting.path, false, {
+        keepBoth: true,
+        flash: waiting.flash,
+      }),
     );
-    const fault = answered?.fault;
-
-    return fault === undefined ? undefined : { fault };
+    return sendEnd(answered);
   }
 
   /**
@@ -416,9 +448,11 @@ export class Transfers {
     source: string,
     path: string,
     replace = false,
-    keepBoth = false,
+    { keepBoth = false, flash = false }: SendHow = {},
   ): Promise<SentFile | undefined> {
-    return (await this.#sending(storage, source, path, replace, keepBoth)).sent;
+    return (
+      await this.#sending(storage, source, path, replace, { keepBoth, flash })
+    ).sent;
   }
 
   // One send request, answered as what was sent or the fault it failed with,
@@ -429,7 +463,7 @@ export class Transfers {
     source: string,
     path: string,
     replace: boolean,
-    keepBoth = false,
+    { keepBoth = false, flash }: SendHow = {},
   ): Promise<{ sent?: SentFile; fault?: DataFault | undefined }> {
     const resets = this.#resets;
     this.#error = undefined;
@@ -459,7 +493,12 @@ export class Transfers {
       return { sent: answered };
     } catch (thrown) {
       if (resets !== this.#resets) return {};
-      this.#failed(thrown, replace || keepBoth, { storage, source, path });
+      this.#failed(thrown, replace || keepBoth, {
+        storage,
+        source,
+        path,
+        flash,
+      });
 
       return { fault: this.#error };
     }

@@ -446,6 +446,7 @@
   "app.settings.extensions.fault.requiredBy.action": "Nejdřív ta rozšíření odeber, nebo je aktualizuj na vydání, která změně vyhovují.",
   "app.settings.extensions.fault.planChanged": "Rozšíření, která instalace přidává, se od chvíle, kdy jsi je četl, změnila. Nyní přidává: {found}",
   "app.settings.extensions.fault.planChanged.action": "Nic se nenainstalovalo. Otevři instalaci znovu, přečti si, co teď přidává, a schval ji.",
+  "app.printerDetail.notFlashedBusy": "{name} je v tiskárně, ale firmware se nenahrál, protože do ní jde další soubor. Až dojde, nahraj firmware ze Souborů.",
   "app.printerDetail.undeclaredChoice.note": "Rozšíření chtělo poslat soubory s volbou, kterou na této stránce nenabízí, takže soubory zůstaly, kde byly.",
   "app.printerDetail.undeclaredChoice.title": "Na tiskárnu se nic neposlalo",
   "app.settings.extensions.request.public": "Odpovídá na {route} pod svou adresou komukoli, kdo se k tomuto serveru dostane, bez přihlášení.",
