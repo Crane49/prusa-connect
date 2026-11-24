@@ -164,18 +164,20 @@ func TestTheDemoRunsItsFleetOverHTTPS(t *testing.T) {
 		TLSCert: certFile, TLSKey: keyFile,
 	}
 
+	// The reader's trust is set before the demo goroutine reads opts: the
+	// closure holds the variable, and a later write to it would race.
+	trusted, err := demoClientTLS(opts)
+	require.NoError(t, err)
+
+	opts.clientTLS = trusted
+	reader := &demoFleet{client: demoHTTPClient(trusted)}
+
 	go func() { done <- Demo(ctx, opts) }()
 
 	t.Cleanup(func() {
 		cancel()
 		require.NoError(t, <-done, "a demo the person stopped must stop cleanly")
 	})
-
-	trusted, err := demoClientTLS(opts)
-	require.NoError(t, err)
-
-	opts.clientTLS = trusted
-	reader := &demoFleet{client: demoHTTPClient(trusted)}
 
 	require.Eventually(t, func() bool {
 		token, signErr := reader.signIn(
