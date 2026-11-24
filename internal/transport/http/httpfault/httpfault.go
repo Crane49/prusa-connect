@@ -80,6 +80,17 @@ var (
 			paramNameLimit,
 		))
 
+	// uploadTooLarge is the storage upload's own refusal, apart from
+	// bodyTooLarge, because only this bound follows core.api.max_upload_size.
+	uploadTooLarge = fault.Register(
+		fault.DomainValidation(), "UPLOAD_TOO_LARGE", http.StatusRequestEntityTooLarge, fault.Document(
+			"The file is larger than this server accepts",
+			"Send a file of at most {limit_bytes}. An administrator sets the largest file with core.api.max_upload_size.",
+			fault.RetryNever,
+			fault.ShowDetail,
+			paramNameLimit,
+		))
+
 	routeNotFound = fault.Register(
 		fault.DomainValidation(), "ROUTE_NOT_FOUND", http.StatusNotFound, fault.Document(
 			"No operation is published at that path",
@@ -484,6 +495,12 @@ func BodyTooLarge(limit int64) *fault.Fault {
 	return bodyTooLarge.New("request body over the limit").With(fault.IntParam(paramNameLimit, limit))
 }
 
+// UploadTooLarge reports a file uploaded to a storage over
+// core.api.max_upload_size, naming the bound.
+func UploadTooLarge(limit int64) *fault.Fault {
+	return uploadTooLarge.New("file over the upload limit").With(fault.IntParam(paramNameLimit, limit))
+}
+
 // RequestTimedOut reports a request that outlived the budget this server gives
 // one, naming the budget it outlived.
 //
@@ -733,6 +750,9 @@ func CodeRequestInvalid() fault.Code { return requestInvalid.Code() }
 
 // CodeBodyTooLarge names a body over the endpoint's bound.
 func CodeBodyTooLarge() fault.Code { return bodyTooLarge.Code() }
+
+// CodeUploadTooLarge names a file over the storage upload bound.
+func CodeUploadTooLarge() fault.Code { return uploadTooLarge.Code() }
 
 // CodeRouteNotFound names a path with no published operation.
 func CodeRouteNotFound() fault.Code { return routeNotFound.Code() }

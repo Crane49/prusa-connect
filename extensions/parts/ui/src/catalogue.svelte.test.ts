@@ -140,6 +140,7 @@ const fakes = (override: Partial<PartsService> = {}) => {
       upload: true,
       files: true,
     }),
+    checkSize: record('checkSize', undefined),
     upload: record('upload', 0),
     remove: (storage, path) => {
       removed.push(`${storage}:${path}`);

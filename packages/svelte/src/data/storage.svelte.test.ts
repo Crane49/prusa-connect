@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  BODY_TOO_LARGE,
   type ServerStorage,
   type StorageClient,
   type StorageEntry,
   UPLOAD_LIMIT_BYTES,
+  UPLOAD_TOO_LARGE,
 } from './services/storage';
-import { createStorage } from './storage.svelte';
+import { createStorage, Storage } from './storage.svelte';
 import { StubApiError } from './stubs';
 
 const storageOf = (name: string, write = true): ServerStorage => ({
@@ -389,7 +389,7 @@ describe('Storage', () => {
     const { client, calls } = stubClient([storageOf('local')], {
       'local:': [],
     });
-    const store = createStorage(client);
+    const store = createStorage(client, () => UPLOAD_LIMIT_BYTES);
 
     const saved = await store.upload(
       'local',
@@ -400,18 +400,49 @@ describe('Storage', () => {
     expect(saved).toBeUndefined();
     expect(calls.uploaded).toEqual([]);
     expect(store.uploads[0]?.state).toBe('failed');
-    expect(store.uploads[0]?.fault?.code).toBe(BODY_TOO_LARGE);
+    expect(store.uploads[0]?.fault?.code).toBe(UPLOAD_TOO_LARGE);
     expect(store.uploads[0]?.fault?.params.limit_bytes).toBe(
       UPLOAD_LIMIT_BYTES,
     );
-    expect(store.error?.code).toBe(BODY_TOO_LARGE);
+    expect(store.error?.code).toBe(UPLOAD_TOO_LARGE);
+  });
+
+  // Before the server's settings are read the limit is not known, and a
+  // server raised past the default would take the file, so it is sent and
+  // the server decides.
+  it('sends a file of any size while the limit is not known', async () => {
+    const { client, calls } = stubClient([storageOf('local')], {
+      'local:': [],
+    });
+    const store = new Storage(client, () => undefined);
+
+    await store.upload('local', 'big.bgcode', sized(UPLOAD_LIMIT_BYTES + 1));
+
+    expect(calls.uploaded).toEqual(['big.bgcode']);
+  });
+
+  // The server's own limit wins over the default, so a server that raised
+  // core.api.max_upload_size takes a file the default would refuse.
+  it('holds a file to the limit the server names', async () => {
+    const { client, calls } = stubClient([storageOf('local')], {
+      'local:': [],
+    });
+    const raised = UPLOAD_LIMIT_BYTES * 2;
+    const store = new Storage(client, () => raised);
+
+    await store.upload('local', 'big.bgcode', sized(UPLOAD_LIMIT_BYTES + 1));
+    expect(calls.uploaded).toHaveLength(1);
+
+    await store.upload('local', 'huge.bgcode', sized(raised + 1));
+    expect(store.uploads.at(-1)?.fault?.params.limit_bytes).toBe(raised);
+    expect(calls.uploaded).toHaveLength(1);
   });
 
   it('sends a file of exactly the upload limit', async () => {
     const { client, calls } = stubClient([storageOf('local')], {
       'local:': [],
     });
-    const store = createStorage(client);
+    const store = new Storage(client, () => UPLOAD_LIMIT_BYTES);
 
     await store.upload('local', 'wide.bgcode', sized(UPLOAD_LIMIT_BYTES));
 
@@ -482,7 +513,7 @@ describe('Storage', () => {
     const { client, calls } = stubClient([storageOf('local')], {
       'local:': [],
     });
-    const store = createStorage(client);
+    const store = new Storage(client, () => UPLOAD_LIMIT_BYTES);
 
     const answer = await store.uploadTemporary(
       'local',
@@ -490,7 +521,7 @@ describe('Storage', () => {
       sized(UPLOAD_LIMIT_BYTES + 1),
     );
 
-    expect('fault' in answer && answer.fault.code).toBe(BODY_TOO_LARGE);
+    expect('fault' in answer && answer.fault.code).toBe(UPLOAD_TOO_LARGE);
     expect(calls.uploaded).toEqual([]);
   });
 

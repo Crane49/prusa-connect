@@ -41,6 +41,7 @@ type AppSettings struct {
 	Upgrades           bool           `json:"upgrades"                       doc:"Whether this server prepares upgrades and keeps backups. False where core.upgrade.enabled is off, and the app then shows neither."                                                                                                            readOnly:"true"`
 	SafeMode           *SafeModeState `json:"safe_mode,omitempty"            doc:"Present while this run is in safe mode: every module is off, whatever the configuration says, until the server restarts normally. It never names who asked for it."                                                                           readOnly:"true"`
 	DiagnosticsSendURL string         `json:"diagnostics_send_url,omitempty" doc:"Where the browser sends the diagnostics bundle. Absent when core.diagnostics.send_url is empty."`
+	MaxUploadBytes     int64          `json:"max_upload_bytes"               doc:"The largest file, in bytes, this server's storages take in one upload. It is core.api.max_upload_size, so a page can refuse a larger file before sending it."                                                                                 readOnly:"true"`
 	Diagnostics        bool           `json:"diagnostics"                    doc:"Whether this server serves the diagnostics bundle. False in a build that leaves it out, where core.diagnostics.enabled is off, and on an install with open access that does not switch it on; then the app hides the download."               readOnly:"true"`
 }
 
@@ -60,7 +61,7 @@ type appSettingsOutput struct {
 // document does not depend on whether this build carries an app: a build
 // without one answers the same shape with enabled false.
 func registerAppSettings(
-	api huma.API, settings AppSettings, dashboards, modules, upgrades bool, diagnostics func() bool,
+	api huma.API, settings AppSettings, dashboards, modules, upgrades bool, maxUpload int64, diagnostics func() bool,
 ) {
 	register(api, huma.Operation{
 		OperationID: "get-ui-settings",
@@ -80,6 +81,7 @@ func registerAppSettings(
 		settings.Dashboards = dashboards
 		settings.Modules = modules
 		settings.Upgrades = upgrades
+		settings.MaxUploadBytes = maxUpload
 		settings.Diagnostics = diagnostics()
 
 		return &appSettingsOutput{Body: settings}, nil

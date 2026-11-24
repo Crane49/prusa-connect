@@ -708,6 +708,7 @@ func serveOver(
 		Origins:         origins,
 		RequestBudget:   core.API.RequestTimeout,
 		StreamBudget:    core.API.StreamTimeout,
+		MaxUploadBytes:  core.API.MaxUploadSize,
 		Mounts:          mounts,
 		App: withPrinterAdmission(
 			withSafeMode(appSettings(core.Frontend, core.Diagnostics, appState), opts.safe),

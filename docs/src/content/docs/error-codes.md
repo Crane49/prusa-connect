@@ -1892,6 +1892,16 @@ This caller already holds as many event streams as the server allows one.
 - **parameters** `limit_streams`
 - **what to do** Close a stream before opening another. One stream carries every origin the caller may observe, so a second is rarely needed; narrow one with the origins parameter instead.
 
+### `core.validation/UPLOAD_TOO_LARGE` {#core-validation-upload-too-large}
+
+The file is larger than this server accepts.
+
+- **status** `413`
+- **retryable** no
+- **occurrence detail** shown
+- **parameters** `limit_bytes`
+- **what to do** Send a file of at most {limit_bytes}. An administrator sets the largest file with core.api.max_upload_size.
+
 ### `core.validation/VERSION_CONFLICT` {#core-validation-version-conflict}
 
 The instance changed since the version the write quotes.

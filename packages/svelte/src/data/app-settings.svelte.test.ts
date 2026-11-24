@@ -31,6 +31,7 @@ const stubUi = (
           diagnostics: true,
           modules: true,
           upgrades: true,
+          max_upload_bytes: 200 * 1024 * 1024,
           ...answer,
         });
       },

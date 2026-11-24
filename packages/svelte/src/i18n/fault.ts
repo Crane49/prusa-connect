@@ -10,6 +10,7 @@
 // which field, which printer. So the title is translated and the detail is
 // quoted, and an operator reading a Czech screen can still paste the English
 // line into a bug report.
+import { formatBytes } from './format';
 import { CORE_NAMESPACE, locale } from './locale.svelte';
 import type { MessageParams } from './messages';
 import { format } from './messages';
@@ -46,9 +47,12 @@ const textOf = (value: unknown): string | undefined =>
 const paramsOf = (value: unknown): MessageParams | undefined => {
   if (typeof value !== 'object' || value === null) return undefined;
 
+  // A count of bytes is a size a person reads, not a ten-digit number.
   const kept: Record<string, string | number> = {};
   for (const [name, given] of Object.entries(value)) {
-    if (typeof given === 'string' || typeof given === 'number') {
+    if (typeof given === 'number' && name.endsWith('_bytes')) {
+      kept[name] = formatBytes(given);
+    } else if (typeof given === 'string' || typeof given === 'number') {
       kept[name] = given;
     }
   }

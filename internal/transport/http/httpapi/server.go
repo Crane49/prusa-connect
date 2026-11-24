@@ -90,15 +90,12 @@ const (
 	defaultTitle       = "Prusa Connect"
 	defaultVersion     = "0.0.0"
 	defaultMaxBodySize = 1 << 20
-	// defaultMaxUploadSize bounds a body that is a file.
-	//
-	// The wire could carry more: a printer transfer describes its length in a
-	// uint32, so its limit is 4 GiB. But a deployment sits behind a proxy with
-	// a body limit of its own. With different limits in one path, a person
-	// waits out an upload and is refused by the lowest one. The frontend
-	// (packages/svelte/src/data/services/storage.ts) and the nginx manifests
-	// refuse at this same number.
+	// defaultMaxUploadSize bounds a body that is a file when the caller names
+	// no bound. The app passes core.api.max_upload_size.
 	defaultMaxUploadSize = 200 << 20
+	// defaultMaxUpgradeSize bounds an upgrade bundle. It is apart from the
+	// storage bound so an operator who lowers that one can still upgrade.
+	defaultMaxUpgradeSize = 200 << 20
 
 	// Bounds on the wire. The zero value of each is no timeout at all.
 	// ReadHeaderTimeout matters on the way in: without it a connection that
@@ -341,6 +338,8 @@ type Config struct {
 	// document over a megabyte is a client doing something wrong, and a print
 	// file over a megabyte is normal.
 	MaxUploadBytes int64
+	// MaxUpgradeBytes bounds an upgrade bundle the same way.
+	MaxUpgradeBytes int64
 	// Mounts are the paths this origin serves that are not operations: a frozen
 	// device wire, and the frontend at the root. Each one carries the reason it
 	// is not published, and the route-and-document diff is told to expect
@@ -758,6 +757,10 @@ func (c Config) withDefaults() Config {
 		c.MaxUploadBytes = defaultMaxUploadSize
 	}
 
+	if c.MaxUpgradeBytes <= 0 {
+		c.MaxUpgradeBytes = defaultMaxUpgradeSize
+	}
+
 	if c.RequestBudget <= 0 {
 		c.RequestBudget = defaultRequestBudget
 	}
@@ -895,7 +898,7 @@ func middlewareStack(cfg Config) []func(http.Handler) http.Handler {
 		// this origin took time over and answered 500 to.
 		servedMiddleware(cfg.Served),
 		recoverMiddleware(),
-		bodyLimitMiddleware(cfg.MaxBodyBytes, cfg.MaxUploadBytes, cfg.Modules),
+		bodyLimitMiddleware(cfg.MaxBodyBytes, cfg.MaxUploadBytes, cfg.MaxUpgradeBytes, cfg.Modules),
 	}
 }
 

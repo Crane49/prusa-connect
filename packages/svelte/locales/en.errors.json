@@ -369,6 +369,8 @@
   "error.core.validation/TAG_TOO_LONG.action": "Shorten the tag named by tag to at most limit_characters characters.",
   "error.core.validation/TOO_MANY_STREAMS": "This caller already holds as many event streams as the server allows one",
   "error.core.validation/TOO_MANY_STREAMS.action": "Close a stream before opening another. One stream carries every origin the caller may observe, so a second is rarely needed; narrow one with the origins parameter instead.",
+  "error.core.validation/UPLOAD_TOO_LARGE": "The file is larger than this server accepts",
+  "error.core.validation/UPLOAD_TOO_LARGE.action": "Send a file of at most {limit_bytes}. An administrator sets the largest file with core.api.max_upload_size.",
   "error.core.validation/VERSION_CONFLICT": "The instance changed since the version the write quotes",
   "error.core.validation/VERSION_CONFLICT.action": "Read the instance again, reapply the change to what it now says, and send the new ETag. Somebody else wrote it, possibly by editing the configuration file directly."
 }

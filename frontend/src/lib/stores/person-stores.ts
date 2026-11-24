@@ -116,11 +116,13 @@ export const personStores = (
   // module catalogue reads no index and no marketplace.
   modulesOn?: () => boolean,
   safeMode?: () => boolean,
+  // The longest file the server takes in one upload, from its settings.
+  uploadLimit?: () => number | undefined,
 ): PersonStores => {
   const fleet = new Fleet(client);
   const modules = new Modules(client);
   const leftDatabases = new LeftDatabases(client);
-  const storage = new Storage(client);
+  const storage = new Storage(client, uploadLimit);
   const transfers = transferStores(client, principal);
   const running = new RunningTransfers(client);
   const fractal = bind(client);

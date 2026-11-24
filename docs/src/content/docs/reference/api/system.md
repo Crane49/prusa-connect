@@ -590,6 +590,7 @@ The server answers `200`:
   "default_language": "en",
   "diagnostics": true,
   "enabled": true,
+  "max_upload_bytes": 209715200,
   "modules": true,
   "printer_admission": "approval",
   "printer_custom_ca": false,

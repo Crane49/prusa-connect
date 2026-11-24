@@ -93,6 +93,10 @@ var Keys = map[string]Key{
 		Doc: "The same limit for the routes that stream events or transfer a file. " +
 			"It may not be shorter than request_timeout.",
 	},
+	"core.api.max_upload_size": {
+		Doc: "The largest file, in bytes, one upload to a storage may be, from 1 MiB to just under 4 GiB. " +
+			"A reverse proxy in front has its own limit.",
+	},
 	"core.log.level": {
 		Doc:     "How much the process writes to its log: debug, info, warn or error.",
 		Choices: []string{"debug", "info", "warn", "error"},

@@ -237,6 +237,7 @@ func operationExamples() map[string]operationExample {
 			Diagnostics:      diagnosticsCarried,
 			Modules:          true,
 			Upgrades:         true,
+			MaxUploadBytes:   defaultMaxUploadSize,
 		}},
 
 		"get-readiness": {Response: ReadinessReport{

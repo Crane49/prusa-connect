@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -9,6 +10,8 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+
+	"github.com/prusa3d/prusa-connect/internal/transport/http/httpfault"
 )
 
 // The server's own storage. A storage is a declared resource instance, so it is
@@ -836,6 +839,10 @@ func uploadHandler(stores Storages) func(context.Context, *uploadObjectInput) (*
 		}
 
 		saved, err := save(ctx, principalFrom(ctx), in.Storage, in.Path, body)
+		if tooLarge, ok := errors.AsType[*http.MaxBytesError](err); ok {
+			return nil, httpfault.UploadTooLarge(tooLarge.Limit)
+		}
+
 		if err != nil {
 			return nil, err
 		}

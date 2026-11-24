@@ -211,6 +211,7 @@
     },
     () => settings.modules,
     () => settings.safeMode !== undefined,
+    () => settings.maxUploadBytes,
   );
   // Where a notice in the bell leads.
   const noticeHref = (notice: Notice): string | undefined => {

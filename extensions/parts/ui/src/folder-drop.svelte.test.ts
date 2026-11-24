@@ -49,6 +49,8 @@ interface Options {
   extensions?: string[];
   /** A file name the storage refuses. */
   refuse?: string;
+  /** A file name the server's upload limit refuses. */
+  tooLarge?: string;
   /** A folder the module no longer holds, so a part made in it is refused. */
   gone?: number;
   /** What deleting a part throws, for a cleanup that fails. */
@@ -132,6 +134,12 @@ const build = async (options: Options = {}) => {
   const files: FilesService = {
     storages: () => Promise.resolve([storage(options.extensions ?? [])]),
     allowed: () => Promise.resolve(options.allowed ?? EVERYTHING),
+    checkSize: (body) =>
+      options.tooLarge !== undefined &&
+      body instanceof File &&
+      body.name === options.tooLarge
+        ? Promise.reject(new Error('over the upload limit'))
+        : Promise.resolve(),
     upload: (_storage, path) => {
       if (options.refuse !== undefined && path.endsWith(`/${options.refuse}`)) {
         return Promise.reject(new Error('the storage refused it'));
@@ -262,6 +270,16 @@ describe('FolderDrop', () => {
     expect(job?.fault).toBeInstanceOf(Error);
     // The fault is the row's, so the page does not draw it a second time.
     expect(catalogue.fault).toBeUndefined();
+  });
+
+  it('makes no part when a file is over the upload limit', async () => {
+    const { drop, log, uploaded } = await build({ tooLarge: 'hook.bgcode' });
+
+    await drop.drop(0, [file('hook.stl'), file('hook.bgcode')]);
+
+    expect(log).toEqual(['list']);
+    expect(uploaded).toEqual([]);
+    expect(drop.jobs[0]?.state).toBe('failed');
   });
 
   it('does nothing for a person who may not write files', async () => {

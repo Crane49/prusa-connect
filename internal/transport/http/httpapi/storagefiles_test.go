@@ -237,10 +237,82 @@ func TestAnUploadOverTheBoundIsRefusedWithTheBound(t *testing.T) {
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, rec.Code, rec.Body.String())
 	require.Equal(t, problemMediaType, rec.Header().Get("Content-Type"))
-	require.Contains(t, rec.Body.String(), httpfault.CodeBodyTooLarge().String())
+	require.Contains(t, rec.Body.String(), httpfault.CodeUploadTooLarge().String())
 	require.Contains(t, rec.Body.String(), "8", "the refusal does not name the bound")
 
 	t.Logf("observed: %s", rec.Body.String())
+}
+
+// An upload that declares a length over the bound is refused before a byte of
+// it is read. A browser sending the whole bound first and then having the
+// connection closed under it reports a network error, not the refusal.
+func TestAnUploadDeclaredOverTheBoundIsRefusedUnread(t *testing.T) {
+	t.Parallel()
+
+	stores := &fakeStorages{}
+	handler := serverWithStoresBounded(t, stores, 8).Handler()
+
+	body := &countingReader{Reader: strings.NewReader(strings.Repeat("G", 4096))}
+	req := httptest.NewRequest(http.MethodPut, storagesPathPrefix+"/bench/content?path=part.gcode", body)
+	req.ContentLength = 4096
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusRequestEntityTooLarge, rec.Code, rec.Body.String())
+	require.Contains(t, rec.Body.String(), httpfault.CodeUploadTooLarge().String())
+	require.Zero(t, body.read, "the body was read before the refusal")
+	require.Nil(t, stores.saved)
+}
+
+// An upload that declares no length is refused when its bytes cross the bound,
+// with the same code as one refused by its declared length.
+func TestAnUploadOfNoDeclaredLengthIsRefusedAtTheBound(t *testing.T) {
+	t.Parallel()
+
+	handler := serverWithStoresBounded(t, &fakeStorages{}, 8).Handler()
+
+	req := httptest.NewRequest(http.MethodPut, storagesPathPrefix+"/bench/content?path=part.gcode",
+		io.MultiReader(strings.NewReader(strings.Repeat("G", 4096))))
+	req.ContentLength = -1
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusRequestEntityTooLarge, rec.Code, rec.Body.String())
+	require.Contains(t, rec.Body.String(), httpfault.CodeUploadTooLarge().String())
+}
+
+// An upload that declares exactly the bound is written: the bound is the
+// largest file taken, not the first one refused.
+func TestAnUploadDeclaredAtTheBoundIsWritten(t *testing.T) {
+	t.Parallel()
+
+	stores := &fakeStorages{}
+	handler := serverWithStoresBounded(t, stores, 4).Handler()
+
+	req := httptest.NewRequest(http.MethodPut, storagesPathPrefix+"/bench/content?path=part.gcode",
+		strings.NewReader("G28\n"))
+
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code, rec.Body.String())
+	require.Equal(t, "G28\n", string(stores.saved))
+}
+
+// countingReader counts the bytes read through it.
+type countingReader struct {
+	io.Reader
+
+	read int
+}
+
+func (c *countingReader) Read(p []byte) (int, error) {
+	n, err := c.Reader.Read(p)
+	c.read += n
+
+	return n, err
 }
 
 // An upload inside the bound is written, so the bound refuses a body and not a

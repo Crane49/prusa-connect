@@ -245,7 +245,7 @@ server. The limits below are the module's own.
 | the path of a file inside its storage | 512 bytes |
 
 The module sets no limit on the size of a file. The core's upload route takes
-up to 200 MiB. A request body to the module is at most 160 KiB, so a field at
+up to `core.api.max_upload_size`, 200 MiB by default. A request body to the module is at most 160 KiB, so a field at
 its limit is accepted however JSON spells it.
 
 ## Errors

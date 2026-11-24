@@ -33,6 +33,8 @@ export interface FilesService {
   storages(signal?: AbortSignal): Promise<readonly ServerStorage[]>;
   /** What the person may do to the catalogue and to its files. */
   allowed(signal?: AbortSignal): Promise<Allowed>;
+  /** Refuses a file over the server's upload limit, before anything is made for it. */
+  checkSize(body: Blob): Promise<void>;
   /** Writes one file, and answers the length the storage wrote. */
   upload(storage: string, path: string, body: Blob): Promise<number>;
   /** Removes one file, or one folder with everything in it. */
@@ -76,11 +78,46 @@ const may = async (
     )
   ).allowed;
 
+/**
+ * The code the core answers a file over its upload bound with. It is written
+ * here, not imported: the host serves `@prusa/connect-ui`, and a released core
+ * that predates the code exports no such name, so the import would stop the
+ * whole bundle from loading.
+ */
+const UPLOAD_TOO_LARGE = 'core.validation/UPLOAD_TOO_LARGE';
+
+/**
+ * The refusal the core answers a file over its upload bound with, thrown
+ * before the request: a browser that is sending when the core refuses often
+ * reports a dropped connection, not the refusal.
+ */
+const tooLarge = (limit: number): Error =>
+  Object.assign(new Error('file over the upload limit'), {
+    code: UPLOAD_TOO_LARGE,
+    params: { limit_bytes: limit },
+  });
+
 /** The core's storage and print routes, on the client the host handed over. */
 export const filesOn = (host: ModuleHost): FilesService => {
   const client = host.client;
   const ended = (signal?: AbortSignal): AbortSignal =>
     signal === undefined ? host.signal : AbortSignal.any([signal, host.signal]);
+  // Read once. A core that does not say leaves the file to the core. A read
+  // that failed is not kept, so the next upload asks again.
+  let uploadLimit: Promise<number | undefined> | undefined;
+  const limit = (): Promise<number | undefined> =>
+    (uploadLimit ??= client.getUiSettings({}, host.signal).then(
+      (settings) => settings.max_upload_bytes,
+      () => {
+        uploadLimit = undefined;
+
+        return undefined;
+      },
+    ));
+  const checkSize = async (body: Blob): Promise<void> => {
+    const largest = await limit();
+    if (largest !== undefined && body.size > largest) throw tooLarge(largest);
+  };
 
   return {
     storages: async (signal) =>
@@ -96,13 +133,17 @@ export const filesOn = (host: ModuleHost): FilesService => {
 
       return { read, write, upload, files };
     },
-    upload: async (storage, path, body) =>
-      (
+    checkSize,
+    upload: async (storage, path, body) => {
+      await checkSize(body);
+
+      return (
         await client.uploadStorageObject(
           { path: { storage }, query: { path }, body },
           ended(),
         )
-      ).bytes,
+      ).bytes;
+    },
     remove: async (storage, path) => {
       await client.deleteStorageEntry(
         { path: { storage }, query: { path } },

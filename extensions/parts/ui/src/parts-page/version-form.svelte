@@ -199,7 +199,8 @@
           </span>
           {#if refusal}
             <span class="text-xs text-destructive-text">
-              {refusal.title}{#if refusal.code}<code class="ms-1"
+              {refusal.title}{#if refusal.action}
+                {refusal.action}{/if}{#if refusal.code}<code class="ms-1"
                   >{refusal.code}</code
                 >{/if}
             </span>

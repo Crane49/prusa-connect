@@ -98,7 +98,7 @@ anyone you do not trust.
 Writing a key the server does not know stops it at startup, and the message
 names the key and the line of your file it is written on:
 
-```
+```text
 config: invalid configuration: /etc/config.yaml: line 8: core.pricipal: this build does not read that key
 ```
 
@@ -157,6 +157,17 @@ read out of `X-Forwarded-For`. Empty is right for a server reached directly.
 Leaving it empty behind a proxy is the other mistake: every client is then
 counted under the proxy's own address, so one person getting a password wrong
 slows down everybody.
+
+`core.api.max_upload_size` is the largest file, in bytes, one upload to a
+storage may be. The default is 200 MiB. The Storage page and the Parts page
+read the number from the server and refuse a larger file before sending it.
+The server refuses one that declares a larger size before reading it. An
+offline upgrade bundle keeps its own bound of 200 MiB, so lowering the key
+never blocks an upgrade. A reverse proxy in front of the server has a body
+limit of its own: nginx's `client_max_body_size`, the ingress-nginx annotation
+`nginx.ingress.kubernetes.io/proxy-body-size`, whose default is 1 MiB, or
+Traefik's `maxRequestBodyBytes`. Raise it together with this key, or the proxy
+refuses the upload first.
 
 `core.frontend.enabled` is read twice. `make build` reads it out of the same
 file to decide whether the web app is compiled at all, and the server reads it

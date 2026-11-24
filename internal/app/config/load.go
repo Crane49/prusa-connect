@@ -334,6 +334,10 @@ func (c Core) WithDefaults(path string) Core {
 		c.API.StreamTimeout = defaults.API.StreamTimeout
 	}
 
+	if c.API.MaxUploadSize == 0 {
+		c.API.MaxUploadSize = defaults.API.MaxUploadSize
+	}
+
 	if c.Log.Level == "" {
 		c.Log.Level = defaults.Log.Level
 	}

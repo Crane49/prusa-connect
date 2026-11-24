@@ -368,6 +368,7 @@ export {
   type StoredFile,
   thumbnailUrlOf,
   UPLOAD_LIMIT_BYTES,
+  UPLOAD_TOO_LARGE,
 } from './services/storage';
 export {
   type TelemetryClient,

@@ -3555,6 +3555,11 @@ export interface components {
             readonly documentation?: string;
             /** @description Whether this server serves the web app at its origin root. False means the root answers 404 and the page a client is reading came from somewhere else. */
             enabled: boolean;
+            /**
+             * Format: int64
+             * @description The largest file, in bytes, this server's storages take in one upload. It is core.api.max_upload_size, so a page can refuse a larger file before sending it.
+             */
+            readonly max_upload_bytes: number;
             /** @description Whether this server installs modules and runs the ones it installed. False where the operator set core.modules_enabled to false, and in safe mode, where safe_mode says so; then the app shows no catalogue, no marketplace and no install. */
             readonly modules: boolean;
             /** @description The origin a printer dials, which the add-printer page writes into the printer's settings file. Absent means the origin the page was opened on. */
@@ -25176,6 +25181,7 @@ export interface operations {
                      *       "default_language": "en",
                      *       "diagnostics": true,
                      *       "enabled": true,
+                     *       "max_upload_bytes": 209715200,
                      *       "modules": true,
                      *       "printer_admission": "approval",
                      *       "printer_custom_ca": false,

@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"fmt"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -60,6 +61,26 @@ func TestUpgradeServerIsConfigurableAndValidated(t *testing.T) {
 	err = core.Validate()
 	require.ErrorIs(t, err, config.ErrInvalid)
 	require.Contains(t, err.Error(), "core.upgrade.server")
+}
+
+// The upload bound takes both ends of its range, and a file that leaves it out
+// or writes 0 gets the default.
+func TestTheUploadBoundTakesItsRangeAndDefaults(t *testing.T) {
+	t.Parallel()
+
+	for _, size := range []int64{config.MinMaxUploadSize, config.MaxMaxUploadSize} {
+		core, err := config.Load(write(t, fmt.Sprintf("core:\n  api:\n    max_upload_size: %d\n", size)))
+		require.NoError(t, err)
+		require.NoError(t, core.Validate(), size)
+	}
+
+	core, err := config.Load(write(t, "core:\n  api:\n    max_upload_size: 0\n"))
+	require.NoError(t, err)
+	require.Equal(t, int64(config.DefaultMaxUploadSize), core.API.MaxUploadSize)
+
+	core, err = config.Load(write(t, "core:\n  api:\n    max_upload_size: 524288000\n"))
+	require.NoError(t, err)
+	require.Equal(t, int64(524288000), core.API.MaxUploadSize)
 }
 
 // TestAMissingFileIsADefaultConfiguration keeps a first run startable. A server
@@ -164,6 +185,14 @@ func TestValidateNamesTheKeyItRefused(t *testing.T) {
 		},
 		"stream budget under the request budget": {
 			func(c *config.Core) { c.API.StreamTimeout = time.Second }, "the longer budget is the shorter one",
+		},
+		// A size written in MiB where the key asks for bytes, and one no
+		// printer transfer can describe.
+		"upload size under a mebibyte": {
+			func(c *config.Core) { c.API.MaxUploadSize = 500 }, "core.api.max_upload_size",
+		},
+		"upload size over 4 GiB": {
+			func(c *config.Core) { c.API.MaxUploadSize = 4 << 30 }, "core.api.max_upload_size",
 		},
 		"unknown log level":  {func(c *config.Core) { c.Log.Level = "chatty" }, "core.log.level"},
 		"unknown log format": {func(c *config.Core) { c.Log.Format = "xml" }, "core.log.format"},

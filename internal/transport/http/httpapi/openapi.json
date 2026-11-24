@@ -464,6 +464,12 @@
             "description": "Whether this server serves the web app at its origin root. False means the root answers 404 and the page a client is reading came from somewhere else.",
             "type": "boolean"
           },
+          "max_upload_bytes": {
+            "description": "The largest file, in bytes, this server's storages take in one upload. It is core.api.max_upload_size, so a page can refuse a larger file before sending it.",
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
           "modules": {
             "description": "Whether this server installs modules and runs the ones it installed. False where the operator set core.modules_enabled to false, and in safe mode, where safe_mode says so; then the app shows no catalogue, no marketplace and no install.",
             "readOnly": true,
@@ -519,6 +525,7 @@
           "dashboards",
           "modules",
           "upgrades",
+          "max_upload_bytes",
           "diagnostics"
         ],
         "type": "object"
@@ -33746,6 +33753,7 @@
                   "default_language": "en",
                   "diagnostics": true,
                   "enabled": true,
+                  "max_upload_bytes": 209715200,
                   "modules": true,
                   "printer_admission": "approval",
                   "printer_custom_ca": false,

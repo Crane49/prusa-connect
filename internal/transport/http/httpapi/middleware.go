@@ -259,25 +259,32 @@ func recoverMiddleware() func(http.Handler) http.Handler {
 // A request on a staged module route is held to the limit the operator
 // approved for that route, and every other module request to the document
 // bound. The module host holds a staged body to the same limit
-// (ADR-20261120-xys rule 6). A module request whose Content-Length is over
-// its limit is refused here, before a byte of the body is read.
-func bodyLimitMiddleware(documents, uploads int64, modules ModulePlane) func(http.Handler) http.Handler {
+// (ADR-20261120-xys rule 6).
+//
+// A file or module request whose Content-Length is over its limit is refused
+// here, before a byte of the body is read. Otherwise the client sends the
+// whole limit first, and the connection is closed under it.
+func bodyLimitMiddleware(documents, uploads, upgrades int64, modules ModulePlane) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			limit := documents
+			limit, declared, refusal := documents, false, httpfault.BodyTooLarge
 
-			if carriesAFile(r) {
-				limit = uploads
+			if carriesAnUpgrade(r) {
+				limit, declared = upgrades, true
+			} else if carriesAFile(r) {
+				limit, declared, refusal = uploads, true, httpfault.UploadTooLarge
 			} else if surface, inner, toModule := moduleTarget(r, modules); toModule {
+				declared = true
+
 				if staged, isStaged := stagedLimit(surface, r.Method, inner); isStaged {
 					limit = staged
 				}
+			}
 
-				if r.ContentLength > limit {
-					writeProblem(w, r, httpfault.BodyTooLarge(limit))
+			if declared && r.ContentLength > limit {
+				writeProblem(w, r, refusal(limit))
 
-					return
-				}
+				return
 			}
 
 			r.Body = http.MaxBytesReader(w, r.Body, limit)
@@ -390,7 +397,7 @@ func stagedLimit(surface ModuleSurface, method, inner string) (int64, bool) {
 // checks this against the registered routes, so a new upload route missing
 // here fails that test.
 func carriesAFile(r *http.Request) bool {
-	if r.Method == http.MethodPost && (r.URL.Path == upgradeStaged || r.URL.Path == upgradeBundle) {
+	if carriesAnUpgrade(r) {
 		return true
 	}
 
@@ -412,6 +419,12 @@ func carriesAFile(r *http.Request) bool {
 	default:
 		return false
 	}
+}
+
+// carriesAnUpgrade reports whether this request's body is an upgrade bundle,
+// which takes its own bound and not the storage one.
+func carriesAnUpgrade(r *http.Request) bool {
+	return r.Method == http.MethodPost && (r.URL.Path == upgradeStaged || r.URL.Path == upgradeBundle)
 }
 
 // principalMiddleware runs for every registered operation. It is a Huma

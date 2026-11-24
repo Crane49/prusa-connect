@@ -13,8 +13,8 @@ import { describeFault, type FaultText } from '@prusa/connect-ui/i18n';
 import type { Translate } from '@prusa/connect-ui/i18n';
 
 /**
- * The three parts of an error: its code, the line to show, and the English
- * detail under it.
+ * The parts of an error: its code, the line to show, what the reader can do
+ * about it, and the English detail under it.
  *
  * A key no catalogue holds reads back as the key itself, which is how this
  * tells a code the module has a line for from one it does not. A code with no
@@ -28,5 +28,10 @@ export const faultText = (thrown: unknown, t: Translate): FaultText => {
   const line = t(key);
   if (line === key) return fault;
 
-  return { code: fault.code, title: line, detail: fault.detail ?? fault.title };
+  return {
+    code: fault.code,
+    title: line,
+    detail: fault.detail ?? fault.title,
+    action: fault.action,
+  };
 };

@@ -12,6 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/prusa3d/prusa-connect/internal/transport/http/httpfault"
 	"github.com/prusa3d/prusa-connect/internal/upgrade"
 )
 
@@ -40,7 +41,7 @@ func bundleServer(t *testing.T, maintenance Maintenance, uploadLimit int64) *Ser
 
 	cfg := exampleConfig(noPrinters{}, seededStore(), seededPresets())
 	cfg.Maintenance = maintenance
-	cfg.MaxUploadBytes = uploadLimit
+	cfg.MaxUpgradeBytes = uploadLimit
 
 	server, err := New(cfg)
 	require.NoError(t, err)
@@ -79,4 +80,49 @@ func TestAnOfflineBundleOverTheUploadBoundIsRefusedAsTooLarge(t *testing.T) {
 
 	require.Equal(t, http.StatusRequestEntityTooLarge, recorder.Code, recorder.Body.String())
 	require.Nil(t, maintenance.got, "nothing was staged")
+}
+
+// A bundle that declares a length over its bound is refused before a byte of
+// it is read, with the general code: core.api.max_upload_size does not bound
+// a bundle.
+func TestAnOfflineBundleDeclaredOverItsBoundIsRefusedUnread(t *testing.T) {
+	t.Parallel()
+
+	maintenance := &bundleMaintenance{}
+	server := bundleServer(t, maintenance, 1024)
+
+	body := &countingReader{Reader: strings.NewReader(strings.Repeat("x", 4096))}
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, upgradeBundle, body)
+	request.ContentLength = 4096
+	request.Header.Set("Content-Type", "application/octet-stream")
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusRequestEntityTooLarge, recorder.Code, recorder.Body.String())
+	require.Contains(t, recorder.Body.String(), httpfault.CodeBodyTooLarge().String())
+	require.Zero(t, body.read, "the body was read before the refusal")
+	require.Nil(t, maintenance.got)
+}
+
+// Lowering the storage bound leaves the bundle's own, so an operator who lowers
+// core.api.max_upload_size can still upgrade.
+func TestALoweredUploadBoundStillTakesABundle(t *testing.T) {
+	t.Parallel()
+
+	maintenance := &bundleMaintenance{}
+	cfg := exampleConfig(noPrinters{}, seededStore(), seededPresets())
+	cfg.Maintenance = maintenance
+	cfg.MaxUploadBytes = 8
+
+	server, err := New(cfg)
+	require.NoError(t, err)
+
+	bundle := bytes.Repeat([]byte("bundle bytes "), 64)
+	request := httptest.NewRequestWithContext(t.Context(), http.MethodPost, upgradeBundle, bytes.NewReader(bundle))
+	request.Header.Set("Content-Type", "application/octet-stream")
+	recorder := httptest.NewRecorder()
+	server.Handler().ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusCreated, recorder.Code, recorder.Body.String())
+	require.Equal(t, bundle, maintenance.got)
 }

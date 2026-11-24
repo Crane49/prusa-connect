@@ -113,7 +113,8 @@
             </span>
           {:else if refusal}
             <span class="ps-6 text-xs text-destructive-text">
-              {refusal.title}{#if refusal.code}<code class="ms-1"
+              {refusal.title}{#if refusal.action}
+                {refusal.action}{/if}{#if refusal.code}<code class="ms-1"
                   >{refusal.code}</code
                 >{/if}
             </span>

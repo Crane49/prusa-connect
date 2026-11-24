@@ -191,6 +191,7 @@ export type ErrorCode =
   | "core.validation/TAG_EMPTY"
   | "core.validation/TAG_TOO_LONG"
   | "core.validation/TOO_MANY_STREAMS"
+  | "core.validation/UPLOAD_TOO_LARGE"
   | "core.validation/VERSION_CONFLICT";
 
 /** What the error reference says about one code. */
@@ -391,5 +392,6 @@ export const errorCodes: Readonly<Record<ErrorCode, ErrorCodeEntry>> = {
   "core.validation/TAG_EMPTY": { status: 422, retryable: false, params: ["location"], summary: "A tag has no visible character", action: "Remove the empty tag, or type a word or a short phrase into it." },
   "core.validation/TAG_TOO_LONG": { status: 422, retryable: false, params: ["location", "tag", "limit_characters"], summary: "A tag is longer than this server accepts", action: "Shorten the tag named by tag to at most limit_characters characters." },
   "core.validation/TOO_MANY_STREAMS": { status: 429, retryable: true, params: ["limit_streams"], summary: "This caller already holds as many event streams as the server allows one", action: "Close a stream before opening another. One stream carries every origin the caller may observe, so a second is rarely needed; narrow one with the origins parameter instead." },
+  "core.validation/UPLOAD_TOO_LARGE": { status: 413, retryable: false, params: ["limit_bytes"], summary: "The file is larger than this server accepts", action: "Send a file of at most {limit_bytes}. An administrator sets the largest file with core.api.max_upload_size." },
   "core.validation/VERSION_CONFLICT": { status: 412, retryable: false, params: ["resource", "version"], summary: "The instance changed since the version the write quotes", action: "Read the instance again, reapply the change to what it now says, and send the new ETag. Somebody else wrote it, possibly by editing the configuration file directly." },
 };

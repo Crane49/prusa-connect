@@ -152,7 +152,7 @@ func registerOperations(api huma.API, cfg Config, closing <-chan struct{}) {
 
 	registerHealth(api, cfg.Version, cfg.InstanceID)
 	registerAppSettings(
-		api, cfg.App, dashboardsCarried && !cfg.DashboardsOff, !cfg.ModulesOff, upgradesServed(cfg),
+		api, cfg.App, dashboardsCarried && !cfg.DashboardsOff, !cfg.ModulesOff, upgradesServed(cfg), cfg.MaxUploadBytes,
 		func() bool { return diagnosticsCarried && cfg.Diagnostics != nil && cfg.Diagnostics.Served() },
 	)
 	registerConnectorHealth(api, cfg.Connectors)

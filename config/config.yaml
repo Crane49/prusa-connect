@@ -71,6 +71,11 @@ core:
     # stream, the camera stream, the printer transfers and the storage content
     # routes. Default 6h. It may not be shorter than request_timeout.
     stream_timeout: 6h
+    # The largest file, in bytes, one upload to a storage of this server may
+    # be. Default 209715200 (200 MiB), from 1 MiB to just under 4 GiB. A
+    # reverse proxy in front of the server (nginx, Traefik) has a body limit
+    # of its own; raise it with this one.
+    max_upload_size: 209715200
   # The printer dialects this process mounts, keyed by a name you choose.
   # Leave the block out and the xBuddy dialect is mounted with its own
   # defaults, and its printers dial the API listener above.

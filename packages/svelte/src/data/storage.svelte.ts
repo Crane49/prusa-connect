@@ -1,7 +1,6 @@
 // This server's own storages and their files, for the print sheet.
 import { type DataFault, faultOf } from './fault';
 import {
-  BODY_TOO_LARGE,
   contentUrlOf,
   createStorageFolder,
   deleteStorageEntry,
@@ -15,7 +14,7 @@ import {
   type StorageClient,
   type StorageEntry,
   thumbnailUrlOf,
-  UPLOAD_LIMIT_BYTES,
+  UPLOAD_TOO_LARGE,
   uploadObject,
   uploadTemporaryObject,
 } from './services/storage';
@@ -74,6 +73,7 @@ export interface FileDescription {
  */
 export class Storage {
   readonly #client: StorageClient;
+  readonly #uploadLimit: () => number | undefined;
 
   #storages = $state.raw<readonly ServerStorage[]>([]);
   #entries = $state.raw<readonly StorageEntry[]>([]);
@@ -104,8 +104,17 @@ export class Storage {
   // Counts the resets. A request that started before a reset records nothing.
   #resets = 0;
 
-  constructor(client: StorageClient) {
+  /**
+   * `uploadLimit` answers the longest file the server takes, which the app
+   * reads from its settings. Undefined, before they are read, checks nothing
+   * here and lets the server decide.
+   */
+  constructor(
+    client: StorageClient,
+    uploadLimit: () => number | undefined = () => undefined,
+  ) {
     this.#client = client;
+    this.#uploadLimit = uploadLimit;
   }
 
   /** Read-only by design: the collection is the server's (svelte-5.md). */
@@ -374,8 +383,9 @@ export class Storage {
     path: string,
     body: Blob,
   ): Promise<SavedObject | undefined> {
-    if (body.size > UPLOAD_LIMIT_BYTES) {
-      const fault = this.#tooLarge();
+    const limit = this.#uploadLimit();
+    if (limit !== undefined && body.size > limit) {
+      const fault = this.#tooLarge(limit);
       this.#track({
         storage,
         path,
@@ -466,7 +476,10 @@ export class Storage {
     onProgress?: (sent: number, total: number) => void,
     signal?: AbortSignal,
   ): Promise<TemporaryUpload> {
-    if (body.size > UPLOAD_LIMIT_BYTES) return { fault: this.#tooLarge() };
+    const limit = this.#uploadLimit();
+    if (limit !== undefined && body.size > limit) {
+      return { fault: this.#tooLarge(limit) };
+    }
 
     try {
       return {
@@ -599,12 +612,12 @@ export class Storage {
   // request is not made. The code is the core's own, so a screen draws the
   // same sentence it draws for a file the server refused, and `limit_bytes`
   // is the parameter that sentence names.
-  #tooLarge(): DataFault {
+  #tooLarge(limit: number): DataFault {
     return {
-      code: BODY_TOO_LARGE,
+      code: UPLOAD_TOO_LARGE,
       traceId: undefined,
       status: undefined,
-      params: { limit_bytes: UPLOAD_LIMIT_BYTES },
+      params: { limit_bytes: limit },
       message: undefined,
     };
   }
@@ -680,6 +693,11 @@ export class Storage {
   }
 }
 
-/** One store per sheet, built where the application builds its `PrusaConnect`. */
-export const createStorage = (client: StorageClient): Storage =>
-  new Storage(client);
+/**
+ * One store per sheet, built where the application builds its `PrusaConnect`.
+ * `uploadLimit` is the server's `max_upload_bytes`, as `Storage` takes it.
+ */
+export const createStorage = (
+  client: StorageClient,
+  uploadLimit?: () => number | undefined,
+): Storage => new Storage(client, uploadLimit);

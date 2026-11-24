@@ -48,6 +48,17 @@ const (
 	// any of them moves over a slow link, and a stream cut at it costs its
 	// reader one reconnection.
 	DefaultStreamTimeout = 6 * time.Hour
+	// DefaultMaxUploadSize is the largest file the storage upload routes take.
+	// A reverse proxy in front of the server has a body limit of its own, so
+	// a deployment that raises this raises the proxy's too.
+	DefaultMaxUploadSize = 200 << 20
+	// MinMaxUploadSize is the smallest core.api.max_upload_size the core
+	// takes. A smaller value is almost always a size written in MiB where the
+	// key asks for bytes.
+	MinMaxUploadSize int64 = 1 << 20
+	// MaxMaxUploadSize is the largest core.api.max_upload_size the core takes.
+	// A transfer to a printer carries a file's length in 32 bits.
+	MaxMaxUploadSize int64 = 4<<30 - 1
 	// DefaultLogLevel is the slog level the process starts at.
 	DefaultLogLevel = "info"
 	// DefaultLogFormat is the handler the process starts with.
@@ -374,6 +385,10 @@ type Listener struct {
 	//
 	// It must be at least RequestTimeout.
 	StreamTimeout time.Duration `yaml:"stream_timeout"`
+	// MaxUploadSize is the largest file, in bytes, the storage upload routes
+	// take. It is a key because what a print farm sends depends on its
+	// printers and models.
+	MaxUploadSize int64 `yaml:"max_upload_size"`
 }
 
 // Auth is the OpenID Connect issuer a human login runs against. The flow is an
@@ -674,6 +689,7 @@ func Default() Core {
 			Addr:           DefaultAPIAddr,
 			RequestTimeout: DefaultRequestTimeout,
 			StreamTimeout:  DefaultStreamTimeout,
+			MaxUploadSize:  DefaultMaxUploadSize,
 		},
 		Log: Log{Level: DefaultLogLevel, Format: DefaultLogFormat},
 		Frontend: Frontend{
@@ -979,6 +995,11 @@ func (l Listener) validate() error {
 
 	if err := l.validateBudgets(); err != nil {
 		return err
+	}
+
+	if l.MaxUploadSize < MinMaxUploadSize || l.MaxUploadSize > MaxMaxUploadSize {
+		return fmt.Errorf("%w: core.api.max_upload_size is %d, expected a byte count from %d to %d, "+
+			"such as 524288000 for 500 MiB", ErrInvalid, l.MaxUploadSize, MinMaxUploadSize, MaxMaxUploadSize)
 	}
 
 	return validOrigins("core.api.allowed_origins", l.AllowedOrigins)

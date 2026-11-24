@@ -101,6 +101,14 @@ export class AppSettings {
   }
 
   /**
+   * The longest file, in bytes, the server's storages take in one upload.
+   * Undefined until the read lands.
+   */
+  get maxUploadBytes(): number | undefined {
+    return this.#settings?.max_upload_bytes;
+  }
+
+  /**
    * Where the documentation written for this build is read. Undefined until
    * the read lands, and on a build that names none.
    */

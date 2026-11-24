@@ -32,6 +32,17 @@ describe('describeFault', () => {
     expect(said.detail).toBeUndefined();
   });
 
+  it('names a limit in bytes as a size a person reads', () => {
+    const said = describeFault({
+      code: 'core.validation/UPLOAD_TOO_LARGE',
+      message: 'file over the upload limit',
+      params: { limit_bytes: 200 * 1024 * 1024 },
+    });
+
+    expect(said.action).toContain('200.0 MB');
+    expect(said.action).not.toContain('limit_bytes');
+  });
+
   it('names a throw that carries no code at all', () => {
     const said = describeFault(new Error('the connection dropped'));
 

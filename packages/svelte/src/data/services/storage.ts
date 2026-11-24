@@ -34,22 +34,17 @@ export type SavedObject = Awaited<
 >;
 
 /**
- * The longest file the core's upload route accepts, in bytes.
- *
- * 200 MiB, and the same number in three places: here, the core's own
- * `defaultMaxUploadSize`, and the `proxy-body-size` the manifests give nginx.
- * A path with three different ceilings refuses the upload at whichever is
- * lowest, after the person has waited out the whole transfer, so they are kept
- * equal deliberately.
- *
- * It is well under what the wire could carry. A printer transfer describes its
- * length as an unsigned 32-bit number, so 4 GiB is the first size that cannot
- * be spelled on that wire; the limit here is a product decision, not that one.
+ * The default of `core.api.max_upload_size`, in bytes. A server may be set
+ * higher or lower; `max_upload_bytes` in its settings is the number it runs
+ * with.
  */
 export const UPLOAD_LIMIT_BYTES = 200 * 1024 * 1024;
 
-/** The code the core answers a body over that limit with. */
+/** The code the core answers a body over an endpoint's bound with. */
 export const BODY_TOO_LARGE = 'core.validation/BODY_TOO_LARGE';
+
+/** The code the core answers a file over `max_upload_bytes` with. */
+export const UPLOAD_TOO_LARGE = 'core.validation/UPLOAD_TOO_LARGE';
 
 /** What the storage store needs of the SDK, and no more. */
 export type StorageClient = Pick<

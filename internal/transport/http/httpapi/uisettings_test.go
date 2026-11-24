@@ -37,6 +37,21 @@ func TestTheUISettingsSayWhetherModulesAreOn(t *testing.T) {
 	require.False(t, uiSettings(t, server.Handler()).Modules)
 }
 
+// The page is told the storage bound the server runs with, so it refuses a
+// larger file at the same number the server would.
+func TestTheUISettingsReportTheUploadBound(t *testing.T) {
+	t.Parallel()
+
+	require.Equal(t, int64(defaultMaxUploadSize), uiSettings(t, newTestServer(t).Handler()).MaxUploadBytes)
+
+	cfg := exampleConfig(&gcodeFleetStub{printer: devPrinter()}, seededStore(), seededPresets())
+	cfg.MaxUploadBytes = 300 << 20
+
+	server, err := New(cfg)
+	require.NoError(t, err)
+	require.Equal(t, int64(300<<20), uiSettings(t, server.Handler()).MaxUploadBytes)
+}
+
 // TestTheUISettingsCarryNoSkin holds the answer to one appearance: the web app
 // has no brand to switch, so the page is told the name, the language and the
 // theme, and nothing names a skin.

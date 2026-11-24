@@ -2158,6 +2158,17 @@
       ]
     },
     {
+      "code": "core.validation/UPLOAD_TOO_LARGE",
+      "status": 413,
+      "summary": "The file is larger than this server accepts",
+      "action": "Send a file of at most {limit_bytes}. An administrator sets the largest file with core.api.max_upload_size.",
+      "retryable": false,
+      "redacted": false,
+      "params": [
+        "limit_bytes"
+      ]
+    },
+    {
       "code": "core.validation/VERSION_CONFLICT",
       "status": 412,
       "summary": "The instance changed since the version the write quotes",

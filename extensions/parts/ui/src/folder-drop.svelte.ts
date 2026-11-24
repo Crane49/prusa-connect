@@ -162,6 +162,10 @@ export class FolderDrop {
 
     let part: PartDetail;
     try {
+      // A file the server would refuse is refused before the part is made,
+      // so no empty part has to be taken back out.
+      for (const file of files) await this.#files.checkSize(file);
+
       part = await this.#catalogue.addPartQuietly({
         name: job.name,
         folder: job.folder,
