@@ -224,6 +224,10 @@ type Core struct {
 	// the modules this file declares are held off too. The start sets it from
 	// -safe or the one-shot marker, and no file can.
 	SafeMode bool `yaml:"-"`
+	// Ignored are the retired keys the files still set that Load dropped
+	// instead of refusing, for the server to log with their files and lines.
+	// No file can set it.
+	Ignored []IgnoredKey `yaml:"-"`
 	// Marketplace is where the module catalogue is read from.
 	Marketplace Marketplace `yaml:"marketplace"`
 	// Principal is the subject every request is served as while no

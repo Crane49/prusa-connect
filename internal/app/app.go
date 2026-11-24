@@ -145,6 +145,11 @@ func Run(ctx context.Context, opts Options) error {
 	metrics.attach(logger)
 	metrics.stamp(opts.version())
 
+	for _, key := range core.Ignored {
+		logger.WarnContext(ctx, "the configuration sets a key this build ignores",
+			"file", key.File, "line", key.Line, "key", key.Key, "advice", key.Advice)
+	}
+
 	// After applyTo, because the marker sits beside the overlay it resolves.
 	opts.safe = takeSafeMode(ctx, logger, core.Overlay, opts.SafeMode, time.Now())
 	core = opts.safe.hold(core)

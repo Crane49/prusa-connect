@@ -110,6 +110,10 @@ load fails by itself: the server starts, the other instances run, and the
 failure is reported for that instance alone. One wrong block must not take a
 print farm down.
 
+A retired key that no longer does anything is not refused either. The server
+logs it and starts, as [keys that are ignored](#keys-that-are-ignored)
+describes.
+
 ## core
 
 `core` is the server itself. Every key has a working default, so the whole
@@ -397,10 +401,6 @@ carries the line and the key that does the work now.
 | `observability` | `core.observability.enabled` |
 | `fractal` | `resources.link.<name>.enabled` |
 
-`core.frontend.skin` is retired with no replacement. The web app has one
-appearance and no key chooses it, so the server refuses the key and you delete
-the line.
-
 `make build` refuses the three top-level blocks in this table, and two more of
 its own, `server.api` and `documentation.enabled`, naming
 `core.frontend.enabled` and `make docs` in their place. It does not check the
@@ -410,6 +410,16 @@ any key it does not read.
 The server has no MQTT transport and runs no broker. What sends the printers'
 state to a broker is a sink: a `resources.sink` row of type `mqtt` with the
 broker's `url`.
+
+## Keys that are ignored
+
+A key whose removal changed nothing the server does is not refused. The server
+starts, skips the key and logs a warning with the file and the line, so you can
+delete the line when it suits you.
+
+| the ignored key | why nothing replaces it |
+|---|---|
+| `core.frontend.skin` | the web app has one appearance and no key chooses it |
 
 ## Build tags a configuration implies
 

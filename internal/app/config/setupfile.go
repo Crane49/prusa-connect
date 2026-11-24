@@ -30,24 +30,25 @@ func SetupFile(file string) string {
 var SetupBlocks = []string{blockCore, blockPersistence}
 
 // checkSetup refuses a wizard file that holds anything but the blocks it may
-// hold, or a key this build does not read, naming the line of that file.
-func checkSetup(content []byte) error {
+// hold, or a key this build does not read, naming the line of that file. It
+// returns the ignored keys the file sets.
+func checkSetup(content []byte) ([]IgnoredKey, error) {
 	root, err := parseRoot(content)
 	if err != nil || root == nil {
-		return err
+		return nil, err
 	}
 
 	for index := 0; index+1 < len(root.Content); index += nodesPerEntry {
 		name := root.Content[index]
 		if name.Value != blockCore && name.Value != blockPersistence {
-			return fmt.Errorf("line %d: %s: the wizard's file holds only %s and %s",
+			return nil, fmt.Errorf("line %d: %s: the wizard's file holds only %s and %s",
 				name.Line, name.Value, blockCore, blockPersistence)
 		}
 	}
 
-	_, err = parse(content)
+	_, ignored, err := parse(content)
 
-	return err
+	return ignored, err
 }
 
 // merged is the operator's file laid over the wizard's: a key the operator

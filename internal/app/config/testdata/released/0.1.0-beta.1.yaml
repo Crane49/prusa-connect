@@ -1,0 +1,622 @@
+# Prusa Connect configuration
+#
+# Every key here is a key this build reads. A key it does not read is refused
+# at startup, naming the key and the line it is on.
+#
+# There are three top-level blocks and no others: `core`, `persistence` and
+# `resources`. Every key has a working default, so a file that leaves one out
+# still starts a server. See /docs/config for the whole list.
+
+# ─── The database ────────────────────────────────────────────────────────────
+# One engine carries the authorization graph, the device records and the
+# command queue. It sits at the top level because `make build` reads the same
+# key to decide whether the PostgreSQL driver is linked in.
+persistence:
+  # The engine: "sqlite" or "postgres". Default "sqlite". Change it for a
+  # deployment that already runs a PostgreSQL server. "memory" is refused: a
+  # graph in memory forgets every grant on restart.
+  type: "sqlite"
+  # How many database connections this process opens at once, over every store
+  # it holds. Default 16. Lower it for a database shared with something else.
+  # max_open_conns: 16
+  # How many of those stay open while nothing is asking. Default 8.
+  # max_idle_conns: 8
+  # How long one connection is used before it is replaced. Default 30m. It is
+  # what lets a failover or a changed password reach a running server.
+  # conn_max_lifetime: 30m
+  postgres:
+    # The connection string, handed to the driver unread, so a postgres:// URL
+    # and a key=value string both work. Required when type is "postgres".
+    dsn: ""                     # Example: "postgres://user:pass@host:5432/db"
+    # How long one statement may run before the server ends it. Default 30s. A
+    # connection string that already names statement_timeout keeps its own.
+    # statement_timeout: 30s
+    # The postgres:// URL the server connects with to make a database and a
+    # login for a module that asks for a database of its own. Its role needs
+    # CREATEDB and CREATEROLE, and never superuser. Empty uses dsn.
+    # module_admin_dsn: ""
+
+
+# ─── The core ────────────────────────────────────────────────────────────────
+# The server itself: the listener, the log, the web app, the login and the
+# limits. The whole block may be omitted.
+core:
+  api:
+    # The host and port the API, the web app and the event stream are served
+    # on. Default ":8080".
+    addr: ":8080"
+    # The certificate a browser verifies, and its private key. Both empty is
+    # plain HTTP, which is the default. Set them to serve HTTPS directly
+    # instead of behind a proxy. There is no minimum-version key: a browser
+    # reaches this listener, and the floor is TLS 1.3.
+    tls:
+      certificate: ""
+      key: ""
+      # certificate: certs/server/api.crt
+      # key: certs/server/api.key
+    # The browser origins a page served from somewhere else may call this API
+    # from. Default empty, which lets only a page this server serves call it.
+    # Set it where the app is hosted apart from the API. Each entry is one
+    # exact origin, lowercase, with no path and no trailing slash, and a port
+    # only when it is not the scheme's default. A wildcard is refused.
+    allowed_origins: []
+    # allowed_origins:
+    #   - https://printers.example
+    #   - http://localhost:5173
+    # How long one request may take before the server stops waiting for its own
+    # handler and answers 504. Default 30s. Raise it where a printer, a
+    # database or a module is slower than that.
+    request_timeout: 30s
+    # The same budget for the routes that hold their answer open: the event
+    # stream, the camera stream, the printer transfers and the storage content
+    # routes. Default 6h. It may not be shorter than request_timeout.
+    stream_timeout: 6h
+  # The printer dialects this process mounts, keyed by a name you choose.
+  # Leave the block out and the xBuddy dialect is mounted with its own
+  # defaults, and its printers dial the API listener above.
+  #
+  # Name one connector and that one is mounted and no other. The name reaches
+  # a URL path and a log field, so it is lowercase letters, digits and
+  # hyphens. `type` selects the dialect; this build lists the ones it carries
+  # at GET /api/v1/vocabularies/extensions.
+  #
+  # A connector is mounted when the server is built, so a change here takes
+  # effect at the next start.
+  #
+  # connectors:
+  #   xbuddy:
+  #     type: xbuddy
+  #     enabled: true
+  #     # Owned and validated by the dialect named above.
+  #     config:
+  #       # The credential a printer presents on the websocket: none, token,
+  #       # fingerprint or both.
+  #       mode: none
+  #       # How many printers this dialect keeps a registration for. Over the
+  #       # bound, the oldest registration no printer completed is dropped and
+  #       # a warning names it. Raise it for a larger fleet.
+  #       max_registrations: 400
+  #       # How many commands may wait for one printer.
+  #       queue_depth: 32
+  #       # How many bytes of the file one transfer chunk may carry, whatever
+  #       # chunk size the printer asks for. The default puts exactly 1024
+  #       # bytes on the connection per write, which is the largest TLS record
+  #       # Buddy firmware will read.
+  #       chunk_write_ceiling: 1011
+  #       # How long a printer may be away before its session is closed, where
+  #       # 0s lets a session outlive any absence.
+  #       offline_grace: 0s
+  #       # The mountpoint on the printer that a path with no storage segment
+  #       # is resolved against.
+  #       default_storage: /usb
+  #       # How long a printer's connection may say nothing before it is
+  #       # reported unreachable, and how often it is asked to prove it is
+  #       # there. Lower values notice a pulled cable sooner and cost more
+  #       # traffic over a large fleet.
+  #       read_deadline: 60s
+  #       ping_interval: 54s
+  #       ping_timeout: 10s
+  #       # How long one command waits for the printer to answer it, counted
+  #       # from the moment its frame is written. The printer answers when it
+  #       # accepts the command, so this is not the length of the work.
+  #       command_deadline: 60s
+  #       # A socket of this dialect's own, which printers dial instead of the
+  #       # API listener above. No block is the default, and then printers
+  #       # dial that listener over plain HTTP.
+  #       #
+  #       # Set an address and there are two sockets. This one serves only the
+  #       # paths a device dials and answers 404 to everything else, so a
+  #       # printer VLAN reaches the printers' wire and nothing more. It is a
+  #       # socket of its own because the two clients cannot be satisfied at
+  #       # once: a printer verifies against one certificate and speaks TLS
+  #       # 1.2 with a single ECDSA cipher suite, and a browser verifies
+  #       # against its own trust store.
+  #       #
+  #       # The certificate must be ECDSA, and a certificate that names an IP
+  #       # address must carry that address as both IP: and DNS:, because the
+  #       # firmware matches a hostname against DNS entries only. `make
+  #       # certificate-prusa` writes both. See /docs/certificates.
+  #       listener:
+  #         addr: ":443"
+  #         tls:
+  #           certificate: certs/server/printer.crt
+  #           key: certs/server/printer.key
+  #         # How long a printer is given to complete its TLS handshake.
+  #         # Default 60s, above the API listener's own bound, because a
+  #         # printer that is busy printing loses a shorter one. Only read
+  #         # when addr is set.
+  #         handshake_timeout: 60s
+  #   # The reference dialect, JSON over HTTP, mounted at /connectors/lab. It
+  #   # authenticates nothing: any device that reaches the route is
+  #   # registered, so declare it only on a network you trust.
+  #   lab:
+  #     type: echo
+  log:
+    # How much the process writes: debug, info, warn or error. Default "info".
+    level: info
+    # How one line is written: text or json. Default "text". Use json where a
+    # log pipeline parses rather than a person reads.
+    format: text
+  # The web app this server serves at its own root address, and how it looks
+  # before anybody signs in. Every key here reaches the browser through
+  # GET /api/v1/ui, which takes no credential, because the page reads it
+  # before its first paint.
+  #
+  # `make build` reads `enabled` out of this same block to decide whether the
+  # app is compiled at all. With `enabled: false` the root address answers
+  # 404, which is what a deployment that puts its own page in front of this
+  # API wants.
+  frontend:
+    # Serve the app. Default true.
+    enabled: true
+    # The name in the browser tab and at the top of the sidebar. Default
+    # "Prusa Connect", 64 bytes at most. Change it to the name of the
+    # workshop this server runs in.
+    title: "Prusa Connect"
+    # The language the page falls back to when the browser asks for one this
+    # app does not ship. Default "en". One of en, cs, de, es, fr, it, pl.
+    default_language: en
+    # The palette the page opens in: system, light or dark. Default "system",
+    # which follows what the operating system asks for.
+    theme: system
+    # The brand the component library draws in: prusa, slicer or prusapro.
+    # Default "prusa".
+    skin: prusa
+    # The origin printers dial, written into the prusa_printer_settings.ini the
+    # add-printer page offers. Default empty, which uses the address the page
+    # was opened on. Set it when printers reach this server by another name,
+    # for example https://shop.example.net. The hostname must fit the 20 bytes
+    # a printer stores, unless it ends in prusa3d.com, and must not be a
+    # loopback name such as localhost: on a printer that is the printer itself.
+    # printer_address: ""
+    # Where the app's Support link points. Default empty, which keeps the
+    # assistant on the beta portal.
+    # support_url: https://portal.example.com/beta
+  # What this server tells the local network about itself, so a slicer on the
+  # same network finds it without anybody typing an address. It sends mDNS,
+  # which is DNS sent to every machine on the same link, and the announcement
+  # carries the API port above, the title above, the build version and whether
+  # that port serves TLS. It never carries a token or a password, because
+  # everybody on the link reads it.
+  #
+  # It is on in every deployment, and `enabled: false` is the one way to switch
+  # it off. Inside a container the packets stay on the bridge network and reach
+  # no other machine; the startup line says so and names the setting that
+  # changes it. Unlike core.frontend above, `make build` reads nothing here.
+  discovery:
+    enabled: true
+    # The service names announced, one record for each. A client asks for a
+    # name and gets back this server's address and port. _prusalink._tcp is the
+    # name a Prusa printer answers to today, and _prusa-connect._tcp says a
+    # server answered and not a printer. A name is an underscore, 1 to 15
+    # letters, digits or hyphens, then ._tcp or ._udp; anything else stops the
+    # server at startup.
+    services:
+      - _prusalink._tcp
+      - _prusa-connect._tcp
+    # Whether this server starts hidden. A hidden server announces nothing, so
+    # the other printers on the network do not list it. It still serves its
+    # page and its API at its address, and the login still protects them.
+    # Default false. The switch in the web app's settings changes it while the
+    # server runs, and once a person has used that switch, their choice wins
+    # over this key.
+    hidden: false
+    # Who answers for this machine's host name: own, this server, or system,
+    # another mDNS responder on this machine such as Avahi. With system this
+    # server announces only its services, names the host that responder
+    # holds, and sends no address records, so the two never claim one name.
+    # Default own.
+    host_records: own
+  # What this server contacts on the internet. All three are on by default.
+  #
+  # The marketplace: the Extensions page reads the module catalogue from it.
+  # With enabled false the server fetches nothing from it.
+  # marketplace:
+  #   enabled: true
+  #   url: https://plugin-marketplace.prusa3d.com
+  #
+  # Updates: the server asks this address for new releases and downloads
+  # them. A request sends the running version and the platform. With enabled
+  # false the server also keeps no backups, so leave it on under Docker and
+  # Kubernetes.
+  # upgrade:
+  #   enabled: true
+  #   server: https://beta.prusa3d.com
+  #
+  # Diagnostics: Settings offers to send a diagnostics bundle to this
+  # address. The browser uploads it when an administrator asks. The server
+  # sends nothing by itself. An empty send_url hides the offer.
+  # diagnostics:
+  #   send_url: https://beta.prusa3d.com
+  #
+  # MQTT is not a key here. This server runs no broker and serves no API over
+  # MQTT. To send the printers' state to a broker you run, declare a
+  # `resources.sink` row of type mqtt; there is an example further down.
+  #
+  # The measurements at /metrics. Default false. Off, /metrics answers 404,
+  # which is the honest answer: an empty exposition reads as a healthy process
+  # measuring nothing. `make build` reads this key too and links the
+  # Prometheus client only when it is on, and a binary without the client
+  # refuses to start with it on.
+  # observability:
+  #   enabled: false
+  # The file the resource API writes its declarations into. Default
+  # config.d/resources.json beside this file. Move it where this file sits on
+  # a read-only mount. The loader merges it over this file and never rewrites
+  # this one, so these comments survive.
+  overlay: config/config.d/resources.json
+  # Where `prusa-connect module add` installs a module, and what the
+  # declaration it writes points at. Default config.d/modules beside this
+  # file. Move it for the same reason as the overlay.
+  modules: config/config.d/modules
+  # Built module releases this server offers on the Extensions page, each under
+  # the module path it installs as. A release directory holds module.yaml, the
+  # bundle under ui/ and, for a service module, its binary.
+  # modules_local:
+  #   github.com/prusa3d/fleet-stats: /srv/modules/fleet-stats
+  # Whether the server may install modules and run the ones it installed.
+  # Default true. False refuses every install, from the web app, the API and
+  # `module add`, and starts no module the server installed. A module this
+  # file declares under resources still runs, and uninstalling still works.
+  # Read at start.
+  # modules_enabled: false
+  # When the server switches off a service module that keeps failing: after
+  # this many failed starts or stops within the window. Default 3 within 1h.
+  # 0 never switches a module off. A module's own service.switch_off wins.
+  # modules_switch_off:
+  #   failures: 3
+  #   window: 1h
+  # The subject every request is served as while core.auth.issuer below is
+  # empty. Default "operator". It reaches the authorization graph as
+  # user:<principal>, and the server says at startup that nobody is being
+  # authenticated.
+  #
+  # It is also who the first grant is written for. On a first run the graph is
+  # empty, so this principal is made admin of org:local. Changing the key
+  # afterwards does not move that grant, and the server says at startup when
+  # the configured principal holds nothing. Every other grant is written over
+  # the API at /api/v1/grants/{object_type}/{object_id}.
+  principal: operator
+  authz:
+    # The SQLite file the authorization graph lives in. Default config.d/
+    # authz.db beside this file. It is created empty on the first run and
+    # nothing is ever fetched, so an air-gapped install needs no network.
+    # There is no key that turns the graph off.
+    database: config/config.d/authz.db
+    # How an administrator hands an organisation over. Default false: the
+    # admin role on an org cannot be written over the API, so the successor is
+    # named by changing `principal` above and restarting. Set it true to grant
+    # the successor over the API instead. The price is that an object's org
+    # edge stops being writable, because a caller who admins one org and
+    # manages one object of another could otherwise attach their own org to
+    # that object.
+    org_admin_handover: false
+  # The networks a reverse proxy reaches this server from, as CIDR blocks or
+  # as single addresses. Default empty. Only a request arriving from one of
+  # them has its client address read out of X-Forwarded-For, taking the
+  # rightmost entry that is not itself listed here.
+  #
+  # It is what the login attempt limit counts by. Leave it empty on a server
+  # that is reached directly. Set it behind a proxy: without it every client
+  # arrives from the proxy's own address, so one person getting a password
+  # wrong slows down everybody.
+  trusted_proxies: []
+  # trusted_proxies:
+  #   - 10.0.0.0/8
+  #   - 172.16.0.0/12
+  # This node's name in every event this server publishes. Default "local".
+  # Give each node of a federation its own: two nodes calling themselves the
+  # same thing publish events the server above them cannot tell apart.
+  site: local
+  events:
+    # How often an idle stream at GET /api/v1/events writes a comment frame.
+    # Default 15s. Keep it under whatever closes an idle connection between
+    # this server and its readers.
+    heartbeat: 15s
+    # How long a reader is told to wait before reconnecting after the stream
+    # drops. Default 2s. Shorter is a better chance of resuming inside the
+    # replay window instead of being told to resync.
+    retry: 2s
+    # How many streams one principal may hold at once. Default 64. A caller
+    # over it is answered 429 with the limit in the payload.
+    #
+    # While core.auth.issuer below is empty every request is served as
+    # core.principal, so in that state this bounds the whole deployment.
+    max_streams_per_principal: 64
+  # Human login: an authorization code flow with PKCE against an OpenID
+  # Connect issuer. There is no switch that turns the credential check off. An
+  # empty issuer is the deployment that authenticates nobody and serves every
+  # request as core.principal above.
+  #
+  # The redirect URI's scheme also decides whether the session cookie is
+  # marked Secure, because a Secure cookie on an origin a browser reaches over
+  # http is one the browser never sends back. Use https anywhere a browser is
+  # real.
+  #
+  # A self-hoster with no issuer sets `local: true` instead. This server then
+  # holds the accounts itself: the first run creates the administrator, with
+  # the setup code from the log, and POST /api/v1/auth/login takes a password.
+  # The two are mutually exclusive and a file naming both is refused.
+  #
+  # A server that has neither key set and has recorded nothing about identity
+  # serves the first run and nothing else. POST /api/v1/setup records two
+  # answers: whether every caller presents a credential, and whether a new
+  # printer is let in when it dials or waits for an operator to approve a
+  # code. The printer answer is read when the server starts, so recording one
+  # while it runs takes effect at the next start.
+  auth:
+    # The issuer identifier, this server's registration at it, and the address
+    # it sends the browser back to. All three empty is the default. The last
+    # two are required once the first is set.
+    issuer: ""
+    client_id: ""
+    redirect_uri: ""
+    # issuer: "http://127.0.0.1:58092"
+    # client_id: "prusa-connect"
+    # redirect_uri: "http://127.0.0.1:8080/api/v1/auth/callback"
+    #
+    # This server's own account store. Default false.
+    local: false
+    # An account file an earlier build wrote. The accounts are rows in the
+    # database, and this file is imported once when the database holds no
+    # account. Default config.d/accounts.json beside this file. Naming it
+    # while `local` is false is refused.
+    # accounts: config/config.d/accounts.json
+    #
+    # The code the first run asks for: 12 to 64 printable ASCII characters,
+    # at least 6 of them different. Empty is the default: the server then
+    # prints a new random code in its log at every start until the first run
+    # is done. Set it for an install a script does. Nothing turns it off.
+    # setup_code: ""
+  # How many bytes of one device's reported state this process keeps. Default
+  # 262144. Raise it for a device that describes itself in more paths than a
+  # printer does.
+  # device_state_budget: 262144
+  # How many bytes one record a module's settings pane writes may hold.
+  # Default 4096, and 65536 is the ceiling over it.
+  # module_settings_bytes: 4096
+  # How long a shutdown may spend draining the listeners, and then how long it
+  # may wait for the resources to stop. Default 15s.
+  shutdown_timeout: 15s
+
+# ─── Resources ───────────────────────────────────────────────────────────────
+# One block per instance, keyed by kind and then by the name you choose. An
+# unknown key inside an instance is refused at startup.
+#
+# `enabled: false` is declared and not running, with its settings and its
+# identity kept. `enabled: true` is running. There is no third state: a binary
+# either carries a type or it does not, and no key here changes that after it
+# is linked. `make build` derives the build tags from these entries through
+# adapters/tags.json, and nothing in this file ever names a tag.
+#
+# `runtime:` is a peer of `type:` and says how the type is reached, not
+# whether the instance runs:
+#
+#   runtime: builtin   compiled into this binary. The default
+#   runtime: service   a supervised child process, verified before every launch
+#   runtime: script    an expression written here, compiled by the host. Sinks only
+#
+#   resources:
+#     driver:
+#       bambu:
+#         type: acme/bambu
+#         runtime: service
+#         service:
+#           path: plugins/bambu
+#           checksum: sha256:<64 hex>
+#           contract_major: 1
+#
+# A script instance carries its implementation instead of naming one, so it
+# writes `type: script` as well and puts the expression under `script:`. It is
+# handed one event and returns `msg(endpoint, key, body)`, several through
+# `fan(...)`, or `nil` to drop the event, and each endpoint name resolves to a
+# URL under `config.endpoints`:
+#
+#   resources:
+#     sink:
+#       audit:
+#         type: script
+#         runtime: script
+#         script: |
+#           msg("main", event.kind, event.state)
+#         config:
+#           endpoints:
+#             main: http://127.0.0.1:9200/publish
+#
+# A kind refuses a runtime it cannot offer, at startup and not at first use.
+# `GET /api/v1/vocabularies/resource-kinds` answers with the runtimes each
+# kind offers.
+resources:
+  storage:
+    local:
+      # Required, and fixed at creation: changing it is a remove and an add.
+      type: filesystem
+      enabled: true
+      # Whether a failing instance holds the whole server out of readiness.
+      # Default false. Set it true for the disk every uploaded file goes on.
+      required: false
+      # Owned and validated by the type named above.
+      config:
+        root: ./storage
+        # What an upload into this storage may be called. Omit the key for the
+        # built-in list (.gcode .bgcode .gco .g .stl .3mf .obj .bbf .png .jpg .jpeg
+        # .webp .gif); an explicit empty list permits ANY extension.
+        # allowed_extensions: []
+  # ─── GraphQL ──────────────────────────────────────────────────────────────
+  # GraphQL is a module, out of process. It is declared here and switched off,
+  # because no release carries the module yet. A row switched on with nothing
+  # installed behind it logs a warning at every start.
+  #
+  # To use it, install its release, then set `enabled: true` on its row and
+  # restart:
+  #
+  #   prusa-connect module add <module path>@<version> -from <release>
+  #
+  # `checksum` below is a placeholder and the digest of nothing, because a
+  # service declaration without one is refused outright. `prusa-connect
+  # module add` writes the real digest when the module is installed.
+  sink:
+    # The GraphQL surface of this server's own vocabulary, generated from the
+    # committed OpenAPI document. It claims /graphql, which is the address the
+    # cloud's own integrations post to.
+    graphql:
+      type: com.github.aux.prusa3d.graphql/graphql
+      runtime: service
+      enabled: false
+      # An unready GraphQL module must not take the printer path out of
+      # service, so neither of these makes the process unready.
+      required: false
+      service:
+        path: plugins/graphql
+        checksum: "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        contract_major: 1
+        mount: /graphql
+  # ─── The Fractal network ───────────────────────────────────────────────────
+  # A link is this server's connection to the servers above and below it. The
+  # Fractal module is that connection: it joins the server above, accepts the
+  # servers and printers below, shows this server's printers to the network,
+  # and carries a call from above down to one of them.
+  #
+  # It is switched off. The settings below say which server this one joins and
+  # which it accepts, and no default can be right for either: `node_id` and
+  # `data_dir` have no default at all, so an instance without them does not
+  # start. Write those, write `join:` or `accept:` or both, and set
+  # `enabled: true`.
+  #
+  # `checksum` is the placeholder digest of nothing, for the reason the two
+  # rows above carry one: the release this module ships in does not exist yet.
+  # `prusa-connect module add` writes the real digest over this line when
+  # the module is installed, and until then a switched-on instance reports that
+  # it has nothing to launch.
+  link:
+    fractal:
+      type: com.github.aux.prusa3d.fractal/fractal
+      runtime: service
+      enabled: false
+      # A network this server cannot reach must not take its printers out of
+      # service, so this stays false.
+      required: false
+      service:
+        path: plugins/fractal
+        checksum: "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        contract_major: 1
+      # Every key the module reads, its type and its default are in the
+      # module's own module.yaml, and the server shows them at
+      # GET /api/v1/resources. What is written here overrides a default, key by
+      # key: a nested block merges by key, a list is replaced whole.
+      #
+      # config:
+      #   node_id: floor-2
+      #   data_dir: /var/lib/prusa-connect/fractal
+      #   dedup_window: 5m
+      #   join:
+      #     address: nats://school.example:4222
+  # Event sinks, identity providers and history stores are declared
+  # the same way. This build lists the types it carries at
+  # GET /api/v1/vocabularies/extensions, with every key each one takes under
+  # `config:`.
+  #
+  # A sink reads the event bus as a principal of its own type, so
+  # `sink: {audit: ...}` reads as sink:audit and observes what that principal
+  # was granted. Declaring a sink grants it nothing, and a sink granted
+  # nothing receives nothing. One printer:
+  #
+  #   POST /api/v1/grants/device/{printer}
+  #   {"relation": "viewer", "subject": "sink:audit"}
+  #
+  # The whole fleet, including a printer admitted tomorrow, is one grant on
+  # the organisation instead. A sink is accepted there at viewer and no
+  # higher:
+  #
+  #   POST /api/v1/grants/org/local
+  #   {"relation": "viewer", "subject": "sink:audit"}
+  #
+  # A grant takes effect on a running sink within a second, with no restart.
+  #
+  # sink:
+  #   mqtt:
+  #     type: mqtt
+  #     enabled: true
+  #     config:
+  #       url: tcp://broker.example.com:1883
+  #   audit:
+  #     type: webhook
+  #     enabled: true
+  #     config:
+  #       url: https://audit.example.com/events
+  # auth:
+  #   company:
+  #     type: oidc
+  #     enabled: true
+  #     config:
+  #       issuer: https://accounts.example.com
+  #       client_id: prusa-connect
+  #
+  # A history store keeps what the event hub has forgotten. There is none
+  # declared below, and that is the whole cost of keeping no past: nothing is
+  # opened, no migration runs and no row is written. Declare one and every
+  # measurement a printer reports and every durable event this server
+  # publishes is kept for as long as the instance says.
+  #
+  #   history:
+  #     past:
+  #       type: sqlite
+  #       config:
+  #         path: config/config.d/history.db
+  #         # Default 48h. "0" keeps everything and owns the disk.
+  #         retention:
+  #           raw: 48h
+  #
+  # A provider reads the event bus as a principal of its own type, so
+  # `history: {past: ...}` reads as history:past and stores what that
+  # principal was granted. The grant that covers the whole fleet, including a
+  # printer admitted tomorrow, is:
+  #
+  #   POST /api/v1/grants/org/local
+  #   {"relation": "viewer", "subject": "history:past"}
+  #
+  # Two instances may be declared and a frame reaches both: one store for
+  # metrics and another for audit is the case this supports. Where two
+  # serving instances both answer a query verb the server refuses and says
+  # so, and a `reads:` list on each settles it: `reads: [samples]` on the
+  # metrics store and `reads: [facts]` on the audit one. An instance with no
+  # list claims every verb its capabilities carry.
+  #
+  # A camera is not declared here. It is a device kept in the server's
+  # database: add one on a printer's Cameras tab, or with
+  # PUT /api/v1/cameras/<name>. A camera block an older version read here is
+  # moved into the database at the first start, and not read after.
+  #
+  # A module is not declared here at all. `prusa-connect module add`
+  # installs one and writes its declaration into the file `core.overlay`
+  # names, with the digests of what it installed. A module with a process half
+  # and a browser half is one line there, under one namespace, with one
+  # `enabled` flag.
+  #
+  #   prusa-connect module add github.com/acme/spools@1.0.0 -from ./release
+  #   prusa-connect module list
+  #   prusa-connect module remove github.com/acme/spools
+  #
+  # examples/spools and examples/nozzle-watch are the two worked examples, and
+  # `bash scripts/check-example-spools.sh` builds them, installs them with
+  # that command and drives them through the API.

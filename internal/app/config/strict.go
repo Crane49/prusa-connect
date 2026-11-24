@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"reflect"
+	"slices"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -29,7 +30,7 @@ var (
 )
 
 // retiredKeys are the keys this build does not read, each with the sentence
-// that names the key that replaced it, or that no key does.
+// that names the key that replaced it.
 //
 // A retired key is refused like any other key this build does not read, and
 // the message adds the replacement, so the operator can fix the file with a
@@ -51,7 +52,85 @@ var retiredKeys = map[string]string{
 	"observability": "The metrics client and the exposition at /metrics are core.observability.enabled",
 	"fractal": "A link to a parent is declared like every other resource instance: " +
 		"resources.link.<name>.enabled, with the address under its config",
+}
+
+// ignoredKeys are the retired keys whose removal changed nothing a server does,
+// each with the sentence that tells the operator what to do with the line.
+//
+// A file that still sets one starts. The key is dropped before the file is
+// read, and the server logs it with the file and the line. Refusing such a key
+// would stop a server over a line that asks for nothing, and a refusal stops
+// an in-app update too: the candidate build loads the configuration before it
+// may replace the running one.
+//
+// A key whose work moved elsewhere belongs in retiredKeys. A server that
+// skipped it would run without the part the operator asked for.
+//
+//nolint:gochecknoglobals // the inventory of ignored keys, read at parse time and never written.
+var ignoredKeys = map[string]string{
 	"core.frontend.skin": "The web app has one appearance and no key chooses it. Delete the line",
+}
+
+// IgnoredKey is a key of ignoredKeys that a configuration file still sets.
+type IgnoredKey struct {
+	// File is the file the key is written in.
+	File string
+	// Key is the key's path, such as core.frontend.skin.
+	Key string
+	// Advice is the sentence that tells the operator what to do with the line.
+	Advice string
+	// Line is the line of File the key is written on.
+	Line int
+}
+
+// String is the warning an operator reads: where the line is, and what to do
+// with it.
+func (k IgnoredKey) String() string {
+	return fmt.Sprintf("%s: line %d: %s: this build ignores that key. %s", k.File, k.Line, k.Key, k.Advice)
+}
+
+// dropIgnoredKeys removes every key of ignoredKeys from the document under
+// root and returns them in the order of their paths. File is left for the
+// caller, which knows which file root was read from.
+func dropIgnoredKeys(root *yaml.Node) []IgnoredKey {
+	var dropped []IgnoredKey
+
+	for _, key := range slices.Sorted(maps.Keys(ignoredKeys)) {
+		if line, found := dropKey(root, strings.Split(key, ".")); found {
+			dropped = append(dropped, IgnoredKey{Key: key, Advice: ignoredKeys[key], Line: line})
+		}
+	}
+
+	return dropped
+}
+
+// dropKey removes the entry at path from the mapping node and returns the line
+// its key was written on.
+func dropKey(node *yaml.Node, path []string) (int, bool) {
+	if node.Kind == yaml.AliasNode {
+		node = node.Alias
+	}
+
+	if node.Kind != yaml.MappingNode {
+		return 0, false
+	}
+
+	for index := 0; index+1 < len(node.Content); index += nodesPerEntry {
+		name := node.Content[index]
+		if name.Value != path[0] {
+			continue
+		}
+
+		if len(path) == 1 {
+			node.Content = slices.Delete(node.Content, index, index+nodesPerEntry)
+
+			return name.Line, true
+		}
+
+		return dropKey(node.Content[index+1], path[1:])
+	}
+
+	return 0, false
 }
 
 // decodeStrictly fills target from one block of the operator's file and refuses

@@ -313,7 +313,7 @@ A listing is the only thing that says which printers there are.
 
 ## Configuration is invalid
 
-`Core.Validate` (`internal/app/config/config.go:774`) runs before anything is
+`Core.Validate` (`internal/app/config/config.go:780`) runs before anything is
 constructed, so a rejected configuration binds no port, writes no file and
 starts no goroutine. It reports the first key it will not start on, and the
 message names the key and the value.

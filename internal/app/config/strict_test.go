@@ -90,30 +90,6 @@ mqtt:
 			line:  "line 1",
 			names: []string{"fractal", "resources.link.<name>.enabled"},
 		},
-		"the skin, which nothing replaces": {
-			file: `core:
-  frontend:
-    skin: slicer
-`,
-			line:  "line 3",
-			names: []string{"core.frontend.skin", "one appearance", "Delete the line"},
-		},
-		"the skin with no value": {
-			file: `core:
-  frontend:
-    skin:
-`,
-			line:  "line 3",
-			names: []string{"core.frontend.skin", "one appearance", "Delete the line"},
-		},
-		"the skin no build ever drew": {
-			file: `core:
-  frontend:
-    skin: neon
-`,
-			line:  "line 3",
-			names: []string{"core.frontend.skin", "one appearance", "Delete the line"},
-		},
 	}
 
 	for name, testCase := range cases {
@@ -139,13 +115,59 @@ func TestARetiredKeyInTheSetupFileNamesThatFile(t *testing.T) {
 	t.Parallel()
 
 	path := write(t, "core:\n  principal: operator\n")
-	setup := writeSetup(t, path, "core:\n  frontend:\n    skin: slicer\n")
+	setup := writeSetup(t, path, "core:\n  printer:\n    addr: \":443\"\n")
 
 	_, err := config.Load(path)
 	require.ErrorIs(t, err, config.ErrInvalid)
 	require.Contains(t, err.Error(), setup)
-	require.Contains(t, err.Error(), "line 3")
-	require.Contains(t, err.Error(), "core.frontend.skin")
+	require.Contains(t, err.Error(), "line 2")
+	require.Contains(t, err.Error(), "core.printer")
+}
+
+// TestAnIgnoredKeyStartsTheServerAndNamesItsLine is the upgrade from a release
+// whose shipped file set a key that has since stopped doing anything. Refusing
+// it would stop the server, and an in-app update with it, over a line that asks
+// for nothing. The server starts, and Load hands back the file and the line to
+// delete so the server can say so.
+func TestAnIgnoredKeyStartsTheServerAndNamesItsLine(t *testing.T) {
+	t.Parallel()
+
+	for name, value := range map[string]string{
+		"a skin a build drew":    " slicer",
+		"the skin with no value": "",
+		"a skin no build drew":   " neon",
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			path := write(t, "core:\n  principal: operator\n  frontend:\n    skin:"+value+"\n    enabled: true\n")
+
+			core, err := config.Load(path)
+			require.NoError(t, err)
+			require.Equal(t, []config.IgnoredKey{{
+				File:   path,
+				Key:    "core.frontend.skin",
+				Advice: "The web app has one appearance and no key chooses it. Delete the line",
+				Line:   4,
+			}}, core.Ignored)
+			require.Equal(t, "operator", core.Principal, "the keys around the ignored one were not read")
+		})
+	}
+}
+
+// TestAnIgnoredKeyInTheSetupFileNamesThatFile is the wizard's file holding the
+// key: the advice must send the operator to that file and not to their own.
+func TestAnIgnoredKeyInTheSetupFileNamesThatFile(t *testing.T) {
+	t.Parallel()
+
+	path := write(t, "core:\n  principal: operator\n")
+	setup := writeSetup(t, path, "core:\n  frontend:\n    skin: slicer\n")
+
+	core, err := config.Load(path)
+	require.NoError(t, err)
+	require.Len(t, core.Ignored, 1)
+	require.Equal(t, setup, core.Ignored[0].File)
+	require.Equal(t, 3, core.Ignored[0].Line)
 }
 
 // TestAnUnknownKeyInsideTheCoreBlockIsRefusedWithItsLineNumber is the typo an
@@ -269,6 +291,26 @@ func TestTheShippedConfigurationAndItsExamplesLoad(t *testing.T) {
 		// them off the disk; what is under test here is the schema.
 		_, loadErr := config.Load(file)
 		require.NoError(t, loadErr, "%s names a key this build does not read", file)
+	}
+}
+
+// TestEveryReleasedConfigurationStillLoads holds this build to the files people
+// already run. Each one under testdata/released is the config.yaml a published
+// release shipped, and a deployment installed from that release still has it.
+// A key this build refuses in one of them stops the server on upgrade, and
+// stops the in-app update before it starts. Retire such a key into
+// ignoredKeys, or decide in review that the upgrade breaks on purpose.
+func TestEveryReleasedConfigurationStillLoads(t *testing.T) {
+	t.Parallel()
+
+	files, err := filepath.Glob(filepath.Join("testdata", "released", "*.yaml"))
+	require.NoError(t, err)
+	require.NotEmpty(t, files)
+
+	for _, file := range files {
+		core, loadErr := config.Load(file)
+		require.NoError(t, loadErr, "the configuration %s shipped no longer loads", file)
+		require.NoError(t, core.Validate(), "the configuration %s shipped no longer validates", file)
 	}
 }
 

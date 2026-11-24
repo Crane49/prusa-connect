@@ -48,6 +48,9 @@ func Upgrade(ctx context.Context, out io.Writer, args []string) error {
 	if err != nil {
 		return err
 	}
+	for _, key := range core.Ignored {
+		report.Warnings = append(report.Warnings, key.String())
+	}
 	report.CheckedAt = time.Now().UTC()
 	report.DurationMS = max(1, time.Since(started).Milliseconds())
 

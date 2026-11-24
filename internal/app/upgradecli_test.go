@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/prusa3d/prusa-connect/internal/app/hostschema"
@@ -21,7 +23,9 @@ func TestUpgradeCheckRehearsesTheHostOnASnapshot(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(configPath), 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(configPath, nil, 0o600); err != nil {
+	// The skin key is ignored rather than refused, so the rehearsal passes and
+	// names it among the warnings the updater keeps.
+	if err := os.WriteFile(configPath, []byte("core:\n  frontend:\n    skin: prusa\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -56,6 +60,11 @@ func TestUpgradeCheckRehearsesTheHostOnASnapshot(t *testing.T) {
 	}
 	if report.CheckedAt.IsZero() || report.DurationMS <= 0 {
 		t.Fatalf("rehearsal report is %#v", report)
+	}
+	if !slices.ContainsFunc(report.Warnings, func(warning string) bool {
+		return strings.Contains(warning, "line 3: core.frontend.skin")
+	}) {
+		t.Fatalf("rehearsal warnings %q do not name the ignored key", report.Warnings)
 	}
 
 	migratorDB, err := sql.Open("sqlite", database)

@@ -36,6 +36,9 @@ var ReadBlocks = []string{blockCore, blockPersistence, blockResources}
 // the declared instance's and internal/app/resource refuses an unknown key in
 // it.
 //
+// A retired key whose removal changed nothing is not refused. It is dropped
+// and listed in Core.Ignored with its file and line, for the server to log.
+//
 // A missing file is a default configuration, because a first run has no file.
 //
 // The file the first-run wizard wrote, SetupFile(path), is read under the
@@ -47,7 +50,8 @@ func Load(path string) (Core, error) {
 		return Core{}, err
 	}
 
-	if _, err = parse(content); err != nil {
+	_, ignored, err := parse(content)
+	if err != nil {
 		return Core{}, fmt.Errorf("%w: %s: %w", ErrInvalid, path, err)
 	}
 
@@ -61,7 +65,8 @@ func Load(path string) (Core, error) {
 		return Core{}, err
 	}
 
-	if err = checkSetup(setup); err != nil {
+	ignoredInSetup, err := checkSetup(setup)
+	if err != nil {
 		return Core{}, fmt.Errorf("%w: %s: %w", ErrInvalid, setupPath, err)
 	}
 
@@ -70,10 +75,12 @@ func Load(path string) (Core, error) {
 		return Core{}, fmt.Errorf("%w: %s: %w", ErrInvalid, path, err)
 	}
 
-	core, err := parse(whole)
+	core, _, err := parse(whole)
 	if err != nil {
 		return Core{}, fmt.Errorf("%w: %s and %s: %w", ErrInvalid, path, setupPath, err)
 	}
+
+	core.Ignored = append(inFile(ignored, path), inFile(ignoredInSetup, setupPath)...)
 
 	return core.WithDefaults(path), nil
 }
@@ -87,7 +94,7 @@ func LoadWith(path string, setup []byte) (Core, error) {
 		return Core{}, err
 	}
 
-	if err = checkSetup(setup); err != nil {
+	if _, err = checkSetup(setup); err != nil {
 		return Core{}, fmt.Errorf("%w: %w", ErrInvalid, err)
 	}
 
@@ -96,12 +103,21 @@ func LoadWith(path string, setup []byte) (Core, error) {
 		return Core{}, fmt.Errorf("%w: %s: %w", ErrInvalid, path, err)
 	}
 
-	core, err := parse(whole)
+	core, _, err := parse(whole)
 	if err != nil {
 		return Core{}, fmt.Errorf("%w: %s: %w", ErrInvalid, path, err)
 	}
 
 	return core.WithDefaults(path), nil
+}
+
+// inFile names the file the ignored keys were read from.
+func inFile(keys []IgnoredKey, file string) []IgnoredKey {
+	for index := range keys {
+		keys[index].File = file
+	}
+
+	return keys
 }
 
 func read(path string) ([]byte, error) {
@@ -122,7 +138,8 @@ func read(path string) ([]byte, error) {
 }
 
 // parse walks the top level of the document and decodes the two blocks this
-// package reads, refusing everything else by name and by line.
+// package reads, refusing everything else by name and by line. The keys of
+// ignoredKeys are dropped first and returned with their lines.
 //
 // It walks the parsed nodes because a yaml.Node keeps the line each key was
 // written on, and a refusal with a line number sends an operator straight to
@@ -130,20 +147,22 @@ func read(path string) ([]byte, error) {
 //
 // A document whose top level is not a mapping names no key. It reads as the
 // empty configuration, as a missing file does.
-func parse(content []byte) (Core, error) {
+func parse(content []byte) (Core, []IgnoredKey, error) {
 	if len(bytes.TrimSpace(content)) == 0 {
-		return Core{}, nil
+		return Core{}, nil, nil
 	}
 
 	var document yaml.Node
 	if err := yaml.Unmarshal(content, &document); err != nil {
-		return Core{}, fmt.Errorf("parse the top level: %w", err)
+		return Core{}, nil, fmt.Errorf("parse the top level: %w", err)
 	}
 
 	root := rootMapping(document)
 	if root == nil {
-		return Core{}, nil
+		return Core{}, nil, nil
 	}
+
+	ignored := dropIgnoredKeys(root)
 
 	var (
 		core        Core
@@ -168,13 +187,13 @@ func parse(content []byte) (Core, error) {
 		}
 
 		if err != nil {
-			return Core{}, err
+			return Core{}, nil, err
 		}
 	}
 
 	core.Persistence = persistence
 
-	return core, nil
+	return core, ignored, nil
 }
 
 // refuseBlock reports a top-level block this build does not read, with the line

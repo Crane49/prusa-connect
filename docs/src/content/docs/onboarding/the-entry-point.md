@@ -141,7 +141,7 @@ may see an instance. `openGraph` also runs `graph.Reconcile`, which writes the
 relation vocabulary into the schema; the tuple table's foreign key points at
 that, so no tuple is storable until it has run.
 
-`bootstrapGraph` (`internal/app/app.go:968`) writes the first grant into a
+`bootstrapGraph` (`internal/app/app.go:980`) writes the first grant into a
 graph that holds none: `core.principal` becomes admin of `org:local`. It is a
 write and not a rule about emptiness, so there is no later state in which it is
 consulted again. On a graph that already has tuples it checks whether the
