@@ -9,23 +9,28 @@ title: PrusaSlicer 2 Connector
 summary: Lets PrusaSlicer 2.4 and later send a print to each printer of this server as it sends one to a printer with PrusaLink.
 codeowner: Prusa Research
 kind: sink
-version: 0.1.0
+version: 0.1.1
 license: OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1
 contract_major: 1
 openapi: openapi.json
 
-# The wire methods the module calls: the printer and the print as the person
-# who sends the file, whether that person may operate the printer, and a file
-# written into a storage of this server for an upload without a print.
+# The wire methods the module calls: the printer, the print and the send of a
+# file that only lands, as the person who sends the file, and whether that
+# person may operate the printer. A printer whose Save to storage is on has
+# each upload written into a storage of this server first, as that person,
+# under a name no file there holds yet.
 #
-# The slicer signs in with an API credential in the X-Api-Key header, and the
-# module receives Print-After-Upload. No core before 0.1.0-beta.2 does both.
+# The slicer signs in with an API credential in the X-Api-Key header and the
+# module receives Print-After-Upload, which no core before 0.1.0-beta.2 does.
+# It lands a file with device.send, which core-device.send asks of the core.
 # A build from a commit reports 0.1.0+<commit>, which the range holds.
 require:
   core: ">=0.1.0-beta.2"
   core-device.get: "*"
   core-device.print: "*"
+  core-device.send: "*"
   core-access.check: "*"
+  core-storage.stat: "*"
   core-storage.write: "*"
 
 # Ask whether the person who sends a print may operate the printer, so a
@@ -48,25 +53,19 @@ routes:
     - method: PUT
       path: /printers/{printer}/api/v1/files/{storage}/{name}
       max_mib: 1024
+      title: Upload from PrusaSlicer 2.6 and later
     - method: POST
       path: /printers/{printer}/api/files/{storage}
       max_mib: 1024
+      title: Upload from PrusaSlicer 2.5 and older
   # The one header the module reads beyond the usual ones. PrusaSlicer says
   # with it whether the printer starts the file. Without it every Upload and
   # Print would only keep the file and still answer success, so the module
   # does not start without it.
   headers:
     - name: Print-After-Upload
-      reason: PrusaSlicer says with it whether to start the print after the upload, or only to keep the file
+      reason: PrusaSlicer says with it whether to start the print after the upload, or only to put the file on the printer
       required: true
-
-# The settings this module reads, with the default of each. README.md has the
-# same table.
-options:
-  - key: storage
-    type: string
-    default: "local"
-    summary: The storage of this server a file goes into when PrusaSlicer uploads it without starting the print.
 
 platforms:
   - linux_amd64
@@ -80,7 +79,8 @@ ui:
   library: ">=0.0.1 <1.0.0"
   contributes:
     # The address and the API credential a person types into PrusaSlicer for
-    # one printer, at the foot of the printer's Status tab.
-    device_section:
+    # one printer, and whether its uploads are also saved on this server, at
+    # the printer's Printer tab, under its Connection card.
+    device_info_section:
       - id: prusalink
         title: PrusaSlicer 2 Connector

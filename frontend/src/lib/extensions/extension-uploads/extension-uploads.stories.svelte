@@ -14,8 +14,26 @@
     max_mib: 1024,
   };
 
+  const form = {
+    method: 'POST',
+    path: '/printers/{printer}/api/files/{storage}',
+    max_mib: 1024,
+  };
+
   const onsave = () => Promise.resolve(true);
 </script>
+
+<Story name="With Titles" asChild>
+  <ExtensionUploads
+    routes={[upload, form]}
+    asked={[
+      { ...upload, title: 'Upload from PrusaSlicer 2.6 and later' },
+      { ...form, title: 'Upload from PrusaSlicer 2.5 and older' },
+    ]}
+    saving={false}
+    {onsave}
+  />
+</Story>
 
 <Story name="As Approved" asChild>
   <ExtensionUploads

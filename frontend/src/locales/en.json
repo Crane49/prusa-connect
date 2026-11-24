@@ -390,6 +390,7 @@
   "app.settings.extensions.visibility.kind.deviceAction": "Printer action",
   "app.settings.extensions.visibility.kind.deviceCard": "Printer card",
   "app.settings.extensions.visibility.kind.deviceSection": "Status section",
+  "app.settings.extensions.visibility.kind.deviceInfoSection": "Card under Connection",
   "app.settings.extensions.visibility.kind.deviceTab": "Printer tab",
   "app.settings.extensions.visibility.kind.fileAction": "File action",
   "app.settings.extensions.visibility.kind.page": "Page",

@@ -412,7 +412,9 @@ func listenEntryOf(granted map[string]install.ListenPort) map[string]string {
 func StagedRoutesOf(routes []install.StagedRoute) []httpapi.ModuleStagedRoute {
 	var out []httpapi.ModuleStagedRoute
 	for _, route := range routes {
-		out = append(out, httpapi.ModuleStagedRoute{Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB})
+		out = append(out, httpapi.ModuleStagedRoute{
+			Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB, Title: route.Title,
+		})
 	}
 
 	return out
@@ -423,7 +425,9 @@ func StagedRoutesOf(routes []install.StagedRoute) []httpapi.ModuleStagedRoute {
 func stagedAsksOf(routes []httpapi.ModuleStagedRoute) []install.StagedRoute {
 	var out []install.StagedRoute
 	for _, route := range routes {
-		out = append(out, install.StagedRoute{Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB})
+		out = append(out, install.StagedRoute{
+			Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB, Title: route.Title,
+		})
 	}
 
 	return out

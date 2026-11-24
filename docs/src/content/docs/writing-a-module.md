@@ -965,6 +965,7 @@ Sign in, and the app draws what the manifest declared:
 | `settings` | `settings` | A tab on the module's own page under Settings, Extensions. |
 | `device-card` | `device_card` | One line on each printer's card in the listing, under its status. Text past one line is cut. |
 | `device-section` | `device_section` | A section at the foot of a printer's Status tab, after the core's own. |
+| `device-info-section` | `device_info_section` | A card with its title on a printer's Printer tab, under its Connection card and above Issues. |
 | `device-tab` | `device_tab` | A tab of the module's own on a printer's page, after the core's tabs. |
 | `dashboard-card` | `cards` | A card a person places on a dashboard, sized on its grid and drawn with the settings the person chose. |
 | `device-action` | `device_action` | An item in the action menu at the top of a printer's page. The module runs it with the printer's id. |
@@ -1500,7 +1501,7 @@ A consumer routes on two things, and the module names neither.
 
 | half | comes from | why not the module |
 | --- | --- | --- |
-| `type` | `com.github.aux.acme.spool-tracker` is the namespace the host derived from the type the operator installed. `spool.changed` is the name the operator wrote under `service.events` | a module that could mint a type could shadow a core type, publish under another module's namespace, or emit something no subscriber can route |
+| `type` | `com.github.aux.acme.spool-tracker` is the namespace the host derived from the type the operator installed. `spool.changed` is the name the operator wrote under `service.events` | a module minting its own type could shadow a core type or another module's, or emit what no subscriber routes |
 | `source` and `subject` | the instance, `sink:spools`, minted by the host from the ref in the operator's file | the hub routes on origin, so this is what decides who receives the frame |
 
 What the module names is the endpoint, `changed`, which selects a row of the operator's table, and the payload. There is no field on the wire for anything else, which is the same rule a script tier sink follows.
@@ -1639,6 +1640,10 @@ started, err := fleet.Print(ctx, deviceapi.PrintParams{
 A storage this server does not declare and a file it does not hold are one refusal, `deviceapi.ErrNoFile`. A module cannot read the list of storages out of the refusals it collects. A source that climbs out of its storage is `deviceapi.ErrInvalidQuery`, and it reaches neither the storage nor the printer. A path where the printer already holds a file or a folder is `deviceapi.ErrNameTaken`, and nothing is sent. The exception is a copy this server sent there itself from the same, unchanged file, which the printer starts with no transfer. A module may print the file again under another name.
 
 A print that answers with `command_id` has already had the printer's answer to the start command. When the printer refused it, the call fails with `deviceapi.ErrPrintRefused`. Nothing happened, so the module may start it again. When the printer took the command and then failed, the call fails with `deviceapi.ErrPrintFailed`. The printer may have begun, so the module reads its state before it starts the print again. Both messages carry the printer's own reason where it gave one. A print that answers with `transfer_id` sends the start command later, so a refused or failed start reaches the module as `device.command.settled` with `ok` false.
+
+## Landing a file without printing it
+
+`device.send` takes what `device.print` takes, and `storage` is required. It lands the file on the printer and sends no start command. It takes the same permissions, answers when the transfer has started, and keeps `keep_both` and `delete_source` as `device.print` does. The answer carries `transfer_id` and `path`. A printer that already holds the same file answers with `path` alone. A module names `core-device.send: "*"` under `require`, so a server without it refuses the install rather than printing.
 
 ## Reading a file in a storage
 
@@ -1975,7 +1980,13 @@ routes:
     - method: PUT
       path: /files/{name}
       max_mib: 1024
+      title: Upload a print file
 ```
+
+`title` is optional, at most 80 characters of plain text. It says in words
+what the route takes, and the extension's Uploads tab shows it in place of
+the method and path, which it puts under it. A title is not a request: a
+changed one in a new release asks the operator nothing.
 
 Each staged route is a request the operator approves, like a public route.
 An install without `-approve` names it `upload PUT /files/{name} up to 1024 MiB`
@@ -2628,12 +2639,13 @@ ui:
 | --- | --- |
 | `contributes.device_card` | one line on the printer's card in the listing's `cards` view, cut to fit |
 | `contributes.device_section` | a section at the foot of the printer's Status tab, after the core's own |
+| `contributes.device_info_section` | a card on the printer's Printer tab, under its Connection card and above Issues. The host draws the card and its title, and the component draws the content |
 | `contributes.device_tab` | a tab of its own after the core's tabs, at `/printers/<id>/<namespace>.<id>` |
 | `contributes.device_action` | an item in the kebab menu at the top of the printer's page |
 
-Every one of the four hands its component, or its `run` function, the
-printer's id as `deviceId`. A `device-card`, `device-section` and
-`device-tab` entry carry an `id` and a `title`, like a settings pane. A
+Every one of the five hands its component, or its `run` function, the
+printer's id as `deviceId`. A `device-card`, `device-section`,
+`device-info-section` and `device-tab` entry carry an `id` and a `title`, like a settings pane. A
 `device-action` entry also carries an `icon` and `destructive`. The bundle
 registers `run(deviceId)` for it instead of a component. The host draws the
 title and icon from the manifest before the bundle loads, disables the item

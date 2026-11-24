@@ -820,6 +820,79 @@ describe('a module tab only for the printer the server runs on', () => {
     expect(document.querySelector('[data-testid="plain-section"]')).toBeNull();
   });
 
+  // A section of device-info-section sits on the Printer tab under the
+  // Connection card and above Issues, and the Status tab does not draw it.
+  const infoSection = () => {
+    const registry = new SlotRegistry();
+    registry.declare('display', {
+      device_info_section: [{ id: 'setup', title: 'Setup' }],
+    });
+    registry.registerSection(
+      'display',
+      'device-info-section',
+      'setup',
+      PlainSection,
+    );
+
+    return registry;
+  };
+
+  const drawInfoOn = async (tab?: string): Promise<void> => {
+    await render(WithSlots, {
+      props: {
+        registry: infoSection(),
+        screen: PrinterDetail,
+        ctx: appContext(
+          {
+            // The Printer tab reads the link counters of the record.
+            'GET /api/v1/devices': json(200, {
+              items: [{ ...printer('mk4'), link: { counted: false } }],
+              total: 1,
+            }),
+          },
+          { params: tab === undefined ? { id: 'mk4' } : { id: 'mk4', tab } },
+        ),
+      },
+    });
+    await expect
+      .element(page.getByRole('heading', { name: 'Printer mk4' }))
+      .toBeInTheDocument();
+  };
+
+  it('draws an info section under Connection and above Issues', async () => {
+    await drawInfoOn('info');
+
+    await expect
+      .element(page.getByText('plain section for mk4'))
+      .toBeInTheDocument();
+
+    const at = (node: Element | null): Element => {
+      if (node === null) throw new Error('not drawn');
+
+      return node;
+    };
+    const section = at(document.querySelector('[data-testid="plain-section"]'));
+    const connection = at(
+      page.getByRole('heading', { name: 'Connection' }).element(),
+    );
+    const issues = at(page.getByRole('heading', { name: 'Issues' }).element());
+
+    expect(
+      connection.compareDocumentPosition(section) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      section.compareDocumentPosition(issues) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('draws no info section on the Status tab', async () => {
+    await drawInfoOn();
+
+    expect(document.querySelector('[data-testid="plain-section"]')).toBeNull();
+  });
+
   it('is no tab of another printer, and its link opens Status', async () => {
     await render(WithSlots, {
       props: {

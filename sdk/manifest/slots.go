@@ -21,6 +21,10 @@ const (
 	SlotDeviceCard SlotName = "device-card"
 	// SlotDeviceSection is a section at the foot of a printer's Status tab.
 	SlotDeviceSection SlotName = "device-section"
+	// SlotDeviceInfoSection is a card on a printer's Printer tab, under its
+	// Connection card, where what a person sets up once to reach the printer
+	// sits.
+	SlotDeviceInfoSection SlotName = "device-info-section"
 	// SlotDeviceTab is a tab of the module's own on a printer's page.
 	SlotDeviceTab SlotName = "device-tab"
 	// SlotDeviceAction is an item in the action menu of a printer's page.
@@ -152,6 +156,9 @@ const (
 	AreaPanes Area = "panes"
 	// AreaStatusFoot is the foot of a printer's Status tab.
 	AreaStatusFoot Area = "status-foot"
+	// AreaInfoConnection is a printer's Printer tab under its Connection card
+	// and above Issues.
+	AreaInfoConnection Area = "info-connection"
 	// AreaCardLine is one line on each printer's card in the listing.
 	AreaCardLine Area = "card-line"
 	// AreaTabs is the tab strip of a printer's page.
@@ -193,7 +200,7 @@ const (
 // Areas is every area.
 func Areas() []Area {
 	return []Area{
-		AreaPage, AreaPanes, AreaCardLine, AreaStatusFoot, AreaTabs, AreaHeaderActions, AreaGrid,
+		AreaPage, AreaPanes, AreaCardLine, AreaStatusFoot, AreaInfoConnection, AreaTabs, AreaHeaderActions, AreaGrid,
 		AreaFileActions, AreaPrintOptions, AreaFileBody, AreaFileTabs, AreaCameraFoot, AreaCameraPicture,
 		AreaDeviceFileActions, AreaDropChoices,
 		AreaHeaderFoot, AreaRowEnd,
@@ -326,6 +333,15 @@ var slots = []Slot{
 		Subject: SubjectDevice,
 		Where:   "A section at the foot of a printer's Status tab, after the core's own.",
 		Offer:   "a section at the foot of each printer's Status tab",
+	},
+	{
+		Name:    SlotDeviceInfoSection,
+		Screen:  ScreenPrinterDetail,
+		Area:    AreaInfoConnection,
+		Form:    FormSection,
+		Subject: SubjectDevice,
+		Where:   "A card with its title on a printer's Printer tab, under its Connection card and above Issues.",
+		Offer:   "a card under the connection on each printer's Printer tab",
 	},
 	{
 		Name:                SlotDeviceTab,

@@ -9,7 +9,6 @@ import (
 
 	"github.com/prusa3d/prusa-connect/sdk/accessapi"
 	"github.com/prusa3d/prusa-connect/sdk/deviceapi"
-	"github.com/prusa3d/prusa-connect/sdk/storageapi"
 	"github.com/prusa3d/prusa-connect/sdk/wirerpc"
 
 	"github.com/prusa3d/prusaslicer2-connector/internal/link"
@@ -148,7 +147,7 @@ func TestAPrintAsksTheHostToKeepBothFiles(t *testing.T) {
 	conn := &recorder{body: json.RawMessage(`{"transfer_id":"t1","path":"/usb/a[1].gcode"}`)}
 
 	err := fleet{devices: deviceapi.NewClient(conn)}.
-		Print(t.Context(), "user:alice", "mk4-01", "1-x/a.gcode", "/usb/a.gcode")
+		Print(t.Context(), "user:alice", "mk4-01", "", "1-x/a.gcode", "/usb/a.gcode")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,20 +162,56 @@ func TestAPrintAsksTheHostToKeepBothFiles(t *testing.T) {
 	}
 }
 
-// A storage the person may not write into is not taken for a printer the
-// person may not operate, and a storage setting naming no storage says so.
-func TestAKeepRefusalBecomesTheLinkRefusal(t *testing.T) {
+// An Upload lands the file under a free name and has the host delete it from
+// the print folder once it landed, and starts nothing.
+func TestAnUploadAsksTheHostToLandTheFileAndGiveItAway(t *testing.T) {
 	t.Parallel()
 
-	for _, tc := range []struct {
-		store, want error
-	}{
-		{storageapi.ErrDenied, link.ErrCannotKeep},
-		{storageapi.ErrNoFile, link.ErrNoShelf},
-	} {
-		got := keepRefusal(fmt.Errorf("storage.write: %w", tc.store))
-		if !errors.Is(got, tc.want) || !errors.Is(got, tc.store) || errors.Is(got, link.ErrDenied) {
-			t.Errorf("keepRefusal(%v) = %v, want %v", tc.store, got, tc.want)
-		}
+	conn := &recorder{body: json.RawMessage(`{"transfer_id":"t1","path":"/usb/a[1].gcode"}`)}
+
+	err := fleet{devices: deviceapi.NewClient(conn)}.
+		Send(t.Context(), "user:alice", "mk4-01", "", "1-x/a.gcode", "/usb/a.gcode")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(conn.params) != 1 {
+		t.Fatalf("%d calls, want 1", len(conn.params))
+	}
+
+	sent, ok := conn.params[0].(deviceapi.SendParams)
+	if !ok || !sent.KeepBoth || !sent.DeleteSource || sent.Storage != deviceapi.ModuleDataStorage ||
+		sent.Path != "/usb/a.gcode" {
+		t.Fatalf("sent %#v", conn.params[0])
+	}
+}
+
+// A file saved in a storage of this server is sent from there and stays.
+func TestAKeptUploadLeavesTheFileInItsStorage(t *testing.T) {
+	t.Parallel()
+
+	conn := &recorder{body: json.RawMessage(`{"transfer_id":"t1","path":"/usb/a.gcode"}`)}
+
+	err := fleet{devices: deviceapi.NewClient(conn)}.
+		Send(t.Context(), "user:alice", "mk4-01", "local", "prints/a.gcode", "/usb/a.gcode")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sent, ok := conn.params[0].(deviceapi.SendParams)
+	if !ok || sent.DeleteSource || sent.Storage != "local" || sent.Source != "prints/a.gcode" {
+		t.Fatalf("sent %#v", conn.params[0])
+	}
+}
+
+// A config block written for 0.1.0 names storage, which 0.1.1 no longer
+// reads. The host refuses a key the settings do not name, so the module
+// still names it and ignores it, and an upgrade starts.
+func TestASettingsBlockFrom010StillStartsTheModule(t *testing.T) {
+	t.Parallel()
+
+	_, err := wirerpc.ReadSettings[Settings](json.RawMessage(`{"config": {"storage": "shelf"}}`))
+	if err != nil {
+		t.Fatalf("read the 0.1.0 block: %v", err)
 	}
 }

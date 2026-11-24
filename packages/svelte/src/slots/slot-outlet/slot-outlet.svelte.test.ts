@@ -65,6 +65,40 @@ describe('SlotOutlet', () => {
       .toBeInTheDocument();
   });
 
+  // ADR-20261124-e2e: a section of the Printer tab is a card with its title
+  // inside, as each of the core's own cards on that tab.
+  it('draws a device-info-section as a card with its title inside', async () => {
+    const registry = new SlotRegistry();
+    registry.declare('spools', {
+      device_info_section: [{ id: 'setup', title: 'Spool setup' }],
+    });
+    registry.registerSection(
+      'spools',
+      'device-info-section',
+      'setup',
+      PlainSection,
+    );
+
+    await render(SlotOutlet, {
+      props: {
+        screen: 'printer-detail',
+        name: 'device-info-section',
+        deviceId: 'printer-1',
+        registry,
+      },
+    });
+
+    const heading = page.getByRole('heading', {
+      name: 'Spool setup',
+      level: 2,
+    });
+    await expect.element(heading).toBeInTheDocument();
+    expect(heading.element().closest('[data-slot="card"]')).not.toBeNull();
+    await expect
+      .element(page.getByText('plain section for printer-1'))
+      .toBeInTheDocument();
+  });
+
   // ADR-20261106-xm4 rule 5: no heading, and no room for a camera the module
   // does not feed.
   it('draws a camera section bare, and takes no room where it draws nothing', async () => {

@@ -11,11 +11,11 @@ rewrite:
 
 PrusaSlicer 2 Connector lets PrusaSlicer 2.4 and later send a print to a printer of this server. PrusaSlicer 2 knows no Prusa Connect server, but it sends a print to a printer with PrusaLink. This extension answers the PrusaLink requests for each printer of this server, at an address of its own.
 
-A person opens the printer's page in the web app. At the foot of its Status tab, the PrusaSlicer 2 Connector section shows the printer's address and makes an API key. In PrusaSlicer the person adds a physical printer, sets the host type to PrusaLink, and pastes the address and the key. The key is an [API credential](../../scoped-credentials-and-app-pairing.md) of this server with the operate scope, and PrusaSlicer sends it in the `X-Api-Key` header.
+A person opens the printer's page in the web app. On its Printer tab, under the Connection card, the PrusaSlicer 2 Connector card shows the printer's address and makes an API key. It also says when PrusaSlicer last reached the printer. In PrusaSlicer the person adds a physical printer, sets the host type to PrusaLink, and pastes the address and the key. The key is an [API credential](../../scoped-credentials-and-app-pairing.md) of this server with the operate scope, and PrusaSlicer sends it in the `X-Api-Key` header.
 
-Upload and Print sends the file to the printer and starts it. Upload keeps the file in a storage of this server, `local` unless the `storage` setting names another one, and prints nothing.
+Upload and Print sends the file to the printer and starts it. Upload puts the file on the printer's USB drive and starts nothing, as PrusaLink does. Save to storage is one setting for the printer on the same card. With it on, each upload is also saved in a storage and folder of this server, as the person whose key sent it.
 
-At install, an administrator approves the two upload routes with their largest file of 1024 MiB, and the `Print-After-Upload` header. Without the routes, a file larger than 1 MiB is refused. Without the header, every upload is kept and none is printed.
+At install, an administrator approves the two upload routes with their largest file of 1024 MiB, and the `Print-After-Upload` header. Without the routes, a file larger than 1 MiB is refused. The extension requires the header and does not start without it.
 
 The README in `extensions/prusaslicer2-connector` lists every request PrusaSlicer makes and what the extension answers.
 
@@ -29,7 +29,7 @@ Lets PrusaSlicer 2.4 and later send a print to each printer of this server as it
 
 | | |
 |---|---|
-| version | 0.1.0 |
+| version | 0.1.1 |
 | licence | OCL v1.1 + Micro v1 + NoSaaS v1 + SWAtt v1 |
 | module path | `github.com/prusa3d/prusaslicer2-connector` |
 | namespace | `com.github.aux.prusa3d.prusaslicer2-connector` |
@@ -40,12 +40,12 @@ Lets PrusaSlicer 2.4 and later send a print to each printer of this server as it
 
 ## What it adds {#what-it-adds}
 
-- **PrusaSlicer 2 Connector**: a section at the foot of each printer's Status tab
+- **PrusaSlicer 2 Connector**: a card under the connection on each printer's Printer tab
 
 ## What it needs {#what-it-needs}
 
 - a server release `>=0.1.0-beta.2`
-- the server methods `access.check`, `device.get`, `device.print`, `storage.write`
+- the server methods `access.check`, `device.get`, `device.print`, `device.send`, `storage.stat`, `storage.write`
 - to ask whether a person may `operate`, approved at install
 - a data directory of its own, which an update and a removal keep
 - routes whose request body the server writes into its data directory, with the largest body each asks for: `PUT /printers/{printer}/api/v1/files/{storage}/{name} up to 1024 MiB`, `POST /printers/{printer}/api/files/{storage} up to 1024 MiB`
@@ -53,23 +53,18 @@ Lets PrusaSlicer 2.4 and later send a print to each printer of this server as it
 
 It asks for no permission of its own. It acts only for the person who asks.
 
-## Settings {#settings}
-
-An operator writes them under `config:` in the extension's entry of the configuration.
-
-| key | type | default | what it sets |
-|---|---|---|---|
-| `storage` | string | `local` | The storage of this server a file goes into when PrusaSlicer uploads it without starting the print. |
-
 ## Routes {#routes}
 
 Every path is under `/api/v1/modules/com.github.aux.prusa3d.prusaslicer2-connector`. The extension's `openapi.json` describes each of them, and the server serves it at `openapi.json` under the same path.
 
 | method and path | what it does |
 |---|---|
-| `POST /printers/{printer}/api/files/{storage}` | Upload a file in a form, and print it. |
-| `PUT /printers/{printer}/api/v1/files/{storage}/{name}` | Upload a file, and print it. |
+| `POST /printers/{printer}/api/files/{storage}` | Upload a file in a form, and print it or not. |
+| `PUT /printers/{printer}/api/v1/files/{storage}/{name}` | Upload a file, and print it or not. |
 | `GET /printers/{printer}/api/v1/storage` | The storage list of one printer. |
 | `GET /printers/{printer}/api/version` | The PrusaLink version of one printer. |
+| `GET /printers/{printer}/keep` | Where one printer's uploads are saved. |
+| `PUT /printers/{printer}/keep` | Set where one printer's uploads are saved. |
+| `GET /printers/{printer}/seen` | When PrusaSlicer last reached one printer. |
 
 <!-- end generated -->

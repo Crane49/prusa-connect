@@ -1,6 +1,4 @@
 {
-  "prusalink.title": "PrusaSlicer 2 Connector",
-  "prusalink.intro": "PrusaSlicer 2.4 and later sends a print to this printer as it sends one to a printer with PrusaLink.",
   "prusalink.address": "Hostname, IP or URL",
   "prusalink.key": "API key",
   "prusalink.create": "Create an API key",
@@ -8,9 +6,19 @@
   "prusalink.created": "Copy the API key now. It works for every printer you may operate, so you can paste the same key for each of them. This server keeps only its hash and does not show it again. It is listed under Settings, API credentials, where you can revoke it.",
   "prusalink.credentialName": "PrusaSlicer 2 Connector ({date})",
   "prusalink.plainHttp": "This address is plain HTTP, so the key crosses your network unencrypted. Where the server has an HTTPS address, paste that one into PrusaSlicer instead.",
-  "prusalink.steps.title": "In PrusaSlicer",
-  "prusalink.steps.add": "Next to the printer profile, click Add physical printer.",
+  "prusalink.steps.title": "How to set up PrusaSlicer",
+  "prusalink.steps.add": "Use PrusaSlicer 2.4 or later. Next to the printer profile, click Add physical printer.",
   "prusalink.steps.host": "Set Host type to PrusaLink and paste the address into Hostname, IP or URL.",
   "prusalink.steps.key": "Set Authorization type to API key and paste the API key.",
-  "prusalink.steps.test": "Click Test. Upload and Print then sends the file to this printer, and Upload keeps it on this server."
+  "prusalink.steps.test": "Click Test.",
+  "prusalink.keep.title": "Uploads from PrusaSlicer",
+  "prusalink.seen.never": "PrusaSlicer has not connected yet",
+  "prusalink.keep.elsewhere": "Uploads go to a storage you may not write to. Choosing a folder keeps them there.",
+  "prusalink.keep.readOnlyOn": "Uploads to this printer are saved to storage.",
+  "prusalink.keep.readOnlyOff": "Not saved to storage. The file goes to the printer and is then deleted from this server.",
+  "prusalink.keep.readOnlyNote": "Only a person who may operate this printer changes this.",
+  "prusalink.seen.connected": "PrusaSlicer connected",
+  "prusalink.seen.lastSeen": "last seen {ago}",
+  "prusalink.keep.scope": "Applies to every upload from PrusaSlicer to this printer, whoever sends it.",
+  "prusalink.keep.readOnlyNobody": "Nobody may change this until the administrator grants the extension its operate check."
 }

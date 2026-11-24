@@ -100,8 +100,8 @@ const printFolder = "print"
 
 // moduleDataKey carries the moduleData of the module that asked for a print.
 // The calling module is who is asking, as the principal is. Only
-// moduleFleet.Print sets it, so a print over HTTP finds no folder under
-// deviceapi.ModuleDataStorage.
+// moduleFleet.Print and moduleFleet.Send set it, so a print over HTTP finds no
+// folder under deviceapi.ModuleDataStorage.
 type moduleDataKey struct{}
 
 // moduleData is the calling module's data directory, and whether its print

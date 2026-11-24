@@ -76,20 +76,44 @@ func stateOf(device deviceapi.Device) string {
 	return strings.ToUpper(state)
 }
 
-func (f fleet) Print(ctx context.Context, principal, id, source, target string) error {
-	_, err := f.devices.Print(ctx, deviceapi.PrintParams{
-		Principal: principal,
-		ID:        id,
-		Storage:   deviceapi.ModuleDataStorage,
-		Source:    source,
-		Path:      target,
-		KeepBoth:  true,
-	})
+func (f fleet) Print(ctx context.Context, principal, id, storage, source, target string) error {
+	_, err := f.devices.Print(ctx, deviceapi.PrintParams(transfer(principal, id, storage, source, target)))
 	if err != nil {
 		return deviceRefusal(err)
 	}
 
 	return nil
+}
+
+// Send lands the file without starting it.
+func (f fleet) Send(ctx context.Context, principal, id, storage, source, target string) error {
+	_, err := f.devices.Send(ctx, transfer(principal, id, storage, source, target))
+	if err != nil {
+		return deviceRefusal(err)
+	}
+
+	return nil
+}
+
+// transfer is one file sent to a printer. A file from the print folder is
+// deleted there by the host once it landed, so nothing waits for the sweep.
+// A file from a storage of this server stays there.
+func transfer(principal, id, storage, source, target string) deviceapi.SendParams {
+	params := deviceapi.SendParams{
+		Principal: principal,
+		ID:        id,
+		Storage:   storage,
+		Source:    source,
+		Path:      target,
+		KeepBoth:  true,
+	}
+
+	if storage == "" {
+		params.Storage = deviceapi.ModuleDataStorage
+		params.DeleteSource = true
+	}
+
+	return params
 }
 
 // deviceRefusal maps what the device door reported to the refusals the link
@@ -123,6 +147,19 @@ func (f files) Write(ctx context.Context, principal, storage, file string, size 
 	}
 
 	return nil
+}
+
+func (f files) Exists(ctx context.Context, principal, storage, file string) (bool, error) {
+	_, err := f.storages.Stat(ctx, storageapi.StatParams{Principal: principal, Storage: storage, Path: file})
+
+	switch {
+	case err == nil:
+		return true, nil
+	case errors.Is(err, storageapi.ErrNoFile):
+		return false, nil
+	default:
+		return false, fmt.Errorf("look for %s in %s: %w", file, storage, keepRefusal(err))
+	}
 }
 
 // keepRefusal maps what storage.write reported to the refusals the link

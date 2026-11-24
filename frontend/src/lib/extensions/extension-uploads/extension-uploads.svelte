@@ -74,8 +74,8 @@
     chosen.some((route, index) => route.max_mib !== routes[index]?.max_mib),
   );
 
-  const askedFor = (route: ModuleStagedRoute): number | undefined =>
-    asked.find((one) => sameRoute(one, route))?.max_mib;
+  const askedOf = (route: ModuleStagedRoute): ModuleStagedRoute | undefined =>
+    asked.find((one) => sameRoute(one, route));
 
   const save = async (): Promise<void> => {
     const next = chosen.flatMap((route) =>
@@ -92,63 +92,81 @@
       max: formatNumber(MAX_STAGED_MIB),
     })}
   >
-    {#each routes as route, index (keyOf(route))}
-      {@const rowId = `${id}-${String(index)}`}
-      {@const valid = stagedOfText(shownFor(route)) !== undefined}
-      {@const wanted = askedFor(route)}
-      <div data-part="upload-route">
-        <SettingsRow
-          id={rowId}
-          label={t('app.settings.extensions.uploads.label', {
-            route: keyOf(route),
-          })}
-          description={wanted === undefined
-            ? undefined
-            : t('app.settings.extensions.uploads.asked', {
-                size: formatNumber(wanted),
+    <!-- Padded as the other panes' rows are. A route is one long word, so
+         its label takes the row's width and breaks anywhere only where even
+         that is too narrow, rather than running over the field. -->
+    <div
+      class="flex flex-col gap-section-gap p-panel-padding-mobile @lg/pane:p-panel-padding"
+    >
+      {#each routes as route, index (keyOf(route))}
+        {@const rowId = `${id}-${String(index)}`}
+        {@const valid = stagedOfText(shownFor(route)) !== undefined}
+        {@const wanted = askedOf(route)?.max_mib}
+        <!-- A route the module titled reads by its title, with the method
+             and path under it for whoever needs them. -->
+        {@const title = askedOf(route)?.title}
+        <div data-part="upload-route">
+          <SettingsRow
+            id={rowId}
+            layout="switch"
+            class="[overflow-wrap:anywhere]"
+            label={title ??
+              t('app.settings.extensions.uploads.label', {
+                route: keyOf(route),
               })}
-        >
-          {#snippet control()}
-            <div class="w-28 shrink-0">
-              <Input
-                type="number"
-                inputmode="numeric"
-                min="1"
-                max={MAX_STAGED_MIB}
-                size="sm"
-                class="tabular-nums"
-                value={shownFor(route)}
-                disabled={locked !== undefined || saving}
-                aria-labelledby={`${rowId}-label`}
-                aria-describedby={valid ? undefined : `${rowId}-error`}
-                aria-invalid={!valid}
-                oninput={(event: Event) => {
-                  typed = {
-                    ...typed,
-                    [keyOf(route)]: (event.currentTarget as HTMLInputElement)
-                      .value,
-                  };
-                }}
-              />
-            </div>
-            <span class="text-sm text-muted-foreground">
-              {t('app.settings.extensions.uploads.unit')}
-            </span>
-          {/snippet}
-        </SettingsRow>
-        {#if !valid}
-          <p
-            id={`${rowId}-error`}
-            class="pb-3 text-xs text-destructive-text"
-            role="status"
+            description={[
+              title === undefined ? undefined : keyOf(route),
+              wanted === undefined
+                ? undefined
+                : t('app.settings.extensions.uploads.asked', {
+                    size: formatNumber(wanted),
+                  }),
+            ]
+              .filter((part) => part !== undefined)
+              .join(' · ') || undefined}
           >
-            {t('app.settings.extensions.uploads.invalid', {
-              max: formatNumber(MAX_STAGED_MIB),
-            })}
-          </p>
-        {/if}
-      </div>
-    {/each}
+            {#snippet control()}
+              <div class="w-28 shrink-0">
+                <Input
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  max={MAX_STAGED_MIB}
+                  size="sm"
+                  class="tabular-nums"
+                  value={shownFor(route)}
+                  disabled={locked !== undefined || saving}
+                  aria-labelledby={`${rowId}-label`}
+                  aria-describedby={valid ? undefined : `${rowId}-error`}
+                  aria-invalid={!valid}
+                  oninput={(event: Event) => {
+                    typed = {
+                      ...typed,
+                      [keyOf(route)]: (event.currentTarget as HTMLInputElement)
+                        .value,
+                    };
+                  }}
+                />
+              </div>
+              <span class="text-sm text-muted-foreground">
+                {t('app.settings.extensions.uploads.unit')}
+              </span>
+            {/snippet}
+          </SettingsRow>
+          {#if !valid}
+            <p
+              id={`${rowId}-error`}
+              class="pb-3 text-xs text-destructive-text"
+              role="status"
+            >
+              {t('app.settings.extensions.uploads.invalid', {
+                max: formatNumber(MAX_STAGED_MIB),
+              })}
+            </p>
+          {/if}
+        </div>
+      {/each}
+    </div>
 
     {#snippet actions()}
       {#if locked !== undefined}

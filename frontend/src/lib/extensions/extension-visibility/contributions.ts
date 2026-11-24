@@ -7,6 +7,7 @@ const SLOT_KINDS = [
   ['pages', 'page'],
   ['device_card', 'deviceCard'],
   ['device_section', 'deviceSection'],
+  ['device_info_section', 'deviceInfoSection'],
   ['device_tab', 'deviceTab'],
   ['device_action', 'deviceAction'],
   ['file_action', 'fileAction'],

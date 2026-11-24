@@ -7,6 +7,7 @@ import {
 } from '@prusa/connect-ui/i18n';
 import type { ModuleHost } from '@prusa/connect-ui/slots';
 
+import type { Keep } from '../keep';
 import english from '../locales/en.json';
 import type { Translate } from '../views/prusalink-section';
 
@@ -27,15 +28,39 @@ export interface Minted {
   scopes: string[] | undefined;
 }
 
+/** One write of the keep route the fake client received. */
+export interface Kept {
+  printer: string;
+  keep: Keep;
+}
+
 /**
- * A host with one printer. Its client answers createCredential with TOKEN,
- * or throws refusal when one is given. `minted` records each request.
+ * A host with one printer and one storage, `local`, holding the folder
+ * `prints`. Its client answers createCredential with TOKEN, or throws refusal
+ * when one is given, and serves the module's keep route from memory, or
+ * refuses its writes with keepRefusal. `minted` and `kept` record each
+ * request.
  */
 export const stubHost = (
-  options: { refusal?: Error; hold?: Promise<void> } = {},
-): { host: ModuleHost; minted: Minted[] } => {
+  options: {
+    refusal?: Error;
+    hold?: Promise<void>;
+    keep?: Keep;
+    keepRefusal?: Error;
+    seenAt?: string | null;
+    mayChange?: boolean;
+  } = {},
+): {
+  host: ModuleHost;
+  minted: Minted[];
+  kept: Kept[];
+  reads: () => number;
+} => {
   const minted: Minted[] = [];
+  const kept: Kept[] = [];
   const controller = new AbortController();
+  let held: Keep = options.keep ?? { storage: '', folder: '' };
+  let read = 0;
 
   const client = {
     createCredential: async (request: {
@@ -47,6 +72,43 @@ export const stubHost = (
 
       return { token: TOKEN };
     },
+    listStorages: () =>
+      Promise.resolve({
+        items: [{ name: 'local', display_name: 'Local', write: true }],
+      }),
+    listStorageFiles: () =>
+      Promise.resolve({
+        items: [{ name: 'prints', path: 'prints', folder: true }],
+      }),
+    transport: {
+      call: (
+        operation: { method: string; path: string },
+        request: { path: { printer: string }; body?: Keep },
+      ) => {
+        if (operation.path.endsWith('/seen'))
+          return Promise.resolve({ seen_at: options.seenAt ?? null });
+        if (operation.method === 'GET') {
+          read += 1;
+
+          const may = options.mayChange ?? true;
+
+          return Promise.resolve({
+            ...(may ? held : { storage: '', folder: '' }),
+            on: held.storage !== '',
+            may_change: may,
+            ...(may ? {} : { refused: 'operate' as const }),
+          });
+        }
+        if (options.keepRefusal !== undefined)
+          return Promise.reject(options.keepRefusal);
+
+        const keep = request.body ?? { storage: '', folder: '' };
+        kept.push({ printer: request.path.printer, keep });
+        held = keep;
+
+        return Promise.resolve(keep);
+      },
+    },
   };
 
   const host = {
@@ -56,5 +118,5 @@ export const stubHost = (
     pageHref: (path: string) => `/m/${NAMESPACE}/${path}`,
   } as unknown as ModuleHost;
 
-  return { host, minted };
+  return { host, minted, kept, reads: () => read };
 };

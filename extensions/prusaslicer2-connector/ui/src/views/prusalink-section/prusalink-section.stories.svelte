@@ -1,5 +1,5 @@
 <!--
-  The section on a printer's Status tab, in each state of its API key.
+  The section on a printer's Printer tab, in each state of its API key.
 -->
 <script module lang="ts">
   import { defineMeta } from '@storybook/addon-svelte-csf';
@@ -14,7 +14,7 @@
   const { Story } = defineMeta({
     title: 'PrusaSlicer 2 Connector/PrusalinkSection',
     component: PrusalinkSection,
-    args: { t, address, onCreate: fn() },
+    args: { t, address, onCreate: fn(), seen: { kind: 'never' } },
   });
 </script>
 
@@ -41,6 +41,35 @@
       },
     },
   }}
+/>
+<Story
+  name="SavingToStorage"
+  args={{
+    key: { kind: 'none' },
+    keep: {
+      keep: true,
+      onKeepChange: fn(),
+      storages: [
+        { name: 'local', label: 'Local' },
+        { name: 'nas', label: 'NAS' },
+      ],
+      storage: 'local',
+      onStorageChange: fn(),
+      folder: 'prints/mk4',
+      onFolderChange: fn(),
+      pickerAt: '',
+      pickerFolders: [],
+      onPickerWalk: fn(),
+    },
+  }}
+/>
+<Story
+  name="SlicerSeen"
+  args={{ key: { kind: 'none' }, seen: { kind: 'at', ago: '5 minutes ago' } }}
+/>
+<Story
+  name="SlicerNeverSeen"
+  args={{ key: { kind: 'none' }, seen: { kind: 'never' } }}
 />
 <Story
   name="Phone"

@@ -95,6 +95,8 @@ const drawPrinterDetail = async (
             actions: ['observe', 'operate'],
             capabilities: [],
             state: { '/state': 'IDLE' },
+            // The Printer tab reads the record's link counters.
+            link: { counted: false },
           },
         ],
         total: 1,
@@ -478,6 +480,9 @@ describe('every slot has an outlet on its screen', () => {
           registry,
           `?tab=${EVERY_SLOT_NAMESPACE}.${EVERY_SLOT_ENTRY}`,
         );
+      } else if (slot === 'device-info-section') {
+        // Its outlet is on the Printer tab, under the Connection card.
+        await drawPrinterDetail(registry, 'info');
       } else if (slot === 'device-file-action') {
         await drawPrinterFiles(registry);
       } else if (slot === 'device-upload-action') {

@@ -226,6 +226,14 @@ MethodPrint starts a print of a file one of this server's storages holds, or of 
 
 It carries the file's name and never its bytes. The host reads the file out of the storage it names and relays it, which is what the HTTP print route does.
 
+### `MethodSend` {#deviceapi-methodsend}
+
+```go
+const MethodSend wirerpc.Method = "device.send"
+```
+
+MethodSend copies a file one of this server's storages holds onto a printer and does not start it. It is MethodPrint without the start command, so a host that does not serve it never prints by mistake.
+
 ### `MaxPageLimit` {#deviceapi-maxpagelimit}
 
 ```go
@@ -678,6 +686,16 @@ It returns when the transfer has started, not when the print has begun. The host
 
 A path with a ".." segment is ErrInvalidQuery. An unknown storage and a missing file are both ErrNoFile. A path where the printer already has another file is ErrNameTaken.
 
+#### `Client.Send` {#deviceapi-client-send}
+
+```go
+func (c *Client) Send(ctx context.Context, params SendParams) (Sent, error)
+```
+
+Send copies a file from one of the server's storages onto a printer and does not start it. It needs operate on the printer and read\_storage.
+
+It returns when the transfer has started. The rest comes on device.transfer.settled. The refusals are those of Print.
+
 ### `CommandParams` {#deviceapi-commandparams}
 
 ```go
@@ -891,6 +909,7 @@ type Fleet interface {
     Jobs(ctx context.Context, params JobsParams) (Jobs, error)
     Files(ctx context.Context, params FilesParams) (Listing, error)
     Print(ctx context.Context, params PrintParams) (Started, error)
+    Send(ctx context.Context, params SendParams) (Sent, error)
     JobHistory(ctx context.Context, params JobHistoryParams) (JobPage, error)
 }
 ```
@@ -1261,6 +1280,33 @@ type Result struct {
 Result is what MethodCommand answers: whether the device took the verb, and what it said when it did not.
 
 A refused command is a Result with OK false and not a transport error. The call reached the device and the device answered, which is a fact a module reports rather than an outage it retries.
+
+### `SendParams` {#deviceapi-sendparams}
+
+```go
+type SendParams PrintParams
+```
+
+SendParams is the parameters of MethodSend. It names a file the way a print from a storage does, and the fields mean what they mean on PrintParams: Storage and Source are the file, Path is where it lands on the printer, KeepBoth sends it under a free name beside a file already there, and DeleteSource has the host delete a file of ModuleDataStorage once it landed.
+
+#### `SendParams.Validate` {#deviceapi-sendparams-validate}
+
+```go
+func (p SendParams) Validate() error
+```
+
+Validate checks one send against the limits of this contract. The client and the host both call it. A send moves a file, so it names a storage.
+
+### `Sent` {#deviceapi-sent}
+
+```go
+type Sent struct {
+    TransferID string `json:"transfer_id,omitempty"`
+    Path       string `json:"path,omitempty"`
+}
+```
+
+Sent is the answer of MethodSend. TransferID is the transfer the host opened, and empty when the printer already held this file. Path is where the file is on the printer, a numbered name with KeepBoth.
 
 ### `Started` {#deviceapi-started}
 

@@ -83,6 +83,10 @@ const (
 	// out of the storage it names and relays it, which is what the HTTP print
 	// route does.
 	MethodPrint wirerpc.Method = "device.print"
+	// MethodSend copies a file one of this server's storages holds onto a
+	// printer and does not start it. It is MethodPrint without the start
+	// command, so a host that does not serve it never prints by mistake.
+	MethodSend wirerpc.Method = "device.send"
 )
 
 const (
@@ -749,6 +753,7 @@ type Fleet interface {
 	Jobs(ctx context.Context, params JobsParams) (Jobs, error)
 	Files(ctx context.Context, params FilesParams) (Listing, error)
 	Print(ctx context.Context, params PrintParams) (Started, error)
+	Send(ctx context.Context, params SendParams) (Sent, error)
 	JobHistory(ctx context.Context, params JobHistoryParams) (JobPage, error)
 }
 
@@ -1006,6 +1011,7 @@ func Handlers(fleet Fleet) wirerpc.Methods {
 		MethodJobs:    jobsHandler(fleet),
 		MethodFiles:   filesHandler(fleet),
 		MethodPrint:   printHandler(fleet),
+		MethodSend:    sendHandler(fleet),
 
 		MethodJobHistory: jobHistoryHandler(fleet),
 	}

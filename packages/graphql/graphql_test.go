@@ -123,6 +123,15 @@ func (f *fakeCore) Print(_ context.Context, params deviceapi.PrintParams) (devic
 	return deviceapi.Started{}, f.err
 }
 
+func (f *fakeCore) Send(_ context.Context, params deviceapi.SendParams) (deviceapi.Sent, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	f.sawID, f.sawPrincipal = params.ID, params.Principal
+
+	return deviceapi.Sent{}, f.err
+}
+
 // asked is what the case reads back off the fake once a query has run.
 func (f *fakeCore) asked() fakeCore {
 	f.mu.Lock()

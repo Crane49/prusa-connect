@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"mime/multipart"
 	"net/http"
@@ -286,8 +287,8 @@ func (g *gate) print(ctx context.Context) error {
 	return g.transferred(ctx, mk4s, "gate benchy.gcode")
 }
 
-// keep sends a file without Print-After-Upload. It lands in the local
-// storage, and the printer is not asked.
+// keep sends a file without Print-After-Upload. It lands on the printer and
+// nothing starts.
 func (g *gate) keep(ctx context.Context) error {
 	xl, err := g.printer(modelXL)
 	if err != nil {
@@ -303,35 +304,20 @@ func (g *gate) keep(ctx context.Context) error {
 		return err
 	}
 
-	admin, err := g.admin(ctx)
+	if err = g.transferred(ctx, xl, "gate kept.gcode"); err != nil {
+		return err
+	}
+
+	state, err := g.deviceState(ctx, xl)
 	if err != nil {
 		return err
 	}
 
-	statPath := "/api/v1/storages/local/stat?path=" + url.QueryEscape("gate kept.gcode")
-
-	got, err = admin.send(ctx, http.MethodGet, statPath, "", nil)
-	if err != nil {
-		return err
+	if state == "PRINTING" {
+		return errors.New("an upload without a print started the file")
 	}
 
-	if err = expect("the kept file in the local storage", got, http.StatusOK); err != nil {
-		return err
-	}
-
-	var stat struct {
-		Size int64 `json:"size"`
-	}
-
-	if err = got.decode(&stat); err != nil {
-		return err
-	}
-
-	if stat.Size != uploadBytes {
-		return fmt.Errorf("the local storage keeps %d bytes, want %d: %s", stat.Size, uploadBytes, got.body)
-	}
-
-	return g.noTransfer(ctx, xl)
+	return nil
 }
 
 // form sends the form PrusaSlicer 2.5 and older send, with print=true.
@@ -502,18 +488,4 @@ func (g *gate) transferred(ctx context.Context, printer, name string) error {
 
 		return false, fmt.Errorf("no transfer of %s among %s", name, body)
 	})
-}
-
-// noTransfer fails when the printer was sent any file.
-func (g *gate) noTransfer(ctx context.Context, printer string) error {
-	items, body, err := g.transfers(ctx, printer)
-	if err != nil {
-		return err
-	}
-
-	if len(items) != 0 {
-		return fmt.Errorf("an upload without a print sent the printer a file: %s", body)
-	}
-
-	return nil
 }

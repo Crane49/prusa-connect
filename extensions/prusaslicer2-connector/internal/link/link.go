@@ -5,22 +5,22 @@
 // {printer} segment of the path, so a person adds one physical printer in
 // PrusaSlicer for each printer here, each with its own address.
 //
-// An upload with Print-After-Upload goes to the printer and starts there,
-// through the host's device door. An upload without it is kept in a storage of
-// this server, and nothing is printed.
+// Every upload goes to the printer through the host's device door. One with
+// Print-After-Upload starts there, and one without it only lands on the
+// printer's USB drive, as PrusaLink's Upload does.
 package link
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 	"unicode"
@@ -75,7 +75,11 @@ type Fleet interface {
 	// it, as principal. source is relative to the print folder, and target is
 	// where the file lands on the printer, or a free name beside it when the
 	// printer holds a file there.
-	Print(ctx context.Context, principal, id, source, target string) error
+	// storage is the storage of this server source is in, and empty for the
+	// print folder, which the host deletes the file from once it landed.
+	Print(ctx context.Context, principal, id, storage, source, target string) error
+	// Send is Print without the start: the file only lands on the printer.
+	Send(ctx context.Context, principal, id, storage, source, target string) error
 }
 
 // Access answers whether a person may print on a printer.
@@ -83,12 +87,7 @@ type Access interface {
 	MayPrint(ctx context.Context, principal, printer string) (bool, error)
 }
 
-// Files writes a file into a storage of this server as a person.
-type Files interface {
-	Write(ctx context.Context, principal, storage, file string, size int64, body io.Reader) error
-}
-
-// The refusals Fleet, Access and Files report.
+// The refusals Fleet and Access report.
 var (
 	ErrNoPrinter    = errors.New("link: no such printer")
 	ErrDenied       = errors.New("link: the person may not do that")
@@ -96,12 +95,6 @@ var (
 	ErrNotReady     = errors.New("link: the printer is not ready to print")
 	ErrPrintRefused = errors.New("link: the printer refused to start the print")
 	ErrNoStorage    = errors.New("link: no such storage")
-	// ErrNoShelf is a storage setting that names no storage of this server,
-	// so an upload without a print has nowhere to go.
-	ErrNoShelf = errors.New("link: the storage setting names no storage of this server")
-	// ErrCannotKeep is a person who may not write into the storage an upload
-	// without a print goes into.
-	ErrCannotKeep = errors.New("link: the person may not write into the storage")
 	// ErrCannotAsk is an Access the operator did not let the module ask. The
 	// print itself is then the check.
 	ErrCannotAsk = errors.New("link: the module may not ask whether a person may print")
@@ -111,13 +104,12 @@ var (
 type Options struct {
 	Fleet  Fleet
 	Access Access
-	Files  Files
+	// Files saves an upload in a storage of this server for a printer whose
+	// person turned Save to storage on.
+	Files Files
 	// Data is the module's data folder. It holds the print folder and the
 	// folder a form upload is unpacked into.
 	Data string
-	// Storage is the storage of this server an upload without a print goes
-	// into.
-	Storage string
 	// Version is the module's own version, reported as the server version.
 	Version string
 	// Now is the clock. Nil is time.Now.
@@ -130,11 +122,15 @@ type Service struct {
 	access  Access
 	files   Files
 	data    string
-	storage string
 	version string
 	now     func() time.Time
 
 	next atomic.Uint64
+	// keepMu guards keepFile.
+	keepMu sync.Mutex
+	// seenMu guards seen, which is seenFile once read.
+	seenMu sync.Mutex
+	seen   map[string]time.Time
 }
 
 // New returns a Service.
@@ -146,7 +142,7 @@ func New(opts Options) *Service {
 
 	return &Service{
 		fleet: opts.Fleet, access: opts.Access, files: opts.Files,
-		data: opts.Data, storage: opts.Storage, version: opts.Version, now: now,
+		data: opts.Data, version: opts.Version, now: now,
 	}
 }
 
@@ -157,10 +153,12 @@ func New(opts Options) *Service {
 func (s *Service) Version(w http.ResponseWriter, r *http.Request, principal, printerID string) {
 	printer, err := s.fleet.Printer(r.Context(), principal, printerID)
 	if err != nil {
-		refusal(err).Write(w)
+		refusal(printerID, err).Write(w)
 
 		return
 	}
+
+	s.markSeen(printer.ID)
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"api":      "2.0.0",
@@ -180,10 +178,12 @@ func (s *Service) Version(w http.ResponseWriter, r *http.Request, principal, pri
 func (s *Service) Storage(w http.ResponseWriter, r *http.Request, principal, printerID string) {
 	printer, err := s.fleet.Printer(r.Context(), principal, printerID)
 	if err != nil {
-		refusal(err).Write(w)
+		refusal(printerID, err).Write(w)
 
 		return
 	}
+
+	s.markSeen(printer.ID)
 
 	writeJSON(w, http.StatusOK, map[string]any{
 		"storage_list": []map[string]any{{
@@ -215,7 +215,7 @@ type Upload struct {
 func (s *Service) Put(w http.ResponseWriter, r *http.Request, upload Upload) {
 	file, err := s.bodyOf(r, upload.File)
 	if err != nil {
-		refusal(err).Write(w)
+		refusal(upload.Printer, err).Write(w)
 
 		return
 	}
@@ -233,7 +233,7 @@ func (s *Service) Put(w http.ResponseWriter, r *http.Request, upload Upload) {
 func (s *Service) Post(w http.ResponseWriter, r *http.Request, upload Upload) {
 	body, err := s.bodyOf(r, upload.File)
 	if err != nil {
-		refusal(err).Write(w)
+		refusal(upload.Printer, err).Write(w)
 
 		return
 	}
@@ -241,7 +241,7 @@ func (s *Service) Post(w http.ResponseWriter, r *http.Request, upload Upload) {
 
 	posted, err := s.unpack(r.Header.Get("Content-Type"), body)
 	if err != nil {
-		refusal(err).Write(w)
+		refusal(upload.Printer, err).Write(w)
 
 		return
 	}
@@ -260,17 +260,17 @@ func (s *Service) Post(w http.ResponseWriter, r *http.Request, upload Upload) {
 	s.finish(r.Context(), w, upload)
 }
 
-// finish checks the upload and prints it or keeps it.
+// finish checks the upload and sends it to the printer.
 func (s *Service) finish(ctx context.Context, w http.ResponseWriter, upload Upload) {
 	printer, err := s.fleet.Printer(ctx, upload.Principal, upload.Printer)
 	if err != nil {
-		refusal(err).Write(w)
+		refusal(upload.Printer, err).Write(w)
 
 		return
 	}
 
 	if upload.Storage != storageName {
-		refusal(ErrNoStorage).Write(w)
+		refusal(upload.Printer, ErrNoStorage).Write(w)
 
 		return
 	}
@@ -281,14 +281,8 @@ func (s *Service) finish(ctx context.Context, w http.ResponseWriter, upload Uplo
 		return
 	}
 
-	if upload.Print {
-		err = s.print(ctx, upload, printer)
-	} else {
-		err = s.keep(ctx, upload)
-	}
-
-	if err != nil {
-		refusal(err).Write(w)
+	if err = s.deliver(ctx, upload, printer); err != nil {
+		refusal(upload.Printer, err).Write(w)
 
 		return
 	}
@@ -296,13 +290,18 @@ func (s *Service) finish(ctx context.Context, w http.ResponseWriter, upload Uplo
 	w.WriteHeader(http.StatusCreated)
 }
 
-// print moves the file into the print folder and starts it on the printer.
-// A printer that already holds a file of that name gets the file under a free
-// name the host picks, because PrusaSlicer always asks to overwrite and the
-// printer keeps the file it has.
-func (s *Service) print(ctx context.Context, upload Upload, printer Printer) error {
-	if err := s.mayPrint(ctx, upload.Principal, printer); err != nil {
+// deliver moves the file into the print folder and sends it to the printer,
+// started when the upload asked for a print. A printer that already holds a
+// file of that name gets the file under a free name the host picks, because
+// PrusaSlicer always asks to overwrite and the printer keeps the file it has.
+// A file that only lands may go to a busy printer, as with PrusaLink.
+func (s *Service) deliver(ctx context.Context, upload Upload, printer Printer) error {
+	if err := s.mayOperate(ctx, upload.Principal, printer.ID); err != nil {
 		return err
+	}
+
+	if upload.Print && !printableStates[printer.State] {
+		return fmt.Errorf("%w: it is %s", ErrNotReady, strings.ToLower(printer.State))
 	}
 
 	body := filepath.Join(s.data, filepath.FromSlash(upload.File))
@@ -315,21 +314,35 @@ func (s *Service) print(ctx context.Context, upload Upload, printer Printer) err
 		return errEmpty
 	}
 
+	keep, err := s.keepOf(printer.ID)
+	if err != nil {
+		return err
+	}
+
+	if keep.Storage != "" && s.files != nil {
+		return s.deliverKept(ctx, upload, keep, body, info.Size())
+	}
+
 	s.Sweep()
 
 	folder := strconv.FormatUint(s.next.Add(1), 10) + "-" + strconv.FormatInt(s.now().UnixNano(), 36)
 	source := path.Join(folder, upload.Name)
 	kept := filepath.Join(s.data, printFolder, filepath.FromSlash(source))
 
-	if err := os.MkdirAll(filepath.Dir(kept), 0o750); err != nil {
+	if err = os.MkdirAll(filepath.Dir(kept), 0o750); err != nil {
 		return fmt.Errorf("make the print folder: %w", err)
 	}
 
-	if err := os.Rename(body, kept); err != nil {
+	if err = os.Rename(body, kept); err != nil {
 		return fmt.Errorf("move the file into the print folder: %w", err)
 	}
 
-	err := s.fleet.Print(ctx, upload.Principal, upload.Printer, source, "/usb/"+upload.Name)
+	send := s.fleet.Send
+	if upload.Print {
+		send = s.fleet.Print
+	}
+
+	err = send(ctx, upload.Principal, upload.Printer, "", source, "/usb/"+upload.Name)
 	if refusedBeforeTransfer(err) {
 		_ = os.RemoveAll(filepath.Dir(kept))
 	}
@@ -351,48 +364,26 @@ func refusedBeforeTransfer(err error) bool {
 	return false
 }
 
-// mayPrint refuses a person who may not operate the printer and a printer
-// that would not start a print now.
-func (s *Service) mayPrint(ctx context.Context, principal string, printer Printer) error {
-	if s.access != nil {
-		allowed, err := s.access.MayPrint(ctx, principal, printer.ID)
-
-		switch {
-		case errors.Is(err, ErrCannotAsk):
-			// The print itself is the check.
-		case err != nil:
-			return err
-		case !allowed:
-			return ErrDenied
-		}
+// mayOperate refuses a person who may not operate the printer before the
+// printer is asked.
+func (s *Service) mayOperate(ctx context.Context, principal, printer string) error {
+	if s.access == nil {
+		return nil
 	}
 
-	if !printableStates[printer.State] {
-		return fmt.Errorf("%w: it is %s", ErrNotReady, strings.ToLower(printer.State))
+	allowed, err := s.access.MayPrint(ctx, principal, printer)
+
+	switch {
+	case errors.Is(err, ErrCannotAsk):
+		// The send itself is the check.
+		return nil
+	case err != nil:
+		return err
+	case !allowed:
+		return ErrDenied
 	}
 
 	return nil
-}
-
-// keep writes the file into the storage of this server, replacing a file of
-// the same name, as PrusaSlicer asks.
-func (s *Service) keep(ctx context.Context, upload Upload) error {
-	file, err := os.Open(filepath.Join(s.data, filepath.FromSlash(upload.File)))
-	if err != nil {
-		return fmt.Errorf("open the upload: %w", err)
-	}
-	defer file.Close()
-
-	info, err := file.Stat()
-	if err != nil {
-		return fmt.Errorf("read the upload: %w", err)
-	}
-
-	if info.Size() == 0 {
-		return errEmpty
-	}
-
-	return s.files.Write(ctx, upload.Principal, s.storage, upload.Name, info.Size(), file)
 }
 
 // checkName holds a name to what a printer prints and what its USB drive

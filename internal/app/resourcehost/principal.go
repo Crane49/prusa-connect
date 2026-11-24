@@ -321,6 +321,15 @@ func (v vouchedFleet) Print(ctx context.Context, params deviceapi.PrintParams) (
 	return v.inner.Print(ctx, params)
 }
 
+func (v vouchedFleet) Send(ctx context.Context, params deviceapi.SendParams) (deviceapi.Sent, error) {
+	ctx, err := v.vouch(ctx, params.Principal)
+	if err != nil {
+		return deviceapi.Sent{}, err
+	}
+
+	return v.inner.Send(ctx, params)
+}
+
 func (v vouchedFleet) JobHistory(
 	ctx context.Context, params deviceapi.JobHistoryParams,
 ) (deviceapi.JobPage, error) {

@@ -1087,7 +1087,20 @@
     {telemetry}
     commands={port}
     material={MaterialsPositions ? materialCell : undefined}
+    {moduleCards}
   />
+{/snippet}
+
+<!-- A module's cards, under the Connection card where the panel draws them. -->
+{#snippet moduleCards()}
+  {#if device}
+    <SlotOutlet
+      screen="printer-detail"
+      name="device-info-section"
+      deviceId={device.id}
+      device={slotDevice}
+    />
+  {/if}
 {/snippet}
 
 <!-- The Tools table assigns a material through the picker of the header chip. -->

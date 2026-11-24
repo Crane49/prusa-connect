@@ -239,6 +239,14 @@ func (f *fleetFake) Print(_ context.Context, p deviceapi.PrintParams) (deviceapi
 	return deviceapi.Started{TransferID: p.ID + ":t1"}, nil
 }
 
+func (f *fleetFake) Send(_ context.Context, p deviceapi.SendParams) (deviceapi.Sent, error) {
+	if err := f.note(deviceapi.MethodSend, p.Principal); err != nil {
+		return deviceapi.Sent{}, err
+	}
+
+	return deviceapi.Sent{TransferID: p.ID + ":t1"}, nil
+}
+
 func (f *fleetFake) Stat(
 	_ context.Context, p storageapi.StatParams,
 ) (storageapi.FileInfo, error) {

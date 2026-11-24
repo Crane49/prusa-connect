@@ -22,8 +22,7 @@
 #          X-Api-Key, with no key, a key this server never minted, and the
 #          address of a printer it does not have
 #        - a file over 1 MiB with Print-After-Upload reaches the printer
-#        - a file without it lands in the local storage, and the printer gets
-#          nothing
+#        - a file without it reaches the printer, and nothing starts
 #        - the form PrusaSlicer 2.5 and older send starts a print
 #        - a key that may only read, a file a printer does not print and a
 #          printer that prints are refused
@@ -384,7 +383,7 @@ drive() {
 	step "[$MODE] the demo account mints an operate key and a read key" "$DRIVER" keys "$@"
 	step "[$MODE] the connection test and the storage list, with and without a key" "$DRIVER" link "$@"
 	step "[$MODE] Upload and Print sends a file over 1 MiB to the printer" "$DRIVER" print "$@"
-	step "[$MODE] Upload keeps the file in the local storage and prints nothing" "$DRIVER" keep "$@"
+	step "[$MODE] Upload puts the file on the printer and prints nothing" "$DRIVER" keep "$@"
 	step "[$MODE] the form of PrusaSlicer 2.5 and older starts a print" "$DRIVER" form "$@"
 	step "[$MODE] a read key, a file no printer prints and a busy printer are refused" "$DRIVER" refused "$@"
 

@@ -16,6 +16,7 @@ func contributesOf(declared manifest.Contributes) httpapi.ResourceContributes {
 		Settings:           sectionsOf(declared.Sections[manifest.SlotSettings]),
 		DeviceCard:         sectionsOf(declared.Sections[manifest.SlotDeviceCard]),
 		DeviceSection:      sectionsOf(declared.Sections[manifest.SlotDeviceSection]),
+		DeviceInfoSection:  sectionsOf(declared.Sections[manifest.SlotDeviceInfoSection]),
 		DeviceTab:          sectionsOf(declared.Sections[manifest.SlotDeviceTab]),
 		Cards:              cardsOf(declared.Cards),
 		DeviceAction:       actionsOf(declared.Actions[manifest.SlotDeviceAction]),

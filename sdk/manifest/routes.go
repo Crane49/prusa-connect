@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"unicode/utf8"
 )
 
 // MaxStagedMiB is the largest body a staged route may ask the host to write
 // to disk, in MiB.
 const MaxStagedMiB = 4096
+
+// MaxStagedTitle is the longest title a staged route may give, in characters.
+const MaxStagedTitle = 80
 
 // MaxRoutes is how many entries one list under routes may hold.
 const MaxRoutes = 32
@@ -51,6 +55,11 @@ type StagedRoute struct {
 	// MaxMiB is the largest body the host accepts on the route, in MiB, from
 	// 1 to MaxStagedMiB.
 	MaxMiB int
+
+	// Title says in words what the route takes, such as "Upload from
+	// PrusaSlicer 2.6 and later". The operator reads it beside the route's
+	// limit. Empty shows the route alone.
+	Title string
 }
 
 // String is the route as one line, such as "POST /hooks/announce/". An
@@ -222,7 +231,7 @@ var routeKeys = []string{"method", "path"}
 // stagedKeys is every key a staged route may carry.
 //
 //nolint:gochecknoglobals // a closed table read at parse, never written.
-var stagedKeys = []string{"method", "path", "max_mib"}
+var stagedKeys = []string{"method", "path", "max_mib", "title"}
 
 // readRoutes reads the routes block. An absent block is a module whose every
 // route takes an authorized caller and a body the wire carries.
@@ -333,7 +342,12 @@ func readStaged(block map[string]any) ([]StagedRoute, error) {
 			}
 		}
 
-		out = append(out, StagedRoute{Route: route, MaxMiB: limit})
+		title, readErr := stagedTitle(entry, where)
+		if readErr != nil {
+			return nil, readErr
+		}
+
+		out = append(out, StagedRoute{Route: route, MaxMiB: limit, Title: title})
 	}
 
 	return out, nil
@@ -372,4 +386,24 @@ func readRoute(where string, entry map[string]any, known []string) (Route, error
 	route := Route{Method: method, Path: path}
 
 	return route, route.check(where)
+}
+
+// stagedTitle reads the optional title of a staged route. The operator reads
+// it, so it is plain text, as a header's reason is.
+func stagedTitle(entry map[string]any, where string) (string, error) {
+	title, err := text(entry, where, "title")
+	if err != nil || title == "" {
+		return "", err
+	}
+
+	if err = plainText(where, "title", title); err != nil {
+		return "", err
+	}
+
+	if n := utf8.RuneCountInString(title); n > MaxStagedTitle {
+		return "", fmt.Errorf("%w: %s.title is %d characters, and the limit is %d",
+			ErrInvalid, where, n, MaxStagedTitle)
+	}
+
+	return title, nil
 }

@@ -65,7 +65,7 @@ func asksOf(declared manifest.Manifest) install.ModuleAsks {
 		ListPeople:        declared.ListPeople,
 		Calls:             slices.Clone(declared.Calls),
 		PublicRoutes:      routeLines(declared.Routes.Public),
-		StagedRoutes:      install.StagedRoutesOf(declared.Routes.Staged),
+		StagedRoutes:      install.StagedAsksOf(declared.Routes.Staged),
 		RequestHeaders:    install.RequestHeadersOf(declared.Routes.Headers),
 		RecordsMiB:        declared.RecordsMiB,
 		MemoryMiB:         declared.Needs.MemoryMiB,
@@ -636,6 +636,8 @@ func keptStaged(asked, before, held []install.StagedRoute, added []string) ([]in
 	var kept []install.StagedRoute
 
 	for _, route := range asked {
+		// A grant is a limit: the title stays with the ask.
+		route.Title = ""
 		previous, wasAsked := stagedNamed(before, route)
 		granted, isHeld := stagedNamed(held, route)
 

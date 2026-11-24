@@ -14,6 +14,10 @@ import { defineConfig } from 'vitest/config';
 // component renders in a test the way it renders on the host page.
 export default defineConfig({
   plugins: [tailwindcss(), svelte()],
+  // The library's shell imports icons a test finds only once it runs, and an
+  // icon optimized then reloads the page under the test. The icons are
+  // Svelte files the plugin compiles as they are, so none is optimized.
+  optimizeDeps: { exclude: ['@lucide/svelte'] },
   test: {
     name: 'browser',
     include: ['src/**/*.svelte.test.ts'],

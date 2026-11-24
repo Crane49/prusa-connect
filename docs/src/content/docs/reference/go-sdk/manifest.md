@@ -295,6 +295,14 @@ const MaxStagedMiB = 4096
 
 MaxStagedMiB is the largest body a staged route may ask the host to write to disk, in MiB.
 
+### `MaxStagedTitle` {#manifest-maxstagedtitle}
+
+```go
+const MaxStagedTitle = 80
+```
+
+MaxStagedTitle is the longest title a staged route may give, in characters.
+
 ### `MaxUIExports` {#manifest-maxuiexports}
 
 ```go
@@ -455,6 +463,14 @@ const AreaStatusFoot Area = "status-foot"
 ```
 
 AreaStatusFoot is the foot of a printer's Status tab.
+
+#### `AreaInfoConnection` {#manifest-areainfoconnection}
+
+```go
+const AreaInfoConnection Area = "info-connection"
+```
+
+AreaInfoConnection is a printer's Printer tab under its Connection card and above Issues.
 
 #### `AreaCardLine` {#manifest-areacardline}
 
@@ -1718,6 +1734,14 @@ const SlotDeviceSection SlotName = "device-section"
 
 SlotDeviceSection is a section at the foot of a printer's Status tab.
 
+#### `SlotDeviceInfoSection` {#manifest-slotdeviceinfosection}
+
+```go
+const SlotDeviceInfoSection SlotName = "device-info-section"
+```
+
+SlotDeviceInfoSection is a card on a printer's Printer tab, under its Connection card, where what a person sets up once to reach the printer sits.
+
 #### `SlotDeviceTab` {#manifest-slotdevicetab}
 
 ```go
@@ -1919,6 +1943,11 @@ type StagedRoute struct {
     // MaxMiB is the largest body the host accepts on the route, in MiB, from
     // 1 to MaxStagedMiB.
     MaxMiB int
+
+    // Title says in words what the route takes, such as "Upload from
+    // PrusaSlicer 2.6 and later". The operator reads it beside the route's
+    // limit. Empty shows the route alone.
+    Title string
 }
 ```
 

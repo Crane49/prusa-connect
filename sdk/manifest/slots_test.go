@@ -57,6 +57,7 @@ func TestTheKeyAndTheRegisterNameFollowFromTheName(t *testing.T) {
 		manifest.SlotSettings:           {"settings", "settings", "Settings"},
 		manifest.SlotDeviceCard:         {"device_card", "deviceCard", "DeviceCard"},
 		manifest.SlotDeviceSection:      {"device_section", "deviceSection", "DeviceSection"},
+		manifest.SlotDeviceInfoSection:  {"device_info_section", "deviceInfoSection", "DeviceInfoSection"},
 		manifest.SlotCameraSection:      {"camera_section", "cameraSection", "CameraSection"},
 		manifest.SlotCameraView:         {"camera_view", "cameraView", "CameraView"},
 		manifest.SlotDeviceHeader:       {"device_header", "deviceHeader", "DeviceHeader"},

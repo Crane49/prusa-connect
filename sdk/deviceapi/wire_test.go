@@ -30,6 +30,8 @@ type fakeFleet struct {
 	sawList      deviceapi.ListParams
 	sawFiles     deviceapi.FilesParams
 	sawPrint     deviceapi.PrintParams
+	sent         deviceapi.Sent
+	sawSend      deviceapi.SendParams
 	sawID        string
 	sawVerb      string
 	sawArgs      map[string]string
@@ -89,6 +91,12 @@ func (f *fakeFleet) Print(_ context.Context, params deviceapi.PrintParams) (devi
 	f.sawPrint, f.sawID, f.sawPrincipal = params, params.ID, params.Principal
 
 	return f.started, f.err
+}
+
+func (f *fakeFleet) Send(_ context.Context, params deviceapi.SendParams) (deviceapi.Sent, error) {
+	f.sawSend, f.sawID, f.sawPrincipal = params, params.ID, params.Principal
+
+	return f.sent, f.err
 }
 
 // call runs one handler the way a session would, and returns what crossed.

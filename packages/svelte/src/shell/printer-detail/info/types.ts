@@ -62,6 +62,11 @@ export interface PrinterInfoPanelProps {
    */
   access?: Snippet | undefined;
   /**
+   * The cards modules draw for this printer, under the Connection card and
+   * above Issues, where what a person sets up to reach the printer sits.
+   */
+  moduleCards?: Snippet | undefined;
+  /**
    * What the Tools table reads and sends: its material chips need the
    * telemetry, its temperature editors need the commands too.
    */

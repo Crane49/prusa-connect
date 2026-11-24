@@ -61,6 +61,7 @@ type moduleDevices interface {
 	httpapi.DeviceFleet
 	FilesNow(ctx context.Context, principal, id, path string) (httpapi.DeviceListing, error)
 	FilesHeld(ctx context.Context, principal, id, path string) (httpapi.DeviceListing, error)
+	StartSend(ctx context.Context, principal, id string, request httpapi.DevicePrint) (httpapi.DevicePrintResult, error)
 }
 
 // moduleFleets binds an instance to the fleet it may read.

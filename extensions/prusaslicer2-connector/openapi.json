@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "prusaslicer2-connector",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "The PrusaLink routes the prusaslicer2-connector module serves to PrusaSlicer 2, one set for each printer of this server. Every path is relative to the mount the host assigns."
   },
   "security": [
@@ -120,8 +120,8 @@
     "/printers/{printer}/api/v1/files/{storage}/{name}": {
       "put": {
         "operationId": "linkPutFile",
-        "summary": "Upload a file, and print it",
-        "description": "The body is the file. With Print-After-Upload: ?1 the printer starts it. A printer that holds a file of that name already gets it under a numbered name. Without the header the file goes into the storage the module's storage setting names, replacing a file of that name, and nothing is printed. The host writes the body to disk first, up to the limit the operator approved.",
+        "summary": "Upload a file, and print it or not",
+        "description": "The body is the file. With Print-After-Upload: ?1 the printer starts it. A printer that holds a file of that name already gets it under a numbered name. Without the header the file lands on the printer and nothing starts. The host writes the body to disk first, up to the limit the operator approved.",
         "parameters": [
           {
             "name": "printer",
@@ -186,7 +186,7 @@
         },
         "responses": {
           "201": {
-            "description": "The printer started the file, or the storage keeps it."
+            "description": "The printer started the file, or the file is on its way to the printer."
           },
           "400": {
             "description": "The file name is not one a printer accepts, or the file is empty.",
@@ -249,7 +249,7 @@
             }
           },
           "503": {
-            "description": "The module is starting, or no storage keeps a file without a print.",
+            "description": "The module is starting.",
             "content": {
               "application/json": {
                 "schema": {
@@ -264,7 +264,7 @@
     "/printers/{printer}/api/files/{storage}": {
       "post": {
         "operationId": "linkPostFile",
-        "summary": "Upload a file in a form, and print it",
+        "summary": "Upload a file in a form, and print it or not",
         "description": "The form PrusaSlicer 2.5 and older send: the file in the part named file, its folder in path and print=true to start it. The rest is as for PUT. A folder is refused.",
         "parameters": [
           {
@@ -323,7 +323,7 @@
         },
         "responses": {
           "201": {
-            "description": "The printer started the file, or the storage keeps it."
+            "description": "The printer started the file, or the file is on its way to the printer."
           },
           "400": {
             "description": "The body is not a form with a file, the form names a folder, or the file name is not one a printer accepts.",
@@ -386,7 +386,185 @@
             }
           },
           "503": {
-            "description": "The module is starting, or no storage keeps a file without a print.",
+            "description": "The module is starting.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/printers/{printer}/keep": {
+      "get": {
+        "operationId": "linkKeep",
+        "summary": "Where one printer's uploads are saved",
+        "description": "The storage and folder of this server each upload to the printer is saved in before it goes to the printer. An empty storage saves none. Whoever sees the printer may read it.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Where the printer's uploads are saved, and whether the person asking may change it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkKeepState"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer, or the person may not see it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "setLinkKeep",
+        "summary": "Set where one printer's uploads are saved",
+        "description": "Only a person who may operate the printer sets it. The file is written later as the person who uploads it, so the storage's own access holds then. An empty storage turns saving off.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkKeep"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Where the printer's uploads are saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkKeep"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The storage or the folder is not one this server takes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The person may not operate the printer, or the operator did not grant the module its operate check, so nobody may change it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer, or the person may not see it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/printers/{printer}/seen": {
+      "get": {
+        "operationId": "linkSeen",
+        "summary": "When PrusaSlicer last reached one printer",
+        "description": "PrusaSlicer holds no connection open. It asks on Test and before each upload, so this is the last time it asked, to the minute. Whoever sees the printer may read it.",
+        "parameters": [
+          {
+            "name": "printer",
+            "in": "path",
+            "required": true,
+            "description": "The id of the printer on this server.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "When PrusaSlicer last reached the printer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkSeen"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No credential, or one this server does not know.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such printer, or the person may not see it.",
             "content": {
               "application/json": {
                 "schema": {
@@ -522,6 +700,73 @@
             "type": "boolean"
           }
         }
+      },
+      "LinkKeep": {
+        "type": "object",
+        "required": [
+          "storage"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "storage": {
+            "type": "string",
+            "maxLength": 64,
+            "description": "The storage of this server, such as local. Empty saves nothing."
+          },
+          "folder": {
+            "type": "string",
+            "maxLength": 1024,
+            "description": "The folder inside the storage, relative to its root. Empty is the root."
+          }
+        }
+      },
+      "LinkSeen": {
+        "type": "object",
+        "required": [
+          "seen_at"
+        ],
+        "properties": {
+          "seen_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "When PrusaSlicer last reached the printer, or null when it has not yet."
+          }
+        }
+      },
+      "LinkKeepState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LinkKeep"
+          },
+          {
+            "type": "object",
+            "required": [
+              "on",
+              "may_change"
+            ],
+            "properties": {
+              "on": {
+                "type": "boolean",
+                "description": "Whether uploads to the printer are saved to storage."
+              },
+              "may_change": {
+                "type": "boolean",
+                "description": "Whether the person asking may change it. Without it, storage and folder are empty."
+              },
+              "refused": {
+                "type": "string",
+                "enum": [
+                  "operate",
+                  "check"
+                ],
+                "description": "Why the person may not change it: operate is a person who may not operate the printer, and check is a module the operator did not grant its operate check, so nobody may."
+              }
+            }
+          }
+        ]
       }
     }
   }

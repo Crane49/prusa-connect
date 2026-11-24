@@ -10,3 +10,7 @@ export type KeyState =
   | { kind: 'creating' }
   | { kind: 'created'; token: string }
   | { kind: 'failed'; fault: FaultText };
+
+/** Whether PrusaSlicer has reached this printer here. */
+export type SeenState =
+  { kind: 'unknown' } | { kind: 'never' } | { kind: 'at'; ago: string };

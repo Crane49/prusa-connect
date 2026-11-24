@@ -59,6 +59,7 @@ cards:
 | slot | area | what the bundle registers | what it is handed | where |
 | --- | --- | --- | --- | --- |
 | `device-section` | `status-foot` | a component | the device id, as `deviceId` | A section at the foot of a printer's Status tab, after the core's own. |
+| `device-info-section` | `info-connection` | a component | the device id, as `deviceId` | A card with its title on a printer's Printer tab, under its Connection card and above Issues. |
 | `device-tab` | `tabs` | a component | the device id, as `deviceId` | A tab of the module's own on a printer's page, after the core's tabs. |
 | `device-action` | `header-actions` | a `run` function | the device id, as `deviceId` | An item in the action menu at the top of a printer's page. The module runs it with the printer's id. |
 | `camera-section` | `camera-foot` | a component | the camera's name, as `camera` | A section under each camera in a printer's Cameras tab. A module draws nothing for a camera it does not know. |
@@ -73,6 +74,14 @@ cards:
 device_section:
   - id: my-device-section
     title: My device section
+```
+
+`device-info-section`
+
+```yaml
+device_info_section:
+  - id: my-device-info-section
+    title: My device info section
 ```
 
 `device-tab`

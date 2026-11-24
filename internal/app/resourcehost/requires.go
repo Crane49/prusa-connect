@@ -67,7 +67,7 @@ func Capabilities() []string {
 		busapi.MethodEmit, busapi.MethodSubscribe,
 		deviceapi.MethodList, deviceapi.MethodGet, deviceapi.MethodCommand,
 		deviceapi.MethodApprove, deviceapi.MethodJobs, deviceapi.MethodFiles,
-		deviceapi.MethodPrint, deviceapi.MethodJobHistory,
+		deviceapi.MethodPrint, deviceapi.MethodSend, deviceapi.MethodJobHistory,
 		storageapi.MethodStat, storageapi.MethodRead, storageapi.MethodList,
 		storageapi.MethodFetch, storageapi.MethodWrite, storageapi.MethodMove,
 		cameraapi.MethodAccept,

@@ -72,6 +72,12 @@ func (r *recordingFleet) Print(_ context.Context, p deviceapi.PrintParams) (devi
 	return deviceapi.Started{}, nil
 }
 
+func (r *recordingFleet) Send(_ context.Context, p deviceapi.SendParams) (deviceapi.Sent, error) {
+	r.saw = append(r.saw, p.Principal)
+
+	return deviceapi.Sent{}, nil
+}
+
 // sinkRef is one module instance's ref.
 func sinkRef(t *testing.T, name string) ref.Ref {
 	t.Helper()

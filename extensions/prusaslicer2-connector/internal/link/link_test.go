@@ -28,17 +28,19 @@ const (
 	formPath = "/printers/" + printer + "/api/files/local"
 )
 
-// fakeFleet holds one printer and records each print.
+// fakeFleet holds one printer and records each print and each file that
+// only landed.
 type fakeFleet struct {
 	mu      sync.Mutex
 	printer link.Printer
 	missing bool
 	printed []printed
+	landed  []printed
 	failed  error
 }
 
 type printed struct {
-	principal, id, source, target string
+	principal, id, storage, source, target string
 }
 
 func (f *fakeFleet) Printer(_ context.Context, _, id string) (link.Printer, error) {
@@ -49,7 +51,7 @@ func (f *fakeFleet) Printer(_ context.Context, _, id string) (link.Printer, erro
 	return f.printer, nil
 }
 
-func (f *fakeFleet) Print(_ context.Context, principal, id, source, target string) error {
+func (f *fakeFleet) Print(_ context.Context, principal, id, storage, source, target string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -57,7 +59,23 @@ func (f *fakeFleet) Print(_ context.Context, principal, id, source, target strin
 		return f.failed
 	}
 
-	f.printed = append(f.printed, printed{principal: principal, id: id, source: source, target: target})
+	f.printed = append(
+		f.printed,
+		printed{principal: principal, id: id, storage: storage, source: source, target: target},
+	)
+
+	return nil
+}
+
+func (f *fakeFleet) Send(_ context.Context, principal, id, storage, source, target string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	if f.failed != nil {
+		return f.failed
+	}
+
+	f.landed = append(f.landed, printed{principal: principal, id: id, storage: storage, source: source, target: target})
 
 	return nil
 }
@@ -69,6 +87,8 @@ type fakeAccess struct {
 
 func (a fakeAccess) MayPrint(context.Context, string, string) (bool, error) { return a.allowed, a.err }
 
+// fakeFiles records each file written into a storage, by principal and
+// storage path.
 type fakeFiles struct {
 	mu      sync.Mutex
 	written map[string]string
@@ -76,6 +96,9 @@ type fakeFiles struct {
 }
 
 func (f *fakeFiles) Write(_ context.Context, principal, storage, file string, size int64, body io.Reader) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	if f.err != nil {
 		return f.err
 	}
@@ -89,9 +112,6 @@ func (f *fakeFiles) Write(_ context.Context, principal, storage, file string, si
 		return errors.New("short body")
 	}
 
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
 	if f.written == nil {
 		f.written = map[string]string{}
 	}
@@ -99,6 +119,19 @@ func (f *fakeFiles) Write(_ context.Context, principal, storage, file string, si
 	f.written[principal+" "+storage+"/"+file] = string(data)
 
 	return nil
+}
+
+func (f *fakeFiles) Exists(_ context.Context, _, storage, file string) (bool, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
+	for key := range f.written {
+		if strings.HasSuffix(key, " "+storage+"/"+file) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 type rig struct {
@@ -123,7 +156,7 @@ func newRig(t *testing.T) *rig {
 
 	service := link.New(link.Options{
 		Fleet: r.fleet, Access: fakeAccess{allowed: true}, Files: r.files,
-		Data: r.data, Storage: "local", Version: "0.1.0",
+		Data: r.data, Version: "0.1.0",
 	})
 
 	r.handler = routes.New(routes.Host{
@@ -253,12 +286,13 @@ func TestAPutWithPrintAfterUploadStartsThePrint(t *testing.T) {
 		t.Fatalf("the print folder holds %q, %v", kept, err)
 	}
 
-	if len(r.files.written) != 0 {
-		t.Fatalf("a print also kept the file: %v", r.files.written)
+	if len(r.fleet.landed) != 0 {
+		t.Fatalf("a print also landed the file without starting it: %v", r.fleet.landed)
 	}
 }
 
-func TestAPutWithoutPrintAfterUploadKeepsTheFileAndPrintsNothing(t *testing.T) {
+// Upload lands the file on the printer's USB drive and starts nothing.
+func TestAPutWithoutPrintAfterUploadLandsTheFileAndPrintsNothing(t *testing.T) {
 	r := newRig(t)
 	r.stage([]byte("G28\n"))
 
@@ -267,12 +301,50 @@ func TestAPutWithoutPrintAfterUploadKeepsTheFileAndPrintsNothing(t *testing.T) {
 		t.Fatalf("status %d, body %s", rec.Code, rec.Body)
 	}
 
-	if len(r.fleet.printed) != 0 {
-		t.Fatalf("printed %v", r.fleet.printed)
+	if len(r.fleet.printed) != 0 || len(r.fleet.landed) != 1 {
+		t.Fatalf("printed %v, landed %v", r.fleet.printed, r.fleet.landed)
 	}
 
-	if r.files.written[alice+" local/benchy.gcode"] != "G28\n" {
-		t.Fatalf("written %v", r.files.written)
+	got := r.fleet.landed[0]
+	if got.principal != alice || got.id != printer || got.target != "/usb/benchy.gcode" {
+		t.Fatalf("landed %+v", got)
+	}
+
+	kept, err := os.ReadFile(filepath.Join(r.data, "print", filepath.FromSlash(got.source)))
+	if err != nil || string(kept) != "G28\n" {
+		t.Fatalf("the print folder holds %q, %v", kept, err)
+	}
+}
+
+// Upload goes to a busy printer too, as with PrusaLink: only a print needs
+// the printer ready.
+func TestAnUploadGoesToABusyPrinter(t *testing.T) {
+	r := newRig(t)
+	r.fleet.printer.State = "PRINTING"
+	r.stage([]byte("G28\n"))
+
+	rec := r.do(http.MethodPut, "/printers/"+printer+"/api/v1/files/local/a.gcode", nil, nil)
+	if rec.Code != http.StatusCreated || len(r.fleet.landed) != 1 {
+		t.Fatalf("status %d, landed %v, body %s", rec.Code, r.fleet.landed, rec.Body)
+	}
+}
+
+// An Upload for a person who may not operate the printer is refused before
+// the printer is asked.
+func TestAnUploadOfAPersonWhoMayNotOperateIsRefused(t *testing.T) {
+	r := newRig(t)
+	service := link.New(link.Options{
+		Fleet: r.fleet, Access: fakeAccess{allowed: false}, Data: r.data,
+	})
+	r.handler = routes.New(routes.Host{
+		Principal: func(*http.Request) string { return alice },
+		BodyFile:  func(*http.Request) string { return r.staged },
+	}, func() *link.Service { return service })
+	r.stage([]byte("G28\n"))
+
+	rec := r.do(http.MethodPut, "/printers/"+printer+"/api/v1/files/local/a.gcode", nil, nil)
+	if rec.Code != http.StatusForbidden || len(r.fleet.landed) != 0 {
+		t.Fatalf("status %d, landed %v", rec.Code, r.fleet.landed)
 	}
 }
 
@@ -348,7 +420,7 @@ func TestAPrinterThatIsNotReadyRefusesWithConflict(t *testing.T) {
 func TestAPersonWhoMayNotOperateIsRefused(t *testing.T) {
 	r := newRig(t)
 	service := link.New(link.Options{
-		Fleet: r.fleet, Access: fakeAccess{allowed: false}, Files: r.files, Data: r.data, Storage: "local",
+		Fleet: r.fleet, Access: fakeAccess{allowed: false}, Data: r.data,
 	})
 	r.handler = routes.New(routes.Host{
 		Principal: func(*http.Request) string { return alice },
@@ -368,7 +440,7 @@ func TestAPersonWhoMayNotOperateIsRefused(t *testing.T) {
 func TestAPrintGoesAheadWhenTheModuleMayNotAsk(t *testing.T) {
 	r := newRig(t)
 	service := link.New(link.Options{
-		Fleet: r.fleet, Access: fakeAccess{err: link.ErrCannotAsk}, Files: r.files, Data: r.data, Storage: "local",
+		Fleet: r.fleet, Access: fakeAccess{err: link.ErrCannotAsk}, Data: r.data,
 	})
 	r.handler = routes.New(routes.Host{
 		Principal: func(*http.Request) string { return alice },
@@ -452,39 +524,6 @@ func TestAStorageOtherThanLocalIsNotFound(t *testing.T) {
 	}
 }
 
-func TestAKeepWithNoStorageTellsThePersonToPrint(t *testing.T) {
-	r := newRig(t)
-	r.files.err = link.ErrNoShelf
-	r.stage([]byte("G28\n"))
-
-	rec := r.do(http.MethodPut, "/printers/"+printer+"/api/v1/files/local/a.gcode", nil, nil)
-	if rec.Code != http.StatusServiceUnavailable {
-		t.Fatalf("status %d", rec.Code)
-	}
-
-	if msg, _ := decode(t, rec)["message"].(string); !strings.Contains(msg, "Upload and Print") {
-		t.Fatalf("message %q", msg)
-	}
-}
-
-// A keep the person may not write into the storage says so, not that the key
-// may not operate the printer.
-func TestAKeepThePersonMayNotWriteSaysWhichStorage(t *testing.T) {
-	r := newRig(t)
-	r.files.err = link.ErrCannotKeep
-	r.stage([]byte("G28\n"))
-
-	rec := r.do(http.MethodPut, "/printers/"+printer+"/api/v1/files/local/a.gcode", nil, nil)
-	if rec.Code != http.StatusForbidden {
-		t.Fatalf("status %d", rec.Code)
-	}
-
-	msg, _ := decode(t, rec)["message"].(string)
-	if !strings.Contains(msg, "storage") || strings.Contains(msg, "operate") {
-		t.Fatalf("message %q", msg)
-	}
-}
-
 // formBody is the form PrusaSlicer 2.5 sends.
 func formBody(t *testing.T, startPrint, folder, name, content string) ([]byte, string) {
 	t.Helper()
@@ -530,7 +569,7 @@ func TestAFormWithPrintTrueStartsThePrint(t *testing.T) {
 	}
 }
 
-func TestAFormWithPrintFalseKeepsTheFile(t *testing.T) {
+func TestAFormWithPrintFalseLandsTheFile(t *testing.T) {
 	r := newRig(t)
 	body, contentType := formBody(t, "false", "", "benchy.gcode", "G28\n")
 	r.stage(body)
@@ -540,8 +579,8 @@ func TestAFormWithPrintFalseKeepsTheFile(t *testing.T) {
 		t.Fatalf("status %d, printed %v", rec.Code, r.fleet.printed)
 	}
 
-	if r.files.written[alice+" local/benchy.gcode"] != "G28\n" {
-		t.Fatalf("written %v", r.files.written)
+	if len(r.fleet.landed) != 1 || r.fleet.landed[0].target != "/usb/benchy.gcode" {
+		t.Fatalf("landed %v", r.fleet.landed)
 	}
 }
 
@@ -567,7 +606,7 @@ func TestABodyThatIsNoFormIsRefused(t *testing.T) {
 }
 
 func TestNoPersonIsUnauthorized(t *testing.T) {
-	service := link.New(link.Options{Fleet: &fakeFleet{}, Files: &fakeFiles{}, Data: t.TempDir(), Storage: "local"})
+	service := link.New(link.Options{Fleet: &fakeFleet{}, Data: t.TempDir()})
 	handler := routes.New(routes.Host{
 		Principal: func(*http.Request) string { return "" },
 		BodyFile:  func(*http.Request) string { return "" },

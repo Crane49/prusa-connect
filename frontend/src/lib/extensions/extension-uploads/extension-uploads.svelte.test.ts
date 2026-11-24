@@ -37,6 +37,37 @@ describe('ExtensionUploads', () => {
     expect(onsave).toHaveBeenCalledWith([{ ...upload, max_mib: 3000 }]);
   });
 
+  // A route the module titled reads by its title, with the route under it,
+  // and saving writes the limit alone.
+  it('names a titled route by its title and saves only the limit', async () => {
+    const onsave = vi.fn().mockResolvedValue(true);
+    await render(ExtensionUploads, {
+      props: {
+        routes: [upload],
+        asked: [{ ...upload, title: 'Upload from PrusaSlicer 2.6 and later' }],
+        saving: false,
+        onsave,
+      },
+    });
+
+    const titled = page.getByRole('spinbutton', {
+      name: 'Upload from PrusaSlicer 2.6 and later',
+    });
+    await expect.element(titled).toHaveValue(1024);
+    await expect
+      .element(
+        page.getByText(
+          'PUT /connect/app/teams/{team}/files/raw · The extension asks for 1,024 MiB.',
+        ),
+      )
+      .toBeVisible();
+
+    await titled.fill('2048');
+    await save().click();
+
+    expect(onsave).toHaveBeenCalledWith([{ ...upload, max_mib: 2048 }]);
+  });
+
   it('refuses a limit outside 1 to 4096 MiB', async () => {
     const onsave = vi.fn().mockResolvedValue(true);
     await render(ExtensionUploads, {

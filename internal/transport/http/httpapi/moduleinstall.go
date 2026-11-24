@@ -239,9 +239,10 @@ func (ModulePort) Schema(huma.Registry) *huma.Schema {
 // ModuleStagedRoute is one route whose request body the server writes into a
 // module's data directory, with the largest body it takes there.
 type ModuleStagedRoute struct {
-	Method string `json:"method"  doc:"The HTTP method of the route."                                                                           example:"PUT"`
-	Path   string `json:"path"    doc:"The path of the route under the module's mount, where a segment written {name} matches any one segment." example:"/files/{name}"`
-	MaxMiB int    `json:"max_mib" doc:"The largest request body on the route, in MiB. A larger body is refused with BODY_TOO_LARGE."            example:"1024"          minimum:"1" maximum:"4096"`
+	Method string `json:"method"          doc:"The HTTP method of the route."                                                                                                      example:"PUT"`
+	Path   string `json:"path"            doc:"The path of the route under the module's mount, where a segment written {name} matches any one segment."                            example:"/files/{name}"`
+	MaxMiB int    `json:"max_mib"         doc:"The largest request body on the route, in MiB. A larger body is refused with BODY_TOO_LARGE."                                       example:"1024"          minimum:"1" maximum:"4096"`
+	Title  string `json:"title,omitempty" doc:"What the module says the route takes, in words, such as Upload from PrusaSlicer 2.6 and later. Only what a module asks carries it."                                                    maxLength:"80"`
 }
 
 // ModuleRequestHeader is one request header a module asks the server to pass

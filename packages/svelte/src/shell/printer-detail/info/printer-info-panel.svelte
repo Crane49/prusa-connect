@@ -41,6 +41,7 @@
     onRemoved,
     onPickCommand,
     access,
+    moduleCards,
     telemetry,
     commands,
     material,
@@ -324,6 +325,8 @@
         </CardContent>
       </Card>
     </div>
+
+    {@render moduleCards?.()}
 
     <Card>
       <CardHeader>

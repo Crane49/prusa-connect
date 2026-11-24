@@ -18,6 +18,9 @@ type StagedRoute struct {
 	Method string `json:"method"  yaml:"method"`
 	Path   string `json:"path"    yaml:"path"`
 	MaxMiB int    `json:"max_mib" yaml:"max_mib"`
+	// Title is what the manifest says the route takes. Only an ask carries
+	// it: a grant is a limit, and the operator's configuration holds no title.
+	Title string `json:"title,omitempty" yaml:"title,omitempty"`
 }
 
 // Route is the route as sdk/manifest matches it.
@@ -35,6 +38,16 @@ func StagedRoutesOf(declared []manifest.StagedRoute) []StagedRoute {
 	var out []StagedRoute
 	for _, route := range declared {
 		out = append(out, StagedRoute{Method: route.Method, Path: route.Path, MaxMiB: route.MaxMiB})
+	}
+
+	return out
+}
+
+// StagedAsksOf is each staged route of the manifest as an ask, with its title.
+func StagedAsksOf(declared []manifest.StagedRoute) []StagedRoute {
+	out := StagedRoutesOf(declared)
+	for index, route := range declared {
+		out[index].Title = route.Title
 	}
 
 	return out

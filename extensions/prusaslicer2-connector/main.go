@@ -5,9 +5,9 @@
 // PrusaLink, the address of one printer under this module's mount and an API
 // credential of this server as the API key. The slicer then sends the PrusaLink
 // requests to the module. The module answers them and does the work through
-// the host: the host reads the printer, prints the file or keeps it in a
-// storage. The routes are in internal/routes and the answers in
-// internal/link.
+// the host: the host reads the printer and lands the file on it, started or
+// not, and saves it in a storage first when the printer's Save to storage is
+// on. The routes are in internal/routes and the answers in internal/link.
 package main
 
 import (
@@ -37,7 +37,7 @@ import (
 // the newest entry of CHANGELOG.md and the version module.yaml declares.
 const (
 	name    = "prusaslicer2-connector"
-	release = extension.Version("0.1.0")
+	release = extension.Version("0.1.1")
 )
 
 // openAPI is the fragment describing the routes, with every path relative to
@@ -46,15 +46,13 @@ const (
 //go:embed openapi.json
 var openAPI []byte
 
-// defaultStorage is the storage an upload without a print goes into when the
-// operator set none. The server ships a storage of this name.
-const defaultStorage = "local"
-
 // Settings is what an operator writes under this instance's config block.
+// The module reads none.
 type Settings struct {
-	// Storage is the storage of this server an upload without a print goes
-	// into.
-	Storage string `json:"storage"`
+	// Storage was where 0.1.0 kept an Upload. It is read and ignored, so a
+	// config block written for 0.1.0 still starts the module: the host
+	// refuses a key the settings do not name.
+	Storage string `json:"storage,omitempty"`
 }
 
 func main() {
@@ -148,7 +146,7 @@ func (m *module) methods() wirerpc.Methods {
 }
 
 // configure builds the service from the settings and the data folder.
-func (m *module) configure(ctx context.Context, settings Settings, grants wirerpc.Grants) error {
+func (m *module) configure(ctx context.Context, _ Settings, grants wirerpc.Grants) error {
 	if grants.Data == "" {
 		return fmt.Errorf("%s needs a data folder for the files it prints", name)
 	}
@@ -157,14 +155,9 @@ func (m *module) configure(ctx context.Context, settings Settings, grants wirerp
 		return fmt.Errorf("make the print folder: %w", err)
 	}
 
-	storage := settings.Storage
-	if storage == "" {
-		storage = defaultStorage
-	}
-
 	service := link.New(link.Options{
 		Fleet: m.fleet, Access: m.access, Files: m.files,
-		Data: grants.Data, Storage: storage, Version: string(release), Now: time.Now,
+		Data: grants.Data, Version: string(release), Now: time.Now,
 	})
 	service.Sweep()
 

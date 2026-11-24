@@ -46,6 +46,23 @@ func TestARoutesBlockReadsPublicAndStagedRoutes(t *testing.T) {
 	}
 }
 
+// A staged route may say in words what it is for, which the operator reads
+// beside its limit instead of the path alone.
+func TestAStagedRouteReadsItsTitle(t *testing.T) {
+	t.Parallel()
+
+	held, err := manifest.Parse("module.yaml", []byte(withRoutes(`{
+		"staged": [{"method": "PUT", "path": "/files/{name}", "max_mib": 1024, "title": "Upload from PrusaSlicer 2.6 and later"}]
+	}`)), decode)
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+
+	if got := held.Routes.Staged[0].Title; got != "Upload from PrusaSlicer 2.6 and later" {
+		t.Errorf("title = %q", got)
+	}
+}
+
 func TestAManifestWithoutRoutesServesNoRouteDifferently(t *testing.T) {
 	t.Parallel()
 
@@ -95,6 +112,11 @@ func TestARoutesBlockIsRefused(t *testing.T) {
 			withRoutes(`{"staged": [{"method": "PUT", "path": "/files/{name}", "max_mib": 10}, {"method": "PUT", "path": "/files/big", "max_mib": 4096}]}`),
 			"one request can reach both"},
 		{"a staged route with no bound", withRoutes(`{"staged": [{"method": "PUT", "path": "/a"}]}`), "expected 1 to 4096"},
+		{"a staged title with a control character",
+			withRoutes(`{"staged": [{"method": "PUT", "path": "/a", "max_mib": 1, "title": "Up\u001b[2Kload"}]}`), "title"},
+		{"a staged title too long",
+			withRoutes(`{"staged": [{"method": "PUT", "path": "/a", "max_mib": 1, "title": "` + strings.Repeat("x", 81) + `"}]}`),
+			"the limit is 80"},
 		{"a staged bound too large", withRoutes(`{"staged": [{"method": "PUT", "path": "/a", "max_mib": 5000}]}`),
 			"expected 1 to 4096"},
 		{

@@ -29,6 +29,7 @@ export const SLOT_NAMES = [
   'settings',
   'device-card',
   'device-section',
+  'device-info-section',
   'device-tab',
   'dashboard-card',
   'device-action',
@@ -56,6 +57,7 @@ export type SectionSlot =
   | 'settings'
   | 'device-card'
   | 'device-section'
+  | 'device-info-section'
   | 'device-tab'
   | 'print-section'
   | 'file-view'
@@ -74,6 +76,7 @@ export const SLOT_KEYS = {
   settings: 'settings',
   'device-card': 'device_card',
   'device-section': 'device_section',
+  'device-info-section': 'device_info_section',
   'device-tab': 'device_tab',
   'print-section': 'print_section',
   'file-view': 'file_view',
@@ -94,6 +97,7 @@ export const SLOT_SCREENS = {
   settings: 'settings',
   'device-card': 'printers',
   'device-section': 'printer-detail',
+  'device-info-section': 'printer-detail',
   'device-tab': 'printer-detail',
   'dashboard-card': 'dashboard',
   'device-action': 'printer-detail',
@@ -115,6 +119,7 @@ export const SLOT_FORMS = {
   settings: 'section',
   'device-card': 'section',
   'device-section': 'section',
+  'device-info-section': 'section',
   'device-tab': 'section',
   'dashboard-card': 'card',
   'device-action': 'action',
@@ -141,6 +146,7 @@ export interface SectionProps {
   settings: Record<string, never>;
   'device-card': { deviceId: string };
   'device-section': { deviceId: string };
+  'device-info-section': { deviceId: string };
   'device-tab': { deviceId: string };
   'print-section': { fileRef: string };
   'file-view': { fileRef: string };
@@ -162,6 +168,7 @@ export type SectionOutletTarget =
   | { screen: 'settings'; name: 'settings' }
   | { screen: 'printers'; name: 'device-card'; deviceId: string }
   | { screen: 'printer-detail'; name: 'device-section'; deviceId: string }
+  | { screen: 'printer-detail'; name: 'device-info-section'; deviceId: string }
   | { screen: 'printer-detail'; name: 'device-tab'; deviceId: string }
   | { screen: 'print-dialog'; name: 'print-section'; fileRef: string }
   | { screen: 'storage'; name: 'file-view'; fileRef: string }
@@ -208,6 +215,11 @@ export interface ModuleRegister {
   deviceSection(
     id: string,
     component: Component<SectionProps['device-section']>,
+  ): void;
+  /** A card with its title on a printer's Printer tab, under its Connection card and above Issues. */
+  deviceInfoSection(
+    id: string,
+    component: Component<SectionProps['device-info-section']>,
   ): void;
   /** A tab of the module's own on a printer's page, after the core's tabs. */
   deviceTab(id: string, component: Component<SectionProps['device-tab']>): void;
@@ -267,6 +279,9 @@ export const buildRegister = (handlers: RegisterHandlers): ModuleRegister => ({
   },
   deviceSection: (id, component) => {
     handlers.section('device-section', id, component);
+  },
+  deviceInfoSection: (id, component) => {
+    handlers.section('device-info-section', id, component);
   },
   deviceTab: (id, component) => {
     handlers.section('device-tab', id, component);

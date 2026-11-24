@@ -26,6 +26,7 @@ func routingManifest() string {
 		"    - method: PUT",
 		"      path: /files/{name}",
 		"      max_mib: 512",
+		"      title: Upload a file",
 		"permissions:",
 		"",
 	}, "\n"), 1)
@@ -64,9 +65,11 @@ func TestAnApprovedInstallGrantsItsPublicRoutes(t *testing.T) {
 	token := manifest.Route{Method: "POST", Path: "/hooks/announce/"}
 	require.Equal(t, []manifest.Route{token}, declared.Spec.Service.PublicRoutes)
 	require.Equal(t, []string{"POST /hooks/announce/"}, declared.Spec.Module.Asked.PublicRoutes)
+	// The grant is the limit alone. The ask keeps the title the operator
+	// reads beside it.
 	require.Equal(t, []install.StagedRoute{{Method: "PUT", Path: "/files/{name}", MaxMiB: 512}},
 		declared.Spec.Service.StagedRoutes)
-	require.Equal(t, []install.StagedRoute{{Method: "PUT", Path: "/files/{name}", MaxMiB: 512}},
+	require.Equal(t, []install.StagedRoute{{Method: "PUT", Path: "/files/{name}", MaxMiB: 512, Title: "Upload a file"}},
 		declared.Spec.Module.Asked.StagedRoutes)
 	require.Contains(t, said, "public      POST /hooks/announce/, answered without a signed-in caller")
 	require.Contains(t, said, "upload      PUT /files/{name}, up to 512 MiB (routes.staged)")

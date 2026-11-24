@@ -387,6 +387,7 @@
   "app.settings.extensions.visibility.kind.deviceAction": "Akce tiskárny",
   "app.settings.extensions.visibility.kind.deviceCard": "Karta tiskárny",
   "app.settings.extensions.visibility.kind.deviceSection": "Sekce stavu",
+  "app.settings.extensions.visibility.kind.deviceInfoSection": "Karta pod Připojením",
   "app.settings.extensions.visibility.kind.deviceTab": "Záložka tiskárny",
   "app.settings.extensions.visibility.kind.fileAction": "Akce souboru",
   "app.settings.extensions.visibility.kind.page": "Stránka",

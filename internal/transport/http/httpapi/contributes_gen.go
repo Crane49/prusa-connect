@@ -13,6 +13,8 @@ type ResourceContributes struct {
 	DeviceCard []ResourceSection `json:"device_card,omitempty" doc:"One line on each printer's card in the listing, under its status. Text past one line is cut."`
 	// DeviceSection is the device-section slot.
 	DeviceSection []ResourceSection `json:"device_section,omitempty" doc:"A section at the foot of a printer's Status tab, after the core's own."`
+	// DeviceInfoSection is the device-info-section slot.
+	DeviceInfoSection []ResourceSection `json:"device_info_section,omitempty" doc:"A card with its title on a printer's Printer tab, under its Connection card and above Issues."`
 	// DeviceTab is the device-tab slot.
 	DeviceTab []ResourceSection `json:"device_tab,omitempty" doc:"A tab of the module's own on a printer's page, after the core's tabs."`
 	// Cards is the dashboard-card slot.

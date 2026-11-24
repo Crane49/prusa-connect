@@ -3,7 +3,9 @@ package link
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+	"os"
 )
 
 // Reply is one refusal as PrusaLink writes it: a JSON object with a title and
@@ -49,9 +51,10 @@ func Unavailable() Reply {
 	}
 }
 
-// refusal is the reply to what the host or the file system reported. A
-// failure that is no refusal is 503, so the person may try again.
-func refusal(err error) Reply {
+// refusal is the reply to PrusaSlicer for what the host or the file system
+// reported about printer. A failure that is no refusal is 503, so the person
+// may try again, and its cause is logged with the printer.
+func refusal(printer string, err error) Reply {
 	switch {
 	case errors.Is(err, ErrNoPrinter):
 		return Reply{
@@ -61,23 +64,11 @@ func refusal(err error) Reply {
 		}
 	case errors.Is(err, ErrNoStorage):
 		return Reply{status: http.StatusNotFound, title: "Not Found", message: "The printer has no such storage."}
-	case errors.Is(err, ErrNoShelf):
-		return Reply{
-			status: http.StatusServiceUnavailable, title: "Service Unavailable",
-			message: "This server keeps no file without a print. " +
-				"Use Upload and Print, or ask the administrator to set the storage of the PrusaSlicer 2 Connector extension.",
-		}
 	case errors.Is(err, ErrDenied):
 		return Reply{
 			status: http.StatusForbidden, title: "Forbidden",
 			message: "The API key may not do this on the printer. " +
 				"It needs the operate scope, and its person must be allowed to operate the printer.",
-		}
-	case errors.Is(err, ErrCannotKeep):
-		return Reply{
-			status: http.StatusForbidden, title: "Forbidden",
-			message: "The API key's person may not write files into the storage of this server that Upload keeps " +
-				"them in. Use Upload and Print, or ask the administrator for write access to that storage.",
 		}
 	case errors.Is(err, ErrNotReady):
 		return Reply{
@@ -92,6 +83,30 @@ func refusal(err error) Reply {
 		}
 	case errors.Is(err, ErrPrintRefused):
 		return Reply{status: http.StatusConflict, title: "Conflict", message: "The printer refused to start the print."}
+	case errors.Is(err, ErrNoShelf):
+		return Reply{
+			status: http.StatusServiceUnavailable, title: "Service Unavailable",
+			message: "The storage this printer saves uploads into is gone. " +
+				"Pick another one, or turn off Save to storage, on the printer's Printer tab.",
+		}
+	case errors.Is(err, ErrNoFreeName):
+		return Reply{
+			status: http.StatusConflict, title: "Conflict",
+			message: "The storage folder this printer saves uploads into already holds files of this name. " +
+				"Rename the file in the upload dialog.",
+		}
+	case errors.Is(err, ErrCannotCheckKeep):
+		return Reply{
+			status: http.StatusForbidden, title: "Forbidden",
+			message: "This server does not let the PrusaSlicer 2 Connector check who may operate a printer, " +
+				"so nobody may change Save to storage. Ask the administrator to grant the extension its operate check.",
+		}
+	case errors.Is(err, ErrCannotKeep):
+		return Reply{
+			status: http.StatusForbidden, title: "Forbidden",
+			message: "The API key's person may not write into the storage this printer saves uploads into. " +
+				"Ask for write access to it, or turn off Save to storage on the printer's Printer tab.",
+		}
 	case errors.Is(err, errEmpty):
 		return badRequest("The file is empty.")
 	case errors.Is(err, errNotAForm):
@@ -99,9 +114,37 @@ func refusal(err error) Reply {
 	case errors.Is(err, errNoFilePart):
 		return badRequest("The form holds no file.")
 	default:
+		// The slicer is told to try again and nothing more, so the cause is
+		// written where the operator reads it. The host logs what the module
+		// writes to stderr.
+		fmt.Fprintf(os.Stderr, "a PrusaSlicer request for printer %s failed: %v\n", printer, err)
+
 		return Reply{
 			status: http.StatusServiceUnavailable, title: "Service Unavailable",
 			message: "The server could not finish the upload. Try again.",
+		}
+	}
+}
+
+// pageRefusal is the reply to the printer's card for its own routes, keep
+// and seen. It speaks to a person on the page and not to PrusaSlicer.
+func pageRefusal(printer string, err error) Reply {
+	switch {
+	case errors.Is(err, ErrNoPrinter):
+		return Reply{status: http.StatusNotFound, title: "Not Found", message: "This server has no such printer."}
+	case errors.Is(err, ErrDenied):
+		return Reply{
+			status: http.StatusForbidden, title: "Forbidden",
+			message: "Only a person who may operate this printer changes this.",
+		}
+	case errors.Is(err, ErrCannotCheckKeep):
+		return refusal(printer, err)
+	default:
+		fmt.Fprintf(os.Stderr, "the card of printer %s could not read or save its setting: %v\n", printer, err)
+
+		return Reply{
+			status: http.StatusServiceUnavailable, title: "Service Unavailable",
+			message: "The setting could not be read or saved. Try again.",
 		}
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/prusa3d/prusa-connect/internal/authz"
 	"github.com/prusa3d/prusa-connect/internal/transport/http/httpapi"
 	"github.com/prusa3d/prusa-connect/sdk/connectorapi"
+	"github.com/prusa3d/prusa-connect/sdk/deviceapi"
 	"github.com/prusa3d/prusa-connect/sdk/fault"
 )
 
@@ -81,15 +82,16 @@ func (d *devices) Print(
 	ctx context.Context, principal string, id string, request httpapi.DevicePrint,
 ) (httpapi.DevicePrintResult, error) {
 	return outliveCaller(ctx, d, id, request.Path, func(relaying context.Context) (httpapi.DevicePrintResult, error) {
-		return d.printing(relaying, principal, id, request, nil)
+		return d.printing(relaying, principal, id, request, nil, true)
 	})
 }
 
 // printing is Print, telling opened the transfer as soon as its record is
-// written. opened is nil for a caller that waits for the whole print.
+// written. opened is nil for a caller that waits for the whole print. Without
+// start it only lands the file, and sends no start command.
 func (d *devices) printing(
 	ctx context.Context, principal string, id string, request httpapi.DevicePrint,
-	opened func(httpapi.DeviceTransfer),
+	opened func(httpapi.DeviceTransfer), start bool,
 ) (httpapi.DevicePrintResult, error) {
 	if err := httpapi.ValidatePrint(request); err != nil {
 		return httpapi.DevicePrintResult{}, err
@@ -110,6 +112,10 @@ func (d *devices) printing(
 			// keep_both may have sent it under a free name.
 			out.Path = transfer.Path
 		}
+	}
+
+	if !start {
+		return out, nil
 	}
 
 	result, err := d.Command(ctx, principal, id, httpapi.PrinterCommand{
@@ -144,12 +150,41 @@ func (d *devices) printing(
 func (d *devices) StartPrint(
 	ctx context.Context, principal string, id string, request httpapi.DevicePrint,
 ) (httpapi.DevicePrintResult, error) {
+	return d.startDetached(ctx, principal, id, request, true)
+}
+
+// StartSend is StartPrint without the start command: it lands a file from a
+// storage on the printer and answers once the transfer has opened. A printer
+// that already holds the file answers with no transfer.
+func (d *devices) StartSend(
+	ctx context.Context, principal string, id string, request httpapi.DevicePrint,
+) (httpapi.DevicePrintResult, error) {
+	if request.Storage == "" {
+		return httpapi.DevicePrintResult{}, fmt.Errorf("%w: a send names the storage the file comes from",
+			deviceapi.ErrInvalidQuery)
+	}
+
+	return d.startDetached(ctx, principal, id, request, false)
+}
+
+// startDetached is StartPrint and StartSend.
+func (d *devices) startDetached(
+	ctx context.Context, principal string, id string, request httpapi.DevicePrint, start bool,
+) (httpapi.DevicePrintResult, error) {
 	if err := httpapi.ValidatePrint(request); err != nil {
 		return httpapi.DevicePrintResult{}, err
 	}
 
+	// A file the printer already holds moves nothing, so the only thing to do
+	// is to start it. A send never starts a file, so it is refused here too,
+	// and not only by the caller.
 	if request.Storage == "" {
-		return d.printing(ctx, principal, id, request, nil)
+		if !start {
+			return httpapi.DevicePrintResult{}, fmt.Errorf("%w: a send names the storage the file comes from",
+				deviceapi.ErrInvalidQuery)
+		}
+
+		return d.printing(ctx, principal, id, request, nil, true)
 	}
 
 	if _, err := d.reachLive(ctx, principal, id, authz.ActionOperate); err != nil {
@@ -216,7 +251,7 @@ func (d *devices) StartPrint(
 		result, err := d.printing(relaying, principal, id, request, func(opened httpapi.DeviceTransfer) {
 			transfer = opened.TransferID
 			started <- opened
-		})
+		}, start)
 		if err == nil && transfer == "" {
 			printed <- result
 		}
@@ -226,7 +261,7 @@ func (d *devices) StartPrint(
 		if err != nil {
 			failed <- err
 
-			d.log.WarnContext(relaying, "a print started for a module did not finish",
+			d.log.WarnContext(relaying, "a transfer started for a module did not finish",
 				"device_id", id, "storage", request.Storage, "path", request.Path, "error", err.Error())
 		}
 	}()

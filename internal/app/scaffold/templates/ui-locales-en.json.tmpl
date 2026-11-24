@@ -18,6 +18,10 @@
 
   "{{$.Name}}.deviceSection.absent": "This printer is not in the fleet this page read.",
   "{{$.Name}}.deviceSection.body": "{{.Title}} is drawing at the foot of this device's Status tab."
+{{- else if eq .Slot "device-info-section"}},
+
+  "{{$.Name}}.deviceInfoSection.absent": "This printer is not in the fleet this page read.",
+  "{{$.Name}}.deviceInfoSection.body": "{{.Title}} is drawing under the Connection card of this device's Printer tab."
 {{- else if eq .Slot "device-tab"}},
 
   "{{$.Name}}.deviceTab.absent": "This printer is not in the fleet this page read.",

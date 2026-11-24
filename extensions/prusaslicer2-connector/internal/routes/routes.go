@@ -8,6 +8,9 @@
 //	GET  /printers/{printer}/api/v1/storage                    the storage list
 //	PUT  /printers/{printer}/api/v1/files/{storage}/{name}     the file, staged by the host
 //	POST /printers/{printer}/api/files/{storage}               the file in a form, staged by the host
+//	GET  /printers/{printer}/keep                              where the printer's uploads are saved
+//	PUT  /printers/{printer}/keep                              the same, set from the printer's page
+//	GET  /printers/{printer}/seen                              when PrusaSlicer last reached the printer
 package routes
 
 import (
@@ -22,6 +25,8 @@ const (
 	PathStorage = "/printers/{printer}/api/v1/storage"
 	PathPut     = "/printers/{printer}/api/v1/files/{storage}/{name}"
 	PathPost    = "/printers/{printer}/api/files/{storage}"
+	PathKeep    = "/printers/{printer}/keep"
+	PathSeen    = "/printers/{printer}/seen"
 )
 
 // Host is what the routes read from the host for one request.
@@ -77,6 +82,17 @@ func New(host Host, service func() *link.Service) http.Handler {
 			Principal: who, Printer: r.PathValue("printer"), Storage: r.PathValue("storage"),
 			File: host.BodyFile(r),
 		})
+	}))
+
+	mux.HandleFunc("GET "+PathKeep, with(func(s *link.Service, w http.ResponseWriter, r *http.Request, who string) {
+		s.GetKeep(w, r, who, r.PathValue("printer"))
+	}))
+	mux.HandleFunc("PUT "+PathKeep, with(func(s *link.Service, w http.ResponseWriter, r *http.Request, who string) {
+		s.PutKeep(w, r, who, r.PathValue("printer"))
+	}))
+
+	mux.HandleFunc("GET "+PathSeen, with(func(s *link.Service, w http.ResponseWriter, r *http.Request, who string) {
+		s.GetSeen(w, r, who, r.PathValue("printer"))
 	}))
 
 	return mux

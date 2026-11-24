@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
 
   import { t } from '../../i18n';
+  import { Card, CardContent, CardHeader, CardTitle } from '../../primitives';
   import { getSlotContext } from '../context';
   import { matchesDevice } from '../device-selector';
   import { matchesFileRef } from '../file-types';
@@ -19,11 +20,15 @@
 
   // The layout of each section slot is a closed record: a new section slot is
   // a type error here until someone decides how it draws.
-  type Layout = 'pane' | 'section' | 'line' | 'tab' | 'bare' | 'inline';
+  type Layout =
+    'pane' | 'section' | 'card' | 'line' | 'tab' | 'bare' | 'inline';
   const LAYOUT = {
     settings: 'pane',
     'device-card': 'line',
     'device-section': 'section',
+    // A card with its title, as each of the core's own on the Printer tab
+    // (ADR-20261124-e2e).
+    'device-info-section': 'card',
     'device-tab': 'tab',
     'print-section': 'section',
     'file-view': 'section',
@@ -94,6 +99,22 @@
         <h3 class="text-sm font-semibold">{row.title}</h3>
         <Row {...subject} />
       </section>
+    {:else if LAYOUT[props.name] === 'card'}
+      <div
+        class={props.class}
+        data-slot={props.name}
+        data-module={row.namespace}
+        data-section={row.id}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle><h2 class="contents">{row.title}</h2></CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Row {...subject} />
+          </CardContent>
+        </Card>
+      </div>
     {:else if LAYOUT[props.name] === 'bare'}
       <!-- Drawn under every camera, and most modules feed only some of them,
            so there is no heading: the module draws its own, and a section
