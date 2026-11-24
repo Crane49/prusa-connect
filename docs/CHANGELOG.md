@@ -13,6 +13,150 @@ How an entry is written and what earns one: `.agents/rules/changelog-discipline.
 News that no release has shipped yet waits in [`docs/changes/`](changes/README.md), one
 file per change, and the release files it here under its own version.
 
+## 0.1.0-beta.2 - 2026-11-24
+
+### Security
+- `GET /api/v1/storages/{storage}/content` no longer serves a stored file as a web page that runs script with the session of whoever opens the link. A file this server serves itself now takes its type from its name and is sent as a sandboxed attachment the browser never sniffs.
+- The server is built with `github.com/gorilla/websocket` at commit d67f418, which fixes GO-2026-6278: a WebSocket client drew its frame mask keys from a weak random source.
+
+### Removed
+- The web app has one appearance, and the Skin choice is gone from Settings. Earlier a person chose Prusa, Slicer or Prusa PRO under Settings, Appearance, and the browser kept the choice. The app now ignores a stored choice and deletes it. Theme and text size stay.
+- `GET /api/v1/ui` no longer returns `skin`. Earlier it named the brand style the server was configured with. A client that read the field now finds it absent and should stop reading it, because the web app has one appearance. The generated TypeScript client's app settings type loses `skin` with it.
+- The `core.frontend.skin` configuration key is retired, and a server whose configuration still sets it starts and ignores it. The server logs a warning with the file and the line to delete, because the web app has one appearance and no key chooses it.
+- [sdk] `@prusa/connect-ui` no longer exports `applySkin`, `skin`, `DEFAULT_SKIN`, `SKIN_NAMES`, `SKIN_STORAGE_KEY`, `SkinStore` or the types `Skin`, `SkinStorage` and `SkinStoreOptions`. The `skin` toolbar of the library's Storybook is gone as well, and the `data-skin` attribute selects nothing. A module page that used one of them deletes that code, because the theme has one appearance.
+- [sdk] `AppSettings` and `UI_DEFAULTS` from `@prusa/connect-ui/data` no longer carry `skin`. A module page that read it deletes the read, because the server no longer reports a skin.
+- [sdk] `ViewModeToggle` no longer takes a `size` prop. A module page that passed one deletes it, because the toggle has one size.
+
+### Changed
+- The app pairing page at `/pair` asks only to approve or deny the app, and approves exactly the scopes the app asked for. It says in plain words what the app will be able to do, and a link that carries the code shows no code field.
+- A question on the printer's own screen is shown on a module's tab of the printer's page too, such as the Queue tab, with its answers. It used to be shown only on the Now tab, so a person who started a file from the queue did not see that the printer was asking something.
+- [sdk] A page that imports `@prusa/connect-ui/tokens.css` gets the Ember palette in light and dark with no attribute on the root element. It also gets the denser spacing, corners of 2, 3 and 5px, thin scrollbars and the small and large text sizes. The page body and anything that reads `--font-sans` is set in Inter, while the `font-sans` class names Atlas Grotesk, which the page loads itself. A module's test theme or Storybook that never set `data-skin` changes its look.
+- [sdk] `FileThumbnailProps` from `@prusa/connect-ui/primitives` is a type alias of a union, no longer an interface, so an interface that extends it fails to compile. A module declares its own props as an intersection with `FileThumbnailProps` instead.
+- [sdk] `PageTrail` renames the prop `monoPage` to `sansPage`, which sets the page's own crumb in the sans face rather than the monospaced one. A module page that passed `monoPage` passes `sansPage` or drops the prop.
+- [sdk] `PrinterDetailScreen` no longer draws a Commands tab and ignores `panels.commands`, and a link to the `commands` tab opens Controls. A page that handed a Commands panel moves its content into the panel it hands as `panels.controls`.
+- Add printer in the Printers nearby list uses the orange primary button with a plus icon
+- The dashboard reminds operators to collect finished prints and
+  distinguishes missing completion estimates from an empty queue.
+- The print dialog shows the number of selected printers and offers search
+  and a selected-only view for larger fleets.
+- The print dialog checks printer availability again before replacing a file and
+  discards the replacement request when the open file changes.
+- File details use the stored file name to detect printable files and distinguish
+  a refused or failed read from a missing file.
+- A printer's Controls tab shows position by its corresponding axes and groups homing, Release axes, bed leveling, printer state and Maintenance into one panel
+- A printer's Controls tab has a collapsible Advanced panel for exact commands and the G-code console. Links to the former Advanced tab open Controls.
+- The Advanced panel groups printer commands into panels with named buttons and icons. Print shows the active job name and reported progress beside the playback controls. Compatible printers can use Coordinates alongside exact commands, and the G-code editor can be resized vertically.
+- Set speed and Set flow rate in the Advanced panel can be adjusted using a slider or a numeric field before confirmation
+- The Jobs list uses the same preview size as Printers. A print that ended as the printer returned to Idle appears under its recorded outcome.
+- The Controls tab lets you drag the nozzle in X/Y and set Z on printers that report a build volume and support the movement commands. The panel shows the position reported by the printer and sends the move when you release the control.
+- The light theme uses the PrusaSlicer palette for the page background,
+  navigation, header, and neutral card outlines.
+- The filament overview at the top of a printer detail numbers feeder slots from one, for example Slot 5.
+- On the Printers cards and camera views, Sort by picks the field and two adjacent arrows pick the direction.
+- Home, Release axes and the move controls work only while the printer is idle, ready, finished or stopped. Earlier only a running print held them.
+- On a printer's Now tab, the camera and the Upload a file drop target take a third of a wide window, so both grow with it.
+- A printer that asks for a person with no print on record shows its camera across the whole Now tab card, with no empty column beside it.
+- The first-run wizard stands on the app's page colour, and its list of steps on the colour of the app's navigation, under the app's logo.
+- Settings, Server and Settings, Diagnostics use the full width of the page instead of a narrow column. The server overview shows its cards side by side, and text in a settings pane still wraps at a readable width.
+- A printer's Controls tab draws its picked toggles, its sliders and the nozzle marker in orange, the colour of actions, rather than blue. Print on a file row of a printer's Files tab is orange as well.
+- [sdk] `SliderField` fills its range in orange, because it sets a value on the machine. A module page that wants the blue range uses `Slider` itself.
+- The header, the phone bar, the sign-in page and the first-run wizard show the PRUSA wordmark instead of the word Connect.
+- [sdk] `ConnectLogo` draws the PRUSA wordmark when no `shape` is given. A module page that wants the word Connect passes `shape="full"`.
+- A chamber target above 55 C on a CORE One, or above 60 C on a CORE One L, is now refused. The firmware cuts a higher target down without saying so.
+- The Extensions listing in Settings shows each extension's trust mark as an icon in a column of its own. The icon's tooltip says what the mark means, and the source badges now share one width.
+- `core.api.allowed_origins` refuses an entry no browser sends, such as a wildcard host, a port with a leading zero or a host outside ASCII. Such an entry never matched a request, and the server now refuses to start and names it.
+- The web app and API listener presents a renewed `core.api.tls` certificate within about a second of the files changing, without a restart, as the printer listener already did.
+- The line `the API listener serves TLS` names the certificate's DNS names, IP addresses and issuer, as the device listener's line does, so the log shows which certificate a reload picked up.
+
+### Added
+- The server image carries the simple-queue extension under `/opt/modules/simple-queue`, which keeps a queue of print files for each printer and starts the next one when the bed is clear.
+- A collected app pairing at `POST /api/v1/auth/app-pairings/token` also answers `access_token`, the same credential in the shape of a JWT. The server accepts it in `Authorization: Bearer` and checks it against the credential as it checks `token`.
+- `POST /api/v1/auth/app-pairings/session` trades an app pairing credential sent as `Authorization: Bearer` for a page session of at most an hour in an HttpOnly, SameSite=Strict session cookie. The answer carries the same cookie in its body for an app that sets it in its web view, and revoking the app's credential ends it.
+- [sdk] A module can draw a control under a printer page's header with the slot `device-header`, and on every printer of the listing, in every view, with `device-row`. The host draws neither a frame nor a heading for them, and nothing at all until the bundle registers a component.
+- [sdk] A module page reads `slicer` from the new subpath `@prusa/connect-ui/slicer` to hear the calls PrusaSlicer 3 makes and to send it messages.
+- The web app works inside PrusaSlicer 3, with the page session the slicer opens and the slicer's language and theme. A link meant for a new window opens in the system browser.
+- A module page opened with `?embed=1` shows without the sidebar and the header, and still asks the person to sign in.
+- The demo serves HTTPS when it is given `-tls-cert` and `-tls-key`, and its printers trust that certificate.
+- [sdk] `module.yaml` takes a `routes` block with a `public` and a `staged` list, and `routesapi.BodyFileOf` reads the file a staged request body was written to. Each entry names a method and a path under the module's mount, where `{name}` matches one segment, and no route is both public and staged.
+- A module's manifest may name routes under `routes.public`, and an install lists each one as `public <method> <path>` among its requests. Once the operator approves it, the route is written to `service.public_routes` and answers without a signed-in caller.
+- An install shows each route under `routes.staged` in a module's manifest as `upload <method> <path> up to <n> MiB`, for the operator to approve. An approved route is written to `service.staged_routes` with its limit, and its request body goes into the module's data directory and not to the module.
+- An operator changes the largest body of an approved staged route in the extension's Uploads tab, or with `staged_routes` on `PUT /api/v1/resources/{kind}/{name}`, from 1 to 4096 MiB. The extension restarts with the new limit, and a body over it is refused with `BODY_TOO_LARGE` before the module runs.
+- [sdk] `wirerpc.Grants` carries `Staged`, each staged route the operator approved with its limit, and `Grants.StagedMiB` reads the limit of one route.
+- A module receives at most 4 large uploads at once, and one more is refused with `MODULE_UPLOADS_BUSY` and `Retry-After`. An upload the disk has no room for is refused with `MODULE_STORAGE_FULL` before any of it is read.
+- [sdk] `manifest.Route.Overlaps` reports whether one request could be on two routes, and a manifest whose public route reaches one of its staged routes is refused. A manifest with two staged routes one request can reach is refused too.
+- [sdk] A module can add an item to the menu of each file on a printer's Files tab with the `device_file_action` contribution. It gets the reference `<device id>:<path>` and may name the file types it offers the item for.
+- [sdk] A module can offer a choice for a file dropped on a printer's page with the `device_upload_action` contribution. The file is copied to the printer, and the module's action gets the reference `<device id>:<path>` as soon as the copy is on its way. An entry may name the file types it is offered for.
+- A file sent or printed onto a name the printer already holds can be kept beside it with `keep_both`. The server sends it under the first free name, such as `part[1].bgcode`, deletes nothing, and the answer names the path the file landed at.
+- [sdk] A module asks for the same with `KeepBoth` on `deviceapi.PrintParams`, and reads the name the file is printed from in `Path` on `deviceapi.Started`.
+- The question about a name the printer already holds offers Keep both. The file is sent under a free name, such as `part[1].bgcode`, and the printer's file stays as it is. It is offered for a copy, a print and a module's choice such as Add to queue.
+- A file dropped with a module's choice, such as Add to queue, can use the file the printer already holds under that name. Nothing is sent, and the printer's file goes to the module.
+- [sdk] The answer about one print file on a printer carries the print time the slicer estimated, in whole seconds, as `estimated_seconds`. It is in `GET /api/v1/devices/{device_id}/files` for a path that names a file, in `deviceapi.File` for a module and in `connectorapi.File` for a driver. Beside it come `printer_model`, `layer_height_mm` and `material`, as the slicer wrote them. A Prusa printer with Buddy firmware reports them.
+- The GraphQL module answers `estimated_seconds` on a file of a printer, the print time the slicer estimated. It is null for a listing of a folder, and for a printer or a file that names none.
+- [sdk] A module's printer tab may carry `cross_origin_isolated: true` in its manifest, and the server then sends that tab's page with `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`. A device's own page framed there may then use `SharedArrayBuffer`, and the web app reloads the page when a person opens or leaves the tab.
+- The web app offers an Ember appearance with light and dark themes. It is the app's only appearance and replaces the Prusa, Slicer and Prusa PRO skins.
+- The Printers table shows a file preview beside its name and a progress bar below the reported percentage.
+- The camera beside a running or finished print on the printer page opens enlarged in a dialog, on its live view when the camera streams.
+- [sdk] `StorageScreen` hands its `fileActions` snippet a third argument, a `StorageRowFold` with the row's own acts, and `SlotActions` takes `itemsOnlyClass`. A snippet that passes the fold's `items` and `shown` on to `SlotActions` gives each file row one menu. A wide pane draws that menu only when a module adds an entry.
+- [sdk] `Toggle`, `ToggleGroup`, `ToggleGroupItem` and `Slider` take `tone="primary"`, which fills the pressed item or the range in the orange of the primary button. The default tone keeps the blue, for a choice that only changes what the page shows.
+- The container image carries the Buddy3D camera extension in `/opt/modules/buddy3d-camera`, with the module path `github.com/prusa3d/buddy3d-camera`. It takes the pictures of Buddy3D cameras without Prusa's cloud, on TCP port `9443`, which you publish when you switch it on.
+- Every release publishes a container image, `ghcr.io/prusa3d/prusa-connect`, for amd64 and arm64, signed with cosign and tagged with its version. A release without a hyphen also moves the `X.Y`, `X` and `latest` tags.
+- A CORE One now reports its chamber fans and light at /chamber/fan_pwm_target, /chamber/fan_1_rpm, /chamber/fan_2_rpm and /chamber/led_intensity. Firmware 7.0.0 and later report a new target, fan target or light within seconds, and older firmware with its next full telemetry frame.
+- The chamber fan and light controls show what the printer reports. The chamber shows heating below its target, as a print waits for the bed to warm it, and cooling above it. With no target it shows off. The fans keep the air under the target only in Auto mode, and the controls say so only while a target is set.
+- The printer's page shows the chamber temperature beside the bed, and a CORE One's chamber target can be set from it. The chamber also has its own row in the Controls tab and its own lines in History.
+- The container image is on Docker Hub as well, as `prusaresearch/prusa-connect`, with the same tags and signature as on GitHub's container registry.
+- [sdk] A module can read a folder of a printer as this server last read it, with `Cached` on `deviceapi.FilesParams`. The answer comes at once and puts no command on the printer, and a folder the server holds nothing of is asked of the printer.
+- [sdk] A module can send files from the person's computer to a printer with `uploadToPrinter` on its host. The printer's page asks whether to keep a copy in a storage, with the module's own drop choice picked, such as Add to queue.
+- [sdk] A module reads the namespace it was installed under from `namespace` on its host, and its own instance as grants name it from `self`.
+- The MQTT sink now publishes the bed temperature and target on `data/temp/heatbed/current` and `data/temp/heatbed/target`, and the chamber temperature on `data/temp/chamber/current`.
+- The dashboard temperature chart now draws the chamber temperature and target of an enclosed printer, and each of its six lines has its own colour.
+- A program that cannot send `Authorization: Bearer`, such as PrusaSlicer 2, sends an API token as `X-Api-Key`. The server reads the header only for a token it minted, and a bearer header wins when a request carries both.
+- [sdk] `module.yaml` takes `routes.headers`, a list of request headers the module reads, each with a name and a reason. A module may ask only for a header on a list the core keeps, today `Print-After-Upload`.
+- An install shows each header under `routes.headers` as `header <name> (<reason>)`, for the operator to approve. An approved header is written to `service.request_headers` and reaches the module on every route. The extension's page lists it with its reason.
+- [sdk] A header under `routes.headers` may say `required: true`. The server does not start the module while that header is not granted, and an update that would leave it out is refused.
+- The container image can keep its database in PostgreSQL, with `persistence.type: postgres`, and serves `/metrics` when `core.observability.enabled` is true, as the full release binaries already do. Before, an image set up for PostgreSQL stopped at startup.
+- [sdk] The event stream carries `device.state.changed`, with the state a device reported before and after, when a device's state changes. A device that repeats its state publishes none.
+- [sdk] A module reads which commands a device accepts in its current state, and whether it is ready, from `accepts` and `ready` on `deviceapi.Device`. A device whose connector declares no accepted commands answers no `accepts`.
+- [sdk] `connectorapi.VerbSetPrinterReady` names the command that makes a device ready, for a driver that declares it and a module that sends it.
+- Settings, Server, Network lists the browser origins that may call the API and lets an administrator add one, which the server answers at once with no restart. `GET` and `PUT /api/v1/allowed-origins` read and replace that list, which is added to `core.api.allowed_origins`.
+- [sdk] A module can ask for a browser origin with `allowed_origins` in its manifest, a list of exact https origins. An operator approves it at install, and the server answers pages of that origin while the module is switched on.
+- The container image carries the EasyPrint extension under `/opt/modules/easyprint`. Name it in `core.modules_local` as `github.com/prusa3d/easyprint`, and Settings, Extensions offers it.
+- Dropping several files on a printer page can now print one of them and copy the rest. The file picked to print goes to the printer first.
+- On the Printers page, a printer with a chamber shows its chamber temperature and target on its card. The table has a Chamber column too.
+- A dashboard printer card can show the chamber temperature and target of a printer that has a chamber. Choose Chamber temperature in the card settings.
+- A send refused with `core.printer/FILE_NAME_TAKEN` carries `read_only` true when the printer will not let its file be replaced now.
+- [sdk] A module that prints a file of its own print folder can set `DeleteSource` on `deviceapi.PrintParams`, and the server deletes the file once the print has settled. A send that failed keeps the file for another try.
+- [sdk] A module can move a file of its own print folder into a storage with `storageapi.Client.Move`, the `storage.move` call, without sending the bytes back to the server.
+- A single firmware file sent to a printer that can flash now offers Flash firmware, which the printer installs once the file has landed while the page stays open. When the printer already holds a file of that name, the question offers Replace and flash, Keep both and flash, or Flash the printer's file.
+- [sdk] `device.send` lands a file from a storage on a printer and starts nothing. It takes what `device.print` takes, `storage` is required, and a module names it as `core-device.send` under `require`.
+- [sdk] A module can draw a card on a printer's Printer tab, under its Connection card, with the slot `device-info-section`. Its manifest key is `device_info_section`.
+- [sdk] A staged route in `module.yaml` may carry a `title`, which the Uploads tab shows. It stands in place of the method and path, which go under it.
+
+### Fixed
+- [sdk] `routesapi.Request.HTTP` passes the path and the query to a module handler as the host sent them, without parsing them again. A request whose decoded path holds `?`, `#`, `%` or a control character reaches no module, and the host answers 404.
+- A Replace or Keep both the server refuses before any transfer begins is said in a toast with the reason, such as a printer that is still fetching another file. It used to end with no word.
+- A file sent to a printer keeps its picture. Asked while the file was still arriving, a printer answered with none, and the server kept that answer until it restarted.
+- A printer back in Idle after a print keeps that print on one line of the Now tab, with Print again beside it. The card no longer stretches tall around the file name.
+- The Time server switch under Settings, Server, Network sits at the end of its row like the other switches, rather than squeezing its label into a narrow column.
+- The series toggles under the charts on a printer's History tab are at least 26 px tall, and 44 px on a touch screen or a narrow window.
+- The printer cards keep their order while a card's actions menu is open, so a printer changing state no longer moves another printer's card under the pointer. The cards take their new order when the menu closes.
+- The web app's first Tab stop is a Skip to content link, which moves keyboard focus past the header and the navigation to the page itself.
+- The sign-in page follows the light or dark theme, as the rest of the app does. It sits under the app's header strip on the app's page colour, with the logo where the app shows it.
+- A CORE One now reports its chamber temperature and target at /temperature/chamber and /temperature/chamber_target. An XL reports its enclosure temperature at /temperature/chamber while the enclosure is on. The printer sends both, and they were dropped on the way in.
+- The printer summary card on a dashboard no longer runs its five counts past the bottom edge of the card.
+- Adding a person with the admin role on the People page now gives them that role. Before, the server refused it with ACCESS_DENIED after it had already created the account, which was left holding no role.
+- The switch of an extension that runs no process, such as Fleet stats, now switches it off. The server refused the change with `REQUEST_INVALID`, and the switch stayed on.
+- Several files dropped on a printer page at once now all reach the printer, one after another. Before, only the first one did and the rest vanished without a message; a file waiting for its turn now reads "Waiting for the printer" and can be cancelled.
+- A file sent to a printer from its page now waits for a transfer another tab or person started to that printer, instead of failing as busy.
+- A replace the printer refuses, for example because the file is still open on its screen, now says why instead of failing without a message.
+- In the dark theme, the printer cards on the Printers page are a shade lighter than the panel around them. Each card now stands out by its fill and not only by its thin border.
+- A column added to a list in a new release now shows for a reader who changed the columns, view, sort or page size before. Columns the reader hid stay hidden.
+- A dashboard card of many printers now shows the nozzle, bed and material on each printer when its settings ask for them.
+- Turning off the chamber target of a CORE One family printer that is idle, ready, finished or stopped now takes effect. Before, it answered that it finished and kept the old target, as it still may during a print, a filament load or a selftest.
+- A file on the printer that cannot be replaced is now said so before the person picks Replace. The printer lists such a file read-only, as a Buddy printer does while the file is open on its screen, and the question about its name then offers no Replace.
+- A file sent to a printer now says it is checking the printer before its transfer starts. The server asks the printer about the name first, which can take a few seconds.
+- A file that replaces one on the printer now says it is deleting the printer's file before its transfer starts.
+- A firmware file or a model sent to a printer is no longer offered Print now. Only G-code files can be printed, and of several files only those are offered to print.
+
 ## 0.1.0-beta.1 - 2026-11-17
 
 ### Security
