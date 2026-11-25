@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  The Windows installer: one MSI that installs the server as the PrusaConnect
+  service (ADR-20261125-jqp). deploy/windows/build-msi.ps1 builds it with WiX 5,
+  for x64 or arm64, and passes the two values below.
+
+    Version  the release as Windows reads it: three numbers, such as 0.1.0.
+             Windows reads no pre-release suffix, so the script removes it.
+    Binary   the path of prusa-connect.exe to install.
+
+  The data folder, C:\ProgramData\PrusaConnect, outlives an uninstall: it holds
+  the database, the accounts and the uploads, and Windows removes only a folder
+  that is empty. Delete it by hand to remove those.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+     xmlns:fw="http://wixtoolset.org/schemas/v4/wxs/firewall">
+
+  <!--
+    The UpgradeCode never changes: Windows finds an installed copy by it. A new
+    MSI with the same version replaces the installed one too, because the
+    pre-release builds of one release share a version.
+  -->
+  <Package Name="Prusa Connect"
+           Manufacturer="Prusa Connect contributors"
+           Version="$(var.Version)"
+           UpgradeCode="{46AC53EC-662F-40D7-B223-BE1BB925501A}"
+           Scope="perMachine"
+           InstallerVersion="500"
+           Compressed="yes">
+    <SummaryInformation Description="Prusa Connect, the local server for your printers" />
+
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="A newer version of Prusa Connect is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Prusa Connect" />
+    </StandardDirectory>
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="DATAFOLDER" Name="PrusaConnect" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <Feature Id="Server" Title="Prusa Connect" Level="1">
+      <ComponentRef Id="ServerExecutable" />
+      <ComponentRef Id="InstallerMarker" />
+      <ComponentRef Id="DataFolder" />
+      <ComponentRef Id="StartMenuShortcut" />
+    </Feature>
+
+    <Component Id="ServerExecutable" Directory="INSTALLFOLDER">
+      <File Id="ServerExe" Source="$(var.Binary)" Name="prusa-connect.exe" KeyPath="yes" />
+
+      <!--
+        LocalService is the built-in account with the fewest rights that can
+        still listen on the network. The server starts extension processes, so
+        it does not run as LocalSystem.
+
+        The working folder ends in "\.": the folder path ends in a backslash,
+        and a backslash before the closing quote would escape the quote.
+      -->
+      <ServiceInstall Id="Service"
+                      Name="PrusaConnect"
+                      DisplayName="Prusa Connect"
+                      Description="The local server for your Prusa printers. Open http://localhost:8080 to use it."
+                      Type="ownProcess"
+                      Start="auto"
+                      ErrorControl="normal"
+                      Account="NT AUTHORITY\LocalService"
+                      Arguments="-workdir &quot;[DATAFOLDER].&quot;"
+                      Vital="yes">
+        <!--
+          A delayed start waits until the network is up at boot. The recovery
+          action applies to a non-zero exit code too, so the exit code 3 of a
+          restart the server asks for starts it again (ADR-20261125-jqp rule 7).
+        -->
+        <ServiceConfig DelayedAutoStart="yes"
+                       FailureActionsWhen="failedToStopOrReturnedError"
+                       OnInstall="yes"
+                       OnReinstall="yes" />
+        <ServiceConfigFailureActions OnInstall="yes" OnReinstall="yes" ResetPeriod="86400">
+          <Failure Action="restartService" Delay="5000" />
+          <Failure Action="restartService" Delay="5000" />
+          <Failure Action="restartService" Delay="30000" />
+        </ServiceConfigFailureActions>
+      </ServiceInstall>
+      <ServiceControl Id="ServiceControl"
+                      Name="PrusaConnect"
+                      Start="install"
+                      Stop="both"
+                      Remove="uninstall"
+                      Wait="yes" />
+
+      <!--
+        Printers dial the server, so it must accept connections from the
+        network. The rules name the program, not a port, so a port changed in
+        the configuration needs no new rule. They cover private and domain
+        networks only: on a network Windows calls public, such as a cafe, the
+        server stays unreachable.
+      -->
+      <fw:FirewallException Id="FirewallPrivate"
+                            Name="Prusa Connect (private networks)"
+                            Description="Lets printers and browsers on this network reach Prusa Connect."
+                            Program="[#ServerExe]"
+                            Scope="any"
+                            Profile="private" />
+      <fw:FirewallException Id="FirewallDomain"
+                            Name="Prusa Connect (domain networks)"
+                            Description="Lets printers and browsers on this network reach Prusa Connect."
+                            Program="[#ServerExe]"
+                            Scope="any"
+                            Profile="domain" />
+    </Component>
+
+    <!--
+      The file that tells the server the installer owns prusa-connect.exe, so
+      the Updates page prepares a release and does not replace the file
+      (ADR-20261125-jqp rule 9).
+    -->
+    <Component Id="InstallerMarker" Directory="INSTALLFOLDER">
+      <File Id="InstallerMarker" Source="managed-by-installer" Name="managed-by-installer" KeyPath="yes" />
+    </Component>
+
+    <!--
+      The data folder holds password hashes, so it does not inherit the rule of
+      C:\ProgramData that lets every user read. SYSTEM and Administrators get
+      full control, and LocalService, the account of the service, gets modify.
+    -->
+    <Component Id="DataFolder" Directory="DATAFOLDER" Guid="{F64C11C6-8A7E-4DF2-A90E-A5899D9B23FE}">
+      <CreateFolder>
+        <PermissionEx Sddl="D:PAI(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;0x1301bf;;;LS)" />
+      </CreateFolder>
+    </Component>
+
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuFolder" Guid="{A1295CBD-7831-43CA-B2C9-FC72E8E14E8A}">
+      <util:InternetShortcut Id="OpenPrusaConnect"
+                             Directory="ProgramMenuFolder"
+                             Name="Prusa Connect"
+                             Target="http://localhost:8080/"
+                             Type="url" />
+      <RegistryValue Root="HKLM"
+                     Key="Software\Prusa Connect"
+                     Name="StartMenuShortcut"
+                     Type="integer"
+                     Value="1"
+                     KeyPath="yes" />
+    </Component>
+  </Package>
+</Wix>

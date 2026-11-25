@@ -57,7 +57,8 @@ server runs under it, and who replaces the executable of such a server.
 
 | rule | gate |
 |---|---|
-| 2, 3, 8 | `internal/kernel/winservice/service_windows_test.go`, on the Windows CI job |
+| 2, 3, 8 | `internal/kernel/winservice/service_windows_test.go`, run by `.github/workflows/windows.yml` |
+| 4, 5, 7, 8, 9 | `.github/workflows/windows.yml`, which installs the MSI and checks the running service |
 | 5 | `internal/kernel/winservice/logfile_test.go` |
 | 9 | `internal/app/maintenanceinstaller_test.go` |
 
@@ -72,7 +73,7 @@ server runs under it, and who replaces the executable of such a server.
 
 ## open items
 
-- the installer: a WiX package that installs the service with rules 4, 7 and
-  9, the firewall rules and the data folder under `ProgramData`
+- a release does not carry the MSI yet, and neither the MSI nor the binary in
+  it is signed
 - a start failure before rule 5 opens the log, such as a typo in a flag, is
   seen only as the exit code in `sc query PrusaConnect`
