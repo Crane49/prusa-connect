@@ -1,3 +1,20 @@
 {
-   "signedContributors": []
+  "signedContributors": [
+    {
+      "name": "Crane49",
+      "id": 54152628,
+      "comment_id": 7162658720,
+      "created_at": "2026-11-25T12:38:44Z",
+      "repoId": 1471014138,
+      "pullRequestNo": 1
+    },
+    {
+      "name": "Crane49",
+      "id": 54152628,
+      "comment_id": 7162821322,
+      "created_at": "2026-11-25T12:45:50Z",
+      "repoId": 1471014138,
+      "pullRequestNo": 1
+    }
+  ]
 }
