@@ -1,6 +1,7 @@
 package app
 
 import (
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -126,7 +127,7 @@ func TestTheProcessLoggerCountsItsOwnLines(t *testing.T) {
 		require.NotNilf(t, counting.Dropped(level), "no dropped handle for %s", level)
 	}
 
-	logger, err := newLogger(config.Log{Level: "info", Format: "json"}, counting, nil)
+	logger, err := newLogger(config.Log{Level: "info", Format: "json"}, io.Discard, counting, nil)
 	require.NoError(t, err)
 
 	_, wrapped := logger.Handler().(*observability.LogHandler)

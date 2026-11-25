@@ -137,7 +137,7 @@ func Run(ctx context.Context, opts Options) error {
 
 	ring := diagnosticsRing(core)
 
-	logger, err := newLogger(core.Log, counting, ring)
+	logger, err := newLogger(core.Log, opts.logOutput(), counting, ring)
 	if err != nil {
 		return err
 	}
