@@ -92,10 +92,22 @@ func applyCapabilities(
 	}
 }
 
+// installerMarker is the file an installer puts beside the executable it
+// installed. The installer then owns every replacement of the executable, and
+// the server prepares an upgrade but never swaps the file itself
+// (ADR-20261125-jqp).
+const installerMarker = "managed-by-installer"
+
+// installerReason is what the Updates page shows when installerMarker is
+// found.
+const installerReason = "the installer owns the executable; run the installer of the new release"
+
 func externallyManaged(binary string) (bool, string) {
 	switch {
 	case buildprofile.Name == "printer":
 		return true, "the printer operating system owns the executable"
+	case pathExists(filepath.Join(filepath.Dir(binary), installerMarker)):
+		return true, installerReason
 	case pathExists("/.dockerenv"):
 		return true, "the container image owns the executable"
 	case os.Getenv("KUBERNETES_SERVICE_HOST") != "":

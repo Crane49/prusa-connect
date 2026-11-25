@@ -38,6 +38,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"syscall"
 
@@ -48,16 +49,62 @@ import (
 	"github.com/prusa3d/prusa-connect/internal/kernel/buildprofile"
 	"github.com/prusa3d/prusa-connect/internal/kernel/procgroup"
 	"github.com/prusa3d/prusa-connect/internal/kernel/sqlstore"
+	"github.com/prusa3d/prusa-connect/internal/kernel/winservice"
 	"github.com/prusa3d/prusa-connect/sdk/wirerpc"
 )
 
 // Exit codes. A usage error is separated from a failure to run so a supervisor
-// can tell a typo from an outage.
+// can tell a typo from an outage. exitRestart asks the supervisor to start the
+// process again, for a supervisor that cannot follow a process which starts
+// its own successor.
 const (
 	exitOK      = 0
 	exitFailure = 1
 	exitUsage   = 2
+	exitRestart = 3
 )
+
+// The files a Windows service writes its log to, under the folder it runs in.
+// A service has no terminal, so these are where an operator reads the log and
+// the setup code of the first run.
+const (
+	serviceLogPath    = "logs/prusa-connect.log"
+	serviceStderrPath = "logs/stderr.log"
+	serviceLogLimit   = 10 << 20
+	serviceLogsKept   = 5
+)
+
+// errRestartBySupervisor ends a run that asked for a restart under a
+// supervisor that starts the process again itself.
+var errRestartBySupervisor = errors.New("the server stops, and the service control manager starts it again")
+
+// supervisor is what started this process, and so what starts it again.
+type supervisor struct {
+	// service is true when the Windows service control manager started the
+	// process. It loses track of a process that starts its own successor, so
+	// a restart ends this process with exitRestart, and the recovery action of
+	// the service starts it again (ADR-20261125-jqp).
+	service bool
+}
+
+func (s supervisor) restart() error {
+	if s.service {
+		return errRestartBySupervisor
+	}
+
+	return restart()
+}
+
+// restartAt starts binary under a terminal. A service is installed with the
+// path of its executable, and an upgrade replaces the file at that path, so
+// the service control manager starts the new binary.
+func (s supervisor) restartAt(binary string) error {
+	if s.service {
+		return errRestartBySupervisor
+	}
+
+	return restartAt(binary)
+}
 
 // coreCommand names the core. The core is what the binary runs anyway, so the
 // word is accepted rather than required: it is in the image's CMD, in the
@@ -79,6 +126,16 @@ const probeCommand = "healthcheck"
 // argument this function does not know is a usage error.
 func Main() int {
 	arguments := os.Args[1:]
+
+	// A service runs only the core. Its command line is the one it was
+	// installed with, and os.Args holds it.
+	service, err := winservice.Detect()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "prusa-connect: "+err.Error()+"; running as a program in this terminal")
+	}
+	if service {
+		return runService(arguments)
+	}
 
 	// The operator commands, before the core's own flags are parsed: they take
 	// flags of their own, they run against a server that is not running, and
@@ -106,7 +163,26 @@ func Main() int {
 		arguments = arguments[1:]
 	}
 
-	return runCore(arguments)
+	return runCore(context.Background(), arguments, supervisor{})
+}
+
+// runService runs the core under the Windows service control manager. A stop
+// of the service cancels the core's context, as Ctrl+C does in a terminal.
+func runService(arguments []string) int {
+	if len(arguments) > 0 && arguments[0] == coreCommand {
+		arguments = arguments[1:]
+	}
+
+	code, err := winservice.Run(func(ctx context.Context) int {
+		return runCore(ctx, arguments, supervisor{service: true})
+	})
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "prusa-connect: "+err.Error())
+
+		return exitFailure
+	}
+
+	return code
 }
 
 // runOperatorCommand runs one of the commands that work on a server which is
@@ -133,12 +209,13 @@ func runOperatorCommand(run func(context.Context, io.Writer, []string) error, ar
 
 // runCore parses the core's flags, installs the signal handler and runs it. A
 // cancelled context is how a shutdown starts, and every flag left empty defers
-// to the configuration file.
+// to the configuration file. The context is cancelled by a stop of the
+// service, or never in a terminal, where a signal stops the core.
 //
 // One word may follow the flags, and it is `healthcheck`: the probe reads the
 // same configuration the server reads, so it dials whatever address that file
 // names.
-func runCore(args []string) int {
+func runCore(parent context.Context, args []string, host supervisor) int {
 	options, rest, err := parseFlags(args)
 	if errors.Is(err, flag.ErrHelp) {
 		return exitOK
@@ -146,6 +223,14 @@ func runCore(args []string) int {
 
 	if err != nil {
 		return exitUsage
+	}
+
+	// Before anything reads a path: relative paths in the configuration, and
+	// -config itself, resolve from this folder.
+	if options.workdir != "" {
+		if err = os.Chdir(options.workdir); err != nil {
+			return report(fmt.Errorf("change to the folder -workdir names: %w", err))
+		}
 	}
 
 	if options.showVersion {
@@ -165,22 +250,30 @@ func runCore(args []string) int {
 			return exitUsage
 		}
 
-		return report(app.Probe(context.Background(), options.Options))
+		return report(app.Probe(parent, options.Options))
 	}
 
-	if _, err = app.RecoverBackupRestore(context.Background(), options.ConfigPath); err != nil {
+	if host.service {
+		closeLogs, logErr := openServiceLogs(&options.Options)
+		if logErr != nil {
+			return report(logErr)
+		}
+		defer closeLogs()
+	}
+
+	if _, err = app.RecoverBackupRestore(parent, options.ConfigPath); err != nil {
 		return report(recoveryFailed("recover interrupted backup restore", err))
 	}
 
-	restartNeeded, err := app.RecoverUpgrade(context.Background(), options.ConfigPath)
+	restartNeeded, err := app.RecoverUpgrade(parent, options.ConfigPath)
 	if err != nil {
 		return report(recoveryFailed("recover interrupted upgrade", err))
 	}
 	if restartNeeded {
-		return report(restart())
+		return report(host.restart())
 	}
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(parent, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	// One reaper for the whole process, before any module starts. No module
@@ -192,24 +285,59 @@ func runCore(args []string) int {
 
 	err = app.Run(ctx, options.Options)
 	stop()
+
+	return afterRun(err, options.Options, host)
+}
+
+// afterRun carries out what the run asked for as it ended: an upgrade, a
+// restore, or a restart. Any other outcome is reported as the run's own.
+func afterRun(err error, options app.Options, host supervisor) int {
 	if errors.Is(err, app.ErrUpgradeApply) {
-		return applyUpgrade(options.Options)
+		return applyUpgrade(options, host)
 	}
 	if errors.Is(err, app.ErrBackupRestore) {
 		if err = app.ApplyPreparedRestore(context.Background(), options.ConfigPath); err != nil {
 			return report(err)
 		}
 
-		return report(restart())
+		return report(host.restart())
 	}
 
-	return report(restartAfter(options.ConfigPath, err))
+	return report(restartAfter(options.ConfigPath, err, host))
+}
+
+// openServiceLogs sends what the core writes to files under the folder the
+// service runs in: the log and the setup code to a file that is moved aside
+// as it grows, and standard error, where Go writes a panic, to a second file.
+// It returns the function that closes the log.
+func openServiceLogs(options *app.Options) (func(), error) {
+	if err := os.MkdirAll(filepath.Dir(filepath.FromSlash(serviceLogPath)), 0o700); err != nil {
+		return nil, fmt.Errorf("create the folder for the service log: %w", err)
+	}
+
+	if _, err := winservice.RedirectStandardError(filepath.FromSlash(serviceStderrPath)); err != nil {
+		return nil, err
+	}
+
+	log, err := winservice.OpenLog(filepath.FromSlash(serviceLogPath), serviceLogLimit, serviceLogsKept)
+	if err != nil {
+		return nil, err
+	}
+
+	options.Stderr = log
+	options.LogOutput = log
+
+	return func() {
+		if closeErr := log.Close(); closeErr != nil {
+			fmt.Fprintln(os.Stderr, "prusa-connect core: close the service log: "+closeErr.Error())
+		}
+	}, nil
 }
 
 // restartAfter starts the server again when the first-run wizard asked for it,
 // and when a start on the wizard's configuration failed and was rolled back
 // (ADR-20261015-ejz rules 21 and 24). Any other outcome is the run's own.
-func restartAfter(configPath string, err error) error {
+func restartAfter(configPath string, err error, host supervisor) error {
 	if err == nil {
 		return nil
 	}
@@ -228,7 +356,7 @@ func restartAfter(configPath string, err error) error {
 			"did not start, so the server starts again on the one it had: "+err.Error())
 	}
 
-	if restartErr := restart(); restartErr != nil {
+	if restartErr := host.restart(); restartErr != nil {
 		return restartErr
 	}
 
@@ -240,7 +368,7 @@ func restartAfter(configPath string, err error) error {
 // applyUpgrade swaps in the prepared upgrade and starts the executable it
 // names. A failed upgrade whose restored executable is in place starts that
 // one, so the server comes back instead of staying down.
-func applyUpgrade(options app.Options) int {
+func applyUpgrade(options app.Options, host supervisor) int {
 	binary, err := app.ApplyPreparedUpgrade(context.Background(), options)
 	if err != nil {
 		if binary == "" {
@@ -250,17 +378,21 @@ func applyUpgrade(options app.Options) int {
 		report(err)
 	}
 
-	return report(restartAt(binary))
+	return report(host.restartAt(binary))
 }
 
 func report(err error) int {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "prusa-connect core: "+err.Error())
-
-		return exitFailure
+	if err == nil {
+		return exitOK
 	}
 
-	return exitOK
+	fmt.Fprintln(os.Stderr, "prusa-connect core: "+err.Error())
+
+	if errors.Is(err, errRestartBySupervisor) {
+		return exitRestart
+	}
+
+	return exitFailure
 }
 
 // usage names every command this binary takes. It is printed for -h and for a
@@ -280,6 +412,7 @@ const usage = "usage: prusa-connect [" + coreCommand + "] [flags] [" + probeComm
 type coreFlags struct {
 	app.Options
 
+	workdir     string
 	showVersion bool
 	versionJSON bool
 }
@@ -303,6 +436,8 @@ func parseFlags(args []string) (coreFlags, []string, error) {
 		"address the device-facing listener binds, setting listener.addr on the mounted connector")
 	flags.StringVar(&options.LogLevel, "log-level", "", "debug, info, warn or error, overriding core.log.level")
 	flags.StringVar(&options.LogFormat, "log-format", "", "text or json, overriding core.log.format")
+	flags.StringVar(&options.workdir, "workdir", "",
+		"the folder the server runs in, from which -config and relative paths in the configuration resolve")
 	flags.BoolVar(&options.SafeMode, "safe", false,
 		"start once with every module off; a restart the server performs drops this flag")
 	flags.BoolVar(&options.showVersion, "version", false, "print the version of this build and stop")

@@ -2,8 +2,8 @@ package app
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
-	"os"
 
 	"github.com/prusa3d/prusa-connect/internal/app/config"
 	"github.com/prusa3d/prusa-connect/internal/platform/observability"
@@ -12,17 +12,24 @@ import (
 // newLogger builds the one logger every part of the core is handed. Code in
 // the core takes this logger and does not set a package-level one.
 //
-// It writes to stderr so that a process whose stdout is a pipe still logs
-// somewhere an operator can see.
+// It writes to out, which is standard error unless the process entry names
+// another writer. Standard error is used so that a process whose stdout is a
+// pipe still logs somewhere an operator can see. A Windows service has no
+// standard error anybody reads, and logs to a file instead.
 //
 // Every line passes through the counting handler. That handler writes
 // pcl_log_lines_total and samples the lines below info. counting's zero value
 // counts nothing and samples on the defaults, for a test that is not about
 // metrics.
 //
-// The ring keeps what stderr receives, for a diagnostics bundle. A nil ring
+// The ring keeps what out receives, for a diagnostics bundle. A nil ring
 // records nothing.
-func newLogger(cfg config.Log, counting observability.LogConfig, ring *observability.LogRing) (*slog.Logger, error) {
+func newLogger(
+	cfg config.Log,
+	out io.Writer,
+	counting observability.LogConfig,
+	ring *observability.LogRing,
+) (*slog.Logger, error) {
 	level, err := parseLevel(cfg.Level)
 	if err != nil {
 		return nil, err
@@ -34,9 +41,9 @@ func newLogger(cfg config.Log, counting observability.LogConfig, ring *observabi
 
 	switch cfg.Format {
 	case "json":
-		sink = slog.NewJSONHandler(os.Stderr, options)
+		sink = slog.NewJSONHandler(out, options)
 	case "text":
-		sink = slog.NewTextHandler(os.Stderr, options)
+		sink = slog.NewTextHandler(out, options)
 	default:
 		return nil, fmt.Errorf("%w: core.log.format is %q", config.ErrInvalid, cfg.Format)
 	}

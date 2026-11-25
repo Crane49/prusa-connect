@@ -55,6 +55,10 @@ type Options struct {
 	// Stderr is where the setup code is printed for a person to read. Nil is
 	// the process's own standard error.
 	Stderr io.Writer
+	// LogOutput is where the server's log is written. Nil is the process's
+	// own standard error. A Windows service names a file, because nobody
+	// reads the standard error of a service.
+	LogOutput io.Writer
 	// LoopbackOnly keeps this process off the local network on its own
 	// account. The mDNS announcement and listener stay off, whatever
 	// core.discovery.enabled says, and the camera relay gathers candidates on
@@ -70,6 +74,15 @@ type Options struct {
 	// one process collect each other's children. Nil runs none, which is what
 	// a test that starts several servers in one process needs.
 	Reaper *procgroup.Reaper
+}
+
+// logOutput is where the server's log goes.
+func (o Options) logOutput() io.Writer {
+	if o.LogOutput == nil {
+		return os.Stderr
+	}
+
+	return o.LogOutput
 }
 
 // stderr is where a message for the person at the terminal goes.

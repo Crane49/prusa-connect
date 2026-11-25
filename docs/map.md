@@ -64,6 +64,9 @@ check the real imports against this table.
 Two `kernel/` packages hold the operating system's side of a module's
 memory budget. `kernel/procgroup` starts a child as a group it can kill and
 measure. `kernel/sysmem` reads the machine's memory and its container limit.
+`kernel/winservice` runs the server under the Windows service control
+manager and holds the log file a service writes
+([ADR-20261125-jqp](decisions/20261125-jqp-prusa-connect-runs-as-a-windows-service-that-an-installer.md)).
 
 When two domains need the same code, it goes into `kernel`. When an adapter
 and an internal package need the same code, it goes into `sdk/`.
