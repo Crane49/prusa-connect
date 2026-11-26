@@ -104,16 +104,18 @@ jobs:
         name: windows-web-app
         path: internal/transport/http/httpapi/appdist/
 
-    # The tags and the version stamp of release.yml, so the MSI holds the
-    # binary a release would hold.
+    # The tags, the version stamp and the trusted release keys of release.yml,
+    # so the MSI holds the binary a release would hold. A repository without
+    # the UPGRADE_PUBLIC_KEYS variable builds a binary that trusts no key.
     - name: Build prusa-connect.exe
       env:
         CGO_ENABLED: 0
         STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+        KEYS: -X github.com/prusa3d/prusa-connect/internal/upgrade.officialPublicKeys=${{ vars.UPGRADE_PUBLIC_KEYS }}
       run: |
         if (-not (Test-Path internal/transport/http/httpapi/appdist/index.html)) { throw 'the web app artifact holds no index.html' }
         $version = (Get-Content VERSION -Raw).Trim()
-        go build -tags "full diagnostics observability postgres" -ldflags="$env:STAMP=$version" -o build/prusa-connect.exe ./cmd/prusa-connect
+        go build -tags "full diagnostics observability postgres" -ldflags="$env:STAMP=$version $env:KEYS" -o build/prusa-connect.exe ./cmd/prusa-connect
         if ($LASTEXITCODE -ne 0) { throw "go build exited with $LASTEXITCODE" }
 
     # PowerShell goes on after a program fails, so each exit code is checked.
@@ -131,10 +133,18 @@ jobs:
         $version = (Get-Content VERSION -Raw).Trim()
         ./deploy/windows/build-msi.ps1 -Binary build/prusa-connect.exe -Version $version -Arch x64 -Output $env:MSI
 
+    # A failed install names its cause in the log, before "Return value 3".
+    # Those lines become annotations, which a reader without access to the
+    # artifact can read.
     - name: Install the MSI
       run: |
         $install = Start-Process msiexec.exe -Wait -PassThru -ArgumentList "/i `"$env:MSI`" /qn /l*v `"build\install.log`""
-        if ($install.ExitCode -ne 0) { throw "the install exited with $($install.ExitCode); build\install.log says why" }
+        if ($install.ExitCode -ne 0) {
+          Select-String -Path build\install.log -Pattern 'Return value 3', 'Error 1\d{3}', 'error code \d+' -Context 4, 0 |
+            Select-Object -First 4 |
+            ForEach-Object { ($_.Context.PreContext + $_.Line) | ForEach-Object { Write-Host "::error title=install.log::$_" } }
+          throw "the install exited with $($install.ExitCode); build\install.log says why"
+        }
 
     - name: Check the service runs and answers
       run: |
@@ -204,12 +214,22 @@ jobs:
 
     # The service log is under the data folder, which the upload cannot read
     # from, so it is copied next to the install logs first.
+    # After a failure the last lines of each service log become annotations
+    # too, for the same reader.
     - name: Collect the logs
       if: ${{ always() }}
+      env:
+        JOB_STATUS: ${{ job.status }}
       run: |
         New-Item -ItemType Directory -Force build\service-logs | Out-Null
         if (Test-Path "$env:DATA\logs") { Copy-Item "$env:DATA\logs\*" build\service-logs -ErrorAction SilentlyContinue }
         Get-ChildItem build\service-logs | ForEach-Object { "== $($_.Name)"; Get-Content $_.FullName -Tail 40 }
+        if ($env:JOB_STATUS -ne 'success') {
+          Get-ChildItem build\service-logs | ForEach-Object {
+            $name = $_.Name
+            Get-Content $_.FullName -Tail 8 | ForEach-Object { Write-Host "::warning title=$name::$_" }
+          }
+        }
 
     - name: Upload the MSI and the logs
       if: ${{ always() }}
