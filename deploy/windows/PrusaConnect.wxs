@@ -42,6 +42,12 @@
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
 
+    <!--
+      A component without a Guid gets one WiX derives from its key path, so it
+      stays the same from build to build. WiX derives one only from a file or a
+      registry value, so DataFolder, which holds a folder alone, names its own;
+      StartMenuShortcut names its own too.
+    -->
     <Feature Id="Server" Title="Prusa Connect" Level="1">
       <ComponentRef Id="ServerExecutable" />
       <ComponentRef Id="InstallerMarker" />
