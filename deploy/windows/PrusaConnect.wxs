@@ -85,11 +85,17 @@
                        FailureActionsWhen="failedToStopOrReturnedError"
                        OnInstall="yes"
                        OnReinstall="yes" />
-        <ServiceConfigFailureActions OnInstall="yes" OnReinstall="yes" ResetPeriod="86400">
-          <Failure Action="restartService" Delay="5000" />
-          <Failure Action="restartService" Delay="5000" />
-          <Failure Action="restartService" Delay="30000" />
-        </ServiceConfigFailureActions>
+        <!--
+          The recovery action: start the service again 5 seconds after it
+          stops by itself, and count again after a day. Windows Installer's own
+          ServiceConfigFailureActions fails here with access denied (error
+          1939), so the WiX custom action sets it.
+        -->
+        <util:ServiceConfig FirstFailureActionType="restart"
+                            SecondFailureActionType="restart"
+                            ThirdFailureActionType="restart"
+                            RestartServiceDelayInSeconds="5"
+                            ResetPeriodInDays="1" />
       </ServiceInstall>
       <ServiceControl Id="ServiceControl"
                       Name="PrusaConnect"
