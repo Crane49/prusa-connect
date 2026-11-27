@@ -1,0 +1,242 @@
+name: Windows release
+
+# Publishes the Windows installer of this fork as a GitHub release
+# (ADR-20261125-jqp). release.yml, which this repository shares with upstream,
+# answers tags shaped v*.*.*. This workflow answers windows/v*, which that
+# pattern never matches because a * stops at a slash, so a tag here starts
+# this workflow alone.
+#
+# A tag names the release and the version the binary reports, such as
+# windows/v0.1.0-crane.1 for 0.1.0-crane.1. It must start with the version in
+# the VERSION file, so a release never claims a version its source is not.
+# Windows reads three numbers, 0.1.0 here, and the MSI of a later tag of the
+# same version replaces the one installed.
+#
+# The jobs build what windows.yml builds and checks on every pull request:
+# the web app, prusa-connect.exe and the MSI, for x64 and arm64. Neither the
+# binary nor the MSI is signed, so Windows warns before it installs one.
+on:
+  push:
+    tags:
+      - 'windows/v*'
+
+permissions:
+  contents: read
+
+# One release at a time for a tag. A second push of the same tag waits, so the
+# release is never written by two runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Windows release / Version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.read.outputs.version }}
+      prerelease: ${{ steps.read.outputs.prerelease }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    # The tag arrives through the environment, never into the script text.
+    - name: Read the version from the tag
+      id: read
+      env:
+        TAG: ${{ github.ref_name }}
+      run: |
+        version="${TAG#windows/v}"
+        source="$(tr -d '[:space:]' < VERSION)"
+        case "$version" in
+          "$source"|"$source"-*) ;;
+          *) echo "::error::tag $TAG does not start with windows/v$source, the version in VERSION"; exit 1 ;;
+        esac
+        case "$version" in
+          *[!0-9A-Za-z.-]*) echo "::error::version $version holds a character other than a letter, a digit, a dot or a hyphen"; exit 1 ;;
+        esac
+        # Upstream marks a pre-release with a hyphen in VERSION, as in
+        # 0.1.0-beta.2. The suffix this fork adds does not make one.
+        case "$source" in
+          *-*) prerelease=true ;;
+          *) prerelease=false ;;
+        esac
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+        echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+        echo "Releasing $version, pre-release: $prerelease"
+
+  web-app:
+    name: Windows release / Web app
+    needs: [ version ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+
+    - name: Build the web app into the embed directory
+      run: make embed-app
+
+    - name: Upload the web app
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: release-web-app
+        path: internal/transport/http/httpapi/appdist/
+        include-hidden-files: true
+        retention-days: 1
+
+  installer:
+    name: Windows release / Installer (${{ matrix.arch }})
+    needs: [ version, web-app ]
+    runs-on: windows-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: x64
+            goarch: amd64
+          - arch: arm64
+            goarch: arm64
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      WIX_VERSION: 5.0.2
+      # WiX 5 is built for .NET 6, and the runner carries a later .NET.
+      DOTNET_ROLL_FORWARD: Major
+      VERSION: ${{ needs.version.outputs.version }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    # No build cache: nothing another run wrote reaches a published file.
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    - name: Put the web app in the embed directory
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      with:
+        name: release-web-app
+        path: internal/transport/http/httpapi/appdist/
+
+    # The tags, the version stamp and the trusted release keys of release.yml.
+    # A repository without the UPGRADE_PUBLIC_KEYS variable builds a binary
+    # that trusts no key.
+    - name: Build prusa-connect.exe
+      env:
+        CGO_ENABLED: 0
+        GOOS: windows
+        GOARCH: ${{ matrix.goarch }}
+        STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+        KEYS: -X github.com/prusa3d/prusa-connect/internal/upgrade.officialPublicKeys=${{ vars.UPGRADE_PUBLIC_KEYS }}
+      run: |
+        if (-not (Test-Path internal/transport/http/httpapi/appdist/index.html)) { throw 'the web app artifact holds no index.html' }
+        go build -trimpath -tags "full diagnostics observability postgres" -ldflags="$env:STAMP=$env:VERSION $env:KEYS" -o build/prusa-connect.exe ./cmd/prusa-connect
+        if ($LASTEXITCODE -ne 0) { throw "go build exited with $LASTEXITCODE" }
+
+    # PowerShell goes on after a program fails, so each exit code is checked.
+    - name: Install WiX
+      run: |
+        dotnet tool install --global wix --version $env:WIX_VERSION
+        if ($LASTEXITCODE -ne 0) { throw "installing wix exited with $LASTEXITCODE" }
+        foreach ($extension in 'WixToolset.Util.wixext', 'WixToolset.Firewall.wixext') {
+          wix extension add --global "$extension/$env:WIX_VERSION"
+          if ($LASTEXITCODE -ne 0) { throw "adding $extension exited with $LASTEXITCODE" }
+        }
+
+    - name: Build the MSI
+      env:
+        ARCH: ${{ matrix.arch }}
+      run: |
+        ./deploy/windows/build-msi.ps1 -Binary build/prusa-connect.exe -Version $env:VERSION -Arch $env:ARCH -Output "dist/PrusaConnect-$env:VERSION-$env:ARCH.msi"
+
+    - name: Upload the MSI
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: release-msi-${{ matrix.arch }}
+        path: dist/*.msi
+        retention-days: 1
+        if-no-files-found: error
+
+  publish:
+    name: Windows release / Publish
+    needs: [ version, installer ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The one job that writes: it creates the release and attaches its files.
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download the MSIs
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      with:
+        pattern: release-msi-*
+        path: dist
+        merge-multiple: true
+
+    - name: Write the checksums
+      working-directory: dist
+      run: |
+        sha256sum -- *.msi > SHA256SUMS
+        cat SHA256SUMS
+
+    - name: Create the release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TAG: ${{ github.ref_name }}
+        VERSION: ${{ needs.version.outputs.version }}
+        PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        COMMIT: ${{ github.sha }}
+      run: |
+        cat > notes.md <<EOF
+        Windows installer of Prusa Connect $VERSION, built from $COMMIT.
+
+        - \`PrusaConnect-$VERSION-x64.msi\` is for Intel and AMD processors, the usual PC.
+        - \`PrusaConnect-$VERSION-arm64.msi\` is for Arm processors.
+        - \`SHA256SUMS\` holds the checksum of each file.
+
+        The installer runs Prusa Connect as the \`PrusaConnect\` Windows service. Its data is in \`C:\\ProgramData\\PrusaConnect\`, and the setup code of the first start is in \`logs\\prusa-connect.log\` there. To upgrade, run the installer of a newer release.
+
+        Neither the installer nor the program is signed, so Windows asks before it runs the installer: choose **More info**, then **Run anyway**.
+        EOF
+
+        flags=()
+        if [ "$PRERELEASE" = "true" ]; then flags+=(--prerelease); fi
+        gh release create "$TAG" dist/*.msi dist/SHA256SUMS \
+          --verify-tag \
+          --title "Prusa Connect for Windows $VERSION" \
+          --notes-file notes.md \
+          "${flags[@]}"
