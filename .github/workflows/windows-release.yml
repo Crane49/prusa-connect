@@ -7,8 +7,14 @@ name: Windows release
 # this workflow alone.
 #
 # A tag names the release and the version the binary reports, such as
-# windows/v0.1.0-crane.1 for 0.1.0-crane.1. It must start with the version in
-# the VERSION file, so a release never claims a version its source is not.
+# windows/v0.1.0-crane.1 for 0.1.0-crane.1. The version is one the server
+# parses (sdk/manifest.ParseVersion), because a binary that cannot read its
+# own version refuses every upgrade. It starts with the version in VERSION, so
+# a release never claims a version its source is not. The upstream
+# pre-release label lives in the tag, as scripts/release.sh says, and this fork
+# adds its own -crane.N after it: windows/v0.1.0-beta.2-crane.1 is the beta,
+# and windows/v0.1.0-crane.1 is the release.
+#
 # Windows reads three numbers, 0.1.0 here, and the MSI of a later tag of the
 # same version replaces the one installed.
 #
@@ -45,29 +51,43 @@ jobs:
         persist-credentials: false
 
     # The tag arrives through the environment, never into the script text.
+    #
+    # The pattern is the one semver.org gives, without build metadata, which
+    # these tags have no use for. It refuses an empty identifier, as in
+    # 0.1.0- or 0.1.0-crane..1, and a number with a leading zero, which the
+    # server refuses too.
     - name: Read the version from the tag
       id: read
       env:
         TAG: ${{ github.ref_name }}
+        FORK_SUFFIX: crane
       run: |
         version="${TAG#windows/v}"
         source="$(tr -d '[:space:]' < VERSION)"
+        identifier='(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)'
+        semver="^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-${identifier}(\.${identifier})*)?$"
+        if ! [[ "$version" =~ $semver ]]; then
+          echo "::error::version $version is not MAJOR.MINOR.PATCH with an optional pre-release, as the server reads a version"
+          exit 1
+        fi
         case "$version" in
           "$source"|"$source"-*) ;;
           *) echo "::error::tag $TAG does not start with windows/v$source, the version in VERSION"; exit 1 ;;
         esac
-        case "$version" in
-          *[!0-9A-Za-z.-]*) echo "::error::version $version holds a character other than a letter, a digit, a dot or a hyphen"; exit 1 ;;
-        esac
-        # Upstream marks a pre-release with a hyphen in VERSION, as in
-        # 0.1.0-beta.2. The suffix this fork adds does not make one.
-        case "$source" in
+        # The upstream version is the tag's without this fork's -crane.N, and a
+        # hyphen left in it is an upstream pre-release label.
+        if [[ "$version" =~ ^(.*)-${FORK_SUFFIX}\.(0|[1-9][0-9]*)$ ]]; then
+          upstream="${BASH_REMATCH[1]}"
+        else
+          upstream="$version"
+        fi
+        case "$upstream" in
           *-*) prerelease=true ;;
           *) prerelease=false ;;
         esac
         echo "version=$version" >> "$GITHUB_OUTPUT"
         echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
-        echo "Releasing $version, pre-release: $prerelease"
+        echo "Releasing $version, upstream $upstream, pre-release: $prerelease"
 
   web-app:
     name: Windows release / Web app
