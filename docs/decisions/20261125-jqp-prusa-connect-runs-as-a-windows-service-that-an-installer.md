@@ -73,7 +73,7 @@ server runs under it, and who replaces the executable of such a server.
 
 ## open items
 
-- a release does not carry the MSI yet, and neither the MSI nor the binary in
-  it is signed
+- neither the MSI nor the binary in it is signed, so Windows warns before it
+  installs one
 - a start failure before rule 5 opens the log, such as a typo in a flag, is
   seen only as the exit code in `sc query PrusaConnect`

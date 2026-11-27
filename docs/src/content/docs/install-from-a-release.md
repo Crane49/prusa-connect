@@ -10,6 +10,7 @@ rewrite:
     - deploy/systemd/prusa-connect.service
     - deploy/windows/PrusaConnect.wxs
     - deploy/windows/build-msi.ps1
+    - .github/workflows/windows-release.yml
     - config/config.yaml
     - compose/compose.go
     - internal/kernel/version
@@ -566,11 +567,12 @@ named `PrusaConnect`. Windows starts it when the computer starts, before
 anybody signs in, and starts it again when it stops by itself
 ([ADR-20261125-jqp](../../../decisions/20261125-jqp-prusa-connect-runs-as-a-windows-service-that-an-installer.md)).
 
-A release does not carry the MSI yet. Each run of the **Windows** workflow
-builds one, and the run's **windows-msi** artifact holds
-`PrusaConnect-x64.msi`. To build it yourself from a built
-`prusa-connect.exe`, install WiX as `deploy/windows/build-msi.ps1` describes,
-then:
+A release whose tag starts with `windows/v` carries the MSI, for x64 and
+arm64, with a `SHA256SUMS` file. The **Windows release** workflow builds it
+from the tag. Each run of the **Windows** workflow builds one too, and the
+run's **windows-msi** artifact holds `PrusaConnect-x64.msi`. To build it
+yourself from a built `prusa-connect.exe`, install WiX as
+`deploy/windows/build-msi.ps1` describes, then:
 
 ```text
 > pwsh deploy/windows/build-msi.ps1 -Binary .\prusa-connect.exe -Version 0.1.0 -Arch x64 -Output .\PrusaConnect-x64.msi
