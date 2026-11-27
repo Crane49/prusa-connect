@@ -1,0 +1,244 @@
+name: Windows
+
+# The Windows service and its installer, on a Windows runner (ADR-20261125-jqp).
+# ci.yml checks the Windows code only as Linux compiles and lints it, so the
+# tests behind `//go:build windows` and the service itself run nowhere else.
+#
+# The second job builds prusa-connect.exe as release.yml does, with the web app
+# the first job builds, and the MSI around it. It installs the MSI and checks
+# what a person relies on: the service starts at once and answers over HTTP,
+# Windows starts it again when it crashes, a stop keeps it stopped, and an
+# uninstall removes the program and keeps the data. The MSI it uploads is a
+# whole server, so a person can install the build of a pull request.
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# As in ci.yml: a pull request groups by its ref, so a new commit cancels the
+# run over the one before it, and any other event groups by its commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  web-app:
+    name: Windows / Web app
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+        cache: false
+
+    - name: Set up pnpm
+      uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+      with:
+        package_json_file: packages/typescript/package.json
+
+    - name: Set up Node.js
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      with:
+        node-version-file: .nvmrc
+        package-manager-cache: false
+
+    - name: Build the web app into the embed directory
+      run: make embed-app
+
+    - name: Upload the web app
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: windows-web-app
+        path: internal/transport/http/httpapi/appdist/
+        include-hidden-files: true
+        retention-days: 1
+
+  service:
+    name: Windows / Service and installer
+    needs: [ web-app ]
+    runs-on: windows-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      WIX_VERSION: 5.0.2
+      # WiX 5 is built for .NET 6, and the runner carries a later .NET.
+      DOTNET_ROLL_FORWARD: Major
+      MSI: build\PrusaConnect-x64.msi
+      INSTALLED: C:\Program Files\Prusa Connect
+      DATA: C:\ProgramData\PrusaConnect
+      HEALTH: http://localhost:8080/api/v1/health
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      with:
+        persist-credentials: false
+
+    - name: Set up Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go.mod
+
+    - name: Run the tests that build only on Windows
+      run: |
+        go test -count=1 ./internal/kernel/winservice/... ./compose/...
+        if ($LASTEXITCODE -ne 0) { throw "go test exited with $LASTEXITCODE" }
+
+    - name: Put the web app in the embed directory
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      with:
+        name: windows-web-app
+        path: internal/transport/http/httpapi/appdist/
+
+    # The tags, the version stamp and the trusted release keys of release.yml,
+    # so the MSI holds the binary a release would hold. A repository without
+    # the UPGRADE_PUBLIC_KEYS variable builds a binary that trusts no key.
+    - name: Build prusa-connect.exe
+      env:
+        CGO_ENABLED: 0
+        STAMP: -X github.com/prusa3d/prusa-connect/internal/kernel/version.stamped
+        KEYS: -X github.com/prusa3d/prusa-connect/internal/upgrade.officialPublicKeys=${{ vars.UPGRADE_PUBLIC_KEYS }}
+      run: |
+        if (-not (Test-Path internal/transport/http/httpapi/appdist/index.html)) { throw 'the web app artifact holds no index.html' }
+        $version = (Get-Content VERSION -Raw).Trim()
+        go build -tags "full diagnostics observability postgres" -ldflags="$env:STAMP=$version $env:KEYS" -o build/prusa-connect.exe ./cmd/prusa-connect
+        if ($LASTEXITCODE -ne 0) { throw "go build exited with $LASTEXITCODE" }
+
+    # PowerShell goes on after a program fails, so each exit code is checked.
+    - name: Install WiX
+      run: |
+        dotnet tool install --global wix --version $env:WIX_VERSION
+        if ($LASTEXITCODE -ne 0) { throw "installing wix exited with $LASTEXITCODE" }
+        foreach ($extension in 'WixToolset.Util.wixext', 'WixToolset.Firewall.wixext') {
+          wix extension add --global "$extension/$env:WIX_VERSION"
+          if ($LASTEXITCODE -ne 0) { throw "adding $extension exited with $LASTEXITCODE" }
+        }
+
+    - name: Build the MSI
+      run: |
+        $version = (Get-Content VERSION -Raw).Trim()
+        ./deploy/windows/build-msi.ps1 -Binary build/prusa-connect.exe -Version $version -Arch x64 -Output $env:MSI
+
+    # A failed install names its cause in the log, before "Return value 3".
+    # Those lines become annotations, which a reader without access to the
+    # artifact can read.
+    - name: Install the MSI
+      run: |
+        $install = Start-Process msiexec.exe -Wait -PassThru -ArgumentList "/i `"$env:MSI`" /qn /l*v `"build\install.log`""
+        if ($install.ExitCode -ne 0) {
+          Select-String -Path build\install.log -Pattern 'Return value 3', 'Error 1\d{3}', 'error code \d+' -Context 4, 0 |
+            Select-Object -First 4 |
+            ForEach-Object { ($_.Context.PreContext + $_.Line) | ForEach-Object { Write-Host "::error title=install.log::$_" } }
+          throw "the install exited with $($install.ExitCode); build\install.log says why"
+        }
+
+    - name: Check the service runs and answers
+      run: |
+        function Wait-Health {
+          for ($i = 0; $i -lt 60; $i++) {
+            try {
+              if ((Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 $env:HEALTH).StatusCode -eq 200) { return }
+            } catch { }
+            Start-Sleep -Seconds 2
+          }
+          throw "$env:HEALTH did not answer 200 within two minutes"
+        }
+
+        if ((Get-Service PrusaConnect).Status -ne 'Running') { throw 'the service is not running after the install' }
+        Wait-Health
+
+        $config = sc.exe qc PrusaConnect | Out-String
+        if ($config -notmatch '-workdir') { throw "the service starts without -workdir:`n$config" }
+        if ($config -notmatch 'LocalService') { throw "the service does not run as LocalService:`n$config" }
+        $flag = sc.exe qfailureflag PrusaConnect | Out-String
+        if ($flag -notmatch 'TRUE') { throw "a non-zero exit code does not start the recovery action:`n$flag" }
+        $failure = sc.exe qfailure PrusaConnect | Out-String
+        if ($failure -notmatch 'RESTART') { throw "the recovery action does not restart the service:`n$failure" }
+
+        if (-not (Test-Path "$env:INSTALLED\managed-by-installer")) { throw 'the installer marker is missing' }
+        if (-not (Test-Path "$env:DATA\logs\prusa-connect.log")) { throw 'the service wrote no log file' }
+        $readers = (Get-Acl $env:DATA).Access | Where-Object { $_.IdentityReference -match 'Users$' }
+        if ($readers) { throw "every user can read the data folder:`n$($readers | Out-String)" }
+        if (-not (Get-NetFirewallRule -DisplayName 'Prusa Connect (private networks)' -ErrorAction SilentlyContinue)) {
+          throw 'the firewall rule for private networks is missing'
+        }
+
+    - name: Check Windows starts the service again after a crash
+      run: |
+        $before = (Get-CimInstance Win32_Service -Filter "Name='PrusaConnect'").ProcessId
+        Stop-Process -Id $before -Force
+        for ($i = 0; $i -lt 30; $i++) {
+          Start-Sleep -Seconds 2
+          $now = Get-CimInstance Win32_Service -Filter "Name='PrusaConnect'"
+          if ($now.State -eq 'Running' -and $now.ProcessId -ne $before) { break }
+        }
+        if ($now.State -ne 'Running') { throw 'the service did not start again after its process was killed' }
+        for ($i = 0; $i -lt 60; $i++) {
+          try {
+            if ((Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 $env:HEALTH).StatusCode -eq 200) { exit 0 }
+          } catch { }
+          Start-Sleep -Seconds 2
+        }
+        throw "$env:HEALTH did not answer after the service started again"
+
+    - name: Check a stop keeps the service stopped
+      run: |
+        Stop-Service PrusaConnect
+        Start-Sleep -Seconds 15
+        $status = (Get-Service PrusaConnect).Status
+        if ($status -ne 'Stopped') { throw "the service is $status 15 seconds after a stop" }
+        $state = sc.exe query PrusaConnect | Out-String
+        if ($state -notmatch 'WIN32_EXIT_CODE\s*:\s*0\b') { throw "a stop reported a failure:`n$state" }
+
+    - name: Uninstall, keeping the data
+      run: |
+        $remove = Start-Process msiexec.exe -Wait -PassThru -ArgumentList "/x `"$env:MSI`" /qn /l*v `"build\uninstall.log`""
+        if ($remove.ExitCode -ne 0) { throw "the uninstall exited with $($remove.ExitCode); build\uninstall.log says why" }
+        if (Get-Service PrusaConnect -ErrorAction SilentlyContinue) { throw 'the service is still installed' }
+        if (Test-Path "$env:INSTALLED\prusa-connect.exe") { throw 'prusa-connect.exe is still installed' }
+        if (-not (Test-Path "$env:DATA\logs\prusa-connect.log")) { throw 'the uninstall removed the data folder' }
+
+    # The service log is under the data folder, which the upload cannot read
+    # from, so it is copied next to the install logs first.
+    # After a failure the last lines of each service log become annotations
+    # too, for the same reader.
+    - name: Collect the logs
+      if: ${{ always() }}
+      env:
+        JOB_STATUS: ${{ job.status }}
+      run: |
+        New-Item -ItemType Directory -Force build\service-logs | Out-Null
+        if (Test-Path "$env:DATA\logs") { Copy-Item "$env:DATA\logs\*" build\service-logs -ErrorAction SilentlyContinue }
+        Get-ChildItem build\service-logs | ForEach-Object { "== $($_.Name)"; Get-Content $_.FullName -Tail 40 }
+        if ($env:JOB_STATUS -ne 'success') {
+          Get-ChildItem build\service-logs | ForEach-Object {
+            $name = $_.Name
+            Get-Content $_.FullName -Tail 8 | ForEach-Object { Write-Host "::warning title=$name::$_" }
+          }
+        }
+
+    - name: Upload the MSI and the logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+      with:
+        name: windows-msi
+        path: |
+          build/PrusaConnect-x64.msi
+          build/*.log
+          build/service-logs/
+        retention-days: 7
+        if-no-files-found: ignore

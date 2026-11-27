@@ -1,0 +1,6 @@
+The Windows installer put prusa-connect.exe in this folder, and the installer
+replaces it. The Updates page of Prusa Connect prepares a new release but does
+not replace the file. To upgrade, run the installer of the new release.
+
+Prusa Connect reads only that this file exists. Its text is for the person who
+finds it.

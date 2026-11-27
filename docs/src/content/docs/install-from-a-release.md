@@ -1,6 +1,6 @@
 ---
 title: Install from a release
-description: Which file to download for Linux, a Raspberry Pi, Windows or macOS, how to check it, where the server keeps its data, the first-run questions, adding a printer with a USB drive, and running it as a systemd service.
+description: Which file to download for Linux, a Raspberry Pi, Windows or macOS, how to check it, where the server keeps its data, the first-run questions, adding a printer with a USB drive, and running it as a systemd service or a Windows service.
 audience: run
 rewrite:
   describes: current
@@ -8,6 +8,8 @@ rewrite:
     - .github/workflows/release.yml
     - .github/workflows/beta-portal.yml
     - deploy/systemd/prusa-connect.service
+    - deploy/windows/PrusaConnect.wxs
+    - deploy/windows/build-msi.ps1
     - config/config.yaml
     - compose/compose.go
     - internal/kernel/version
@@ -555,6 +557,68 @@ no device is registered or waiting.
 After you edit `/etc/prusa-connect/config.yaml`, run
 `sudo systemctl restart prusa-connect`. The server reads the file only
 when it starts.
+
+
+## Run it as a service on Windows
+
+The Windows installer, an MSI file, installs the server as a Windows service
+named `PrusaConnect`. Windows starts it when the computer starts, before
+anybody signs in, and starts it again when it stops by itself
+([ADR-20261125-jqp](../../../decisions/20261125-jqp-prusa-connect-runs-as-a-windows-service-that-an-installer.md)).
+
+A release does not carry the MSI yet. Each run of the **Windows** workflow
+builds one, and the run's **windows-msi** artifact holds
+`PrusaConnect-x64.msi`. To build it yourself from a built
+`prusa-connect.exe`, install WiX as `deploy/windows/build-msi.ps1` describes,
+then:
+
+```text
+> pwsh deploy/windows/build-msi.ps1 -Binary .\prusa-connect.exe -Version 0.1.0 -Arch x64 -Output .\PrusaConnect-x64.msi
+```
+
+Open the MSI and accept the administrator prompt. A silent install, from an
+administrator PowerShell, is this:
+
+```text
+> msiexec /i PrusaConnect-x64.msi /qn
+```
+
+The installer does these things:
+
+- It puts `prusa-connect.exe` in `C:\Program Files\Prusa Connect`.
+- It makes `C:\ProgramData\PrusaConnect` the folder the service runs in. The
+  database, the uploads and the files of the setup wizard go there. Only
+  Administrators, SYSTEM and the service may read it.
+- It runs the service as LocalService, the built-in account with the fewest
+  rights that may use the network.
+- It adds two firewall rules for the program, for private and domain networks.
+  On a network Windows calls public, the server stays unreachable.
+- It adds **Prusa Connect** to the Start menu. It opens
+  `http://localhost:8080`.
+
+A service has no window, so it writes its log to
+`C:\ProgramData\PrusaConnect\logs\prusa-connect.log`. The setup code of the
+first start is in that file. A crash, or an error before the log opens, goes
+to `logs\stderr.log` beside it. Read the newest lines in an administrator
+PowerShell:
+
+```text
+> Get-Content C:\ProgramData\PrusaConnect\logs\prusa-connect.log -Tail 30
+```
+
+Stop, start and check the service in **Services**, or in an administrator
+PowerShell:
+
+```text
+> Restart-Service PrusaConnect
+> sc.exe query PrusaConnect
+```
+
+To upgrade, run the MSI of the new release. The **Updates** page prepares a
+release but does not replace the program, because the installer owns it.
+**Settings, Apps** removes the program and the service. It keeps
+`C:\ProgramData\PrusaConnect`, so a new install finds your data. Delete
+that folder to remove the data too.
 
 
 ## Read these next
